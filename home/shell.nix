@@ -8,9 +8,7 @@
     '';
     shellInit = ''
       __load-em
-      # __autotmux_hook
       __autols_hook
-      # __set_tide_variables
       __set_fzf_variables
       fnm env --use-on-cd --version-file-strategy=recursive --resolve-engines --shell fish | source
     '';
@@ -31,10 +29,6 @@
       zrf = "zellij run --floating --";
     };
     shellAliases = {
-      # "obs-kyle" =
-      #   "cd $HOME/Library/Mobile\\ Documents/iCloud~md~obsidian/Documents/Kyle/ && nvim .";
-      # "obs-traworld" =
-      #   "cd $HOME/Library/Mobile\\ Documents/iCloud~md~obsidian/Documents/Traworld/ && nvim .";
       nixswitch = "darwin-rebuild switch --impure --flake ~/nix-system-config-v2";
       nixup = "pushd ~/nix-system-config-v2; nix flake update; nixswitch; popd";
       nixcleanup = "sudo bash ~/nix-system-config-v2/scripts/nix-cleanup.sh";
@@ -111,32 +105,6 @@
       fish_user_key_bindings = ''
         fish_vi_key_bindings
       '';
-      __autotmux_hook = {
-        description = "Auto load tmux";
-        body = ''
-          if which tmux >/dev/null 2>&1
-              if test "$TERM" != "screen-256color" -a "$TERM" != "screen"
-                  # Get the list of tmux sessions
-                  set sessions (tmux list-sessions 2> /dev/null)
-                  if test -n "$sessions"
-                      # Check if "Hack" session exists in the list
-                      set hack_session (echo "$sessions" | grep -o 'Hack' | head -n 1)
-                      if test -n "$hack_session"
-                          # If "Hack" session exists, attach to it
-                          tmux attach-session -t "Hack"
-                      else
-                          # If "Hack" session not found, attach to the first one
-                          set first_session (echo "$sessions" | awk -F: '{print $1}' | head -n 1)
-                          tmux attach-session -t "$first_session"
-                      end
-                  else
-                      # If no sessions exist, create and attach to "Hack"
-                      tmux new-session -s Hack
-                  end
-              end
-          end
-        '';
-      };
       __autozellij_hook = {
         description = "Auto load zellij";
         body = ''
@@ -191,7 +159,6 @@
           end
         '';
       };
-      # };
       __set_fzf_variables = {
         body = ''
           set -Ux FZF_DEFAULT_OPTS "\
@@ -220,11 +187,4 @@
     PAGER = "less";
     CLICOLOR = 1;
   };
-
-  # home.shellAliases = {
-  #   k = "kubectl";
-  #
-  #   urldecode = "python3 -c 'import sys, urllib.parse as ul; print(ul.unquote_plus(sys.stdin.read()))'";
-  #   urlencode = "python3 -c 'import sys, urllib.parse as ul; print(ul.quote_plus(sys.stdin.read()))'";
-  # };
 }
