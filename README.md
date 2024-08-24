@@ -14,7 +14,7 @@ This is a project to help me to manage my Nix system configuration, mainly with 
 - Browser: ~~[arc](https://arc.net/)~~ Back to safari...
 - Docker: [orbstack](https://orbstack.dev/)
 - Network: [tailscale](https://tailscale.com/)
-- Window Tiling Manager: [aerospace](https://nikitabobko.github.io/AeroSpace/guide)
+- Window Tiling Manager: ~~[yabai](https://github.com/koekeishiya/yabai)~~ [aerospace](https://nikitabobko.github.io/AeroSpace/guide)
 
 ## Notes for future me
 
