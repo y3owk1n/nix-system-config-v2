@@ -2,6 +2,7 @@
   lib,
   username,
   useremail,
+  githubuser,
   pkgs,
   ...
 }:
@@ -18,8 +19,7 @@
     enable = true;
     lfs.enable = true;
 
-    # TODO replace with your own name & email
-    userName = username;
+    userName = githubuser;
     userEmail = useremail;
 
     difftastic = {
@@ -38,6 +38,7 @@
 
     extraConfig =
       {
+        github.user = githubuser;
         init.defaultBranch = "main";
         push.autoSetupRemote = true;
         pull.rebase = true;

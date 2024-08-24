@@ -60,11 +60,17 @@
           hostname,
           username,
           useremail,
+          githubuser,
         }:
         darwin.lib.darwinSystem {
           inherit system;
           specialArgs = inputs // {
-            inherit username useremail hostname;
+            inherit
+              username
+              useremail
+              hostname
+              githubuser
+              ;
           };
           modules = [
             ./modules/nix-core.nix
@@ -77,7 +83,12 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
               home-manager.extraSpecialArgs = inputs // {
-                inherit username useremail hostname;
+                inherit
+                  username
+                  useremail
+                  hostname
+                  githubuser
+                  ;
               };
               home-manager.users.${username} = import ./home;
             }
@@ -92,12 +103,14 @@
           hostname = "Kyles-MacBook-Air";
           username = "kylewong";
           useremail = "wongyeowkin@gmail.com";
+          githubuser = "y3owk1n";
         };
         "Kyles-iMac" = mkDarwinConfiguration {
           system = "aarch64-darwin";
           hostname = "Kyles-iMac";
           username = "kylewong";
           useremail = "kylewong@traworld.com";
+          githubuser = "mtraworld";
         };
         # Add more machines as needed
       };
