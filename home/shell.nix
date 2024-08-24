@@ -37,7 +37,7 @@
       #   "cd $HOME/Library/Mobile\\ Documents/iCloud~md~obsidian/Documents/Traworld/ && nvim .";
       nixswitch = "darwin-rebuild switch --impure --flake ~/nix-system-config-v2";
       nixup = "pushd ~/nix-system-config-v2; nix flake update; nixswitch; popd";
-      nixcleanup = "bash ~/nix-system-config-v2/scripts/nix-cleanup.sh";
+      nixcleanup = "sudo bash ~/nix-system-config-v2/scripts/nix-cleanup.sh";
       tailscale = "/Applications/Tailscale.app/Contents/MacOS/Tailscale";
       cat = "bat";
       n = "nvim";
