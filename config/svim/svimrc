@@ -1,0 +1,5 @@
+nmap H ^
+nmap L $
+nmap U <C-r>
+nmap J <Esc>:m .+1<CR>==gn
+nmap K <Esc>:m .-2<CR>==gn

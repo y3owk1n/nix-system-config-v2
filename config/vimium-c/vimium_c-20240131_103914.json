@@ -1,0 +1,45 @@
+{
+    "name": "Vimium C",
+    "@time": "05/02/2024, 12:00:46",
+    "time": 1707105646881,
+    "environment": {
+        "extension": "1.99.994",
+        "platform": "mac",
+        "chromium": 121
+    },
+    "exclusionRules": [
+        {
+            "passKeys": "",
+            "pattern": "^https?://docs\\.google\\.com/spreadsheets/"
+        }
+    ],
+    "grabBackFocus": true,
+    "keyLayout": 2,
+    "keyMappings": [
+        "#!no-check",
+        "unmap f",
+        "map u LinkHints.activate",
+        "",
+        "unmap F",
+        "map U LinkHints.activateOpenInNewTab",
+        "",
+        "unmap t",
+        "unmap r",
+        "unmap R",
+        "unmap p",
+        "unmap P",
+        "unmap <a-p>",
+        "unmap <a-m>",
+        "unmap o",
+        "unmap O",
+        "unmap b",
+        "unmap B",
+        "unmap T",
+        "unmap x",
+        "unmap X",
+        "unmap W",
+        ""
+    ],
+    "linkHintCharacters": "htnsgcrl",
+    "vimSync": true
+}

@@ -1,0 +1,27 @@
+// Scroll
+settings.map('j', VLCommand.SCROLL_DOWN);
+settings.map('k', VLCommand.SCROLL_UP);
+settings.map('h', VLCommand.SCROLL_LEFT);
+settings.map('l', VLCommand.SCROLL_RIGHT);
+settings.map('ctrl+d', VLCommand.HALF_PAGE_DOWN);
+settings.map('ctrl+u', VLCommand.HALF_PAGE_UP);
+settings.map('g g', VLCommand.SCROLL_TO_TOP);
+settings.map('shift+g', VLCommand.SCROLL_TO_BOTTOM);
+
+// Normal mode
+settings.map('f', VLCommand.ACTIVATE_LINK);
+settings.map('shift+f', VLCommand.ACTIVATE_LINK_WITH_NEW_TAB);
+settings.map('shift+h', VLCommand.GO_BACK);
+settings.map('shift+l', VLCommand.GO_FORWARD);
+settings.map('g i', VLCommand.FOCUS_INPUT);
+settings.map('d', VLCommand.CLOSE_TAB);
+settings.map('!', VLCommand.VIDEO_FULLSCREEN);
+settings.map('@', VLCommand.VIDEO_PIP);
+settings.map('?', VLCommand.TOGGLE_HELP);
+settings.map('shift+slash', VLCommand.TOGGLE_HELP);
+settings.map('y y', VLCommand.COPY_CURRENT_URL);
+settings.map('y t', VLCommand.DUPLICATE_TAB);
+settings.map('g shift+u', VLCommand.GO_TO_URL_ROOT);
+settings.map('g u', VLCommand.GO_TO_URL_UP);
+settings.map('m', VLCommand.ZOOM_IN);
+settings.map('shift+r', VLCommand.TOGGLE_READER_MODE);

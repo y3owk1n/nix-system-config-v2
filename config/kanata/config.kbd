@@ -1,0 +1,177 @@
+(defcfg
+  process-unmapped-keys true
+  log-layer-changes no
+)
+
+(defsrc
+    esc  f1   f2    f3    f4    f5    f6    f7    f8    f9    f10    f11    f12
+    grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+    tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+    caps a    s    d    f    g    h    j    k    l    ;    '    ret
+    lsft z    x    c    v    b    n    m    ,    .    /    rsft
+    lctl lmet lalt           spc            ralt rmet rctl
+)
+
+;; Because I am already using dvorak through system, no need to remap here!
+;; This is the dvorak layout for reference
+;;(deflayer dvorak
+    ;; esc  f1   f2    f3    f4    f5    f6    f7    f8    f9    f10    f11    f12
+    ;; grv  1    2    3    4    5    6    7    8    9    0    [    ]    bspc
+    ;; tab  '    ,    .    p    y    f    g    c    r    l    /    =    \
+    ;; caps a    o    e    u    i    d    h    t    n    s    -    ret
+    ;; lsft ;    q    j    k    x    b    m    w    v    z    rsft
+    ;; lctl lmet lalt           spc            ralt rmet rctl
+;; )
+;; i like to disable all built in modifiers to force my self to use homerow mods
+;; maybe i can remap those XX keys into something more useful
+(deflayer dvorak
+    @esc    _    _    _    _    _    _    _    _    _    _    _    _
+    @grl 1    2    3    4    5    6    7    8    9    0    -    =    bspc
+    tab  @q    @w    @e    @r    @t    @y    @u    @i    @o    @p    @[    @]    \
+    esc @met_a    @alt_s    @ctl_d    @sft_f    @arr_g    @arr_h    @sft_j    @ctl_k    @alt_l    @met_;    '    ret
+    XX @z    @x    @c    @v    @b    @n    @m    @,    @.    /    XX
+    XX XX XX           @hyper_spc            XX XX XX
+)
+
+(deflayer dvorak-tp
+    @esc    _    _    _    _    _    _    _    _    _    _    _    _
+    @grl 1    2    3    4    5    6    7    8    9    0    -    =    bspc
+    tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+    esc a    s    d    f    g    h    j    k    l    ;    '    ret
+    XX z    x    c    v    b    n    m    ,    .    /    XX
+    XX XX XX           spc            XX XX XX
+)
+
+(deflayer adobe
+    @esc    _    _    _    _    _    _    _    _    _    _    _    _
+    @grl 1    2    3    4    5    6    7    8    9    0    -    =    bspc
+    tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+    esc a    s    d    f    g    h    j    k    l    ;    '    ret
+    XX z    x    c    v    b    n    m    ,    .    /    XX
+    XX XX XX           spc            XX XX XX
+)
+
+(deflayer arrows
+    _    _    _    _    _    _    _    _    _    _    _    _    _
+    _    _    _    _    _    _    _    _    _    _    _    _    _    _
+    _    _    _    _    _    _    _    _    _    _    rght    _    _    _
+    _    _    _    _    _    _    _    lft    _    _    _    _    _
+    _    _    _    down    up    _    _    _    _    _    _    _
+    _    _    _              _              _    _    _
+)
+
+(deflayer fns
+    _  brdown    brup    _    _    _    _    prev    pp    next    mute    voldwn    volu
+    _    _    _    _    _    _    _    _    _    _    _    _    _    _
+    _    _    _    _    _    _    _    _    _    _    _    _    _    _
+    _    _    _    _    _    _    _    _    _    _    _    _    _
+    _    _    _    _    _    _    _    _    _    _    _    _
+    _    _    _              _              _    _    _
+)
+
+(defvar
+  tap-timeout   1
+  hold-timeout  160
+  one-shot-timeout  200
+  tt $tap-timeout
+  ht $hold-timeout
+  ot $one-shot-timeout
+)
+
+;; https://github.com/jtroo/kanata/issues/502#issuecomment-1671910161
+(deffakekeys
+  to-dvorak (layer-switch dvorak)
+)
+
+(defalias
+  ;; alias to cancel tap-hold keys if typing rapidly but restore after a shord idle period
+  tp (multi
+    (layer-switch dvorak-tp)
+    (on-idle-fakekey to-dvorak tap 35)
+  )
+
+  ' (multi ' @tp)
+  , (multi , @tp)
+  p (multi p @tp)
+  y (multi y @tp)
+  f (multi f @tp)
+  g (multi g @tp)
+  c (multi c @tp)
+  r (multi r @tp)
+  l (multi l @tp)
+  / (multi / @tp)
+  = (multi = @tp)
+  i (multi i @tp)
+  d (multi d @tp)
+  h (multi h @tp)
+  t (multi t @tp)
+  n (multi n @tp)
+  s (multi s @tp)
+  - (multi - @tp)
+  ; (multi ; @tp)
+  q (multi q @tp)
+  j (multi j @tp)
+  k (multi k @tp)
+  x (multi x @tp)
+  b (multi b @tp)
+  m (multi m @tp)
+  w (multi w @tp)
+  v (multi v @tp)
+  z (multi z @tp)
+  . (multi . @tp)
+  a (multi a @tp)
+  o (multi o @tp)
+  e (multi e @tp)
+  u (multi u @tp)
+  [ (multi [ @tp)
+  ] (multi ] @tp)
+)
+
+(defalias
+    ;; tap: backtick (grave), hold: toggle layer-switching layer while held
+    grl (tap-hold $tt $ht grv (layer-toggle layers))
+
+    ;; layer-switch changes the base layer.
+    dvk (layer-switch dvorak)
+    adb (layer-switch adobe)
+
+    ;; tap for g, hold to enter arrow layer
+    arr_g (tap-hold $tt $ht g (layer-toggle arrows))
+    arr_h (tap-hold $tt $ht h (layer-toggle arrows))
+
+    ;; tap for esc, hold to enter fn layer
+    esc (tap-hold $tt $ht esc (layer-toggle fns))
+
+    ;; hyper key
+    hyper_spc (tap-hold $tt $ht spc (multi lalt lctl lmet lsft))
+
+    ;; homerow mod
+    ;; met_a (tap-hold $tt $ht a lmet)
+    ;; alt_s (tap-hold $tt $ht s lalt) ;; s -> o
+    ;; ctl_d (tap-hold $tt $ht d lctl) ;; d -> e
+    ;; sft_f (tap-hold-press-timeout $tt $ht f lsft f) ;; f -> u
+
+    ;; sft_j (tap-hold $tt $ht j rsft) ;; j -> h
+    ;; ctl_k (tap-hold $tt $ht k rctl) ;; k -> t
+    ;; alt_l (tap-hold $tt $ht l lalt) ;; l -> n
+    ;; met_; (tap-hold $tt $ht ; rmet) ;; ; -> s
+
+    met_a (tap-hold-release $tt $ht a (one-shot $ot lmet))
+    alt_s (tap-hold-release $tt $ht s (one-shot $ot lalt)) ;; s -> o
+    ctl_d (tap-hold-release $tt $ht d (one-shot $ot lctl)) ;; d -> e
+    sft_f (tap-hold-release $tt $ht f (one-shot $ot lsft)) ;; f -> u
+
+    sft_j (tap-hold-release $tt $ht j (one-shot $ot rsft)) ;; j -> h
+    ctl_k (tap-hold-release $tt $ht k (one-shot $ot rctl)) ;; k -> t
+    alt_l (tap-hold-release $tt $ht l (one-shot $ot lalt)) ;; l -> n
+    met_; (tap-hold-release $tt $ht ; (one-shot $ot rmet)) ;; ; -> s
+)
+
+(deflayer layers
+    _    _    _    _    _    _    _    _    _    _    _    _    _
+    _    @dvk @adb    lrld _    _    _    _    _    _    _    _    _    _
+    _    _    _    _    _    _    _    _    _    _    _    _    _    _
+    _    _    _    _    _    _    _    _    _    _    _    _    _
+    _    _    _    _    _    _    _    _    _    _    _    _
+    _    _    _              _              _    _    _
+)
