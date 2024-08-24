@@ -22,6 +22,12 @@
     userName = username;
     userEmail = useremail;
 
+    difftastic = {
+      enable = true;
+      background = "dark";
+      color = "always";
+    };
+
     # includes = [
     #   {
     #     # use diffrent email & name for work
@@ -57,12 +63,12 @@
     #   signByDefault = true;
     # };
 
-    delta = {
-      enable = true;
-      options = {
-        features = "side-by-side";
-      };
-    };
+    # delta = {
+    #   enable = true;
+    #   options = {
+    #     features = "side-by-side catppuccin-macchiato";
+    #   };
+    # };
 
     # aliases = {
     #   # common aliases
