@@ -1,6 +1,5 @@
 {
   lib,
-  username,
   useremail,
   githubuser,
   pkgs,
@@ -28,14 +27,6 @@
       color = "always";
     };
 
-    # includes = [
-    #   {
-    #     # use diffrent email & name for work
-    #     path = "~/work/.gitconfig";
-    #     condition = "gitdir:~/work/";
-    #   }
-    # ];
-
     extraConfig =
       {
         github.user = githubuser;
@@ -62,30 +53,6 @@
     # signing = {
     #   key = "xxx";
     #   signByDefault = true;
-    # };
-
-    # delta = {
-    #   enable = true;
-    #   options = {
-    #     features = "side-by-side catppuccin-macchiato";
-    #   };
-    # };
-
-    # aliases = {
-    #   # common aliases
-    #   br = "branch";
-    #   co = "checkout";
-    #   st = "status";
-    #   ls = "log --pretty=format:\"%C(yellow)%h%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate";
-    #   ll = "log --pretty=format:\"%C(yellow)%h%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate --numstat";
-    #   cm = "commit -m";
-    #   ca = "commit -am";
-    #   dc = "diff --cached";
-    #   amend = "commit --amend -m";
-    #
-    #   # aliases for submodule
-    #   update = "submodule update --init --recursive";
-    #   foreach = "submodule foreach";
     # };
   };
 }

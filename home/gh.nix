@@ -4,9 +4,6 @@
     enable = true;
     gitCredentialHelper.enable = true;
     settings = {
-      # aliases = {
-      #   co = "pr checkout";
-      # };
       editor = "nvim";
       git_protocol = "ssh";
       prompt = "enabled";
