@@ -8,7 +8,6 @@
   #  NOTE: Your can find all available options in:
   #    https://daiderd.com/nix-darwin/manual/index.html
   # 
-  # TODO Fell free to modify this file to fit your needs.
   #
   ##########################################################################
 
@@ -25,7 +24,7 @@
   ];
   environment.variables.EDITOR = "nvim";
 
-  # TODO To make this work, homebrew need to be installed manually, see https://brew.sh
+  # TODO: To make this work, homebrew need to be installed manually, see https://brew.sh
   # 
   # The apps installed by homebrew are not managed by nix, and not reproducible!
   # But on macOS, homebrew has a much larger selection of apps than nixpkgs, especially for GUI apps!
@@ -98,14 +97,6 @@
       # "firefox@nightly"
       # "arc"
       "safari-technology-preview"
-
-      # --- fonts ---
-      # "font-inter"
-      # "font-poppins"
-      # "font-geist"
-      # "font-geist-mono-nerd-font"
-      # "font-jetbrains-mono-nerd-font"
-      # "font-monaspace-nerd-font"
     ];
   };
 }
