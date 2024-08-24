@@ -72,10 +72,22 @@ darwin-rebuild switch --flake ~/nix-system-config-v2
 ### Cleanup
 
 ```bash
-bash ~/nix-system-config/cleanup.sh
+// Cleanup nix
+bash ~/nix-system-config-v2/scripts/nix-cleanup.sh
+
+// Cleanup neovim
+bash ~/nix-system-config-v2/scripts/nvim-reset.sh
 ```
 
 ### Installing NPM packages that are not available in Nix
+
+#### Prebuilt sript
+
+```bash
+bash ~/nix-system-config-v2/scripts/install-node-packages.sh
+```
+
+#### Manually
 
 Navigate to `...../modules/home-manager/node-packages` and run the following command to generate a nix expression. The expression can then be added into home manager
 
