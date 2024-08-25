@@ -6,11 +6,11 @@
     ./shell.nix
     ./core.nix
     ./git.nix
-    ./starship.nix
+    ./prompt.nix
     ./bat.nix
     ./fzf.nix
     ./gh.nix
-    ./kitty.nix
+    ./terminal.nix
     ./lazygit.nix
   ];
 
