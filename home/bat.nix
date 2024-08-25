@@ -13,8 +13,8 @@
         src = pkgs.fetchFromGitHub {
           owner = "catppuccin";
           repo = "bat"; # Bat uses sublime syntax for its themes
-          rev = "d714cc1d358ea51bfc02550dabab693f70cccea0";
-          sha256 = "sha256-Q5B4NDrfCIK3UAMs94vdXnR42k4AXCqZz6sRn8bzmf4=";
+          rev = "d3feec47b16a8e99eabb34cdfbaa115541d374fc";
+          sha256 = "sha256-s0CHTihXlBMCKmbBBb8dUhfgOOQu9PBCQ+uviy7o47w=";
         };
         file = "themes/Catppuccin Macchiato.tmTheme";
       };
