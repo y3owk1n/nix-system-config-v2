@@ -4,27 +4,37 @@ let
 in
 {
   home.packages = with pkgs; [
+    # --- utils ---
     ripgrep
+    fd
+    rm-improved
+    curl
+    jq
+    tree
+
+    # --- misc ---
+    less
+    stripe-cli
+    postgresql
+    minio
+
+    # --- rust ---
     rustup
+
+    # --- node ---
     corepack_latest
     fnm
     bun
-    fd
-    minio
-    rm-improved
-    fd
-    curl
-    less
-    minio
-    jq
-    tree
-    stripe-cli
-    postgresql
-    lua51Packages.lua
-    luajitPackages.luarocks # for nvim
-    nixfmt-rfc-style # for nvim
+
     # --- extraNodePackages ---
     extraNodePackages.cpenv
+
+    # --- nvim ---
+    lua51Packages.lua
+    luajitPackages.luarocks
+
+    # --- nix ---
+    nixfmt-rfc-style
   ];
 
   programs = {
