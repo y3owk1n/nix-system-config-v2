@@ -226,7 +226,7 @@
         "com.raycast.macos" = {
           "NSStatusItem Visible raycastIcon" = 0;
           commandsPreferencesExpandedItemIds = [
-            "builtin_package_navigation"
+            # "builtin_package_navigation"
             "builtin_package_scriptCommands"
             "builtin_package_floatingNotes"
           ];
