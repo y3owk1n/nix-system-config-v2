@@ -2,5 +2,5 @@ result
 lazy-lock.json
 .DS_Store
 
-home/node-packages/*
-!home/node-packages/node-packages.json
+# home/node-packages/*
+# !home/node-packages/node-packages.json
