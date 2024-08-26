@@ -1,8 +1,9 @@
 ---
 name: Format
 on:
-  pull_request:
-    branches: ["*"]
+  push:
+    branches:
+      - main
   pull_request_target:
 jobs:
   format:
@@ -43,5 +44,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Auto-format Nix files"
-          branch: ${{ github.head_ref }}
+          # branch: ${{ github.head_ref }}
           file_pattern: "*.nix"
