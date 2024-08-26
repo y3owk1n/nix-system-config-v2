@@ -20,7 +20,7 @@
   environment.systemPackages = with pkgs; [
     neovim
     git
-    # just # use Justfile to simplify nix-darwin's commands 
+    just # use Justfile to simplify nix-darwin's commands
   ];
   environment.variables.EDITOR = "nvim";
 
@@ -74,7 +74,6 @@
       "lulu"
       "zerotier-one"
       "stats"
-      "appcleaner"
       "keka"
       "obsidian"
 
