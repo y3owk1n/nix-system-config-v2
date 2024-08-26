@@ -1,9 +1,8 @@
 ---
 name: Format
 on:
-  push:
-    branches:
-      - main
+  pull_request:
+    branches: ["*"]
   pull_request_target:
 jobs:
   format:
