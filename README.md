@@ -50,13 +50,15 @@ chsh -s (which fish)
 
 ### Build nix to results
 
-#### Old
+#### Prebuilt script
+
+The following script will initialise the function above and install additional node packages too.
 
 ```bash
-sudo nix --extra-experimental-features 'nix-command flakes' build .#darwinConfigurations.your-local-hostname.system
+bash ~/nix-system-config-v2/scripts/init.sh
 ```
 
-#### New
+#### Manually
 
 ```bash
 // run this at the root of this directory
