@@ -74,7 +74,6 @@
       "lulu"
       "zerotier-one"
       "stats"
-      "appcleaner"
       "keka"
       "obsidian"
 
