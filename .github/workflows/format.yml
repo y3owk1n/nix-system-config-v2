@@ -21,7 +21,7 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
 
       - name: Install nixfmt-rfc-style
-        run: nix-env -i nixfmt-rfc-style
+        run: nix-env -iA nixpkgs.nixfmt-rfc-style
 
       - name: Run format command
         run: just fmt
