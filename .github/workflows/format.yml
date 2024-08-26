@@ -30,4 +30,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Auto-format Nix files"
-          file_pattern: "*.nix"
+          # file_pattern: "*.nix"
