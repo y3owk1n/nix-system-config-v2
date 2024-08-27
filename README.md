@@ -98,3 +98,20 @@ Navigate to `...../modules/home-manager/node-packages` and run the following com
 ```bash
 nix-shell -p nodePackages.node2nix --command "node2nix -18 -i ./node-packages.json -o node"
 ```
+
+### Karabiner Driverkit
+
+```bash
+https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice/releases/download/v3.1.0/Karabiner-DriverKit-VirtualHIDDevice-3.1.0.pkg
+```
+
+```bash
+// Activate
+/Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager activate
+```
+
+```bash
+// Restart kanata
+sudo launchctl unload /Library/LaunchDaemons/org.nixos.kanata.plist
+sudo launchctl load /Library/LaunchDaemons/org.nixos.kanata.plist
+```

@@ -10,7 +10,7 @@ init ARG:
     bash ./scripts/init.sh {{ARG}}
 
 rebuild:
-    darwin-rebuild switch --impure --flake .
+    darwin-rebuild switch --verbose --impure --flake .
 
 extra-node:
     bash ./scripts/install-node-packages.sh
@@ -50,3 +50,7 @@ clean:
 
 nvim-reset:
     bash ./scripts/nvim-reset.sh
+
+restart-kanata:
+    sudo launchctl unload /Library/LaunchDaemons/org.nixos.kanata.plist
+    sudo launchctl load /Library/LaunchDaemons/org.nixos.kanata.plist
