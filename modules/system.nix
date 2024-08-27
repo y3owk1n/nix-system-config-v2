@@ -224,7 +224,7 @@
         # Turn on app auto-update
         "com.apple.commerce".AutoUpdate = true;
         "com.raycast.macos" = {
-          "NSStatusItem Visible raycastIcon" = 0;
+          "NSStatusItem Visible raycastIcon" = 1;
           commandsPreferencesExpandedItemIds = [
             # "builtin_package_navigation"
             "builtin_package_scriptCommands"
