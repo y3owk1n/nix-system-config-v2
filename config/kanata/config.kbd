@@ -3,6 +3,7 @@
     log-layer-changes no
     macos-dev-names-include (
         "Magic Keyboard with Touch ID"
+        "Apple Internal Keyboard / Trackpad"
   )
 )
 
@@ -12,28 +13,26 @@
     tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
     caps a    s    d    f    g    h    j    k    l    ;    '    ret
     lsft z    x    c    v    b    n    m    ,    .    /    rsft
-    lctl lalt lmeta           spc            rmeta ralt rctl
+    lctl lalt lmeta           spc            rmeta ralt
 )
 
-;; Because I am already using dvorak through system, no need to remap here!
 ;; This is the dvorak layout for reference
-;;(deflayer dvorak
-    ;;esc  f1   f2    f3    f4    f5    f6    f7    f8    f9    f10    f11    f12
-    ;;grv  1    2    3    4    5    6    7    8    9    0    [    ]    bspc
-    ;;tab  '    ,    .    p    y    f    g    c    r    l    /    =    \
-    ;;caps a    o    e    u    i    d    h    t    n    s    -    ret
-    ;;lsft ;    q    j    k    x    b    m    w    v    z    rsft
-    ;;lctl lmet lalt           spc            ralt rmet rctl
-;;)
-;; i like to disable all built in modifiers to force my self to use homerow mods
-;; maybe i can remap those XX keys into something more useful
+;; (deflayer dvorak
+    ;; esc  f1   f2    f3    f4    f5    f6    f7    f8    f9    f10    f11    f12
+    ;; grv  1    2    3    4    5    6    7    8    9    0    [    ]    bspc
+    ;; tab  '    ,    .    p    y    f    g    c    r    l    /    =    \
+    ;; caps a    o    e    u    i    d    h    t    n    s    -    ret
+    ;; lsft ;    q    j    k    x    b    m    w    v    z    rsft
+    ;; lctl lmet lalt           spc            ralt rmet rctl
+;; )
+
 (deflayer dvorak
     @esc    _    _    _    _    _    _    _    _    _    _    _    _
     @grl 1    2    3    4    5    6    7    8    9    0    \    XX    bspc
-    tab  @'    @,    @.    @p    @y    @f    @g    @c    @r    @l    @/    XX    XX
+    tab  @'    @,    @.    @p    @y    @f    @g    @c    @r    @l    @/    [    ]
     esc @met_a    @alt_o    @ctl_e    @sft_u    @arr_i    @arr_d    @sft_h    @ctl_t    @alt_n    @met_s    -    ret
     XX @;    @q    @j    @k    @x    @b    @m    @w    @v    @z    +
-    XX XX @sym           @hyper_spc            XX XX XX
+    XX XX XX           @hyper_spc            XX XX
 )
 
 (deflayer dvorak-tp
@@ -42,16 +41,7 @@
     tab  '    ,    .    p    y    f    g    c    r    l    /    XX    XX
     esc a    o    e    u    i    d    h    t    n    l    -    ret
     XX ;    q    j    k    x    b    m    w    v    z   + 
-    XX _  _          spc            _ XX XX
-)
-
-(deflayer symbol
-    _    _    _    _    _    _    _    _    _    _    _    _    _
-    _    _    _    _    _    _    _    _    _    _    _    _    _    _
-    _    _    _    _    _    _    _    _    [    ]    _    _    _    _
-    _    _    _    _    _    _    _    _    {    }    _    _    _
-    _    _    _    _    _    _    _    _    _    _    _    _
-    _    _    _              _              _    _    _
+    XX XX  XX          spc            XX XX
 )
 
 (deflayer arrows
@@ -60,7 +50,7 @@
     _    _    _    _    _    _    _    _    _    _    rght    _    _    _
     _    _    _    _    _    _    _    lft    _    _    _    _    _
     _    _    _    down    up    _    _    _    _    _    _    _
-    _    _    _              _              _    _    _
+    _    _    _              _              _    _
 )
 
 (deflayer fns
@@ -69,7 +59,7 @@
     _    _    _    _    _    _    _    _    _    _    _    _    _    _
     _    _    _    _    _    _    _    _    _    _    _    _    _
     _    _    _    _    _    _    _    _    _    _    _    _
-    _    _    _              _              _    _    _
+    _    _    _              _              _    _
 )
 
 (defvar
@@ -136,9 +126,8 @@
 
     ;; layer-switch changes the base layer.
     dvk (layer-switch dvorak)
-    sym (layer-switch symbol)
 
-    ;; tap for g, hold to enter arrow layer
+    ;; arrow key layer
     arr_i (tap-hold $tt $ht i (layer-toggle arrows))
     arr_d (tap-hold $tt $ht d (layer-toggle arrows))
 
@@ -148,33 +137,22 @@
     ;; hyper key
     hyper_spc (tap-hold $tt $ht spc (multi lalt lctl lmet lsft))
 
-    ;; homerow mod
-    ;; met_a (tap-hold $tt $ht a lmet)
-    ;; alt_s (tap-hold $tt $ht s lalt) ;; s -> o
-    ;; ctl_d (tap-hold $tt $ht d lctl) ;; d -> e
-    ;; sft_f (tap-hold-press-timeout $tt $ht f lsft f) ;; f -> u
-
-    ;; sft_j (tap-hold $tt $ht j rsft) ;; j -> h
-    ;; ctl_k (tap-hold $tt $ht k rctl) ;; k -> t
-    ;; alt_l (tap-hold $tt $ht l lalt) ;; l -> n
-    ;; met_; (tap-hold $tt $ht ; rmet) ;; ; -> s
-
     met_a (tap-hold-release $tt $ht a (one-shot $ot lmet))
-    alt_o (tap-hold-release $tt $ht o (one-shot $ot lalt)) ;; s -> o
-    ctl_e (tap-hold-release $tt $ht e (one-shot $ot lctl)) ;; d -> e
-    sft_u (tap-hold-release $tt $ht u (one-shot $ot lsft)) ;; f -> u
+    alt_o (tap-hold-release $tt $ht o (one-shot $ot lalt)) 
+    ctl_e (tap-hold-release $tt $ht e (one-shot $ot lctl)) 
+    sft_u (tap-hold-release $tt $ht u (one-shot $ot lsft))
 
-    sft_h (tap-hold-release $tt $ht h (one-shot $ot rsft)) ;; j -> h
-    ctl_t (tap-hold-release $tt $ht t (one-shot $ot rctl)) ;; k -> t
-    alt_n (tap-hold-release $tt $ht n (one-shot $ot lalt)) ;; l -> n
-    met_s (tap-hold-release $tt $ht s (one-shot $ot rmet)) ;; ; -> s
+    sft_h (tap-hold-release $tt $ht h (one-shot $ot rsft))
+    ctl_t (tap-hold-release $tt $ht t (one-shot $ot rctl))
+    alt_n (tap-hold-release $tt $ht n (one-shot $ot lalt))
+    met_s (tap-hold-release $tt $ht s (one-shot $ot rmet))
 )
 
 (deflayer layers
     _    _    _    _    _    _    _    _    _    _    _    _    _
-    _    @dvk @sym    lrld _    _    _    _    _    _    _    _    _    _
+    _    @dvk _    lrld _    _    _    _    _    _    _    _    _    _
     _    _    _    _    _    _    _    _    _    _    _    _    _    _
     _    _    _    _    _    _    _    _    _    _    _    _    _
     _    _    _    _    _    _    _    _    _    _    _    _
-    _    _    _              _              _    _    _
+    _    _    _              _              _    _
 )
