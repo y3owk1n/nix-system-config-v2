@@ -51,6 +51,6 @@ clean:
 nvim-reset:
     bash ./scripts/nvim-reset.sh
 
-restart-kanata:
-    sudo launchctl unload /Library/LaunchDaemons/org.nixos.kanata.plist
-    sudo launchctl load /Library/LaunchDaemons/org.nixos.kanata.plist
+start-kanata:
+    sudo kanata -n -c ~/.config/kanata/config.kbd
+
