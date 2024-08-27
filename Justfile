@@ -10,7 +10,7 @@ init ARG:
     bash ./scripts/init.sh {{ARG}}
 
 rebuild:
-    darwin-rebuild switch --flake .
+    darwin-rebuild switch --impure --flake .
 
 extra-node:
     bash ./scripts/install-node-packages.sh
