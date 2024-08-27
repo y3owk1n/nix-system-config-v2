@@ -87,6 +87,10 @@ in
     #   source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/kitty";
     #   recursive = true;
     # };
+    kanata = {
+      source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/kanata";
+      recursive = true;
+    };
   };
 
 }

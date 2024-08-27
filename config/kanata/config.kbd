@@ -1,6 +1,9 @@
 (defcfg
-  process-unmapped-keys true
-  log-layer-changes no
+    process-unmapped-keys true
+    log-layer-changes no
+    macos-dev-names-include (
+        "Magic Keyboard with Touch ID"
+  )
 )
 
 (defsrc
@@ -9,46 +12,46 @@
     tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
     caps a    s    d    f    g    h    j    k    l    ;    '    ret
     lsft z    x    c    v    b    n    m    ,    .    /    rsft
-    lctl lmet lalt           spc            ralt rmet rctl
+    lctl lalt lmeta           spc            rmeta ralt rctl
 )
 
 ;; Because I am already using dvorak through system, no need to remap here!
 ;; This is the dvorak layout for reference
 ;;(deflayer dvorak
-    ;; esc  f1   f2    f3    f4    f5    f6    f7    f8    f9    f10    f11    f12
-    ;; grv  1    2    3    4    5    6    7    8    9    0    [    ]    bspc
-    ;; tab  '    ,    .    p    y    f    g    c    r    l    /    =    \
-    ;; caps a    o    e    u    i    d    h    t    n    s    -    ret
-    ;; lsft ;    q    j    k    x    b    m    w    v    z    rsft
-    ;; lctl lmet lalt           spc            ralt rmet rctl
-;; )
+    ;;esc  f1   f2    f3    f4    f5    f6    f7    f8    f9    f10    f11    f12
+    ;;grv  1    2    3    4    5    6    7    8    9    0    [    ]    bspc
+    ;;tab  '    ,    .    p    y    f    g    c    r    l    /    =    \
+    ;;caps a    o    e    u    i    d    h    t    n    s    -    ret
+    ;;lsft ;    q    j    k    x    b    m    w    v    z    rsft
+    ;;lctl lmet lalt           spc            ralt rmet rctl
+;;)
 ;; i like to disable all built in modifiers to force my self to use homerow mods
 ;; maybe i can remap those XX keys into something more useful
 (deflayer dvorak
     @esc    _    _    _    _    _    _    _    _    _    _    _    _
-    @grl 1    2    3    4    5    6    7    8    9    0    -    =    bspc
-    tab  @q    @w    @e    @r    @t    @y    @u    @i    @o    @p    @[    @]    \
-    esc @met_a    @alt_s    @ctl_d    @sft_f    @arr_g    @arr_h    @sft_j    @ctl_k    @alt_l    @met_;    '    ret
-    XX @z    @x    @c    @v    @b    @n    @m    @,    @.    /    XX
-    XX XX XX           @hyper_spc            XX XX XX
+    @grl 1    2    3    4    5    6    7    8    9    0    \    XX    bspc
+    tab  @'    @,    @.    @p    @y    @f    @g    @c    @r    @l    @/    XX    XX
+    esc @met_a    @alt_o    @ctl_e    @sft_u    @arr_i    @arr_d    @sft_h    @ctl_t    @alt_n    @met_s    -    ret
+    XX @;    @q    @j    @k    @x    @b    @m    @w    @v    @z    +
+    XX XX @sym           @hyper_spc            XX XX XX
 )
 
 (deflayer dvorak-tp
     @esc    _    _    _    _    _    _    _    _    _    _    _    _
-    @grl 1    2    3    4    5    6    7    8    9    0    -    =    bspc
-    tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
-    esc a    s    d    f    g    h    j    k    l    ;    '    ret
-    XX z    x    c    v    b    n    m    ,    .    /    XX
-    XX XX XX           spc            XX XX XX
+    @grl 1    2    3    4    5    6    7    8    9    0    \    XX    bspc
+    tab  '    ,    .    p    y    f    g    c    r    l    /    XX    XX
+    esc a    o    e    u    i    d    h    t    n    l    -    ret
+    XX ;    q    j    k    x    b    m    w    v    z   + 
+    XX _  _          spc            _ XX XX
 )
 
-(deflayer adobe
-    @esc    _    _    _    _    _    _    _    _    _    _    _    _
-    @grl 1    2    3    4    5    6    7    8    9    0    -    =    bspc
-    tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
-    esc a    s    d    f    g    h    j    k    l    ;    '    ret
-    XX z    x    c    v    b    n    m    ,    .    /    XX
-    XX XX XX           spc            XX XX XX
+(deflayer symbol
+    _    _    _    _    _    _    _    _    _    _    _    _    _
+    _    _    _    _    _    _    _    _    _    _    _    _    _    _
+    _    _    _    _    _    _    _    _    [    ]    _    _    _    _
+    _    _    _    _    _    _    _    _    {    }    _    _    _
+    _    _    _    _    _    _    _    _    _    _    _    _
+    _    _    _              _              _    _    _
 )
 
 (deflayer arrows
@@ -133,11 +136,11 @@
 
     ;; layer-switch changes the base layer.
     dvk (layer-switch dvorak)
-    adb (layer-switch adobe)
+    sym (layer-switch symbol)
 
     ;; tap for g, hold to enter arrow layer
-    arr_g (tap-hold $tt $ht g (layer-toggle arrows))
-    arr_h (tap-hold $tt $ht h (layer-toggle arrows))
+    arr_i (tap-hold $tt $ht i (layer-toggle arrows))
+    arr_d (tap-hold $tt $ht d (layer-toggle arrows))
 
     ;; tap for esc, hold to enter fn layer
     esc (tap-hold $tt $ht esc (layer-toggle fns))
@@ -157,19 +160,19 @@
     ;; met_; (tap-hold $tt $ht ; rmet) ;; ; -> s
 
     met_a (tap-hold-release $tt $ht a (one-shot $ot lmet))
-    alt_s (tap-hold-release $tt $ht s (one-shot $ot lalt)) ;; s -> o
-    ctl_d (tap-hold-release $tt $ht d (one-shot $ot lctl)) ;; d -> e
-    sft_f (tap-hold-release $tt $ht f (one-shot $ot lsft)) ;; f -> u
+    alt_o (tap-hold-release $tt $ht o (one-shot $ot lalt)) ;; s -> o
+    ctl_e (tap-hold-release $tt $ht e (one-shot $ot lctl)) ;; d -> e
+    sft_u (tap-hold-release $tt $ht u (one-shot $ot lsft)) ;; f -> u
 
-    sft_j (tap-hold-release $tt $ht j (one-shot $ot rsft)) ;; j -> h
-    ctl_k (tap-hold-release $tt $ht k (one-shot $ot rctl)) ;; k -> t
-    alt_l (tap-hold-release $tt $ht l (one-shot $ot lalt)) ;; l -> n
-    met_; (tap-hold-release $tt $ht ; (one-shot $ot rmet)) ;; ; -> s
+    sft_h (tap-hold-release $tt $ht h (one-shot $ot rsft)) ;; j -> h
+    ctl_t (tap-hold-release $tt $ht t (one-shot $ot rctl)) ;; k -> t
+    alt_n (tap-hold-release $tt $ht n (one-shot $ot lalt)) ;; l -> n
+    met_s (tap-hold-release $tt $ht s (one-shot $ot rmet)) ;; ; -> s
 )
 
 (deflayer layers
     _    _    _    _    _    _    _    _    _    _    _    _    _
-    _    @dvk @adb    lrld _    _    _    _    _    _    _    _    _    _
+    _    @dvk @sym    lrld _    _    _    _    _    _    _    _    _    _
     _    _    _    _    _    _    _    _    _    _    _    _    _    _
     _    _    _    _    _    _    _    _    _    _    _    _    _
     _    _    _    _    _    _    _    _    _    _    _    _
