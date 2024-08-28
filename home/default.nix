@@ -3,15 +3,17 @@
 {
   # import sub modules
   imports = [
-    ./shell.nix
+    ./cli.nix
     ./core.nix
-    ./git.nix
-    ./prompt.nix
-    ./bat.nix
-    ./fzf.nix
+    ./editor.nix
     ./gh.nix
+    ./git.nix
+    ./keyboard.nix
+    ./multiplexer.nix
+    ./prompt.nix
+    ./shell.nix
     ./terminal.nix
-    ./lazygit.nix
+    ./tiling-manager.nix
   ];
 
   # Home Manager needs a bit of information about you and the
