@@ -1,9 +1,8 @@
 { config, ... }:
 {
-  home.file."kanata" = {
+  xdg.configFile.kanata = {
     enable = true;
-    recursive = false;
-    source = "${config.home.homeDirectory}/nix-system-config-v2/config/kanata";
-    target = "/.config/kanata";
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/kanata";
+    recursive = true;
   };
 }

@@ -1,9 +1,8 @@
 { config, ... }:
 {
-  home.file."aerospace" = {
+  xdg.configFile.aerospace = {
     enable = true;
-    recursive = false;
-    source = "${config.home.homeDirectory}/nix-system-config-v2/config/aerospace";
-    target = "/.config/aerospace";
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/aerospace";
+    recursive = true;
   };
 }

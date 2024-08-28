@@ -8,10 +8,9 @@
     };
   };
 
-  home.file."nvim" = {
+  xdg.configFile.nvim = {
     enable = true;
-    recursive = false;
-    source = "${config.home.homeDirectory}/nix-system-config-v2/config/nvim";
-    target = "/.config/nvim";
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/nvim";
+    recursive = true;
   };
 }

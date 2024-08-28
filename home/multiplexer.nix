@@ -1,9 +1,8 @@
 { config, ... }:
 {
-  home.file."zellij" = {
+  xdg.configFile.zellij = {
     enable = true;
-    recursive = false;
-    source = "${config.home.homeDirectory}/nix-system-config-v2/config/zellij";
-    target = "/.config/zellij";
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/zellij";
+    recursive = true;
   };
 }

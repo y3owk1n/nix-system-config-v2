@@ -1,19 +1,17 @@
 { config, ... }:
 {
-  home.file."alacritty" = {
+  xdg.configFile.alacritty = {
     enable = true;
-    recursive = false;
-    source = "${config.home.homeDirectory}/nix-system-config-v2/config/alacritty";
-    target = "/.config/alacritty";
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/alacritty";
+    recursive = true;
   };
 
   # Turn on if want to use wezterm
   # Remember to install wezterm via homebrew!
-  home.file."wezterm" = {
+  xdg.configFile.wezterm = {
     enable = false;
-    recursive = false;
-    source = "${config.home.homeDirectory}/nix-system-config-v2/config/wezterm";
-    target = "/.config/wezterm";
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/wezterm";
+    recursive = true;
   };
 
   # Should be using this instead, but for whatever reason, it wont build due to
