@@ -36,6 +36,6 @@ echo "install-node-packages script executed successfully"
 
 # Run the nix command with the found directory and provided user
 echo "Building nix-darwin now..."
-nix run nix-darwin -- switch --flake "$config_dir#$user"
+nix run nix-darwin -- switch --verbose --impure --flake "$config_dir#$user"
 
 echo "Initialisation completed"
