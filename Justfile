@@ -23,7 +23,7 @@ extra-node:
 
 
 update:
-    nix flake update
+    sudo nix flake update
 
 history:
     nix profile history --profile /nix/var/nix/profiles/system
