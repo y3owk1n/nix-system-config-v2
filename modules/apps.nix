@@ -115,7 +115,7 @@ in
       # --- terminal ---
       # "wezterm"
       # "wezterm@nightly"
-      # "alacritty"
+      "alacritty"
       # "kitty"
 
       # --- browser ---
