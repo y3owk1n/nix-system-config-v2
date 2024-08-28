@@ -1,5 +1,21 @@
-{ ... }:
+{ config, ... }:
 {
+  xdg.configFile.alacritty = {
+    enable = true;
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/alacritty";
+    recursive = true;
+  };
+
+  # Turn on if want to use wezterm
+  # Remember to install wezterm via homebrew!
+  xdg.configFile.wezterm = {
+    enable = false;
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/wezterm";
+    recursive = true;
+  };
+
+  # Should be using this instead, but for whatever reason, it wont build due to
+  # nerd font missing. But it does installed... Use Alacritty for now...
   programs.kitty = {
     enable = false;
     darwinLaunchOptions = [
