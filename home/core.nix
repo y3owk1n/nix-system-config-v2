@@ -75,10 +75,10 @@ in
     #   source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/wezterm";
     #   recursive = true;
     # };
-    # alacritty = {
-    #   source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/alacritty";
-    #   recursive = true;
-    # };
+    alacritty = {
+      source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/alacritty";
+      recursive = true;
+    };
     aerospace = {
       source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/aerospace";
       recursive = true;

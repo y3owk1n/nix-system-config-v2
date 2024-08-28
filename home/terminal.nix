@@ -1,7 +1,7 @@
 { ... }:
 {
   programs.kitty = {
-    enable = true;
+    enable = false;
     darwinLaunchOptions = [
       "--single-instance"
       "--start-as=maximized"
