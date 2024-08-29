@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   programs = {
     # Prettier cat
@@ -61,5 +61,12 @@
       fileWidgetCommand = "fd --exclude .git --type f"; # for when ctrl-t is pressed
       changeDirWidgetCommand = "fd --type d --hidden --follow --max-depth 3 --exclude .git";
     };
+  };
+
+  # Better top
+  xdg.configFile.btop = {
+    enable = true;
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/btop";
+    recursive = true;
   };
 }
