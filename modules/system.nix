@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, username, ... }:
 
 ###################################################################################
 #
@@ -178,6 +178,12 @@
           NSAutomaticTextCompletionEnabled = true;
           "com.apple.sound.beep.flash" = false;
         };
+        "com.apple.dock" = {
+          # mouse in top left corner will (13) start lock screen
+          # set it here, nix-darwin does not support modifier
+          wvous-tl-corner = 13;
+          wvous-tl-modifier = 131072; # shift key
+        };
         "com.apple.finder" = {
           ShowExternalHardDrivesOnDesktop = true;
           ShowHardDrivesOnDesktop = true;
@@ -195,13 +201,64 @@
         "com.apple.spaces" = {
           "spans-displays" = 0; # Display have seperate spaces
         };
-        # "com.apple.WindowManager" = {
-        #   EnableStandardClickToShowDesktop = 0; # Click wallpaper to reveal desktop
-        #   StandardHideDesktopIcons = 0; # Show items on desktop
-        #   HideDesktop = 0; # Do not hide items on desktop & stage manager
-        #   StageManagerHideWidgets = 0;
-        #   StandardHideWidgets = 0;
-        # };
+        "com.apple.SafariTechnologyPreview" = {
+          AlwaysRestoreSessionAtLaunch = 1;
+          AutoFillCreditCardData = 1;
+          AutoFillMiscellaneousForms = 1;
+          AutoOpenSafeDownloads = 0;
+          EnableNarrowTabs = 1;
+          ExcludePrivateWindowWhenRestoringSessionAtLaunch = 1;
+          ExtensionsEnabled = 1;
+          HideHighlightsEmptyItemViewPreferenceKey = 1;
+          HideStartPageFrecentsEmptyItemView = 1;
+          HomePage = "";
+          NeverUseBackgroundColorInToolbar = 0;
+          NewTabBehavior = 1;
+          NewTabPageSetByUserGesture = 1;
+          NewWindowBehavior = 1;
+          OpenPrivateWindowWhenNotRestoringSessionAtLaunch = 0;
+          SearchProviderIdentifierMigratedToSystemPreference = 1;
+          SearchProviderShortName = "DuckDuckGo";
+          ShowFavoritesUnderSmartSearchField = 0;
+          ShowFullURLInSmartSearchField = 1;
+          ShowOverlayStatusBar = 1;
+          ShowSidebarInNewWindows = 0;
+          ShowSidebarInTopSites = 0;
+          ShowStandaloneTabBar = 0;
+          SidebarSplitViewDividerPosition = 240;
+          SidebarTabGroupHeaderExpansionState = 1;
+          SuppressSearchSuggestions = 1;
+          TechnologyPreviewSafariSyncEnabled = 1;
+          UserStyleSheetEnabled = 0;
+          WebKitDefaultTextEncodingName = "utf-8";
+          WebKitDeveloperExtrasEnabledPreferenceKey = 1;
+          WebKitMinimumFontSize = 9;
+          "WebKitPreferences.allowsPictureInPictureMediaPlayback" = 1;
+          "WebKitPreferences.applePayEnabled" = 1;
+          "WebKitPreferences.defaultTextEncodingName" = "utf-8";
+          "WebKitPreferences.developerExtrasEnabled" = 1;
+          "WebKitPreferences.hiddenPageDOMTimerThrottlingAutoIncreases" = 1;
+          "WebKitPreferences.invisibleMediaAutoplayNotPermitted" = 1;
+          "WebKitPreferences.javaScriptCanOpenWindowsAutomatically" = 1;
+          "WebKitPreferences.minimumFontSize" = 9;
+          "WebKitPreferences.needsSiteSpecificQuirks" = 1;
+          "WebKitPreferences.needsStorageAccessFromFileURLsQuirk" = 0;
+          "WebKitPreferences.pushAPIEnabled" = 1;
+          "WebKitPreferences.shouldAllowUserInstalledFonts" = 0;
+          "WebKitPreferences.shouldSuppressKeyboardInputDuringProvisionalNavigation" = 1;
+          WebKitRespectStandardStyleKeyEquivalents = 1;
+          WebKitUseSiteSpecificSpoofing = 1;
+          "com.apple.Safari.WebInspectorPageGroupIdentifier.WebKit2InspectorAttachedWidth" = 1098;
+          "com.apple.Safari.WebInspectorPageGroupIdentifier.WebKit2InspectorAttachmentSide" = 1;
+        };
+        "com.apple.WindowManager" = {
+          EnableStandardClickToShowDesktop = 0; # Click wallpaper to reveal desktop
+          StandardHideDesktopIcons = 0; # Show items on desktop
+          HideDesktop = 0; # Do not hide items on desktop & stage manager
+          StageManagerHideWidgets = 0;
+          StandardHideWidgets = 0;
+          GloballyEnabled = 0;
+        };
         "com.apple.AdLib" = {
           allowApplePersonalizedAdvertising = false;
         };
@@ -223,6 +280,8 @@
         "com.apple.ImageCapture".disableHotPlug = true;
         # Turn on app auto-update
         "com.apple.commerce".AutoUpdate = true;
+        # To find out all of the available settings, use
+        # `defaults read com.raycast.macos``
         "com.raycast.macos" = {
           "NSStatusItem Visible raycastIcon" = 1;
           commandsPreferencesExpandedItemIds = [
@@ -230,9 +289,9 @@
             "builtin_package_scriptCommands"
             "builtin_package_floatingNotes"
           ];
-          "emojiPicker_skinTone" = "light";
+          "emojiPicker_skinTone" = "light"; # normal | light | mediumLight
           initialSpotlightHotkey = "Command-Control-Option-Shift-36";
-          navigationCommandStyleIdentifierKey = "vim";
+          navigationCommandStyleIdentifierKey = "vim"; # legacy | vim
           "onboarding_canShowActionPanelHint" = 0;
           "onboarding_canShowBackNavigationHint" = 0;
           "onboarding_completedTaskIdentifiers" = [
@@ -253,12 +312,28 @@
           useHyperKeyIcon = true;
           raycastAPIOptions = 8;
           raycastGlobalHotkey = "Command-Control-Option-Shift-36";
-          raycastPreferredWindowMode = "compact";
+          raycastPreferredWindowMode = "compact"; # compact | default
           raycastShouldFollowSystemAppearance = 1;
           raycastWindowPresentationMode = 1;
           showGettingStartedLink = 0;
           "store_termsAccepted" = 1;
           suggestedPreferredGoogleBrowser = 1;
+          "permissions.folders.read:/Users/${username}/Desktop" = 1;
+          "permissions.folders.read:/Users/${username}/Documents" = 1;
+          "permissions.folders.read:/Users/${username}/Downloads" = 1;
+          "permissions.folders.read:cloudStorage" = 1;
+        };
+        "com.superultra.Homerow" = {
+          "enable-hyper-key" = 0;
+          "is-auto-click-enabled" = 0;
+          "label-characters" = "aoeuidhtns";
+          "launch-at-login" = 1;
+          "non-search-shortcut" = "\\U2303\\U2325\\U21e7\\U2318U";
+          "scroll-keys" = "hjkl";
+          "scroll-shortcut" = "\\U2303\\U2325\\U21e7\\U2318E";
+          "search-shortcut" = "";
+          "show-menubar-icon" = 0;
+          "theme-id" = "dark";
         };
       };
 
