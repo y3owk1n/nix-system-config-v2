@@ -281,6 +281,60 @@
         "com.apple.ImageCapture".disableHotPlug = true;
         # Turn on app auto-update
         "com.apple.commerce".AutoUpdate = true;
+        # Macos hotkeys
+        # For keys mapping, see this https://github.com/LnL7/nix-darwin/pull/636/commits/5540307d0e02cf1ee235abf16a8111dfeae5bcde
+        "com.apple.symbolichotkeys" = {
+          AppleSymbolicHotKeys = {
+            # Save picture of selected area as file (shift + cmd + 4)
+            "30" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  52
+                  21
+                  1179648
+                ];
+                type = "standard";
+              };
+            };
+            # Screenshot and recording options (shift + cmd + 5)
+            "184" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  53
+                  23
+                  1179648
+                ];
+                type = "standard";
+              };
+            };
+            # Switch next input (ctrl + enter)
+            "60" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  65535
+                  36
+                  262144
+                ];
+                type = "standard";
+              };
+            };
+            # Disable Spotlight search (cmd + enter)
+            "64" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  36
+                  1048576
+                ];
+                type = "standard";
+              };
+            };
+          };
+        };
         # To find out all of the available settings, use
         # `defaults read com.raycast.macos``
         "com.raycast.macos" = {
