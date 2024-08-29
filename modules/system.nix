@@ -13,6 +13,37 @@
 {
 
   system = {
+    activationScripts.extraActivation.enable = true;
+    activationScripts.extraActivation.text = ''
+      echo "Activating extra preferences..."
+      # Close any open System Preferences panes, to prevent them from overriding
+      # settings we’re about to change
+      osascript -e 'tell application "System Preferences" to quit'
+
+      defaults write com.apple.spotlight orderedItems -array \
+          '{"enabled" = 1;"name" = "APPLICATIONS";}' \
+          '{"enabled" = 1;"name" = "DIRECTORIES";}' \
+          '{"enabled" = 1;"name" = "PDF";}' \
+          '{"enabled" = 1;"name" = "DOCUMENTS";}' \
+          '{"enabled" = 1;"name" = "PRESENTATIONS";}' \
+          '{"enabled" = 1;"name" = "SPREADSHEETS";}' \
+          '{"enabled" = 1;"name" = "MENU_OTHER";}' \
+          '{"enabled" = 1;"name" = "CONTACT";}' \
+          '{"enabled" = 1;"name" = "IMAGES";}' \
+          '{"enabled" = 1;"name" = "MESSAGES";}' \
+          '{"enabled" = 1;"name" = "SYSTEM_PREFS";}' \
+          '{"enabled" = 1;"name" = "EVENT_TODO";}' \
+          '{"enabled" = 1;"name" = "MENU_CONVERSION";}' \
+          '{"enabled" = 1;"name" = "MENU_EXPRESSION";}' \
+          '{"enabled" = 0;"name" = "FONTS";}' \
+          '{"enabled" = 0;"name" = "BOOKMARKS";}' \
+          '{"enabled" = 0;"name" = "MUSIC";}' \
+          '{"enabled" = 0;"name" = "MOVIES";}' \
+          '{"enabled" = 0;"name" = "SOURCE";}' \
+          '{"enabled" = 0;"name" = "MENU_DEFINITION";}' \
+          '{"enabled" = 0;"name" = "MENU_WEBSEARCH";}' \
+          '{"enabled" = 0;"name" = "MENU_SPOTLIGHT_SUGGESTIONS";}'
+    '';
     # activationScripts are executed every time you boot the system or run `nixos-rebuild` / `darwin-rebuild`.
     activationScripts.postUserActivation.text = ''
       # activateSettings -u will reload the settings from the database and apply them to the current session,
@@ -254,10 +285,10 @@
         };
         "com.apple.WindowManager" = {
           EnableStandardClickToShowDesktop = 0; # Click wallpaper to reveal desktop
-          StandardHideDesktopIcons = 0; # Show items on desktop
-          HideDesktop = 0; # Do not hide items on desktop & stage manager
-          StageManagerHideWidgets = 0;
-          StandardHideWidgets = 0;
+          StandardHideDesktopIcons = 1; # Show items on desktop
+          HideDesktop = 1; # Do not hide items on desktop & stage manager
+          StageManagerHideWidgets = 1;
+          StandardHideWidgets = 1;
           GloballyEnabled = 0;
         };
         "com.apple.AdLib" = {
