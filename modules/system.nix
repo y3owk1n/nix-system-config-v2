@@ -1,5 +1,28 @@
-{ pkgs, username, ... }:
+{
+  pkgs,
+  username,
+  hostname,
+  ...
+}:
+let
+  safariKeys =
+    if hostname == "Kyles-iMac" then
+      {
+        # work computer
+        "New Buybye Window" = "^3";
+        "New Toy Garden Window" = "^2";
+        "New Traworld Window" = "^1";
+      }
+    else
+      {
+        # personal computer
+        "New Traworld Window" = "^4";
+        "New SKBA Window" = "^3";
+        "New MDA Window" = "^2";
+        "New Kyle Window" = "^1";
+      };
 
+in
 ###################################################################################
 #
 #  macOS's System configuration
@@ -19,6 +42,9 @@
       # Close any open System Preferences panes, to prevent them from overriding
       # settings we’re about to change
       osascript -e 'tell application "System Preferences" to quit'
+
+      # Add SafariTechnologyPreview to App Shortcuts in keyboard shortcut menu
+      defaults write com.apple.universalaccess com.apple.custommenu.apps -array-add "com.apple.SafariTechnologyPreview"
 
       defaults write com.apple.spotlight orderedItems -array \
           '{"enabled" = 1;"name" = "APPLICATIONS";}' \
@@ -282,6 +308,12 @@
           WebKitUseSiteSpecificSpoofing = 1;
           "com.apple.Safari.WebInspectorPageGroupIdentifier.WebKit2InspectorAttachedWidth" = 1098;
           "com.apple.Safari.WebInspectorPageGroupIdentifier.WebKit2InspectorAttachmentSide" = 1;
+          NSUserKeyEquivalents = {
+            "Go to Next Tab Group" = "^j";
+            "Go to Previous Tab Group" = "^k";
+            "Show Next Tab" = "^l";
+            "Show Previous Tab" = "^h";
+          } // safariKeys;
         };
         "com.apple.WindowManager" = {
           EnableStandardClickToShowDesktop = 0; # Click wallpaper to reveal desktop
@@ -313,17 +345,78 @@
         # Turn on app auto-update
         "com.apple.commerce".AutoUpdate = true;
         # Macos hotkeys
+        # Basically disable everything and only left a few that I want
         # For keys mapping, see this https://github.com/LnL7/nix-darwin/pull/636/commits/5540307d0e02cf1ee235abf16a8111dfeae5bcde
         "com.apple.symbolichotkeys" = {
           AppleSymbolicHotKeys = {
-            # Save picture of selected area as file (shift + cmd + 4)
-            "30" = {
-              enabled = 1;
+            # Action not defined
+            "10" = {
+              enabled = 0;
               value = {
                 parameters = [
-                  52
-                  21
-                  1179648
+                  65535
+                  96
+                  8650752
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "11" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  97
+                  8650752
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "12" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  122
+                  8650752
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "13" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  98
+                  8650752
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "162" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  96
+                  9961472
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "175" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
                 ];
                 type = "standard";
               };
@@ -340,6 +433,318 @@
                 type = "standard";
               };
             };
+            # Action not defined
+            "190" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  113
+                  12
+                  8388608
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "21" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  56
+                  28
+                  1835008
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "222" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "223" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "224" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "225" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "226" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "227" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "228" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "229" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "230" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "231" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "232" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "25" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  46
+                  47
+                  1835008
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "26" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  44
+                  43
+                  1835008
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "27" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  96
+                  50
+                  1048576
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "28" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  51
+                  20
+                  1179648
+                ];
+                type = "standard";
+              };
+            };
+            # Save picture of selected area as file (shift + cmd + 4)
+            "30" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  52
+                  21
+                  1179648
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "32" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  126
+                  8650752
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "33" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  125
+                  8650752
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "36" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  103
+                  8388608
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "52" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  100
+                  2
+                  1572864
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "53" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  107
+                  8388608
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "54" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  113
+                  8388608
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "57" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  100
+                  8650752
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "59" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  96
+                  9437184
+                ];
+                type = "standard";
+              };
+            };
             # Switch next input (ctrl + enter)
             "60" = {
               enabled = 1;
@@ -352,6 +757,18 @@
                 type = "standard";
               };
             };
+            # Action not defined
+            "61" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  32
+                  49
+                  786432
+                ];
+                type = "standard";
+              };
+            };
             # Disable Spotlight search (cmd + enter)
             "64" = {
               enabled = 0;
@@ -360,6 +777,54 @@
                   65535
                   36
                   1048576
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "65" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  32
+                  49
+                  1572864
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "7" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  120
+                  8650752
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "8" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  99
+                  8650752
+                ];
+                type = "standard";
+              };
+            };
+            # Action not defined
+            "9" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  118
+                  8650752
                 ];
                 type = "standard";
               };
