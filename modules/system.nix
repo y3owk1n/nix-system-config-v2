@@ -217,7 +217,8 @@
           NewTabPageSetByUserGesture = 1;
           NewWindowBehavior = 1;
           OpenPrivateWindowWhenNotRestoringSessionAtLaunch = 0;
-          SearchProviderIdentifierMigratedToSystemPreference = 1;
+          PrivateBrowsingRequiresAuthentication = 1;
+          PrivateSearchEngineUsesNormalSearchEngineToggle = 1;
           SearchProviderShortName = "DuckDuckGo";
           ShowFavoritesUnderSmartSearchField = 0;
           ShowFullURLInSmartSearchField = 1;
