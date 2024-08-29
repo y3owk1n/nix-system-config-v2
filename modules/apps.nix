@@ -90,6 +90,7 @@ in
       "sqlite"
       "zellij"
       "gnu-sed"
+      "btop"
     ];
 
     # `brew install --cask`
@@ -99,7 +100,6 @@ in
       "whatsapp"
       "lulu"
       "zerotier-one"
-      "stats"
       "keka"
       "obsidian"
 
