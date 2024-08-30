@@ -46,6 +46,7 @@ in
       # Add SafariTechnologyPreview to App Shortcuts in keyboard shortcut menu
       defaults write com.apple.universalaccess com.apple.custommenu.apps -array-add "com.apple.SafariTechnologyPreview"
 
+      # Reorder spotlight items
       defaults write com.apple.spotlight orderedItems -array \
           '{"enabled" = 1;"name" = "APPLICATIONS";}' \
           '{"enabled" = 1;"name" = "DIRECTORIES";}' \
@@ -101,22 +102,21 @@ in
         show-process-indicators = true;
         orientation = "left";
         mru-spaces = false;
-        # # mouse in top right corner will (5) start screensaver
-        # wvous-tr-corner = 5;
-        # # mouse in top left corner will (13) start lock screen
-        # wvous-tl-corner = 13;
       };
 
       # customize finder
       finder = {
         AppleShowAllExtensions = true;
+        AppleShowAllFiles = true;
+        # When performing a search, search the current folder by default
+        FXDefaultSearchScope = "SCcf";
         FXEnableExtensionChangeWarning = false;
-        QuitMenuItem = true;
-        _FXShowPosixPathInTitle = true;
         # Use list view in all Finder windows by default
         FXPreferredViewStyle = "Nlsv";
+        QuitMenuItem = true;
         ShowPathbar = true;
         ShowStatusBar = true;
+        _FXShowPosixPathInTitle = true;
       };
 
       # customize trackpad
@@ -166,6 +166,15 @@ in
       screensaver = {
         askForPassword = true;
         askForPasswordDelay = 0;
+      };
+
+      WindowManager = {
+        EnableStandardClickToShowDesktop = false; # Click wallpaper to reveal desktop
+        GloballyEnabled = false;
+        HideDesktop = true; # Do not hide items on desktop & stage manager
+        StageManagerHideWidgets = true;
+        StandardHideDesktopIcons = true; # Show items on desktop
+        StandardHideWidgets = true;
       };
 
       # customize settings that not supported by nix-darwin directly
@@ -247,8 +256,6 @@ in
           ShowMountedServersOnDesktop = true;
           ShowRemovableMediaOnDesktop = true;
           _FXSortFoldersFirst = true;
-          # When performing a search, search the current folder by default
-          FXDefaultSearchScope = "SCcf";
         };
         "com.apple.desktopservices" = {
           # Avoid creating .DS_Store files on network or USB volumes
@@ -314,14 +321,6 @@ in
             "Show Next Tab" = "^l";
             "Show Previous Tab" = "^h";
           } // safariKeys;
-        };
-        "com.apple.WindowManager" = {
-          EnableStandardClickToShowDesktop = 0; # Click wallpaper to reveal desktop
-          StandardHideDesktopIcons = 1; # Show items on desktop
-          HideDesktop = 1; # Do not hide items on desktop & stage manager
-          StageManagerHideWidgets = 1;
-          StandardHideWidgets = 1;
-          GloballyEnabled = 0;
         };
         "com.apple.AdLib" = {
           allowApplePersonalizedAdvertising = false;
