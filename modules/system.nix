@@ -41,7 +41,7 @@ in
       echo "Activating extra preferences..."
       # Close any open System Preferences panes, to prevent them from overriding
       # settings we’re about to change
-      osascript -e 'tell application "System Preferences" to quit'
+      osascript -e 'tell application "System Settings" to quit'
 
       # Add SafariTechnologyPreview to App Shortcuts in keyboard shortcut menu
       defaults write com.apple.universalaccess com.apple.custommenu.apps -array-add "com.apple.SafariTechnologyPreview"
