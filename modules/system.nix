@@ -858,7 +858,7 @@ in
             "openActionPanel"
           ];
           organizationsPreferencesTabVisited = 1;
-          popToRootTimeout = 60;
+          popToRootTimeout = 0;
           useHyperKeyIcon = true;
           raycastAPIOptions = 8;
           raycastGlobalHotkey = "Command-Control-Option-Shift-36";
