@@ -49,10 +49,6 @@
         src = pkgs.fishPlugins.sponge.src;
       }
       {
-        name = "z";
-        src = pkgs.fishPlugins.z.src;
-      }
-      {
         name = "plugin-git";
         src = pkgs.fishPlugins.plugin-git.src;
       }
