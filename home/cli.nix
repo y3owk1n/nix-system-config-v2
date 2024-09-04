@@ -32,6 +32,12 @@
       icons = true;
     };
 
+    # A smarter cd command. Supports all major shells.
+    zoxide = {
+      enable = true;
+      enableFishIntegration = true;
+    };
+
     # skim provides a single executable: sk.
     # Basically anywhere you would want to use grep, try sk instead.
     skim = {
