@@ -91,6 +91,7 @@ in
       "zellij"
       "gnu-sed"
       "btop"
+      "mkcert"
     ];
 
     # `brew install --cask`
