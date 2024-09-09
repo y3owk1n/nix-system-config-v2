@@ -84,6 +84,10 @@ run = 'move-node-to-workspace 1'
 if.app-id = 'company.thebrowser.Browser'
 run = 'move-node-to-workspace 1'
 
+[[on-window-detected]]
+if.app-id = 'com.brave.Browser'
+run = 'move-node-to-workspace 1'
+
 # Space 2 = Terminal
 [[on-window-detected]]
 if.app-id = 'org.alacritty'
