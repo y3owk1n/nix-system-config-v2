@@ -123,6 +123,7 @@ in
       # "firefox@nightly"
       # "arc"
       "safari-technology-preview"
+      "brave-browser"
     ];
   };
 }
