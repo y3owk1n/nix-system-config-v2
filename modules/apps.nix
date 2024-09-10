@@ -121,9 +121,9 @@ in
 
       # --- browser ---
       # "firefox@nightly"
-      # "arc"
+      "arc"
       # "safari-technology-preview"
-      "brave-browser"
+      # "brave-browser"
     ];
   };
 }
