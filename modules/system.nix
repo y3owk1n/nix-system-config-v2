@@ -845,9 +845,9 @@ in
             };
           };
         };
-        "com.brave.Browser" = {
-          NSUserKeyEquivalents = braveKeys;
-        };
+        # "com.brave.Browser" = {
+        #   NSUserKeyEquivalents = braveKeys;
+        # };
         # To find out all of the available settings, use
         # `defaults read com.raycast.macos``
         "com.raycast.macos" = {
