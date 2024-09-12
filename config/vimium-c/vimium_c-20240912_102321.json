@@ -1,7 +1,7 @@
 {
 	"name": "Vimium C",
-	"@time": "10/09/2024, 17:53:36",
-	"time": 1725962016427,
+	"@time": "12/09/2024, 10:23:21",
+	"time": 1726107801166,
 	"environment": {
 		"extension": "2.11.3",
 		"platform": "mac",
@@ -31,11 +31,11 @@
 		"map F LinkHints.activateOpenInNewTab",
 		"map ;di LinkHints.activateDownloadImage",
 		"map cS mainFrame",
-		"map cs nextFrame",
+		"map cs LinkHints.activateFocus",
 		"map gi focusInput",
 		"map ]] goNext",
 		"map [[ goPrevious",
-		"map v enterVisualMode",
+		"map v LinkHints.activateSelect",
 		"map / enterFindMode",
 		"map n performFind",
 		"map N performBackwardsFind",
