@@ -51,6 +51,7 @@ in
 {
 
   system = {
+    stateVersion = 5;
     activationScripts.extraActivation.enable = true;
     activationScripts.extraActivation.text = ''
       echo "Activating extra preferences..."
