@@ -22,7 +22,7 @@
       "--single-instance"
       "--start-as=maximized"
     ];
-    theme = "Catppuccin-Macchiato";
+    themeFile = "Catppuccin-Macchiato";
     settings = {
       scrollback_lines = 10000;
       enable_audio_bell = false;
