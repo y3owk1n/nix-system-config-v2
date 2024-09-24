@@ -9,7 +9,6 @@ let
     if hostname == "Kyles-iMac" then
       {
         # work computer
-        "New Buybye Window" = "^3";
         "New Toy Garden Window" = "^2";
         "New Traworld Window" = "^1";
       }
@@ -58,9 +57,6 @@ in
       # Close any open System Preferences panes, to prevent them from overriding
       # settings we’re about to change
       osascript -e 'tell application "System Settings" to quit'
-
-      # Add SafariTechnologyPreview to App Shortcuts in keyboard shortcut menu
-      defaults write com.apple.universalaccess com.apple.custommenu.apps -array-add "com.apple.SafariTechnologyPreview"
 
       # Reorder spotlight items
       defaults write com.apple.spotlight orderedItems -array \
@@ -338,6 +334,62 @@ in
         #     "Show Previous Tab" = "^h";
         #   } // safariKeys;
         # };
+        "com.apple.Safari" = {
+          AllowJavaScriptFromAppleEvents = 0;
+          AlwaysRestoreSessionAtLaunch = 1;
+          AutoFillCreditCardData = 0;
+          AutoFillMiscellaneousForms = 0;
+          AutoOpenSafeDownloads = 0;
+          EnableEnhancedPrivacyInRegularBrowsing = 1;
+          EnableNarrowTabs = 1;
+          ExcludePrivateWindowWhenRestoringSessionAtLaunch = 1;
+          ExtensionsEnabled = 1;
+          HideHighlightsEmptyItemViewPreferenceKey = 1;
+          HideStartPageFrecentsEmptyItemView = 1;
+          HomePage = "";
+          IncludeDevelopMenu = 1;
+          NewTabBehavior = 1;
+          NewTabPageSetByUserGesture = 1;
+          NewWindowBehavior = 1;
+          OpenPrivateWindowWhenNotRestoringSessionAtLaunch = 0;
+          PrivateBrowsingRequiresAuthentication = 1;
+          PrivateSearchEngineUsesNormalSearchEngineToggle = 1;
+          SearchProviderShortName = "DuckDuckGo";
+          ShowFavoritesUnderSmartSearchField = 0;
+          ShowFullURLInSmartSearchField = 1;
+          ShowOverlayStatusBar = 1;
+          ShowSidebarInNewWindows = 0;
+          ShowSidebarInTopSites = 0;
+          ShowStandaloneTabBar = 0;
+          SidebarSplitViewDividerPosition = 240;
+          SidebarTabGroupHeaderExpansionState = 1;
+          SuppressSearchSuggestions = 1;
+          UserStyleSheetEnabled = 0;
+          WebKitDeveloperExtrasEnabledPreferenceKey = 1;
+          WebKitJavaScriptEnabled = 1;
+          WebKitMinimumFontSize = 9;
+          "WebKitPreferences.allowsPictureInPictureMediaPlayback" = 1;
+          "WebKitPreferences.applePayEnabled" = 1;
+          "WebKitPreferences.developerExtrasEnabled" = 1;
+          "WebKitPreferences.hiddenPageDOMTimerThrottlingAutoIncreases" = 1;
+          "WebKitPreferences.invisibleMediaAutoplayNotPermitted" = 1;
+          "WebKitPreferences.javaScriptCanOpenWindowsAutomatically" = 1;
+          "WebKitPreferences.javaScriptEnabled" = 1;
+          "WebKitPreferences.minimumFontSize" = 9;
+          "WebKitPreferences.needsStorageAccessFromFileURLsQuirk" = 0;
+          "WebKitPreferences.pushAPIEnabled" = 1;
+          "WebKitPreferences.shouldAllowUserInstalledFonts" = 0;
+          "WebKitPreferences.shouldSuppressKeyboardInputDuringProvisionalNavigation" = 1;
+          WebKitRespectStandardStyleKeyEquivalents = 1;
+          "com.apple.Safari.WebInspectorPageGroupIdentifier.WebKit2InspectorAttachedWidth" = 1098;
+          "com.apple.Safari.WebInspectorPageGroupIdentifier.WebKit2InspectorAttachmentSide" = 1;
+          NSUserKeyEquivalents = {
+            "Go to Next Tab Group" = "^j";
+            "Go to Previous Tab Group" = "^k";
+            "Show Next Tab" = "^l";
+            "Show Previous Tab" = "^h";
+          } // safariKeys;
+        };
         "com.apple.AdLib" = {
           allowApplePersonalizedAdvertising = false;
         };
@@ -953,9 +1005,7 @@ in
   # Fonts
   fonts = {
     packages = with pkgs; [
-      # # icon fonts
-      # material-design-icons
-      # font-awesome
+      poppins
 
       # nerdfonts
       # https://github.com/NixOS/nixpkgs/blob/nixos-24.05/pkgs/data/fonts/nerdfonts/shas.nix
