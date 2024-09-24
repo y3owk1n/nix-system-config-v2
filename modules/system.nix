@@ -388,6 +388,8 @@ in
             "Go to Previous Tab Group" = "^k";
             "Show Next Tab" = "^l";
             "Show Previous Tab" = "^h";
+            "Move Tab to New Window" = "^\\";
+            "Merge All Windows" = "^-";
           } // safariKeys;
         };
         "com.apple.AdLib" = {
