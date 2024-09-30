@@ -73,7 +73,7 @@ cmd-alt-shift-ctrl-t = 'layout floating tiling' # 'floating toggle' in i3
 
 # Space 1 = Browser
 [[on-window-detected]]
-if.app-id = 'com.apple.safari'
+if.app-id = 'com.apple.Safari'
 run = 'move-node-to-workspace 1'
 
 [[on-window-detected]]
