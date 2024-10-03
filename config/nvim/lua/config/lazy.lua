@@ -24,10 +24,6 @@ require("lazy").setup({
 	spec = {
 		-- add LazyVim and import its plugins
 		{ "LazyVim/LazyVim", import = "lazyvim.plugins" },
-		-- TODO: remove this later
-		-- Using development branch instead, due to breaking changes in lspconfig
-		{ "folke/lazy.nvim", version = false },
-		{ "LazyVim/LazyVim", version = false },
 		-- add extras ui
 		{ import = "lazyvim.plugins.extras.ui.treesitter-context" },
 		-- add extras coding
