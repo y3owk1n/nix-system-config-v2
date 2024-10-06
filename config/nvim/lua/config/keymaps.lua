@@ -114,8 +114,8 @@ vim.keymap.set(
 	'"_x',
 	{ desc = "Delete a character without copying it" }
 )
-vim.keymap.set({ "n", "v" }, "d", '"_d', { desc = "Delete without replacing" })
-vim.keymap.set({ "n", "v" }, "c", '"_c', { desc = "Change without replacing" })
+-- vim.keymap.set({ "n", "v" }, "d", '"_d', { desc = "Delete without replacing" })
+-- vim.keymap.set({ "n", "v" }, "c", '"_c', { desc = "Change without replacing" })
 
 --- Find/replace for the word under the cursor
 vim.keymap.set("n", "<leader>r", function()
