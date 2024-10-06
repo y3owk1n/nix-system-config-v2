@@ -118,11 +118,11 @@ vim.keymap.set(
 -- vim.keymap.set({ "n", "v" }, "c", '"_c', { desc = "Change without replacing" })
 
 --- Find/replace for the word under the cursor
-vim.keymap.set("n", "<leader>r", function()
-	local cmd = ":%s/<C-r><C-w>/<C-r><C-w>/gI<Left><Left><Left>"
-	local keys = vim.api.nvim_replace_termcodes(cmd, true, false, true)
-	vim.api.nvim_feedkeys(keys, "n", false)
-end, { desc = "Replace word under cursor" })
+-- vim.keymap.set("n", "<leader>r", function()
+-- 	local cmd = ":%s/<C-r><C-w>/<C-r><C-w>/gI<Left><Left><Left>"
+-- 	local keys = vim.api.nvim_replace_termcodes(cmd, true, false, true)
+-- 	vim.api.nvim_feedkeys(keys, "n", false)
+-- end, { desc = "Replace word under cursor" })
 
 --- Move lines
 vim.keymap.set("v", "J", ":m '>+1<cr>gv=gv", { desc = "Move line up" })
