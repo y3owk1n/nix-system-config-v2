@@ -165,6 +165,91 @@ end
 
 local allCombinations = generateCombinations()
 
+local function safeGetAttribute(element, attribute)
+	if element and element.attributeValue then
+		local success, result = pcall(function()
+			return element:attributeValue(attribute)
+		end)
+		if success then
+			return result
+		end
+	end
+	return nil
+end
+
+local function safeGetChildren(element)
+	local children = safeGetAttribute(element, "AXChildren")
+	return children or {}
+end
+
+local function findWebArea(element)
+	if not element then
+		return nil
+	end
+
+	local role = safeGetAttribute(element, "AXRole")
+	if role == "AXWebArea" then
+		return element
+	end
+
+	local children = safeGetChildren(element)
+	for _, child in ipairs(children) do
+		local webArea = findWebArea(child)
+		if webArea then
+			return webArea
+		end
+	end
+	return nil
+end
+
+local function findAndFocusInput(element, depth)
+	depth = depth or 0
+	if not element then
+		return false
+	end
+
+	-- Log the current element
+	local role = safeGetAttribute(element, "AXRole")
+	local identifier = safeGetAttribute(element, "AXIdentifier")
+
+	-- Check if this is an input element
+	if role then
+		local isInputElement = (
+			role == "AXTextField"
+			or role == "AXTextArea"
+			or role == "AXSearchField"
+			or role == "AXComboBox"
+			or (role == "AXGroup" and identifier == "searchform")
+		)
+
+		if isInputElement then
+			local isHidden = safeGetAttribute(element, "AXHidden")
+			local isEnabled = safeGetAttribute(element, "AXEnabled")
+
+			if (isHidden == nil or isHidden == false) and (isEnabled == nil or isEnabled == true) then
+				-- Try to focus the element
+				local focusSuccess = pcall(function()
+					element:setAttributeValue("AXFocused", true)
+				end)
+
+				if focusSuccess and safeGetAttribute(element, "AXFocused") then
+					return true
+				end
+			end
+		end
+	end
+
+	-- If this wasn't an input or we couldn't focus it, check children
+	local children = safeGetChildren(element)
+	for _, child in ipairs(children) do
+		if findAndFocusInput(child, depth + 1) then
+			return true
+		end
+	end
+
+	return false
+end
+
 --------------------------------------------------------------------------------
 -- menubar
 --------------------------------------------------------------------------------
@@ -219,29 +304,48 @@ function action.openUrlInNewTab(url)
 end
 
 function action.focusFirstInput()
-	local script = [[
-        tell application "Safari"
-            activate
-            set currentTab to current tab of front window
-            set focusScript to "
-                var inputs = document.querySelectorAll('input[type=\"text\"], input[type=\"password\"], input[type=\"email\"], input[type=\"number\"], input[type=\"search\"], input:not([type]), textarea, [contenteditable=\"true\"]');
-                var visibleInputs = Array.from(inputs).filter(function(input) {
-                    var style = window.getComputedStyle(input);
-                    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0' && style.height !== '0' && style.width !== '0';
-                });
-                if (visibleInputs.length > 0) {
-                    visibleInputs[0].focus();
-                    'Focused on first input';
-                } else {
-                    'No input found';
-                }
-            "
-            set result to do JavaScript focusScript in currentTab
-        end tell
-    ]]
+	local safari = hs.application.get("Safari")
+	if not safari then
+		hs.alert.show("Safari not running.")
+		return
+	end
 
-	script = string.format(script)
-	hs.osascript.applescript(script)
+	-- Get the AX element for Safari
+	local appElement = hs.axuielement.applicationElement(safari)
+	if not appElement then
+		hs.alert.show("Unable to get AX application element for Safari.")
+		return
+	end
+
+	-- Get all windows and focus on the main one
+	local windows = safeGetChildren(appElement)
+	local mainWindow = nil
+
+	for _, window in ipairs(windows) do
+		if safeGetAttribute(window, "AXMain") then
+			mainWindow = window
+			break
+		end
+	end
+
+	if not mainWindow then
+		hs.alert.show("Could not find main Safari window")
+		return
+	end
+
+	-- Find the web area first
+	local webArea = findWebArea(mainWindow)
+	if not webArea then
+		hs.alert.show("No web content found")
+		return
+	end
+
+	-- Try to find and focus an input only within the web area
+	if findAndFocusInput(webArea) then
+		hs.alert.show("Input field focused!")
+	else
+		hs.alert.show("No focusable input found in webpage")
+	end
 end
 
 function action.setClipboardContents(contents)
