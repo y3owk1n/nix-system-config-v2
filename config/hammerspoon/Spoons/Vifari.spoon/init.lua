@@ -137,8 +137,8 @@ local function isEditableControlInFocus()
 	end
 end
 
-local function isSpotlightActive()
-	local app = hs.application.get("Spotlight")
+local function isAppActive(name)
+	local app = hs.application.get(name)
 	local appElement = hs.axuielement.applicationElement(app)
 	local windows = appElement:attributeValue("AXWindows")
 	return #windows > 0
@@ -208,6 +208,32 @@ function action.openUrlInNewTab(url)
       end tell
     ]]
 	script = string.format(script, url)
+	hs.osascript.applescript(script)
+end
+
+function action.focusFirstInput()
+	local script = [[
+        tell application "Safari"
+            activate
+            set currentTab to current tab of front window
+            set focusScript to "
+                var inputs = document.querySelectorAll('input[type=\"text\"], input[type=\"password\"], input[type=\"email\"], input[type=\"number\"], input[type=\"search\"], input:not([type]), textarea, [contenteditable=\"true\"]');
+                var visibleInputs = Array.from(inputs).filter(function(input) {
+                    var style = window.getComputedStyle(input);
+                    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0' && style.height !== '0' && style.width !== '0';
+                });
+                if (visibleInputs.length > 0) {
+                    visibleInputs[0].focus();
+                    'Focused on first input';
+                } else {
+                    'No input found';
+                }
+            "
+            set result to do JavaScript focusScript in currentTab
+        end tell
+    ]]
+
+	script = string.format(script)
 	hs.osascript.applescript(script)
 end
 
@@ -450,40 +476,7 @@ local function vimLoop(char)
 		if char == "g" then
 			hs.eventtap.keyStroke({ "cmd" }, "up")
 		elseif char == "i" then
-			-- Focus on the first input
-			local script = [[
-        on run
-            tell application "Safari"
-                try
-                    set currentTab to current tab of front window
-                    set focusScript to "
-                        var inputs = document.querySelectorAll('input[type=\"text\"], input[type=\"password\"], input[type=\"email\"], input[type=\"number\"], input[type=\"search\"], input:not([type]), textarea');
-                        if (inputs.length > 0) {
-                            inputs[0].focus();
-                            'Focused on first input';
-                        } else {
-                            'No input found';
-                        }
-                    "
-                    set result to do JavaScript focusScript in currentTab
-                    return result
-                on error errMsg
-                    return "Error: " & errMsg
-                end try
-            end tell
-        end run
-    ]]
-
-			local ok, result, descriptor = hs.osascript.applescript(script)
-			if ok then
-				hs.alert.show(result)
-			else
-				hs.alert.show("Error: " .. tostring(result))
-				print("AppleScript Error:")
-				print("OK:", ok)
-				print("Result:", result)
-				print("Descriptor:", hs.inspect(descriptor))
-			end
+			action.focusFirstInput()
 		elseif char:match("%d") then
 			hs.eventtap.keyStroke({ "cmd" }, char)
 		elseif char == "$" then
@@ -555,7 +548,7 @@ local function eventHandler(event)
 		return false
 	end
 
-	if isSpotlightActive() then
+	if isAppActive("Spotlight") or isAppActive("Raycast") then
 		return false
 	end
 
@@ -608,6 +601,7 @@ local function onWindowFocused()
 	end
 	setMode("V")
 	marks.clear()
+	hs.execute("aerospace move-mouse window-lazy-center", true)
 end
 
 local function onWindowUnfocused()
