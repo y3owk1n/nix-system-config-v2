@@ -146,13 +146,20 @@ end
 
 -- TODO: do some better logic here
 local function generateCombinations()
-	local chars = "aoeuidhtns"
+	local chars = "abcdefghijklmnopqrstuvwxyz"
+	local numChars = #chars
 	local combinations = {}
-	for i = 1, #chars do
-		for j = 1, #chars do
-			table.insert(combinations, chars:sub(i, i) .. chars:sub(j, j))
+	local index = 1
+
+	for i = 1, numChars do
+		local char1 = chars:byte(i)
+		for j = 1, numChars do
+			local char2 = chars:byte(j)
+			combinations[index] = string.char(char1, char2)
+			index = index + 1
 		end
 	end
+
 	return combinations
 end
 
@@ -308,7 +315,7 @@ function marks.drawOne(markIndex)
 
 	canvas:appendElements({
 		type = "text",
-		text = string.upper(allCombinations[markIndex]), -- Convert to uppercase
+		text = string.upper(allCombinations[markIndex]),
 		textAlignment = "center",
 		textColor = { ["red"] = 0, ["green"] = 0, ["blue"] = 0, ["alpha"] = 1 },
 		textSize = fontSize,
