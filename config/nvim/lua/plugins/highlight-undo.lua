@@ -3,19 +3,21 @@ return {
 	lazy = true,
 	event = { "BufReadPre" },
 	opts = {
-		undo = {
-			hlgroup = "HighlightUndo",
-			mode = "n",
-			lhs = "u",
-			map = "undo",
-			opts = {},
-		},
-		redo = {
-			hlgroup = "HighlightUndo",
-			mode = "n",
-			lhs = "U",
-			map = "redo",
-			opts = {},
+		keymaps = {
+			undo = {
+				hlgroup = "HighlightUndo",
+				mode = "n",
+				lhs = "u",
+				map = "undo",
+				opts = {},
+			},
+			redo = {
+				hlgroup = "HighlightUndo",
+				mode = "n",
+				lhs = "U",
+				map = "redo",
+				opts = {},
+			},
 		},
 	},
 }
