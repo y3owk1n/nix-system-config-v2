@@ -608,7 +608,6 @@ local function onWindowFocused()
 	end
 	setMode("V")
 	marks.clear()
-	hs.execute("aerospace move-mouse window-lazy-center", true)
 end
 
 local function onWindowUnfocused()
