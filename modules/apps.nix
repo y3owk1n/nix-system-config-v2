@@ -73,7 +73,7 @@ in
       "AdGuard for Safari" = 1440147259;
       "Consent-O-Matic" = 1606897889;
       "JSON Peep for Safari" = 1458969831;
-      "Vimlike" = 1584519802;
+      # "Vimlike" = 1584519802;
 
       # --- misc ---
       "Tailscale" = 1475387142;
@@ -103,6 +103,7 @@ in
       "zerotier-one"
       "keka"
       "obsidian"
+      "hammerspoon"
 
       # --- docker desktop alternative ---
       "orbstack"

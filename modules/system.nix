@@ -335,7 +335,7 @@ in
         #   } // safariKeys;
         # };
         "com.apple.Safari" = {
-          AllowJavaScriptFromAppleEvents = 0;
+          AllowJavaScriptFromAppleEvents = 1;
           AlwaysRestoreSessionAtLaunch = 1;
           AutoFillCreditCardData = 0;
           AutoFillMiscellaneousForms = 0;
