@@ -14,6 +14,7 @@
     ./shell.nix
     ./terminal.nix
     ./tiling-manager.nix
+    ./hammerspoon.nix
   ];
 
   # Home Manager needs a bit of information about you and the
