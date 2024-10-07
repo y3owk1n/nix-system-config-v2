@@ -104,6 +104,7 @@ in
       "keka"
       "obsidian"
       "hammerspoon"
+      "homerow"
 
       # --- docker desktop alternative ---
       "orbstack"
