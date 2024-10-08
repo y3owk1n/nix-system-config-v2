@@ -525,12 +525,14 @@ end
 --------------------------------------------------------------------------------
 
 local simpleMapping = {
-	-- ["q"] = { { "cmd", "shift" }, "[" },
-	-- ["w"] = { { "cmd", "shift" }, "]" },
-	["["] = { { "cmd" }, "[" },
-	["]"] = { { "cmd" }, "]" },
-	-- ["r"] = { { "cmd" }, "r" },
-	-- ["x"] = { { "cmd" }, "w" },
+	-- ["q"] = { { "cmd", "shift" }, "[" }, -- previous tab
+	-- ["w"] = { { "cmd", "shift" }, "]" }, -- next tab
+	["["] = { { "cmd" }, "[" }, -- go back
+	["]"] = { { "cmd" }, "]" }, -- go forward
+	-- ["r"] = { { "cmd" }, "r" }, -- reload
+	-- ["t"] = { { "cmd" }, "t" }, -- new tab
+	-- ["x"] = { { "cmd" }, "w" }, -- close current tab
+	-- ["/"] = { { "cmd" }, "f" }, -- find
 }
 
 local multi = nil
