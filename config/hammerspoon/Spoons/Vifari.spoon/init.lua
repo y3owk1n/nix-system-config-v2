@@ -530,6 +530,7 @@ local simpleMapping = {
 	-- ["t"] = { { "cmd" }, "t" }, -- new tab
 	-- ["x"] = { { "cmd" }, "w" }, -- close current tab
 	-- ["/"] = { { "cmd" }, "f" }, -- find
+	["/"] = { { "cmd" }, "f" }, -- find
 }
 
 local multi = nil
@@ -663,7 +664,7 @@ local function eventHandler(event)
 	local char = event:getCharacters()
 	if event:getKeyCode() == hs.keycodes.map["escape"] then
 		char = "escape"
-	elseif not char:match("[%a%d%[%]%$]") then
+	elseif not char:match("[%a%d%[%]%$/]") then
 		return false
 	end
 
