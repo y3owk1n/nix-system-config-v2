@@ -155,7 +155,8 @@ local function generateCombinations()
 		local char1 = chars:byte(i)
 		for j = 1, numChars do
 			local char2 = chars:byte(j)
-			combinations[index] = string.char(char1, char2)
+			local combination = string.char(char1, char2)
+			table.insert(combinations, combination)
 			index = index + 1
 		end
 	end
