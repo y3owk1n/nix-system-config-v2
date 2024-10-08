@@ -714,6 +714,21 @@ local function onWindowFocused()
 	end
 	setMode("V")
 	marks.clear()
+	-- Get the focused window
+	local win = hs.window.focusedWindow()
+
+	local safari = hs.application.get("Safari")
+
+	if win and safari then
+		local winFrame = win:frame()
+		-- Calculate the center point
+		local center = {
+			x = winFrame.x + (winFrame.w / 2),
+			y = winFrame.y + (winFrame.h / 2),
+		}
+		-- Move the mouse to the center
+		hs.mouse.absolutePosition(center)
+	end
 end
 
 local function onWindowUnfocused()
