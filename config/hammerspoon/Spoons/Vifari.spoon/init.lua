@@ -478,9 +478,10 @@ function marks.findClickableElements(element, withUrls)
 
 	local jumpable = tblContains(config.axJumpableRoles, element:attributeValue("AXRole"))
 	local visible = marks.isElementPartiallyVisible(element)
+	local enabled = element:attributeValue("AXEnabled") -- Check if the element is enabled
 	local showable = not withUrls or element:attributeValue("AXURL")
 
-	if jumpable and visible and showable then
+	if jumpable and visible and showable and enabled then
 		marks.add(element)
 	end
 
