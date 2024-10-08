@@ -511,9 +511,6 @@ function marks.click(mark, mode)
 	elseif mode == "F" then
 		local axURL = mark.element:attributeValue("AXURL")
 		action.openUrlInNewTab(axURL.url)
-	elseif mode == "t" then
-		local frame = mark.element:attributeValue("AXFrame")
-		hs.mouse.absolutePosition({ x = frame.x + frame.w / 2, y = frame.y + frame.h / 2 })
 	elseif mode == "yf" then
 		local axURL = mark.element:attributeValue("AXURL")
 		action.setClipboardContents(axURL.url)
@@ -554,7 +551,7 @@ local function vimLoop(char)
 	local mapping = simpleMapping[char]
 
 	if char == "escape" then
-		if multi == "f" or multi == "F" or multi == "t" or multi == "yf" then
+		if multi == "f" or multi == "F" or multi == "yf" then
 			setMulti(nil)
 			hs.timer.doAfter(0, marks.clear)
 		elseif multi then
@@ -566,7 +563,7 @@ local function vimLoop(char)
 		inEscape = false
 	end
 
-	if multi == "f" or multi == "F" or multi == "t" or multi == "yf" then
+	if multi == "f" or multi == "F" or multi == "yf" then
 		modeFChars = modeFChars .. char:lower()
 		if #modeFChars == 2 then
 			-- hs.alert.show("Selected " .. modeFChars)
@@ -624,10 +621,6 @@ local function vimLoop(char)
 		hs.timer.doAfter(0, function()
 			marks.show(true)
 		end)
-	elseif char == "t" then
-		setMulti("t")
-		modeFChars = ""
-		hs.timer.doAfter(0, marks.show)
 	elseif char == "g" then
 		setMulti("g")
 	elseif char == "G" then
