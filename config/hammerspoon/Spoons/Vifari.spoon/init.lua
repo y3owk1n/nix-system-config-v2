@@ -529,7 +529,6 @@ local simpleMapping = {
 	-- ["r"] = { { "cmd" }, "r" }, -- reload
 	-- ["t"] = { { "cmd" }, "t" }, -- new tab
 	-- ["x"] = { { "cmd" }, "w" }, -- close current tab
-	-- ["/"] = { { "cmd" }, "f" }, -- find
 	["/"] = { { "cmd" }, "f" }, -- find
 }
 
