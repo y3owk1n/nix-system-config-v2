@@ -10,7 +10,7 @@ enable-normalization-opposite-orientation-for-nested-containers = true
 
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
 
-on-focus-changed = ["move-mouse window-force-center"]
+# on-focus-changed = ["move-mouse window-force-center"]
 
 [gaps]
 inner.horizontal = 8
