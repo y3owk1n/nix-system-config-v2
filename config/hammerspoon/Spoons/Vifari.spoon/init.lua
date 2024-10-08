@@ -155,7 +155,8 @@ local function generateCombinations()
 		local char1 = chars:byte(i)
 		for j = 1, numChars do
 			local char2 = chars:byte(j)
-			combinations[index] = string.char(char1, char2)
+			local combination = string.char(char1, char2)
+			table.insert(combinations, combination)
 			index = index + 1
 		end
 	end
@@ -477,9 +478,10 @@ function marks.findClickableElements(element, withUrls)
 
 	local jumpable = tblContains(config.axJumpableRoles, element:attributeValue("AXRole"))
 	local visible = marks.isElementPartiallyVisible(element)
+	local enabled = element:attributeValue("AXEnabled") -- Check if the element is enabled
 	local showable = not withUrls or element:attributeValue("AXURL")
 
-	if jumpable and visible and showable then
+	if jumpable and visible and showable and enabled then
 		marks.add(element)
 	end
 
@@ -509,9 +511,6 @@ function marks.click(mark, mode)
 	elseif mode == "F" then
 		local axURL = mark.element:attributeValue("AXURL")
 		action.openUrlInNewTab(axURL.url)
-	elseif mode == "t" then
-		local frame = mark.element:attributeValue("AXFrame")
-		hs.mouse.absolutePosition({ x = frame.x + frame.w / 2, y = frame.y + frame.h / 2 })
 	elseif mode == "yf" then
 		local axURL = mark.element:attributeValue("AXURL")
 		action.setClipboardContents(axURL.url)
@@ -523,12 +522,14 @@ end
 --------------------------------------------------------------------------------
 
 local simpleMapping = {
-	-- ["q"] = { { "cmd", "shift" }, "[" },
-	-- ["w"] = { { "cmd", "shift" }, "]" },
-	["["] = { { "cmd" }, "[" },
-	["]"] = { { "cmd" }, "]" },
-	-- ["r"] = { { "cmd" }, "r" },
-	-- ["x"] = { { "cmd" }, "w" },
+	-- ["q"] = { { "cmd", "shift" }, "[" }, -- previous tab
+	-- ["w"] = { { "cmd", "shift" }, "]" }, -- next tab
+	["["] = { { "cmd" }, "[" }, -- go back
+	["]"] = { { "cmd" }, "]" }, -- go forward
+	-- ["r"] = { { "cmd" }, "r" }, -- reload
+	-- ["t"] = { { "cmd" }, "t" }, -- new tab
+	-- ["x"] = { { "cmd" }, "w" }, -- close current tab
+	["/"] = { { "cmd" }, "f" }, -- find
 }
 
 local multi = nil
@@ -550,7 +551,7 @@ local function vimLoop(char)
 	local mapping = simpleMapping[char]
 
 	if char == "escape" then
-		if multi == "f" or multi == "F" or multi == "t" or multi == "yf" then
+		if multi == "f" or multi == "F" or multi == "yf" then
 			setMulti(nil)
 			hs.timer.doAfter(0, marks.clear)
 		elseif multi then
@@ -562,7 +563,7 @@ local function vimLoop(char)
 		inEscape = false
 	end
 
-	if multi == "f" or multi == "F" or multi == "t" or multi == "yf" then
+	if multi == "f" or multi == "F" or multi == "yf" then
 		modeFChars = modeFChars .. char:lower()
 		if #modeFChars == 2 then
 			-- hs.alert.show("Selected " .. modeFChars)
@@ -620,10 +621,6 @@ local function vimLoop(char)
 		hs.timer.doAfter(0, function()
 			marks.show(true)
 		end)
-	elseif char == "t" then
-		setMulti("t")
-		modeFChars = ""
-		hs.timer.doAfter(0, marks.show)
 	elseif char == "g" then
 		setMulti("g")
 	elseif char == "G" then
@@ -666,7 +663,7 @@ local function eventHandler(event)
 	local char = event:getCharacters()
 	if event:getKeyCode() == hs.keycodes.map["escape"] then
 		char = "escape"
-	elseif not char:match("[%a%d%[%]%$]") then
+	elseif not char:match("[%a%d%[%]%$/]") then
 		return false
 	end
 
@@ -712,6 +709,21 @@ local function onWindowFocused()
 	end
 	setMode("V")
 	marks.clear()
+	-- Get the focused window
+	local win = hs.window.focusedWindow()
+
+	local safari = hs.application.get("Safari")
+
+	if win and safari then
+		local winFrame = win:frame()
+		-- Calculate the center point
+		local center = {
+			x = winFrame.x + (winFrame.w / 2),
+			y = winFrame.y + (winFrame.h / 2),
+		}
+		-- Move the mouse to the center
+		hs.mouse.absolutePosition(center)
+	end
 end
 
 local function onWindowUnfocused()
