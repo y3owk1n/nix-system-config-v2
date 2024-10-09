@@ -69,10 +69,10 @@ in
     # For details, see https://github.com/mas-cli/mas 
     masApps = {
       # --- when want to use safari ---
-      "Wappalyzer" = 1520333300;
-      "AdGuard for Safari" = 1440147259;
-      "Consent-O-Matic" = 1606897889;
-      "JSON Peep for Safari" = 1458969831;
+      # "Wappalyzer" = 1520333300;
+      # "AdGuard for Safari" = 1440147259;
+      # "Consent-O-Matic" = 1606897889;
+      # "JSON Peep for Safari" = 1458969831;
       # "Vimlike" = 1584519802;
 
       # --- misc ---
@@ -103,7 +103,7 @@ in
       "zerotier-one"
       "keka"
       "obsidian"
-      "hammerspoon"
+      # "hammerspoon" # mainly used for safari vim mode
       "homerow"
 
       # --- docker desktop alternative ---
@@ -126,6 +126,7 @@ in
       # "arc"
       # "safari-technology-preview"
       "brave-browser"
+      "floorp"
     ];
   };
 }
