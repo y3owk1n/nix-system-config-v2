@@ -524,8 +524,8 @@ end
 local simpleMapping = {
 	-- ["q"] = { { "cmd", "shift" }, "[" }, -- previous tab
 	-- ["w"] = { { "cmd", "shift" }, "]" }, -- next tab
-	["["] = { { "cmd" }, "[" }, -- go back
-	["]"] = { { "cmd" }, "]" }, -- go forward
+	["H"] = { { "cmd" }, "[" }, -- go back
+	["L"] = { { "cmd" }, "]" }, -- go forward
 	-- ["r"] = { { "cmd" }, "r" }, -- reload
 	-- ["t"] = { { "cmd" }, "t" }, -- new tab
 	-- ["x"] = { { "cmd" }, "w" }, -- close current tab
