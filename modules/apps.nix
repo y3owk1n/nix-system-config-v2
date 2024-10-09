@@ -127,6 +127,7 @@ in
       # "safari-technology-preview"
       "brave-browser"
       "floorp"
+      "zen-browser"
     ];
   };
 }
