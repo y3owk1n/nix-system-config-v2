@@ -292,8 +292,6 @@ user_pref("browser.safebrowsing.downloads.enabled", false);
 user_pref("webgl.disabled", true);
 
 // user_pref("font.name.serif.x-western", "Roboto Slab"); // serif font
-user_pref("font.name.sans-serif.x-western", "Geist"); // sans-serif font
-user_pref("font.name.monospace.x-western", "GeistMono Nerd Font Mono"); // monospace font
 
 /****************************************************************************
  * SECTION: SMOOTHFOX                                                       *
