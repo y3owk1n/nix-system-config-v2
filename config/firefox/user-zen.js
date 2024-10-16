@@ -65,6 +65,13 @@ user_pref("browser.safebrowsing.downloads.enabled", false);
 // WebGL is a security risk, but sometimes break things on Google Maps
 user_pref("webgl.disabled", true);
 
+// Do not track
+user_pref("privacy.donottrackheader", true);
+
+// Preview
+pref("browser.tabs.cardPreview.enabled", false);
+pref("browser.tabs.hoverPreview.enabled", false);
+
 // user_pref("font.name.serif.x-western", "Roboto Slab"); // serif font
 
 /****************************************************************************
