@@ -29,7 +29,7 @@
       enable = true;
       enableFishIntegration = true;
       git = true;
-      icons = true;
+      icons = "auto";
     };
 
     # A smarter cd command. Supports all major shells.
