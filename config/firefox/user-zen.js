@@ -69,8 +69,8 @@ user_pref("webgl.disabled", true);
 user_pref("privacy.donottrackheader", true);
 
 // Preview
-pref("browser.tabs.cardPreview.enabled", false);
-pref("browser.tabs.hoverPreview.enabled", false);
+user_pref("browser.tabs.cardPreview.enabled", false);
+user_pref("browser.tabs.hoverPreview.enabled", false);
 
 // user_pref("font.name.serif.x-western", "Roboto Slab"); // serif font
 
