@@ -1,11 +1,11 @@
 let
   pkgs = import <nixpkgs> { };
 
-  version = "1.7.0-prerelease-1";
+  version = "1.7.0-prerelease-2";
 
   kanata_bin = pkgs.fetchurl {
     url = "https://github.com/jtroo/kanata/releases/download/v${version}/kanata_macos_arm64";
-    sha256 = "08yxxdi8h105hqcg29vyq2hh9y8d59ippzcjas9j9w8153vl6xnb";
+    sha256 = "sha256-WcO3ilO8/9NQy2w7dkSRWiBmqMVSEtVCfA+I8tmZ+8o=";
   };
 in
 pkgs.runCommand "kanata" { nativeBuildInputs = [ pkgs.makeWrapper ]; } ''
