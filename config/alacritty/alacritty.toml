@@ -1,3 +1,4 @@
+[general]
 import = ["~/.config/alacritty/catppuccin-macchiato.toml"]
 
 [env]
