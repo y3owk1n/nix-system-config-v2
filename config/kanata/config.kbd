@@ -28,7 +28,7 @@
 
 (deflayer dvorak
     @esc    _    _    _    _    _    _    _    _    _    _    _    _
-    @grl 1    2    3    4    5    6    7    8    9    0    \    XX    bspc
+    @grl 1    2    3    4    5    6    7    8    9    0    \    =    bspc
     tab  @'    @,    @.    @p    @y    @f    @g    @c    @r    @l    @/    [    ]
     esc @met_a    @alt_o    @ctl_e    @sft_u    @arr_i    @arr_d    @sft_h    @ctl_t    @alt_n    @met_s    -    ret
     XX @;    @q    @j    @k    @x    @b    @m    @w    @v    @z    +
@@ -37,7 +37,7 @@
 
 (deflayer dvorak-tp
     @esc    _    _    _    _    _    _    _    _    _    _    _    _
-    @grl 1    2    3    4    5    6    7    8    9    0    \    XX    bspc
+    @grl 1    2    3    4    5    6    7    8    9    0    \    =    bspc
     tab  '    ,    .    p    y    f    g    c    r    l    /    XX    XX
     esc a    o    e    u    i    d    h    t    n    l    -    ret
     XX ;    q    j    k    x    b    m    w    v    z   + 
