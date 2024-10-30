@@ -57,31 +57,6 @@ in
       # Close any open System Preferences panes, to prevent them from overriding
       # settings we’re about to change
       osascript -e 'tell application "System Settings" to quit'
-
-      # Reorder spotlight items
-      defaults write com.apple.spotlight orderedItems -array \
-          '{"enabled" = 1;"name" = "APPLICATIONS";}' \
-          '{"enabled" = 1;"name" = "DIRECTORIES";}' \
-          '{"enabled" = 1;"name" = "PDF";}' \
-          '{"enabled" = 1;"name" = "DOCUMENTS";}' \
-          '{"enabled" = 1;"name" = "PRESENTATIONS";}' \
-          '{"enabled" = 1;"name" = "SPREADSHEETS";}' \
-          '{"enabled" = 1;"name" = "MENU_OTHER";}' \
-          '{"enabled" = 1;"name" = "CONTACT";}' \
-          '{"enabled" = 1;"name" = "IMAGES";}' \
-          '{"enabled" = 1;"name" = "MESSAGES";}' \
-          '{"enabled" = 1;"name" = "SYSTEM_PREFS";}' \
-          '{"enabled" = 1;"name" = "EVENT_TODO";}' \
-          '{"enabled" = 1;"name" = "MENU_CONVERSION";}' \
-          '{"enabled" = 1;"name" = "MENU_EXPRESSION";}' \
-          '{"enabled" = 0;"name" = "FONTS";}' \
-          '{"enabled" = 0;"name" = "BOOKMARKS";}' \
-          '{"enabled" = 0;"name" = "MUSIC";}' \
-          '{"enabled" = 0;"name" = "MOVIES";}' \
-          '{"enabled" = 0;"name" = "SOURCE";}' \
-          '{"enabled" = 0;"name" = "MENU_DEFINITION";}' \
-          '{"enabled" = 0;"name" = "MENU_WEBSEARCH";}' \
-          '{"enabled" = 0;"name" = "MENU_SPOTLIGHT_SUGGESTIONS";}'
     '';
     # activationScripts are executed every time you boot the system or run `nixos-rebuild` / `darwin-rebuild`.
     activationScripts.postUserActivation.text = ''
@@ -783,12 +758,12 @@ in
             };
             # Disable Spotlight search (cmd + enter)
             "64" = {
-              enabled = 0;
+              enabled = 1;
               value = {
                 parameters = [
                   65535
                   36
-                  1048576
+                  1966080
                 ];
                 type = "standard";
               };
@@ -848,48 +823,158 @@ in
         # };
         # To find out all of the available settings, use
         # `defaults read com.raycast.macos``
-        "com.raycast.macos" = {
-          "NSStatusItem Visible raycastIcon" = 1;
-          commandsPreferencesExpandedItemIds = [
-            # "builtin_package_navigation"
-            "builtin_package_scriptCommands"
-            "builtin_package_floatingNotes"
+        # "com.raycast.macos" = {
+        #   "NSStatusItem Visible raycastIcon" = 1;
+        #   commandsPreferencesExpandedItemIds = [
+        #     # "builtin_package_navigation"
+        #     "builtin_package_scriptCommands"
+        #     "builtin_package_floatingNotes"
+        #   ];
+        #   "emojiPicker_skinTone" = "light"; # normal | light | mediumLight
+        #   initialSpotlightHotkey = "Command-Control-Option-Shift-36";
+        #   navigationCommandStyleIdentifierKey = "vim"; # legacy | vim
+        #   "onboarding_canShowActionPanelHint" = 0;
+        #   "onboarding_canShowBackNavigationHint" = 0;
+        #   "onboarding_completedTaskIdentifiers" = [
+        #     "startWalkthrough"
+        #     "calendar"
+        #     "setHotkeyAndAlias"
+        #     "snippets"
+        #     "quicklinks"
+        #     "installFirstExtension"
+        #     "floatingNotes"
+        #     "windowManagement"
+        #     "calculator"
+        #     "raycastShortcuts"
+        #     "openActionPanel"
+        #   ];
+        #   organizationsPreferencesTabVisited = 1;
+        #   popToRootTimeout = 0;
+        #   useHyperKeyIcon = true;
+        #   raycastAPIOptions = 8;
+        #   raycastGlobalHotkey = "Command-Control-Option-Shift-36";
+        #   raycastPreferredWindowMode = "compact"; # compact | default
+        #   raycastShouldFollowSystemAppearance = 1;
+        #   raycastWindowPresentationMode = 1;
+        #   showGettingStartedLink = 0;
+        #   "store_termsAccepted" = 1;
+        #   suggestedPreferredGoogleBrowser = 1;
+        #   "permissions.folders.read:/Users/${username}/Desktop" = 1;
+        #   "permissions.folders.read:/Users/${username}/Documents" = 1;
+        #   "permissions.folders.read:/Users/${username}/Downloads" = 1;
+        #   "permissions.folders.read:cloudStorage" = 1;
+        # };
+        "com.apple.Siri" = {
+          CustomizedKeyboardShortcutSAE = {
+            enabled = 1;
+            value = {
+              parameters = [
+                115
+                1
+                1966080
+              ];
+              type = "SAE1.0";
+            };
+          };
+        };
+        "com.apple.Spotlight" = {
+          orderedItems = [
+            {
+              enabled = 1;
+              name = "APPLICATIONS";
+            }
+            {
+              enabled = 0;
+              name = "DIRECTORIES";
+            }
+            {
+              enabled = 0;
+              name = "PDF";
+            }
+            {
+              enabled = 0;
+              name = "DOCUMENTS";
+            }
+            {
+              enabled = 0;
+              name = "PRESENTATIONS";
+            }
+            {
+              enabled = 0;
+              name = "SPREADSHEETS";
+            }
+            {
+              enabled = 0;
+              name = "MENU_OTHER";
+            }
+            {
+              enabled = 0;
+              name = "CONTACT";
+            }
+            {
+              enabled = 0;
+              name = "IMAGES";
+            }
+            {
+              enabled = 0;
+              name = "MESSAGES";
+            }
+            {
+              enabled = 1;
+              name = "SYSTEM_PREFS";
+            }
+            {
+              enabled = 0;
+              name = "EVENT_TODO";
+            }
+            {
+              enabled = 1;
+              name = "MENU_CONVERSION";
+            }
+            {
+              enabled = 1;
+              name = "MENU_EXPRESSION";
+            }
+            {
+              enabled = 0;
+              name = "FONTS";
+            }
+            {
+              enabled = 0;
+              name = "BOOKMARKS";
+            }
+            {
+              enabled = 0;
+              name = "MUSIC";
+            }
+            {
+              enabled = 0;
+              name = "MOVIES";
+            }
+            {
+              enabled = 0;
+              name = "SOURCE";
+            }
+            {
+              enabled = 0;
+              name = "TIPS";
+            }
+            {
+              enabled = 0;
+              name = "MENU_DEFINITION";
+            }
+            {
+              enabled = 0;
+              name = "MENU_WEBSEARCH";
+            }
+            {
+              enabled = 0;
+              name = "MENU_SPOTLIGHT_SUGGESTIONS";
+            }
           ];
-          "emojiPicker_skinTone" = "light"; # normal | light | mediumLight
-          initialSpotlightHotkey = "Command-Control-Option-Shift-36";
-          navigationCommandStyleIdentifierKey = "vim"; # legacy | vim
-          "onboarding_canShowActionPanelHint" = 0;
-          "onboarding_canShowBackNavigationHint" = 0;
-          "onboarding_completedTaskIdentifiers" = [
-            "startWalkthrough"
-            "calendar"
-            "setHotkeyAndAlias"
-            "snippets"
-            "quicklinks"
-            "installFirstExtension"
-            "floatingNotes"
-            "windowManagement"
-            "calculator"
-            "raycastShortcuts"
-            "openActionPanel"
-          ];
-          organizationsPreferencesTabVisited = 1;
-          popToRootTimeout = 0;
-          useHyperKeyIcon = true;
-          raycastAPIOptions = 8;
-          raycastGlobalHotkey = "Command-Control-Option-Shift-36";
-          raycastPreferredWindowMode = "compact"; # compact | default
-          raycastShouldFollowSystemAppearance = 1;
-          raycastWindowPresentationMode = 1;
-          showGettingStartedLink = 0;
-          "store_termsAccepted" = 1;
-          suggestedPreferredGoogleBrowser = 1;
-          "permissions.folders.read:/Users/${username}/Desktop" = 1;
-          "permissions.folders.read:/Users/${username}/Documents" = 1;
-          "permissions.folders.read:/Users/${username}/Downloads" = 1;
-          "permissions.folders.read:cloudStorage" = 1;
         };
         "com.superultra.Homerow" = {
+          "NSStatusItem Visible Item-0" = 0;
           "enable-hyper-key" = 0;
           "is-auto-click-enabled" = 0;
           "label-characters" = "aoeuidhtns";
