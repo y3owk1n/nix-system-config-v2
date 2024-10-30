@@ -110,7 +110,7 @@ in
       "orbstack"
 
       # --- spotlight alternative ---
-      "raycast"
+      # "raycast"
 
       # --- tiling manager ---
       "aerospace"
