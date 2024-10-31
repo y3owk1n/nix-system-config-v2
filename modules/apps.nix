@@ -102,7 +102,7 @@ in
       "lulu"
       "zerotier-one"
       "keka"
-      "obsidian"
+      # "obsidian"
       # "hammerspoon" # mainly used for safari vim mode
       "homerow"
 
