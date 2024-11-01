@@ -102,6 +102,8 @@ in
       "lulu"
       "zerotier-one"
       "keka"
+      "appcleaner"
+      "pronotes"
       # "obsidian"
       # "hammerspoon" # mainly used for safari vim mode
       "homerow"
