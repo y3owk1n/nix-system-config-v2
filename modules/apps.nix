@@ -92,6 +92,7 @@ in
       "gnu-sed"
       "btop"
       "mkcert"
+      "rip2"
     ];
 
     # `brew install --cask`

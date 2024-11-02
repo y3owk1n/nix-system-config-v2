@@ -7,7 +7,6 @@ in
     # --- utils ---
     ripgrep
     fd
-    rm-improved
     curl
     jq
     tree
