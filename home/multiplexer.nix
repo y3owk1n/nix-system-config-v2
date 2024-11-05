@@ -34,20 +34,13 @@
           extraConfig = ''
             set -g @catppuccin_flavor "macchiato"
             set -g @catppuccin_window_status_style "rounded"
+            set -g @catppuccin_status_background "#242638" 
             set -g @catppuccin_window_number_position "right"
             set -g @catppuccin_window_text "#W"
             set -g @catppuccin_window_number "#I"
             set -g @catppuccin_window_current_text "#W"
             set -g @catppuccin_window_current_number "#I"
-            set -g @catppuccin_status_modules_right "directory meetings date_time"
-            set -g @catppuccin_status_modules_left "session"
-            set -g @catppuccin_status_left_separator  " "
-            set -g @catppuccin_status_right_separator " "
-            set -g @catppuccin_status_right_separator_inverse "no"
-            set -g @catppuccin_status_fill "icon"
-            set -g @catppuccin_status_connect_separator "no"
-            set -g @catppuccin_directory_text "#{pane_current_path}"
-            set -g @catppuccin_date_time_text "%H:%M"
+
           '';
         }
         {
@@ -99,13 +92,17 @@
         set -g detach-on-destroy off
         set -g renumber-windows on
         set -g set-clipboard on
-        set -g status-position top
         set -g display-time 4000
+
+
         set -g status-interval 5
-
-        set -g status 2
-
-        set -g status-format[1] '#[align=centre]'
+        set -g status-position top
+        set -g status-right-length 100
+        set -g status-left-length 100
+        set -g status-left "#{E:@catppuccin_status_session}"
+        set -gF  status-right "#{@catppuccin_status_directory}"
+        set -agF status-right "#{@catppuccin_status_user}"
+        set -agF status-right "#{@catppuccin_status_host}"
       '';
     };
   };
