@@ -14,7 +14,7 @@ return {
 					hidden = true,
 				},
 				{ "<leader>t", group = "terminal" },
-				{ "<leader>tz", group = "zellij" },
+				-- { "<leader>tz", group = "zellij" },
 			},
 		},
 	},
