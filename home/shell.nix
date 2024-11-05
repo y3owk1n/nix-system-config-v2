@@ -4,7 +4,7 @@
     enable = true;
     interactiveShellInit = ''
       set fish_greeting # Disable greeting\n
-      __autozellij_hook
+      # __autozellij_hook
     '';
     shellInit = ''
       __load-em
@@ -20,13 +20,13 @@
       fpfh = "_fzf_file_picker --allow-open-in-editor --show-hidden-files --prompt-name Files+";
       fpc = "_fzf_cmd_history --allow-execute";
       gg = "lazygit";
-      za = "zellij attach --create";
-      zls = "zellij list-sessions";
-      zd = "zellij delete-session";
-      zr = "zellij run --";
-      zrr = "zellij run --direction right --";
-      zrd = "zellij run --direction down --";
-      zrf = "zellij run --floating --";
+      # za = "zellij attach --create";
+      # zls = "zellij list-sessions";
+      # zd = "zellij delete-session";
+      # zr = "zellij run --";
+      # zrr = "zellij run --direction right --";
+      # zrd = "zellij run --direction down --";
+      # zrf = "zellij run --floating --";
     };
     shellAliases = {
       tailscale = "/Applications/Tailscale.app/Contents/MacOS/Tailscale";
@@ -166,6 +166,7 @@
   };
 
   home.sessionVariables = {
+    SHELL = "${pkgs.fish}/bin/fish";
     LANG = "en_US.UTF-8";
     LC_ALL = "en_US.UTF-8";
     TERM = "xterm-256color";

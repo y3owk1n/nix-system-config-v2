@@ -135,9 +135,9 @@ vim.keymap.set("n", "Q", "<nop>", { desc = "No op" })
 vim.keymap.set("n", "<leader>m", "<cmd>Mason<cr>", { desc = "Mason" })
 
 -- Terminal Actions
-vim.keymap.set(
-	"n",
-	"<leader>tzr",
-	":! zellij run -- ",
-	{ desc = "Term: Zellij Run" }
-)
+-- vim.keymap.set(
+-- 	"n",
+-- 	"<leader>tzr",
+-- 	":! zellij run -- ",
+-- 	{ desc = "Term: Zellij Run" }
+-- )

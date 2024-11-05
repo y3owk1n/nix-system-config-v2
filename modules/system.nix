@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   username,
   hostname,
@@ -63,6 +64,16 @@ in
       # activateSettings -u will reload the settings from the database and apply them to the current session,
       # so we do not need to logout and login again to make the changes take effect.
       /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+
+      ## NOTE: Do not delete this! Uncomment this when you want to use spotlight search
+      ## This will enable spotlight search to index installed apps
+      # rsyncArgs="--archive --checksum --chmod=-w --copy-unsafe-links --delete"
+      # apps_source="${config.system.build.applications}/Applications"
+      # moniker="Nix Trampolines"
+      # app_target_base="$HOME/Applications"
+      # app_target="$app_target_base/$moniker"
+      # mkdir -p "$app_target"
+      # ${pkgs.rsync}/bin/rsync $rsyncArgs "$apps_source/" "$app_target"
     '';
 
     defaults = {

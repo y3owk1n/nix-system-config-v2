@@ -1,51 +1,51 @@
 return {
-	-- {
-	-- 	"christoomey/vim-tmux-navigator",
-	-- 	cmd = {
-	-- 		"TmuxNavigateLeft",
-	-- 		"TmuxNavigateDown",
-	-- 		"TmuxNavigateUp",
-	-- 		"TmuxNavigateRight",
-	-- 		"TmuxNavigatePrevious",
-	-- 	},
-	-- 	keys = {
-	-- 		{ "<c-h>", "<cmd><C-U>TmuxNavigateLeft<cr>" },
-	-- 		{ "<c-j>", "<cmd><C-U>TmuxNavigateDown<cr>" },
-	-- 		{ "<c-k>", "<cmd><C-U>TmuxNavigateUp<cr>" },
-	-- 		{ "<c-l>", "<cmd><C-U>TmuxNavigateRight<cr>" },
-	-- 		{ "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
-	-- 	},
-	-- },
 	{
-		--- NOTE: Plugin source here: https://github.com/hiasr/vim-zellij-navigator
-		--- And neovim is using this plugin: https://github.com/swaits/zellij-nav.nvim
-		"swaits/zellij-nav.nvim",
-		lazy = true,
-		event = "VeryLazy",
-		keys = {
-			{
-				"<c-h>",
-				"<cmd>ZellijNavigateLeft<cr>",
-				{ silent = true, desc = "navigate left" },
-			},
-			{
-				"<c-j>",
-				"<cmd>ZellijNavigateDown<cr>",
-				{ silent = true, desc = "navigate down" },
-			},
-			{
-				"<c-k>",
-				"<cmd>ZellijNavigateUp<cr>",
-				{ silent = true, desc = "navigate up" },
-			},
-			{
-				"<c-l>",
-				"<cmd>ZellijNavigateRight<cr>",
-				{ silent = true, desc = "navigate right" },
-			},
+		"christoomey/vim-tmux-navigator",
+		cmd = {
+			"TmuxNavigateLeft",
+			"TmuxNavigateDown",
+			"TmuxNavigateUp",
+			"TmuxNavigateRight",
+			"TmuxNavigatePrevious",
 		},
-		opts = {},
+		keys = {
+			{ "<c-h>", "<cmd><C-U>TmuxNavigateLeft<cr>" },
+			{ "<c-j>", "<cmd><C-U>TmuxNavigateDown<cr>" },
+			{ "<c-k>", "<cmd><C-U>TmuxNavigateUp<cr>" },
+			{ "<c-l>", "<cmd><C-U>TmuxNavigateRight<cr>" },
+			{ "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
+		},
 	},
+	-- {
+	-- 	--- NOTE: Plugin source here: https://github.com/hiasr/vim-zellij-navigator
+	-- 	--- And neovim is using this plugin: https://github.com/swaits/zellij-nav.nvim
+	-- 	"swaits/zellij-nav.nvim",
+	-- 	lazy = true,
+	-- 	event = "VeryLazy",
+	-- 	keys = {
+	-- 		{
+	-- 			"<c-h>",
+	-- 			"<cmd>ZellijNavigateLeft<cr>",
+	-- 			{ silent = true, desc = "navigate left" },
+	-- 		},
+	-- 		{
+	-- 			"<c-j>",
+	-- 			"<cmd>ZellijNavigateDown<cr>",
+	-- 			{ silent = true, desc = "navigate down" },
+	-- 		},
+	-- 		{
+	-- 			"<c-k>",
+	-- 			"<cmd>ZellijNavigateUp<cr>",
+	-- 			{ silent = true, desc = "navigate up" },
+	-- 		},
+	-- 		{
+	-- 			"<c-l>",
+	-- 			"<cmd>ZellijNavigateRight<cr>",
+	-- 			{ silent = true, desc = "navigate right" },
+	-- 		},
+	-- 	},
+	-- 	opts = {},
+	-- },
 	{
 		"dmmulroy/ts-error-translator.nvim",
 		lazy = true,
