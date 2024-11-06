@@ -15,7 +15,7 @@
       historyLimit = 50000;
       keyMode = "vi";
       mouse = true;
-      prefix = "C-t";
+      # prefix = "C-t";
       sensibleOnTop = true;
       shell = "${pkgs.fish}/bin/fish";
       terminal = "screen-256color";
@@ -92,16 +92,16 @@
         }
       ];
       extraConfig = ''
-        unbind o
-
-        unbind %
-        bind \\ split-window -h -c "#{pane_current_path}"
-
-        unbind '"'
-        bind - split-window -v -c "#{pane_current_path}"
-
-        unbind r
-        bind R source-file ~/.config/tmux/tmux.conf \; display-message "Config reloaded..."
+        # unbind o
+        #
+        # unbind %
+        # bind \\ split-window -h -c "#{pane_current_path}"
+        #
+        # unbind '"'
+        # bind - split-window -v -c "#{pane_current_path}"
+        #
+        # unbind r
+        # bind R source-file ~/.config/tmux/tmux.conf \; display-message "Config reloaded..."
 
         bind -r j resize-pane -D 5
         bind -r k resize-pane -U 5
