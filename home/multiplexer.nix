@@ -20,8 +20,29 @@
       shell = "${pkgs.fish}/bin/fish";
       terminal = "screen-256color";
       plugins = with pkgs; [
-        tmuxPlugins.sensible
-        tmuxPlugins.vim-tmux-navigator
+        {
+          plugin = tmuxPlugins.sensible.overrideAttrs (_: {
+            src = pkgs.fetchFromGitHub {
+              owner = "tmux-plugins";
+              repo = "tmux-sensible";
+              rev = "25cb91f42d020f675bb0a2ce3fbd3a5d96119efa";
+              sha256 = "sha256-sw9g1Yzmv2fdZFLJSGhx1tatQ+TtjDYNZI5uny0+5Hg=";
+            };
+          });
+
+        }
+        {
+          plugin = tmuxPlugins.vim-tmux-navigator.overrideAttrs (_: {
+            src = pkgs.fetchFromGitHub {
+              owner = "christoomey";
+              repo = "vim-tmux-navigator";
+              rev = "424b5caa154bff34dc258ee53cec5a8e36cf7ea8";
+              hash = "sha256-ZwJuBG0P20eQ9uVHeWF4Z8AaFo14MxNSCdjW/O6vLws=";
+
+            };
+
+          });
+        }
         {
           plugin = tmuxPlugins.catppuccin.overrideAttrs (_: {
             src = pkgs.fetchFromGitHub {
@@ -40,27 +61,33 @@
             set -g @catppuccin_window_number "#I"
             set -g @catppuccin_window_current_text "#W"
             set -g @catppuccin_window_current_number "#I"
-
           '';
         }
         {
-          plugin = tmuxPlugins.resurrect;
+          plugin = tmuxPlugins.resurrect.overrideAttrs (_: {
+            src = pkgs.fetchFromGitHub {
+              owner = "tmux-plugins";
+              repo = "tmux-resurrect";
+              rev = "cff343cf9e81983d3da0c8562b01616f12e8d548";
+              sha256 = "sha256-FcSjYyWjXM1B+WmiK2bqUNJYtH7sJBUsY2IjSur5TjY=";
+            };
+          });
           extraConfig = ''
             set -g @resurrect-capture-pane-contents 'on'
             set -g @resurrect-strategy-nvim 'session'
           '';
         }
         {
-          plugin = tmuxPlugins.continuum;
+          plugin = tmuxPlugins.continuum.overrideAttrs (_: {
+            src = pkgs.fetchFromGitHub {
+              owner = "tmux-plugins";
+              repo = "tmux-continuum";
+              rev = "0698e8f4b17d6454c71bf5212895ec055c578da0";
+              sha256 = "sha256-W71QyLwC/MXz3bcLR2aJeWcoXFI/A3itjpcWKAdVFJY=";
+            };
+          });
           extraConfig = ''
             set -g @continuum-restore 'on'
-          '';
-        }
-        {
-          plugin = tmuxPlugins.fzf-tmux-url;
-          extraConfig = ''
-            set -g @fzf-url-fzf-options '-p 60%,30% --prompt="   " --border-label=" Open URL "'
-            set -g @fzf-url-history-limit '2000'
           '';
         }
       ];
