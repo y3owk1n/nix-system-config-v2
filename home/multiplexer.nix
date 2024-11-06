@@ -55,7 +55,7 @@
           extraConfig = ''
             set -g @catppuccin_flavor "macchiato"
             set -g @catppuccin_window_status_style "rounded"
-            set -g @catppuccin_status_background "#242638" 
+            set -g @catppuccin_status_background "#{@thm_bg}" 
             set -g @catppuccin_window_number_position "right"
             set -g @catppuccin_window_text "#W"
             set -g @catppuccin_window_number "#I"
@@ -121,7 +121,8 @@
         set -g set-clipboard on
         set -g display-time 4000
 
-
+        set -g status-format[1] '#[align=centre]'
+        set -g status 2
         set -g status-interval 5
         set -g status-position top
         set -g status-right-length 100
