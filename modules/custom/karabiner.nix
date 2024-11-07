@@ -24,7 +24,7 @@ in
       sudo /usr/sbin/installer -pkg ${karabiner_driver_kit} -target /
       
       # Check installation result
-      if [ $? -eq 0 ]; then
+      if /usr/sbin/installer -pkg ${karabiner_driver_kit} -target /; then
         echo "Installation completed successfully. Activating..."
         /Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager activate
       else
