@@ -45,6 +45,7 @@ return {
 				alpha = true,
 				cmp = true,
 				dashboard = true,
+				blink_cmp = true,
 				flash = true,
 				fzf = true,
 				gitsigns = true,
