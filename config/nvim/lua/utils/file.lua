@@ -1,8 +1,14 @@
 local M = {}
 
----@return string
+---@return boolean
 M.find_root = function(ctx, file_patterns)
-	return vim.fs.find(file_patterns, { path = ctx.filename, upward = true })[1]
+	local results =
+		vim.fs.find(file_patterns, { path = ctx.filename, upward = true })
+	if #results > 0 then
+		return true
+	else
+		return false
+	end
 end
 
 ---@return string
