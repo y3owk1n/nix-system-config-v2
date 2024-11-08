@@ -87,9 +87,6 @@
       # --- docker desktop alternative ---
       "orbstack"
 
-      # --- spotlight alternative ---
-      # "raycast"
-
       # --- tiling manager ---
       "aerospace"
 

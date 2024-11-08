@@ -832,49 +832,6 @@ in
         # "com.brave.Browser" = {
         #   NSUserKeyEquivalents = braveKeys;
         # };
-        # To find out all of the available settings, use
-        # `defaults read com.raycast.macos``
-        # "com.raycast.macos" = {
-        #   "NSStatusItem Visible raycastIcon" = 1;
-        #   commandsPreferencesExpandedItemIds = [
-        #     # "builtin_package_navigation"
-        #     "builtin_package_scriptCommands"
-        #     "builtin_package_floatingNotes"
-        #   ];
-        #   "emojiPicker_skinTone" = "light"; # normal | light | mediumLight
-        #   initialSpotlightHotkey = "Command-Control-Option-Shift-36";
-        #   navigationCommandStyleIdentifierKey = "vim"; # legacy | vim
-        #   "onboarding_canShowActionPanelHint" = 0;
-        #   "onboarding_canShowBackNavigationHint" = 0;
-        #   "onboarding_completedTaskIdentifiers" = [
-        #     "startWalkthrough"
-        #     "calendar"
-        #     "setHotkeyAndAlias"
-        #     "snippets"
-        #     "quicklinks"
-        #     "installFirstExtension"
-        #     "floatingNotes"
-        #     "windowManagement"
-        #     "calculator"
-        #     "raycastShortcuts"
-        #     "openActionPanel"
-        #   ];
-        #   organizationsPreferencesTabVisited = 1;
-        #   popToRootTimeout = 0;
-        #   useHyperKeyIcon = true;
-        #   raycastAPIOptions = 8;
-        #   raycastGlobalHotkey = "Command-Control-Option-Shift-36";
-        #   raycastPreferredWindowMode = "compact"; # compact | default
-        #   raycastShouldFollowSystemAppearance = 1;
-        #   raycastWindowPresentationMode = 1;
-        #   showGettingStartedLink = 0;
-        #   "store_termsAccepted" = 1;
-        #   suggestedPreferredGoogleBrowser = 1;
-        #   "permissions.folders.read:/Users/${username}/Desktop" = 1;
-        #   "permissions.folders.read:/Users/${username}/Documents" = 1;
-        #   "permissions.folders.read:/Users/${username}/Downloads" = 1;
-        #   "permissions.folders.read:cloudStorage" = 1;
-        # };
         "com.apple.Siri" = {
           CustomizedKeyboardShortcutSAE = {
             enabled = 1;
