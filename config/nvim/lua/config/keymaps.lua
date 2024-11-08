@@ -39,11 +39,6 @@ vim.keymap.del("n", "<c-/>")
 vim.keymap.del("n", "<c-_>")
 
 -- Terminal Mappings
-vim.keymap.del("t", "<esc><esc>")
-vim.keymap.del("t", "<C-h>")
-vim.keymap.del("t", "<C-j>")
-vim.keymap.del("t", "<C-k>")
-vim.keymap.del("t", "<C-l>")
 vim.keymap.del("t", "<C-/>")
 vim.keymap.del("t", "<c-_>")
 
