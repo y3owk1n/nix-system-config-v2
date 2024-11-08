@@ -21,22 +21,6 @@ let
         "New MDA Window" = "^2";
         "New Kyle Window" = "^1";
       };
-  braveKeys =
-    if hostname == "Kyles-iMac" then
-      {
-        # work computer
-        "Toy Garden" = "^2";
-        "Traworld" = "^1";
-      }
-    else
-      {
-        # personal computer
-        "Traworld" = "^4";
-        "SKBA" = "^3";
-        "MDA" = "^2";
-        "Personal" = "^1";
-      };
-
 in
 ###################################################################################
 #
@@ -829,9 +813,6 @@ in
             };
           };
         };
-        # "com.brave.Browser" = {
-        #   NSUserKeyEquivalents = braveKeys;
-        # };
         "com.apple.Siri" = {
           CustomizedKeyboardShortcutSAE = {
             enabled = 1;
