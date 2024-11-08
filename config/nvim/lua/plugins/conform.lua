@@ -1,4 +1,5 @@
 local find_root = require("utils.file").find_root
+local find_root_string = require("utils.file").find_root_string
 
 return {
 	"stevearc/conform.nvim",
@@ -32,21 +33,29 @@ return {
 						"package.json",
 					}
 
-					local root = find_root(ctx, prettier_configs)
+					local hasRoot = find_root(ctx, prettier_configs)
+
+					if hasRoot == false then
+						return hasRoot
+					end
+
+					local root_string = find_root_string(ctx, prettier_configs)
 
 					-- If want to be strict on prettier, uncomment the following
 					-- to make sure prettier never runs without prettier key in package.json
-					-- if root ~= "package.json" then
-					--   local find_text_in_file = require("utils.file").find_text_in_file
-					--   local has_prettier = find_text_in_file("prettier", root)
-					--   if has_prettier > 0 then
-					--     return true
-					--   else
-					--     return false
-					--   end
-					-- end
-					--
-					return root
+					if root_string ~= "package.json" then
+						local find_text_in_file =
+							require("utils.file").find_text_in_file
+						local has_prettier =
+							find_text_in_file("prettier", root_string)
+						if has_prettier > 0 then
+							return true
+						else
+							return false
+						end
+					end
+
+					return true
 				end,
 			},
 		},
