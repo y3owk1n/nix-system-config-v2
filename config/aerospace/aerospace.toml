@@ -102,10 +102,6 @@ if.app-id = 'com.apple.Terminal'
 run = 'move-node-to-workspace 2'
 
 [[on-window-detected]]
-if.app-id = 'com.github.wez.wezterm'
-run = 'move-node-to-workspace 2'
-
-[[on-window-detected]]
 if.app-id = 'net.kovidgoyal.kitty'
 run = 'move-node-to-workspace 2'
 
