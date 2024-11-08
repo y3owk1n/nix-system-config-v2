@@ -4,7 +4,6 @@
     enable = true;
     interactiveShellInit = ''
       set fish_greeting # Disable greeting\n
-      # __autozellij_hook
     '';
     shellInit = ''
       __load-em
@@ -20,13 +19,6 @@
       fpfh = "_fzf_file_picker --allow-open-in-editor --show-hidden-files --prompt-name Files+";
       fpc = "_fzf_cmd_history --allow-execute";
       gg = "lazygit";
-      # za = "zellij attach --create";
-      # zls = "zellij list-sessions";
-      # zd = "zellij delete-session";
-      # zr = "zellij run --";
-      # zrr = "zellij run --direction right --";
-      # zrd = "zellij run --direction down --";
-      # zrf = "zellij run --floating --";
     };
     shellAliases = {
       tailscale = "/Applications/Tailscale.app/Contents/MacOS/Tailscale";
@@ -98,44 +90,6 @@
       fish_user_key_bindings = ''
         fish_vi_key_bindings
       '';
-      __autozellij_hook = {
-        description = "Auto load zellij";
-        body = ''
-          if not set -q ZELLIJ
-              if command -v zellij >/dev/null 2>&1
-                  # echo "Zellij is installed"
-
-                  # Get the list of zellij sessions
-                  set sessions (zellij list-sessions 2>/dev/null)
-                  # echo "Sessions: $sessions"
-
-                  if set -q sessions[1]
-                      # echo "Sessions found"
-
-                      # Check if "hack" session exists in the list
-                      if string match -q "*hack*" "$sessions"
-                          # echo "hack session found"
-                          # echo "Attaching to hack session"
-                          zellij attach hack
-                      else
-                          # echo "hack session not found"
-                          # If "hack" session not found, attach to the first one
-                          set first_session (string split ' ' $sessions[1])[1]
-                          # echo "First session: $first_session"
-                          # echo "Attaching to first session"
-                          zellij attach $first_session
-                      end
-                  else
-                      # echo "No sessions found"
-                      # echo "Creating and attaching to hack session"
-                      zellij attach hack --create
-                  end
-              else
-                  echo "Zellij is not installed"
-              end
-          end
-        '';
-      };
       __autols_hook = {
         description = "Auto ls";
         onVariable = "PWD";
