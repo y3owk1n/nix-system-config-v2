@@ -94,8 +94,6 @@
       "aerospace"
 
       # --- terminal ---
-      # "wezterm"
-      # "wezterm@nightly"
       "alacritty"
       # "kitty"
 
