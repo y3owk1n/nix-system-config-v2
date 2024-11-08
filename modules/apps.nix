@@ -80,7 +80,6 @@
       "keka"
       "appcleaner"
       "pronotes"
-      # "obsidian"
       # "hammerspoon" # mainly used for safari vim mode
       "homerow"
 
@@ -94,7 +93,6 @@
       "alacritty"
 
       # --- browser ---
-      # "firefox@nightly"
       "brave-browser"
       "zen-browser"
     ];
