@@ -63,7 +63,6 @@
     # `brew install`
     brews = [
       "sqlite"
-      # "zellij"
       "gnu-sed"
       "btop"
       "mkcert"
