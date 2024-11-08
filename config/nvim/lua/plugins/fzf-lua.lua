@@ -1,5 +1,7 @@
 return {
 	"ibhagwan/fzf-lua",
+	---@module 'fzf-lua'
+	---@type function|FzfLuaOpts
 	opts = function(_, opts)
 		local config = require("fzf-lua.config")
 		-- local actions = require("fzf-lua.actions")

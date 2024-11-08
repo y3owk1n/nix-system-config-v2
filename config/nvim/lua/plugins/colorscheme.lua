@@ -3,6 +3,8 @@ return {
 		"catppuccin/nvim",
 		lazy = true,
 		name = "catppuccin",
+		---@module 'catppuccin'
+		---@type CatppuccinOptions
 		opts = {
 			flavour = "macchiato", -- latte, frappe, macchiato, mocha
 			background = { -- :h background
