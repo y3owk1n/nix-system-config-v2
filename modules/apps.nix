@@ -95,7 +95,6 @@
 
       # --- browser ---
       # "firefox@nightly"
-      # "safari-technology-preview"
       "brave-browser"
       "zen-browser"
     ];
