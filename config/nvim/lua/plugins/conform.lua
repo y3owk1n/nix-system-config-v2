@@ -8,7 +8,7 @@ return {
 	opts = {
 		-- log_level = vim.log.levels.INFO,
 		formatters = {
-			biome = {
+			["biome-check"] = {
 				---@diagnostic disable-next-line: unused-local
 				condition = function(self, ctx)
 					return find_root(ctx, { "biome.json", "biome.jsonc" })
@@ -60,12 +60,20 @@ return {
 			},
 		},
 		formatters_by_ft = {
-			javascript = { "biome", "prettier", stop_after_first = true },
-			javascriptreact = { "biome", "prettier", stop_after_first = true },
-			typescript = { "biome", "prettier", stop_after_first = true },
-			typescriptreact = { "biome", "prettier", stop_after_first = true },
-			json = { "biome", "prettier", stop_after_first = true },
-			jsonc = { "biome", "prettier", stop_after_first = true },
+			javascript = { "biome-check", "prettier", stop_after_first = true },
+			javascriptreact = {
+				"biome-check",
+				"prettier",
+				stop_after_first = true,
+			},
+			typescript = { "biome-check", "prettier", stop_after_first = true },
+			typescriptreact = {
+				"biome-check",
+				"prettier",
+				stop_after_first = true,
+			},
+			json = { "biome-check", "prettier", stop_after_first = true },
+			jsonc = { "biome-check", "prettier", stop_after_first = true },
 			css = { "prettier" },
 		},
 	},
