@@ -1,7 +1,4 @@
 { pkgs, username, ... }:
-let
-  kanata = import ./custom/kanata.nix;
-in
 {
 
   ##########################################################################
@@ -24,31 +21,8 @@ in
     neovim
     git
     just # use Justfile to simplify nix-darwin's commands
-    kanata # custom kanata installation
   ];
   environment.variables.EDITOR = "nvim";
-
-  # Kanata launchd
-  # echo "$(whoami) ALL=(root) NOPASSWD: sha256:$(shasum -a 256 $(which kanata) | cut -d " " -f 1) $(which kanata)"
-  # NOTE: Due to some weird bug, decided to not put it in daemon
-  # security.sudo.extraConfig = ''
-  #   ${username} ALL=(root) NOPASSWD: sha256:5509b1bf491287408e903fc729f6d3ad03643997f2b1ebdf088857aa098920b0 /run/current-system/sw/bin/kanata
-  # '';
-  # launchd.daemons.kanata = {
-  #   script = ''
-  #     sudo /run/current-system/sw/bin/kanata -n -c /Users/kylewong/.config/kanata/config.kbd
-  #     			'';
-  #   serviceConfig = {
-  #     Label = "org.nixos.kanata";
-  #     KeepAlive = {
-  #       SuccessfulExit = false;
-  #       Crashed = true;
-  #     };
-  #     RunAtLoad = true;
-  #     StandardErrorPath = "/var/log/kanata-err.log";
-  #     StandardOutPath = "/var/log/kanata-out.log";
-  #   };
-  # };
 
   # TODO: To make this work, homebrew need to be installed manually, see https://brew.sh
   # 
@@ -93,6 +67,7 @@ in
       "btop"
       "mkcert"
       "rip2"
+      "kanata"
     ];
 
     # `brew install --cask`
