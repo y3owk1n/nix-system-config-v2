@@ -95,7 +95,6 @@
 
       # --- terminal ---
       "alacritty"
-      # "kitty"
 
       # --- browser ---
       # "firefox@nightly"
