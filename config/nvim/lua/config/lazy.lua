@@ -1,4 +1,5 @@
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
 	local out = vim.fn.system({
@@ -19,8 +20,17 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 		os.exit(1)
 	end
 end
+
+-- Make sure to setup `mapleader` and `maplocalleader` before
+-- loading lazy.nvim so that mappings are correct.
+-- This is also a good place to setup other settings (vim.opt)
+vim.g.mapleader = " "
+vim.g.maplocalleader = ","
+
 vim.opt.rtp:prepend(lazypath)
-require("lazy").setup({
+
+---@type LazyConfig
+local config = {
 	spec = {
 		-- add LazyVim and import its plugins
 		{ "LazyVim/LazyVim", import = "lazyvim.plugins" },
@@ -65,15 +75,18 @@ require("lazy").setup({
 		version = false, -- always use the latest git commit
 		-- version = "*", -- try installing the latest stable version for plugins that support semver
 	},
+	-- Configure any other settings here. See the documentation for more details.
+	-- colorscheme that will be used when installing plugins.
+	install = { colorscheme = { "catppuccin" } },
 	checker = { enabled = true, notify = false }, -- automatically check for plugin updates
+	change_detection = {
+		enabled = false,
+	},
 	ui = {
 		border = "rounded",
 		backdrop = 100,
 	},
 	performance = {
-		cache = {
-			enabled = true,
-		},
 		rtp = {
 			-- disable some rtp plugins
 			disabled_plugins = {
@@ -89,4 +102,6 @@ require("lazy").setup({
 			},
 		},
 	},
-})
+}
+
+require("lazy").setup(config)
