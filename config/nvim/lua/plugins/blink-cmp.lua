@@ -22,6 +22,7 @@ return {
 		windows = {
 			autocomplete = {
 				border = "rounded",
+				selection = "auto_insert",
 			},
 			documentation = {
 				border = "rounded",
