@@ -5,15 +5,6 @@ return {
 	opts = {
 		servers = {
 			biome = {},
-			tsserver = {
-				enabled = false,
-			},
-			ts_ls = {
-				enabled = false,
-			},
-			vtsls = {
-				enabled = false,
-			},
 		},
 	},
 }
