@@ -10,6 +10,7 @@ let
     if hostname == "Kyles-iMac" then
       {
         # work computer
+        "New Toy Garden 2 Window" = "^3";
         "New Toy Garden Window" = "^2";
         "New Traworld Window" = "^1";
       }
