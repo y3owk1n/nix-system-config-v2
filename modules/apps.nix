@@ -75,7 +75,7 @@
       "onyx"
       "imageoptim"
       "whatsapp"
-      "lulu"
+      # "lulu"
       "zerotier-one"
       "keka"
       "appcleaner"
@@ -94,7 +94,7 @@
 
       # --- browser ---
       "brave-browser"
-      "zen-browser"
+      # "zen-browser"
     ];
   };
 }
