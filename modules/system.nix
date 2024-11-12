@@ -923,19 +923,19 @@ in
             }
           ];
         };
-        "com.superultra.Homerow" = {
-          "NSStatusItem Visible Item-0" = 0;
-          "enable-hyper-key" = 0;
-          "is-auto-click-enabled" = 0;
-          "label-characters" = "aoeuidhtns";
-          "launch-at-login" = 1;
-          "non-search-shortcut" = "\\U2303\\U2325\\U21e7\\U2318U";
-          "scroll-keys" = "hjkl";
-          "scroll-shortcut" = "\\U2303\\U2325\\U21e7\\U2318E";
-          "search-shortcut" = "";
-          "show-menubar-icon" = 0;
-          "theme-id" = "dark";
-        };
+        # "com.superultra.Homerow" = {
+        #   "NSStatusItem Visible Item-0" = 0;
+        #   "enable-hyper-key" = 0;
+        #   "is-auto-click-enabled" = 0;
+        #   "label-characters" = "aoeuidhtns";
+        #   "launch-at-login" = 1;
+        #   "non-search-shortcut" = "\\U2303\\U2325\\U21e7\\U2318U";
+        #   "scroll-keys" = "hjkl";
+        #   "scroll-shortcut" = "\\U2303\\U2325\\U21e7\\U2318E";
+        #   "search-shortcut" = "";
+        #   "show-menubar-icon" = 0;
+        #   "theme-id" = "dark";
+        # };
       };
 
     };

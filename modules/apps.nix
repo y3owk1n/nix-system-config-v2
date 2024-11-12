@@ -81,7 +81,7 @@
       "appcleaner"
       "pronotes"
       "hammerspoon" # mainly used for safari vim mode
-      "homerow"
+      # "homerow"
 
       # --- docker desktop alternative ---
       "orbstack"
