@@ -5,17 +5,19 @@ return {
 	opts = {
 		keymaps = {
 			undo = {
+				desc = "undo",
 				hlgroup = "HighlightUndo",
 				mode = "n",
 				lhs = "u",
-				map = "undo",
+				rhs = nil,
 				opts = {},
 			},
 			redo = {
-				hlgroup = "HighlightUndo",
+				desc = "redo",
+				hlgroup = "HighlightRedo",
 				mode = "n",
 				lhs = "U",
-				map = "redo",
+				rhs = nil,
 				opts = {},
 			},
 		},
