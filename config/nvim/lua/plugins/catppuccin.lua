@@ -12,6 +12,7 @@ return {
 			custom_highlights = function(colors)
 				return {
 					HighlightUndo = { bg = colors.red, fg = colors.base },
+					HighlightRedo = { bg = colors.flamingo, fg = colors.base },
 				}
 			end,
 			integrations = {
