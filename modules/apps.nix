@@ -49,6 +49,7 @@
       # "Consent-O-Matic" = 1606897889;
       # "JSON Peep for Safari" = 1458969831;
       # "Vimlike" = 1584519802;
+      "Customize Search Engine" = 6445840140;
 
       # --- misc ---
       "Tailscale" = 1475387142;
