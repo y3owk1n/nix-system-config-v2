@@ -78,8 +78,8 @@ local config = {
 		"AXRadioButton",
 		"AXCheckBox",
 		"AXStaticText", -- Sometimes clickable text
-		"AXCell", -- Table cells
-		"AXRow", -- Table rows
+		-- "AXCell", -- Table cells
+		-- "AXRow", -- Table rows
 		"AXList",
 		"AXListItem",
 		"AXToolbar",
@@ -461,6 +461,21 @@ local function forceUnfocus()
 	end
 end
 
+local function deepCopy(orig)
+	local orig_type = type(orig)
+	local copy
+	if orig_type == "table" then
+		copy = {}
+		for orig_key, orig_value in next, orig, nil do
+			copy[deepCopy(orig_key)] = deepCopy(orig_value)
+		end
+		setmetatable(copy, deepCopy(getmetatable(orig)))
+	else -- number, string, boolean, etc
+		copy = orig
+	end
+	return copy
+end
+
 --------------------------------------------------------------------------------
 -- menubar
 --------------------------------------------------------------------------------
@@ -659,9 +674,29 @@ function marks.isElementActionable(element)
 		return false
 	end
 
+	logWithTimestamp("roles: " .. hs.inspect(hs.axuielement.roles))
+
+	local axJumpableRolesCopy = deepCopy(config.axJumpableRoles)
+
+	-- Check if its safari
+	if current.app():name() == "Safari" then
+		for i, jumpableRole in ipairs(axJumpableRolesCopy) do
+			if jumpableRole == "AXStaticText" then
+				table.remove(axJumpableRolesCopy, i)
+				break -- Exit the loop once the item is found and removed
+			end
+		end
+	else
+		for i, jumpableRole in ipairs(axJumpableRolesCopy) do
+			if jumpableRole ~= "AXStaticText" then
+				table.insert(axJumpableRolesCopy, "AXStaticText")
+				break -- Exit the loop once the item is found and removed
+			end
+		end
+	end
+
 	-- Return true if element has a supported role and is actionable
-	return (tblContains(config.axJumpableRoles, role))
-	-- return (tblContains(config.axJumpableRoles, role) or hasAction)
+	return (tblContains(axJumpableRolesCopy, role) or hasAction)
 end
 
 function marks.findClickableElements(element, withUrls)
