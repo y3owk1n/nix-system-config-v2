@@ -65,7 +65,57 @@ local config = {
 	smoothScroll = false,
 	smoothScrollHalfPage = true,
 	axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea" },
-	axJumpableRoles = { "AXLink", "AXButton", "AXPopUpButton", "AXComboBox", "AXTextField", "AXMenuItem", "AXTextArea" },
+	axJumpableRoles = {
+		"AXLink",
+		"AXButton",
+		"AXPopUpButton",
+		"AXComboBox",
+		"AXTextField",
+		"AXTextArea",
+		"AXMenuItem",
+		"AXMenu",
+		"AXMenuButton",
+		"AXRadioButton",
+		"AXCheckBox",
+		"AXStaticText", -- Sometimes clickable text
+		"AXCell", -- Table cells
+		"AXRow", -- Table rows
+		"AXList",
+		"AXListItem",
+		"AXToolbar",
+		"AXToolbarButton",
+		"AXTabGroup",
+		"AXTab",
+		"AXSlider",
+		"AXIncrementor",
+		"AXDecrementor",
+		"AXDisclosureTriangle",
+	},
+	axScrollableRoles = { "AXScrollArea", "AXScrollView", "AXGroup" },
+	axContentRoles = {
+		"AXWindow",
+		"AXSplitGroup",
+		"AXTabGroup",
+		"AXWebArea",
+		"AXScrollArea",
+		"AXGroup",
+		"AXDocument",
+		"AXTextArea",
+	},
+	axBackgroundRoles = {
+		"AXScrollArea",
+		"AXGroup",
+		"AXList",
+		"AXOutline",
+		"AXTable",
+		"AXSplitGroup",
+		"AXDrawer",
+	},
+	-- Apps where we want to disable vim navigation
+	excludedApps = {
+		"Terminal",
+		"Alacritty",
+	},
 }
 
 --------------------------------------------------------------------------------
@@ -77,7 +127,7 @@ local current = {}
 local marks = { data = {} }
 local menuBar = {}
 local commands = {}
-local safariFilter
+local windowFilter
 local eventLoop
 local modes = { DISABLED = 1, NORMAL = 2, INSERT = 3, MULTI = 4, LINKS = 5 }
 local linkCapture
@@ -105,7 +155,7 @@ local function tblContains(tbl, val)
 end
 
 function current.app()
-	cached.app = cached.app or hs.application.get("Safari")
+	cached.app = cached.app or hs.application.frontmostApplication()
 	return cached.app
 end
 
@@ -115,7 +165,7 @@ function current.axApp()
 end
 
 function current.window()
-	cached.window = cached.window or current.app():mainWindow()
+	cached.window = cached.window or current.app():focusedWindow()
 	return cached.window
 end
 
@@ -143,14 +193,37 @@ local function findAXRole(rootElement, role)
 end
 
 function current.axScrollArea()
-	cached.axScrollArea = cached.axScrollArea or findAXRole(current.axWindow(), "AXScrollArea")
+	if not cached.axScrollArea then
+		for _, role in ipairs(config.axScrollableRoles) do
+			cached.axScrollArea = findAXRole(current.axWindow(), role)
+			if cached.axScrollArea then
+				break
+			end
+		end
+	end
 	return cached.axScrollArea
 end
 
 -- webarea path from window: AXWindow>AXSplitGroup>AXTabGroup>AXGroup>AXGroup>AXScrollArea>AXWebArea
-function current.axWebArea()
-	cached.axWebArea = cached.axWebArea or findAXRole(current.axScrollArea(), "AXWebArea")
-	return cached.axWebArea
+-- function current.axWebArea()
+-- 	cached.axWebArea = cached.axWebArea or findAXRole(current.axScrollArea(), "AXWebArea")
+-- 	return cached.axWebArea
+-- end
+
+-- Modified to handle different types of content areas
+function current.axContentArea()
+	if cached.axContentArea then
+		return cached.axContentArea
+	end
+
+	for _, role in ipairs(config.axContentRoles) do
+		cached.axContentArea = findAXRole(current.axWindow(), role)
+		if cached.axContentArea then
+			break
+		end
+	end
+
+	return cached.axContentArea
 end
 
 function current.visibleArea()
@@ -159,17 +232,21 @@ function current.visibleArea()
 	end
 
 	local winFrame = current.axWindow():attributeValue("AXFrame")
-	local webFrame = current.axWebArea():attributeValue("AXFrame")
-	local scrollFrame = current.axScrollArea():attributeValue("AXFrame")
+	local contentArea = current.axContentArea()
 
-	-- TODO: sometimes it overlaps on scrollbars, need fixing logic on wide pages
-	-- TDDO: doesn't work in fullscreen mode as well
+	if not contentArea then
+		return winFrame
+	end
 
-	local visibleX = math.max(winFrame.x, webFrame.x)
+	local contentFrame = contentArea:attributeValue("AXFrame")
+
+	local scrollFrame = current.axScrollArea() and current.axScrollArea():attributeValue("AXFrame") or contentFrame
+
+	local visibleX = math.max(winFrame.x, contentFrame.x)
 	local visibleY = math.max(winFrame.y, scrollFrame.y)
 
-	local visibleWidth = math.min(winFrame.x + winFrame.w, webFrame.x + webFrame.w) - visibleX
-	local visibleHeight = math.min(winFrame.y + winFrame.h, webFrame.y + webFrame.h) - visibleY
+	local visibleWidth = math.min(winFrame.x + winFrame.w, contentFrame.x + contentFrame.w) - visibleX
+	local visibleHeight = math.min(winFrame.y + winFrame.h, contentFrame.y + contentFrame.h) - visibleY
 
 	cached.visibleArea = {
 		x = visibleX,
@@ -187,6 +264,11 @@ local function isEditableControlInFocus()
 	else
 		return false
 	end
+end
+
+local function isExcludedApp()
+	local appName = current.app():name()
+	return tblContains(config.excludedApps, appName)
 end
 
 local function isSpotlightActive()
@@ -244,10 +326,138 @@ local function setClipboardContents(contents)
 	end
 end
 
+local focusHelpers = {
+	-- Try to find clickable background area
+	findBackgroundElement = function(window)
+		if not window then
+			return nil
+		end
+
+		for _, role in ipairs(config.axBackgroundRoles) do
+			local element = findAXRole(window, role)
+			if element then
+				return element
+			end
+		end
+
+		return nil
+	end,
+
+	-- Try to click on a safe area of the window
+	clickSafeArea = function(window)
+		if not window then
+			return false
+		end
+
+		local frame = window:attributeValue("AXFrame")
+		if not frame then
+			return false
+		end
+
+		-- Calculate a safe click position (e.g., top-right corner)
+		local safeX = frame.x + frame.w - 20 -- 20px from right edge
+		local safeY = frame.y + 10 -- 10px from top
+
+		-- Save current mouse position
+		local originalPosition = hs.mouse.absolutePosition()
+
+		-- Perform click
+		local success = pcall(function()
+			hs.mouse.absolutePosition({ x = safeX, y = safeY })
+			hs.timer.usleep(50000)
+			hs.eventtap.leftClick({ x = safeX, y = safeY })
+			hs.timer.doAfter(0.1, function()
+				hs.mouse.absolutePosition(originalPosition)
+			end)
+		end)
+
+		return success
+	end,
+
+	-- Simulate Escape key
+	pressEscape = function()
+		hs.eventtap.keyStroke({}, "escape")
+	end,
+
+	-- Try to focus on window itself
+	focusWindow = function(window)
+		if not window then
+			return false
+		end
+
+		return pcall(function()
+			window:setAttributeValue("AXFocused", true)
+		end)
+	end,
+}
+
 local function forceUnfocus()
-	logWithTimestamp("forced unfocus on escape")
-	if current.axWebArea() then
-		current.axWebArea():setAttributeValue("AXFocused", true)
+	logWithTimestamp("Attempting forced unfocus")
+
+	local window = current.axWindow()
+	local contentArea = current.axContentArea()
+	local app = window and window:attributeValue("AXApplication")
+	local appName = app and app:attributeValue("AXTitle")
+
+	-- Track if any method succeeded
+	local unfocused = false
+
+	-- Method 1: Try original method first
+	if contentArea then
+		local success = pcall(function()
+			contentArea:setAttributeValue("AXFocused", true)
+		end)
+		if success then
+			unfocused = true
+			logWithTimestamp("Unfocused using content area")
+		end
+	end
+
+	-- Method 2: Try to focus on background element
+	if not unfocused and window then
+		local backgroundElement = focusHelpers.findBackgroundElement(window)
+		if backgroundElement then
+			local success = pcall(function()
+				backgroundElement:setAttributeValue("AXFocused", true)
+			end)
+			if success then
+				unfocused = true
+				logWithTimestamp("Unfocused using background element")
+			end
+		end
+	end
+
+	-- Method 3: Try clicking safe area for specific apps
+	if not unfocused and appName then
+		-- List of apps that work better with click method
+		local clickPreferredApps = {
+			["Notes"] = true,
+			["TextEdit"] = true,
+			["Pages"] = true,
+			["Numbers"] = true,
+			["Keynote"] = true,
+		}
+
+		if clickPreferredApps[appName] then
+			if focusHelpers.clickSafeArea(window) then
+				unfocused = true
+				logWithTimestamp("Unfocused using safe area click")
+			end
+		end
+	end
+
+	-- Method 4: Try to focus window itself
+	if not unfocused and window then
+		if focusHelpers.focusWindow(window) then
+			unfocused = true
+			logWithTimestamp("Unfocused using window focus")
+		end
+	end
+
+	-- Method 5: Last resort - simulate escape key
+	if not unfocused then
+		focusHelpers.pressEscape()
+		logWithTimestamp("Attempted unfocus using escape key")
 	end
 end
 
@@ -321,18 +531,26 @@ function marks.drawOne(markIndex)
 		return
 	end
 
-	mark.position = mark.element:attributeValue("AXFrame")
+	local position = mark.element:attributeValue("AXFrame") or mark.element:attributeValue("AXPosition")
+	if not position then
+		return
+	end
 
 	local padding = 2
 	local fontSize = 14
-	local bgRect =
-		hs.geometry.rect(mark.position.x, mark.position.y, fontSize * 1.5 + 2 * padding, fontSize + 2 * padding)
+	local bgRect = hs.geometry.rect(position.x, position.y, fontSize * 1.5 + 2 * padding, fontSize + 2 * padding)
 
+	-- Different colors for different types of elements
 	local fillColor
-	if mark.element:attributeValue("AXRole") == "AXLink" then
-		fillColor = { ["red"] = 1, ["green"] = 1, ["blue"] = 0, ["alpha"] = 1 }
+	local role = mark.element:attributeValue("AXRole")
+	if role == "AXLink" then
+		fillColor = { ["red"] = 1, ["green"] = 1, ["blue"] = 0, ["alpha"] = 0.9 }
+	elseif role == "AXButton" then
+		fillColor = { ["red"] = 0.3, ["green"] = 0.8, ["blue"] = 1, ["alpha"] = 0.9 }
+	elseif tblContains(config.axEditableRoles, role) then
+		fillColor = { ["red"] = 0.8, ["green"] = 0.5, ["blue"] = 1, ["alpha"] = 0.9 }
 	else
-		fillColor = { ["red"] = 0.5, ["green"] = 1, ["blue"] = 0, ["alpha"] = 1 }
+		fillColor = { ["red"] = 0.5, ["green"] = 1, ["blue"] = 0, ["alpha"] = 0.9 }
 	end
 
 	canvas:appendElements({
@@ -341,7 +559,12 @@ function marks.drawOne(markIndex)
 		strokeColor = { ["red"] = 0, ["green"] = 0, ["blue"] = 0, ["alpha"] = 1 },
 		strokeWidth = 1,
 		roundedRectRadii = { xRadius = 3, yRadius = 3 },
-		frame = { x = bgRect.x - visibleArea.x, y = bgRect.y - visibleArea.y, w = bgRect.w, h = bgRect.h },
+		frame = {
+			x = bgRect.x - visibleArea.x,
+			y = bgRect.y - visibleArea.y,
+			w = bgRect.w,
+			h = bgRect.h,
+		},
 	})
 
 	canvas:appendElements({
@@ -351,7 +574,12 @@ function marks.drawOne(markIndex)
 		textColor = { ["red"] = 0, ["green"] = 0, ["blue"] = 0, ["alpha"] = 1 },
 		textSize = fontSize,
 		padding = padding,
-		frame = { x = bgRect.x - visibleArea.x, y = bgRect.y - visibleArea.y, w = bgRect.w, h = bgRect.h },
+		frame = {
+			x = bgRect.x - visibleArea.x,
+			y = bgRect.y - visibleArea.y,
+			w = bgRect.w,
+			h = bgRect.h,
+		},
 	})
 end
 
@@ -380,12 +608,19 @@ function marks.add(element)
 end
 
 function marks.isElementPartiallyVisible(element)
-	if element:attributeValue("AXHidden") then
+	-- Check if element exists and is not hidden
+	if not element or element:attributeValue("AXHidden") then
 		return false
 	end
 
 	local frame = element:attributeValue("AXFrame")
+
 	if not frame then
+		return false
+	end
+
+	-- Check if element has zero size
+	if frame.w == 0 or frame.h == 0 then
 		return false
 	end
 
@@ -397,17 +632,52 @@ function marks.isElementPartiallyVisible(element)
 	return xOverlap and yOverlap
 end
 
+-- Helper function to check if an element is actionable
+function marks.isElementActionable(element)
+	if not element then
+		return false
+	end
+
+	local role = element:attributeValue("AXRole")
+	if not role then
+		return false
+	end
+
+	-- Check if element has any of these common actions
+	local actions = element:attributeValue("AXActions") or {}
+	local hasAction = false
+	for _, action in ipairs(actions) do
+		if action == "AXPress" or action == "AXClick" or action == "AXConfirm" then
+			hasAction = true
+			break
+		end
+	end
+
+	-- Check if element is enabled
+	local enabled = element:attributeValue("AXEnabled")
+	if enabled == false then
+		return false
+	end
+
+	-- Return true if element has a supported role and is actionable
+	return (tblContains(config.axJumpableRoles, role))
+	-- return (tblContains(config.axJumpableRoles, role) or hasAction)
+end
+
 function marks.findClickableElements(element, withUrls)
 	if not element then
 		return
 	end
 
-	local jumpable = tblContains(config.axJumpableRoles, element:attributeValue("AXRole"))
-	local visible = marks.isElementPartiallyVisible(element)
-	local showable = not withUrls or element:attributeValue("AXURL")
-
-	if jumpable and visible and showable then
-		marks.add(element)
+	-- Check if the element itself is clickable
+	if marks.isElementActionable(element) and marks.isElementPartiallyVisible(element) then
+		local shouldAdd = true
+		if withUrls then
+			shouldAdd = element:attributeValue("AXURL") ~= nil
+		end
+		if shouldAdd then
+			marks.add(element)
+		end
 	end
 
 	local children = element:attributeValue("AXChildren")
@@ -419,15 +689,34 @@ function marks.findClickableElements(element, withUrls)
 end
 
 function marks.show(withUrls)
-	marks.findClickableElements(current.axWebArea(), withUrls)
-	marks.draw()
+	-- Start from the focused window's content
+	local startElement = current.axWindow()
+	if not startElement then
+		return
+	end
+
+	-- Find all clickable elements
+	marks.findClickableElements(startElement, withUrls)
+
+	-- Only draw if we found any elements
+	if #marks.data > 0 then
+		marks.draw()
+	else
+		logWithTimestamp("No clickable elements found")
+	end
 end
 
 function marks.click(combination)
 	logWithTimestamp("marks.click")
 	for i, c in ipairs(allCombinations) do
 		if c == combination and marks.data[i] and marks.onClickCallback then
-			marks.onClickCallback(marks.data[i])
+			-- Try to perform the action
+			local success, err = pcall(function()
+				marks.onClickCallback(marks.data[i])
+			end)
+			if not success then
+				logWithTimestamp("Error clicking element: " .. tostring(err))
+			end
 		end
 	end
 end
@@ -461,8 +750,11 @@ function commands.cmdScrollHalfPageUp()
 end
 
 function commands.cmdCopyPageUrlToClipboard()
-	local axURL = current.axWebArea():attributeValue("AXURL")
-	setClipboardContents(axURL.url)
+	local element = current.axContentArea()
+	local url = element and element:attributeValue("AXURL")
+	if url then
+		setClipboardContents(url.url)
+	end
 end
 
 function commands.cmdInsertMode(char)
@@ -472,20 +764,140 @@ end
 function commands.cmdGotoLink(char)
 	setMode(modes.LINKS, char)
 	marks.onClickCallback = function(mark)
-		mark.element:performAction("AXPress")
+		local element = mark.element
+		if not element then
+			logWithTimestamp("Error: Invalid element")
+			return
+		end
+
+		local actions = element:attributeValue("AXActions") or {}
+		logWithTimestamp("actions: " .. hs.inspect(actions))
+
+		-- Try different methods to get position
+		local position, size
+
+		-- Method 1: Try direct AXPosition and AXSize
+		local success, posResult = pcall(function()
+			return element:attributeValue("AXPosition")
+		end)
+		local successSize, sizeResult = pcall(function()
+			return element:attributeValue("AXSize")
+		end)
+
+		if success and successSize and posResult and sizeResult then
+			position = posResult
+			size = sizeResult
+		end
+
+		-- Method 2: Try getting frame
+		if not position or not size then
+			local frame = element:attributeValue("AXFrame")
+			if frame then
+				position = { x = frame.x, y = frame.y }
+				size = { w = frame.w, h = frame.h }
+			end
+		end
+
+		-- First try accessibility actions
+		if tblContains(actions, "AXPress") then
+			local success, err = pcall(function()
+				element:performAction("AXPress")
+			end)
+			if success then
+				return
+			end
+		elseif tblContains(actions, "AXClick") then
+			local success, err = pcall(function()
+				element:performAction("AXClick")
+			end)
+			if success then
+				return
+			end
+		end
+
+		-- If we have position info, try mouse click
+		if position and size then
+			-- Calculate center point of the element
+			local clickX = position.x + (size.w / 2)
+			local clickY = position.y + (size.h / 2)
+
+			-- Save current mouse position
+			local originalPosition = hs.mouse.absolutePosition()
+
+			-- Perform click sequence
+			local clickSuccess, clickErr = pcall(function()
+				-- Move mouse
+				hs.mouse.absolutePosition({ x = clickX, y = clickY })
+				hs.timer.usleep(50000) -- Wait 50ms
+
+				-- Click
+				hs.eventtap.leftClick({ x = clickX, y = clickY })
+
+				-- Restore mouse position
+				hs.timer.doAfter(0.1, function()
+					hs.mouse.absolutePosition(originalPosition)
+				end)
+			end)
+
+			if clickSuccess then
+				return
+			else
+				logWithTimestamp("Click failed: " .. tostring(clickErr))
+			end
+		end
+
+		-- Method 3: Try to get position from the mark itself
+		if mark.x and mark.y then
+			local clickSuccess, clickErr = pcall(function()
+				local originalPosition = hs.mouse.absolutePosition()
+
+				-- Move and click
+				hs.mouse.absolutePosition({ x = mark.x, y = mark.y })
+				hs.timer.usleep(50000)
+				hs.eventtap.leftClick({ x = mark.x, y = mark.y })
+
+				-- Restore position
+				hs.timer.doAfter(0.1, function()
+					hs.mouse.absolutePosition(originalPosition)
+				end)
+			end)
+
+			if clickSuccess then
+				return
+			else
+				logWithTimestamp("Mark click failed: " .. tostring(clickErr))
+			end
+		end
+
+		-- Final fallback: focus + return key
+		logWithTimestamp("Falling back to focus + return method")
+		local focusSuccess, focusErr = pcall(function()
+			element:setAttributeValue("AXFocused", true)
+			hs.timer.doAfter(0.1, function()
+				hs.eventtap.keyStroke({}, "return")
+			end)
+		end)
+
+		if not focusSuccess then
+			logWithTimestamp("Focus fallback failed: " .. tostring(focusErr))
+		end
 	end
 	hs.timer.doAfter(0, marks.show)
 end
 
 function commands.cmdGotoLinkNewTab(char)
-	setMode(modes.LINKS, char)
-	marks.onClickCallback = function(mark)
-		local axURL = mark.element:attributeValue("AXURL")
-		openUrlInNewTab(axURL.url)
+	if current.app():name() == "Safari" then
+		setMode(modes.LINKS, char)
+		marks.onClickCallback = function(mark)
+			local axURL = mark.element:attributeValue("AXURL")
+			if axURL then
+				openUrlInNewTab(axURL.url)
+			end
+		end
+		hs.timer.doAfter(0, function()
+			marks.show(true)
+		end)
 	end
-	hs.timer.doAfter(0, function()
-		marks.show(true)
-	end)
 end
 
 function commands.cmdMoveMouseToLink(char)
@@ -566,6 +978,10 @@ end
 local function eventHandler(event)
 	cached = {}
 
+	if isExcludedApp() then
+		return false
+	end
+
 	for key, modifier in pairs(event:getFlags()) do
 		if modifier and key ~= "shift" then
 			return false
@@ -614,7 +1030,11 @@ local function onWindowFocused()
 	if not eventLoop then
 		eventLoop = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, eventHandler):start()
 	end
-	setMode(modes.NORMAL)
+	if not isExcludedApp() then
+		setMode(modes.NORMAL)
+	else
+		setMode(modes.DISABLED)
+	end
 end
 
 local function onWindowUnfocused()
@@ -627,19 +1047,19 @@ local function onWindowUnfocused()
 end
 
 function obj:start()
-	safariFilter = hs.window.filter.new("Safari")
-	safariFilter:subscribe(hs.window.filter.windowFocused, onWindowFocused)
-	safariFilter:subscribe(hs.window.filter.windowUnfocused, onWindowUnfocused)
+	windowFilter = hs.window.filter.new()
+	windowFilter:subscribe(hs.window.filter.windowFocused, onWindowFocused)
+	windowFilter:subscribe(hs.window.filter.windowUnfocused, onWindowUnfocused)
 	menuBar.new()
 	fetchMappingPrefixes()
 	generateCombinations()
 end
 
 function obj:stop()
-	if safariFilter then
-		safariFilter:unsubscribe(onWindowFocused)
-		safariFilter:unsubscribe(onWindowUnfocused)
-		safariFilter = nil
+	if windowFilter then
+		windowFilter:unsubscribe(onWindowFocused)
+		windowFilter:unsubscribe(onWindowUnfocused)
+		windowFilter = nil
 	end
 	menuBar.delete()
 end
