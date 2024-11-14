@@ -530,24 +530,6 @@ function marks.isElementActionable(element)
 		return false
 	end
 
-	-- Check if element has any of these common actions
-	local actions = element:attributeValue("AXActions") or {}
-	local hasAction = false
-	for _, action in ipairs(actions) do
-		if action == "AXPress" or action == "AXClick" or action == "AXConfirm" then
-			hasAction = true
-			break
-		end
-	end
-
-	-- Check if element is enabled
-	local enabled = element:attributeValue("AXEnabled")
-	if enabled == false then
-		return false
-	end
-
-	logWithTimestamp("roles: " .. hs.inspect(hs.axuielement.roles))
-
 	local axJumpableRolesCopy = deepCopy(config.axJumpableRoles)
 
 	-- Check if its safari
@@ -568,7 +550,7 @@ function marks.isElementActionable(element)
 	end
 
 	-- Return true if element has a supported role and is actionable
-	return (tblContains(axJumpableRolesCopy, role) or hasAction)
+	return (tblContains(axJumpableRolesCopy, role))
 end
 
 function marks.findClickableElements(element, withUrls)
@@ -678,7 +660,6 @@ function commands.cmdGotoLink(char)
 		end
 
 		local actions = element:attributeValue("AXActions") or {}
-		logWithTimestamp("actions: " .. hs.inspect(actions))
 
 		-- Try different methods to get position
 		local position, size
@@ -706,21 +687,21 @@ function commands.cmdGotoLink(char)
 		end
 
 		-- First try accessibility actions
-		if tblContains(actions, "AXPress") then
-			local success, err = pcall(function()
-				element:performAction("AXPress")
-			end)
-			if success then
-				return
-			end
-		elseif tblContains(actions, "AXClick") then
-			local success, err = pcall(function()
-				element:performAction("AXClick")
-			end)
-			if success then
-				return
-			end
-		end
+		-- if tblContains(actions, "AXPress") then
+		-- 	local success, err = pcall(function()
+		-- 		element:performAction("AXPress")
+		-- 	end)
+		-- 	if success then
+		-- 		return
+		-- 	end
+		-- elseif tblContains(actions, "AXClick") then
+		-- 	local success, err = pcall(function()
+		-- 		element:performAction("AXClick")
+		-- 	end)
+		-- 	if success then
+		-- 		return
+		-- 	end
+		-- end
 
 		-- If we have position info, try mouse click
 		if position and size then
