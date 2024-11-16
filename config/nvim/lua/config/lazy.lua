@@ -48,6 +48,7 @@ local config = {
 		{ import = "lazyvim.plugins.extras.editor.fzf" },
 		-- add extras formatting
 		{ import = "lazyvim.plugins.extras.formatting.prettier" },
+		{ import = "lazyvim.plugins.extras.formatting.biome" },
 		-- add extras linting
 		{ import = "lazyvim.plugins.extras.linting.eslint" },
 		-- add extras util

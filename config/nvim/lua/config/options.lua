@@ -4,6 +4,14 @@
 
 local opt = vim.opt
 
+-- Enable the option to require a Prettier config file
+-- If no prettier config file is found, the formatter will not be used
+-- (Biome) Enable this option to avoid conflicts with Prettier.
+vim.g.lazyvim_prettier_needs_config = true
+
+-- Set to false to disable auto format
+vim.g.lazyvim_eslint_auto_format = true
+
 --shell
 opt.shell = "fish"
 
