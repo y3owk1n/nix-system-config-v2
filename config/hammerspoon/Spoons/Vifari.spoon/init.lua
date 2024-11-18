@@ -115,6 +115,7 @@ local config = {
 	excludedApps = {
 		"Terminal",
 		"Alacritty",
+		"Screen Sharing",
 	},
 }
 
