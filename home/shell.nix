@@ -21,6 +21,7 @@
       gg = "lazygit";
     };
     shellAliases = {
+      tms = "bash ~/nix-system-config-v2/scripts/tmux-sessionizer.sh";
       tailscale = "/Applications/Tailscale.app/Contents/MacOS/Tailscale";
       cat = "bat";
       n = "nvim";
