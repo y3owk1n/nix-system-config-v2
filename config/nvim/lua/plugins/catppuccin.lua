@@ -5,10 +5,6 @@ return {
 		---@type CatppuccinOptions
 		opts = {
 			flavour = "macchiato", -- latte, frappe, macchiato, mocha
-			background = { -- :h background
-				light = "latte",
-				dark = "macchiato",
-			},
 			custom_highlights = function(colors)
 				return {
 					HighlightUndo = { bg = colors.red, fg = colors.base },
