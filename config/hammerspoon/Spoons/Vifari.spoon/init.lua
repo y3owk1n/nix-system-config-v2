@@ -206,10 +206,10 @@ function current.axScrollArea()
 end
 
 -- webarea path from window: AXWindow>AXSplitGroup>AXTabGroup>AXGroup>AXGroup>AXScrollArea>AXWebArea
--- function current.axWebArea()
--- 	cached.axWebArea = cached.axWebArea or findAXRole(current.axScrollArea(), "AXWebArea")
--- 	return cached.axWebArea
--- end
+function current.axWebArea()
+	cached.axWebArea = cached.axWebArea or findAXRole(current.axScrollArea(), "AXWebArea")
+	return cached.axWebArea
+end
 
 -- Modified to handle different types of content areas
 function current.axContentArea()
@@ -640,7 +640,7 @@ function commands.cmdScrollHalfPageUp()
 end
 
 function commands.cmdCopyPageUrlToClipboard()
-	local element = current.axContentArea()
+	local element = current.axWebArea()
 	local url = element and element:attributeValue("AXURL")
 	if url then
 		setClipboardContents(url.url)
