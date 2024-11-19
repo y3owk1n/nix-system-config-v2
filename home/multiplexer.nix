@@ -42,8 +42,8 @@
             src = pkgs.fetchFromGitHub {
               owner = "catppuccin";
               repo = "tmux";
-              rev = "aaf9120f769a34e5491b3ee7f885c8c347f2f663";
-              sha256 = "sha256-NrqOtJgMUVE74YGfIzMU2I+gls6jpSvU2nbtFvTbzR4=";
+              rev = "179572333b0473020e45f34fd7c1fd658b2831f4";
+              sha256 = "sha256-9+SpgO2Co38I0XnEbRd7TSYamWZNjcVPw6RWJIHM+4c=";
             };
           });
           extraConfig = ''
