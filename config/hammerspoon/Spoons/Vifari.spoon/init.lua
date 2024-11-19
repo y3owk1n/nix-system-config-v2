@@ -457,7 +457,7 @@ function marks.drawOne(markIndex)
 
 	canvas:appendElements({
 		type = "text",
-		text = allCombinations[markIndex],
+		text = string.upper(allCombinations[markIndex]),
 		textAlignment = "center",
 		textColor = { ["red"] = 0, ["green"] = 0, ["blue"] = 0, ["alpha"] = 1 },
 		textSize = fontSize,
