@@ -91,6 +91,18 @@ bash ~/nix-system-config-v2/scripts/nix-cleanup.sh
 bash ~/nix-system-config-v2/scripts/nvim-reset.sh
 ```
 
+### Check config issue
+
+```bash
+nix config check
+```
+
+If there's multiple nix in the path, it is from the nix root, run the following the remove it.
+
+```bash
+sudo -i nix-env -e nix
+```
+
 ### Installing NPM packages that are not available in Nix
 
 #### Prebuilt sript
