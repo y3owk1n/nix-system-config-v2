@@ -103,6 +103,14 @@ If there's multiple nix in the path, it is from the nix root, run the following 
 sudo -i nix-env -e nix
 ```
 
+### error: file 'nixpkgs' was not found in the Nix search path (add it using $NIX_PATH or -I)
+
+```bash
+// https://github.com/NixOS/nix/issues/2982#issuecomment-539794642
+sudo -i nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
+sudo -i nix-channel --update nixpkgs
+```
+
 ### Installing NPM packages that are not available in Nix
 
 #### Prebuilt sript
