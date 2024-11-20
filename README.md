@@ -71,6 +71,16 @@ nix run nix-darwin -- switch --flake ~/nix-system-config-v2/.#Kyles-MacBook-Air
 darwin-rebuild switch --flake ~/nix-system-config-v2
 ```
 
+### Cert SSL Issue
+
+```bash
+// https://github.com/NixOS/nix/issues/2899#issuecomment-1669501326
+sudo rm /etc/ssl/certs/ca-certificates.crt
+sudo ln -s /nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt /etc/ssl/certs/ca-certificates.crt
+```
+
+```
+
 ### Cleanup
 
 ```bash
