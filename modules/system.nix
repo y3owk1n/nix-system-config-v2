@@ -964,11 +964,11 @@ in
   # Create /etc/zshrc that loads the nix-darwin environment.
   # this is required if you want to use darwin's default shell - zsh
   programs.fish.enable = true;
-  environment.shells = [ pkgs.fish ];
+  # environment.shells = [ pkgs.fish ];
   # environment.loginShell = pkgs.fish;
-  environment.loginShellInit = ''
-    export SHELL=${pkgs.fish}/bin/fish
-  '';
+  # environment.loginShellInit = ''
+  #   export SHELL=${pkgs.fish}/bin/fish
+  # '';
   environment.systemPath = [
     "/opt/homebrew/bin"
     "/opt/homebrew/sbin"
