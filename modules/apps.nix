@@ -21,8 +21,12 @@
     neovim
     git
     just # use Justfile to simplify nix-darwin's commands
+    ncurses
   ];
   environment.variables.EDITOR = "nvim";
+  environment.etc.terminfo = {
+    source = "${pkgs.ncurses}/share/terminfo";
+  };
 
   # TODO: To make this work, homebrew need to be installed manually, see https://brew.sh
   # 
