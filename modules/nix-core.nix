@@ -18,7 +18,7 @@
   # nix.useDaemon = true;
 
   # nix.package = pkgs.nix;
-  nix.package = pkgs.nixVersions.git;
+  # nix.package = pkgs.nixVersions.git;
 
   # do garbage collection weekly to keep disk usage low
   nix.gc = {

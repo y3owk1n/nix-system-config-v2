@@ -21,6 +21,8 @@
       url = "github:lnl7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/0.1";
+    nix-darwin.url = "github:LnL7/nix-darwin";
   };
 
   # The `outputs` function will return all the build results of the flake.
@@ -33,6 +35,7 @@
       self,
       nixpkgs,
       darwin,
+      determinate,
       home-manager,
       ...
     }:
@@ -57,6 +60,7 @@
               ;
           };
           modules = [
+            determinate.darwinModules.default
             ./modules/nix-core.nix
             ./modules/system.nix
             ./modules/apps.nix
