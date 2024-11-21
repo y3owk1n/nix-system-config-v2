@@ -117,6 +117,13 @@ local config = {
 		"Alacritty",
 		"Screen Sharing",
 	},
+	browsers = {
+		"Safari",
+		"Google Chrome",
+		"Firefox",
+		"Microsoft Edge",
+		"Brave Browser",
+	},
 }
 
 --------------------------------------------------------------------------------
@@ -307,15 +314,61 @@ local function smoothScroll(x, y, smooth)
 end
 
 local function openUrlInNewTab(url)
-	local script = [[
-      tell application "Safari"
-        activate
-        tell window 1
-          set current tab to (make new tab with properties {URL:"%s"})
-        end tell
-      end tell
-    ]]
-	script = string.format(script, url)
+	local browserScripts = {
+		Safari = [[
+            tell application "Safari"
+                activate
+                tell window 1
+                    set current tab to (make new tab with properties {URL:"%s"})
+                end tell
+            end tell
+        ]],
+		["Google Chrome"] = [[
+            tell application "Google Chrome"
+                activate
+                tell window 1
+                    make new tab with properties {URL:"%s"}
+                end tell
+            end tell
+        ]],
+		Firefox = [[
+            tell application "Firefox"
+                activate
+                tell window 1
+                    open location "%s"
+                end tell
+            end tell
+        ]],
+		["Microsoft Edge"] = [[
+            tell application "Microsoft Edge"
+                activate
+                tell window 1
+                    make new tab with properties {URL:"%s"}
+                end tell
+            end tell
+        ]],
+		["Brave Browser"] = [[
+            tell application "Brave Browser"
+                activate
+                tell window 1
+                    make new tab with properties {URL:"%s"}
+                end tell
+            end tell
+        ]],
+	}
+
+	local currentApp = current.app():name()
+	local script
+
+	-- Select script based on current browser
+	if browserScripts[currentApp] then
+		script = string.format(browserScripts[currentApp], url)
+	else
+		-- Fallback to Safari if not a known browser
+		script = string.format(browserScripts["Safari"], url)
+	end
+
+	-- script = string.format(script, url)
 	hs.osascript.applescript(script)
 end
 
@@ -531,21 +584,26 @@ function marks.isElementActionable(element)
 		return false
 	end
 
+	local currentAppName = current.app():name()
+
 	local axJumpableRolesCopy = deepCopy(config.axJumpableRoles)
 
 	-- Check if its safari
-	if current.app():name() == "Safari" then
-		for i, jumpableRole in ipairs(axJumpableRolesCopy) do
-			if jumpableRole == "AXStaticText" then
-				table.remove(axJumpableRolesCopy, i)
-				break -- Exit the loop once the item is found and removed
+	for _, browserName in ipairs(config.browsers) do
+		if currentAppName == browserName then
+			for i, jumpableRole in ipairs(axJumpableRolesCopy) do
+				if jumpableRole == "AXStaticText" then
+					table.remove(axJumpableRolesCopy, i)
+					break -- Exit the loop once the item is found and removed
+				end
 			end
-		end
-	else
-		for i, jumpableRole in ipairs(axJumpableRolesCopy) do
-			if jumpableRole ~= "AXStaticText" then
-				table.insert(axJumpableRolesCopy, "AXStaticText")
-				break -- Exit the loop once the item is found and removed
+			break
+		else
+			for i, jumpableRole in ipairs(axJumpableRolesCopy) do
+				if jumpableRole ~= "AXStaticText" then
+					table.insert(axJumpableRolesCopy, "AXStaticText")
+					break -- Exit the loop once the item is found and removed
+				end
 			end
 		end
 	end
@@ -775,17 +833,24 @@ function commands.cmdGotoLink(char)
 end
 
 function commands.cmdGotoLinkNewTab(char)
-	if current.app():name() == "Safari" then
-		setMode(modes.LINKS, char)
-		marks.onClickCallback = function(mark)
-			local axURL = mark.element:attributeValue("AXURL")
-			if axURL then
-				openUrlInNewTab(axURL.url)
+	local currentAppName = current.app():name()
+	logWithTimestamp("currentAppName: " .. hs.inspect(currentAppName))
+
+	-- Check if the current app is in the list of browsers
+	for _, browserName in ipairs(config.browsers) do
+		if currentAppName == browserName then
+			setMode(modes.LINKS, char)
+			marks.onClickCallback = function(mark)
+				local axURL = mark.element:attributeValue("AXURL")
+				if axURL then
+					openUrlInNewTab(axURL.url)
+				end
 			end
+			hs.timer.doAfter(0, function()
+				marks.show(true)
+			end)
+			break
 		end
-		hs.timer.doAfter(0, function()
-			marks.show(true)
-		end)
 	end
 end
 
