@@ -18,7 +18,7 @@ in
     minio
 
     # --- rust ---
-    rustup
+    cargo
 
     # --- node ---
     corepack_latest
