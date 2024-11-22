@@ -14,6 +14,7 @@ return {
 					hidden = true,
 				},
 				{ "<leader>t", group = "terminal" },
+				{ "<leader>h", group = "grapple" },
 			},
 		},
 	},
