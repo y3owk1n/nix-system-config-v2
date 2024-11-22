@@ -11,12 +11,12 @@ return {
 	keys = function()
 		local keys = {
 			{
-				"<leader>H",
+				"<leader>ha",
 				"<cmd>Grapple toggle<cr>",
 				desc = "Grapple File",
 			},
 			{
-				"<leader>h",
+				"<leader>he",
 				"<cmd>Grapple toggle_tags<cr>",
 				desc = "Grapple Quick Menu",
 			},
