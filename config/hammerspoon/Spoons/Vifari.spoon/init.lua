@@ -47,6 +47,7 @@ local mapping = {
 	-- ["g$"] = { "cmd", "9" }, -- last tab
 	-- links
 	["f"] = "cmdGotoLink",
+	["r"] = "cmdRightClick",
 	["F"] = "cmdGotoLinkNewTab",
 	["gf"] = "cmdMoveMouseToLink",
 	-- mouse
@@ -718,8 +719,6 @@ function commands.cmdGotoLink(char)
 			return
 		end
 
-		local actions = element:attributeValue("AXActions") or {}
-
 		-- Try different methods to get position
 		local position, size
 
@@ -744,23 +743,6 @@ function commands.cmdGotoLink(char)
 				size = { w = frame.w, h = frame.h }
 			end
 		end
-
-		-- First try accessibility actions
-		-- if tblContains(actions, "AXPress") then
-		-- 	local success, err = pcall(function()
-		-- 		element:performAction("AXPress")
-		-- 	end)
-		-- 	if success then
-		-- 		return
-		-- 	end
-		-- elseif tblContains(actions, "AXClick") then
-		-- 	local success, err = pcall(function()
-		-- 		element:performAction("AXClick")
-		-- 	end)
-		-- 	if success then
-		-- 		return
-		-- 	end
-		-- end
 
 		-- If we have position info, try mouse click
 		if position and size then
@@ -827,6 +809,71 @@ function commands.cmdGotoLink(char)
 
 		if not focusSuccess then
 			logWithTimestamp("Focus fallback failed: " .. tostring(focusErr))
+		end
+	end
+	hs.timer.doAfter(0, marks.show)
+end
+
+function commands.cmdRightClick(char)
+	setMode(modes.LINKS, char)
+	marks.onClickCallback = function(mark)
+		local element = mark.element
+		if not element then
+			logWithTimestamp("Error: Invalid element")
+			return
+		end
+
+		local position, size
+
+		local success, posResult = pcall(function()
+			return element:attributeValue("AXPosition")
+		end)
+		local successSize, sizeResult = pcall(function()
+			return element:attributeValue("AXSize")
+		end)
+
+		if success and successSize and posResult and sizeResult then
+			position = posResult
+			size = sizeResult
+		end
+
+		-- Method 2: Try getting frame
+		if not position or not size then
+			local frame = element:attributeValue("AXFrame")
+			if frame then
+				position = { x = frame.x, y = frame.y }
+				size = { w = frame.w, h = frame.h }
+			end
+		end
+
+		if position and size then
+			-- Calculate center point of the element
+			local clickX = position.x + (size.w / 2)
+			local clickY = position.y + (size.h / 2)
+
+			-- Save current mouse position
+			local originalPosition = hs.mouse.absolutePosition()
+
+			-- Perform click sequence
+			local clickSuccess, clickErr = pcall(function()
+				-- Move mouse
+				hs.mouse.absolutePosition({ x = clickX, y = clickY })
+				hs.timer.usleep(50000) -- Wait 50ms
+
+				-- Click
+				hs.eventtap.rightClick({ x = clickX, y = clickY })
+
+				-- Restore mouse position
+				hs.timer.doAfter(0.1, function()
+					hs.mouse.absolutePosition(originalPosition)
+				end)
+			end)
+
+			if clickSuccess then
+				return
+			else
+				logWithTimestamp("Click failed: " .. tostring(clickErr))
+			end
 		end
 	end
 	hs.timer.doAfter(0, marks.show)
