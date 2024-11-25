@@ -160,6 +160,10 @@ in
         StandardHideWidgets = true;
       };
 
+      controlcenter = {
+        BatteryShowPercentage = true;
+      };
+
       # customize settings that not supported by nix-darwin directly
       # Incomplete list of macOS `defaults` commands :
       #   https://github.com/yannbertrand/macos-defaults
@@ -216,10 +220,11 @@ in
       # All custom entries can be found by running `defaults read` command.
       # or `defaults read xxx` to read a specific domain.
       CustomUserPreferences = {
-        # ".GlobalPreferences" = {
-        #   # automatically switch to a new space when switching to the application
-        #   AppleSpacesSwitchOnActivate = true;
-        # };
+        ".GlobalPreferences" = {
+          # automatically switch to a new space when switching to the application
+          # AppleSpacesSwitchOnActivate = true;
+          "com.apple.mouse.scaling" = 9;
+        };
         NSGlobalDomain = {
           # Add a context menu item for showing the Web Inspector in web views
           WebKitDeveloperExtras = true;
