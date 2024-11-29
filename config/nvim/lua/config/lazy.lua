@@ -41,6 +41,7 @@ local config = {
 		{ import = "lazyvim.plugins.extras.coding.neogen" },
 		{ import = "lazyvim.plugins.extras.coding.yanky" },
 		{ import = "lazyvim.plugins.extras.coding.mini-surround" },
+		{ import = "lazyvim.plugins.extras.coding.mini-comment" },
 		-- add extras editor
 		{ import = "lazyvim.plugins.extras.editor.inc-rename" },
 		{ import = "lazyvim.plugins.extras.editor.mini-files" },
