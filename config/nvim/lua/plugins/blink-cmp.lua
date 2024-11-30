@@ -19,9 +19,9 @@ return {
 			["<Esc>"] = {
 				function(cmp)
 					if cmp.windows.autocomplete.win:is_open() then
-						return cmp.hide()
-					else
-						return cmp.cancel()
+						if cmp.is_in_snippet() then
+							return cmp.hide()
+						end
 					end
 				end,
 				"fallback",
