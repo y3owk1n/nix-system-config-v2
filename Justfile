@@ -12,9 +12,6 @@ init ARG:
 rebuild:
     darwin-rebuild switch --verbose --impure --flake .
 
-extra-node:
-    bash ./scripts/install-node-packages.sh
-
 ############################################################################
 #
 #  nix related commands
