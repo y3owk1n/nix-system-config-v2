@@ -22,18 +22,6 @@ user="$1"
 
 echo "Build nix for user: $user"
 
-# Run the install-node-packages script
-echo "Running install-node-packages script..."
-bash "$config_dir/scripts/install-node-packages.sh"
-
-# Check the exit status of the last command
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to run the install-node-packages script"
-    exit 1
-fi
-
-echo "install-node-packages script executed successfully"
-
 # Run the nix command with the found directory and provided user
 echo "Building nix-darwin now..."
 nix run nix-darwin -- switch --verbose --impure --flake "$config_dir#$user"

@@ -1,7 +1,4 @@
 { pkgs, config, ... }:
-let
-  extraNodePackages = import ./node-packages/default.nix { inherit pkgs; };
-in
 {
   home.packages = with pkgs; [
     # --- utils ---
@@ -24,9 +21,6 @@ in
     corepack_latest
     fnm
     bun
-
-    # --- extraNodePackages ---
-    extraNodePackages.cpenv
 
     # --- nvim ---
     lua51Packages.lua
