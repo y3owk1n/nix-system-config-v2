@@ -13,7 +13,6 @@ return {
 			end,
 			integrations = {
 				fzf = true,
-				snacks = true,
 			},
 		},
 	},
