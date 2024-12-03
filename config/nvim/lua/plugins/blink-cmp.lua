@@ -18,8 +18,10 @@ return {
 			["<CR>"] = { "accept", "fallback" },
 			["<Esc>"] = {
 				function(cmp)
-					if cmp.windows.autocomplete.win:is_open() then
-						if cmp.is_in_snippet() then
+					if
+						require("blink.cmp.completion.windows.menu").win:is_open()
+					then
+						if cmp.snippet_active() then
 							return cmp.hide()
 						end
 					end
@@ -28,9 +30,11 @@ return {
 			},
 			["<Tab>"] = {
 				function(cmp)
-					if cmp.windows.autocomplete.win:is_open() then
+					if
+						require("blink.cmp.completion.windows.menu").win:is_open()
+					then
 						return cmp.select_next()
-					elseif cmp.is_in_snippet() then
+					elseif cmp.snippet_active() then
 						return cmp.snippet_forward()
 					elseif has_words_before() then
 						return cmp.show()
@@ -40,29 +44,36 @@ return {
 			},
 			["<S-Tab>"] = {
 				function(cmp)
-					if cmp.windows.autocomplete.win:is_open() then
+					if
+						require("blink.cmp.completion.windows.menu").win:is_open()
+					then
 						return cmp.select_prev()
-					elseif cmp.is_in_snippet() then
+					elseif cmp.snippet_active() then
 						return cmp.snippet_backward()
 					end
 				end,
 				"fallback",
 			},
 		},
-		windows = {
-			autocomplete = {
-				border = "rounded",
-				winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
+		completion = {
+			list = {
 				selection = "auto_insert",
 			},
-			documentation = {
-				auto_show = true,
+			menu = {
 				border = "rounded",
 				winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
 			},
-			signature_help = {
-				border = "rounded",
-				winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder",
+			documentation = {
+				window = {
+					border = "rounded",
+					winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
+				},
+			},
+			signature = {
+				window = {
+					border = "rounded",
+					winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
+				},
 			},
 		},
 	},
