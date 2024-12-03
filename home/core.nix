@@ -22,6 +22,10 @@
     fnm
     bun
 
+    # --- go ---
+    go
+    cobra-cli
+
     # --- nvim ---
     lua51Packages.lua
     luajitPackages.luarocks
