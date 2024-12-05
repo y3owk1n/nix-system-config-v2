@@ -56,33 +56,33 @@
             set -g @catppuccin_window_current_number "#I"
           '';
         }
-        {
-          plugin = tmuxPlugins.resurrect.overrideAttrs (_: {
-            src = pkgs.fetchFromGitHub {
-              owner = "tmux-plugins";
-              repo = "tmux-resurrect";
-              rev = "cff343cf9e81983d3da0c8562b01616f12e8d548";
-              sha256 = "sha256-FcSjYyWjXM1B+WmiK2bqUNJYtH7sJBUsY2IjSur5TjY=";
-            };
-          });
-          extraConfig = ''
-            set -g @resurrect-capture-pane-contents 'on'
-            set -g @resurrect-strategy-nvim 'session'
-          '';
-        }
-        {
-          plugin = tmuxPlugins.continuum.overrideAttrs (_: {
-            src = pkgs.fetchFromGitHub {
-              owner = "tmux-plugins";
-              repo = "tmux-continuum";
-              rev = "0698e8f4b17d6454c71bf5212895ec055c578da0";
-              sha256 = "sha256-W71QyLwC/MXz3bcLR2aJeWcoXFI/A3itjpcWKAdVFJY=";
-            };
-          });
-          extraConfig = ''
-            set -g @continuum-restore 'on'
-          '';
-        }
+        # {
+        #   plugin = tmuxPlugins.resurrect.overrideAttrs (_: {
+        #     src = pkgs.fetchFromGitHub {
+        #       owner = "tmux-plugins";
+        #       repo = "tmux-resurrect";
+        #       rev = "cff343cf9e81983d3da0c8562b01616f12e8d548";
+        #       sha256 = "sha256-FcSjYyWjXM1B+WmiK2bqUNJYtH7sJBUsY2IjSur5TjY=";
+        #     };
+        #   });
+        #   extraConfig = ''
+        #     set -g @resurrect-capture-pane-contents 'on'
+        #     set -g @resurrect-strategy-nvim 'session'
+        #   '';
+        # }
+        # {
+        #   plugin = tmuxPlugins.continuum.overrideAttrs (_: {
+        #     src = pkgs.fetchFromGitHub {
+        #       owner = "tmux-plugins";
+        #       repo = "tmux-continuum";
+        #       rev = "0698e8f4b17d6454c71bf5212895ec055c578da0";
+        #       sha256 = "sha256-W71QyLwC/MXz3bcLR2aJeWcoXFI/A3itjpcWKAdVFJY=";
+        #     };
+        #   });
+        #   extraConfig = ''
+        #     set -g @continuum-restore 'on'
+        #   '';
+        # }
       ];
       extraConfig = ''
         # unbind o
