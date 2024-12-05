@@ -11,7 +11,6 @@
       mouse = true;
       # prefix = "C-t";
       sensibleOnTop = true;
-      shell = "${pkgs.fish}/bin/fish";
       terminal = "screen-256color";
       plugins = with pkgs; [
         {
@@ -106,6 +105,7 @@
         bind-key -T copy-mode-vi 'v' send -X begin-selection # start selecting text with "v"
         bind-key -T copy-mode-vi 'y' send -X copy-selection # copy text with "y"
 
+        set-option -g default-shell "${pkgs.fish}/bin/fish"
         set-option -g default-command "${pkgs.fish}/bin/fish"
         set -ag terminal-overrides ",xterm-256color:RGB"
         set -g focus-events on
