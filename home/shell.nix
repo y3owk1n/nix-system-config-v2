@@ -62,8 +62,8 @@
         src = pkgs.fetchFromGitHub {
           owner = "y3owk1n";
           repo = "fish-fzf";
-          rev = "v1.0.1";
-          sha256 = "sha256-JD191rdCPmCWRL8n2dDJk6zBQm81qxJp5k4kC9ODalk=";
+          rev = "v1.0.2";
+          sha256 = "sha256-GVa6sCDeAriNnafOKCoGdlT4rrnkKxA8H9jmT19ulbU=";
         };
       }
       {
@@ -121,7 +121,7 @@
   };
 
   home.sessionVariables = {
-    SHELL = "${pkgs.fish}/bin/fish";
+    # SHELL = "${pkgs.fish}/bin/fish";
     LANG = "en_US.UTF-8";
     LC_ALL = "en_US.UTF-8";
     TERM = "xterm-256color";
