@@ -10,7 +10,7 @@ else
         (
             echo ~/nix-system-config-v2
             find ~/Dev -mindepth 1 -maxdepth 1 -type d
-        ) | fzf
+        ) | fzf --layout=reverse --border --height=~100% --tmux=center
     )
 fi
 
