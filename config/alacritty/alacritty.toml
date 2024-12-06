@@ -9,6 +9,8 @@ decorations = "buttonless"
 dynamic_title = true
 startup_mode = "Maximized"
 
+option_as_alt = "Both"
+
 [window.padding]
 x = 10
 y = 10
