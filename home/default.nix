@@ -19,7 +19,6 @@
     ./prompt.nix
     ./shell.nix
     ./terminal.nix
-    ./tiling-manager.nix
     ./hammerspoon.nix
   ];
 
