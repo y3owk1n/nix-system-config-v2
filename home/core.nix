@@ -1,18 +1,18 @@
 { pkgs, config, ... }:
 {
   home.packages = with pkgs; [
-    # --- utils ---
-    ripgrep
+    # utils
     fd
     curl
     jq
     tree
+    less
+    ripgrep
 
     # --- misc ---
-    less
     stripe-cli
-    postgresql
     minio
+    just
 
     # --- rust ---
     cargo
