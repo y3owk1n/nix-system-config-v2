@@ -66,6 +66,7 @@
             ./modules/apps.nix
             ./modules/host-users.nix
             ./modules/custom/karabiner.nix
+            ./modules/custom/aerospace.nix
             # home manager
             home-manager.darwinModules.home-manager
             {
