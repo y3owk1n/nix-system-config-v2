@@ -8,7 +8,6 @@
     shellInit = ''
       __load-em
       __autols_hook
-      __set_fzf_variables
       fnm env --use-on-cd --version-file-strategy=recursive --resolve-engines --shell fish | source
     '';
     shellAbbrs = {
@@ -62,7 +61,7 @@
         src = pkgs.fetchFromGitHub {
           owner = "y3owk1n";
           repo = "fish-fzf";
-          rev = "v1.0.2";
+          rev = "v1.0.3";
           sha256 = "sha256-GVa6sCDeAriNnafOKCoGdlT4rrnkKxA8H9jmT19ulbU=";
         };
       }
@@ -105,16 +104,6 @@
               ls
               set -g __autols_last $PWD
           end
-        '';
-      };
-      __set_fzf_variables = {
-        body = ''
-          set -Ux FZF_DEFAULT_OPTS "\
-          --color=bg+:#363a4f,bg:#24273a,spinner:#f4dbd6,hl:#ed8796 \
-          --color=fg:#cad3f5,header:#ed8796,info:#c6a0f6,pointer:#f4dbd6 \
-          --color=marker:#b7bdf8,fg+:#cad3f5,prompt:#c6a0f6,hl+:#ed8796 \
-          --color=selected-bg:#494d64 \
-          --multi"
         '';
       };
     };

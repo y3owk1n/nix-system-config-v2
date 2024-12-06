@@ -38,13 +38,6 @@
       enableFishIntegration = true;
     };
 
-    # skim provides a single executable: sk.
-    # Basically anywhere you would want to use grep, try sk instead.
-    skim = {
-      enable = true;
-      enableFishIntegration = true;
-    };
-
     # Fuzzy finder
     fzf = {
       enable = true;
@@ -65,6 +58,13 @@
         "hl+" = "#ed8796";
       };
       defaultCommand = "fd --type f --hidden --exclude .git";
+      defaultOptions = [
+        "--layout reverse"
+        "--height ~40%"
+        "--border"
+        "--tmux center"
+        "--preview 'bat --color=always {}'"
+      ];
       fileWidgetCommand = "fd --exclude .git --type f"; # for when ctrl-t is pressed
       changeDirWidgetCommand = "fd --type d --hidden --follow --max-depth 3 --exclude .git";
     };
