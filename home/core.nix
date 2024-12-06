@@ -3,12 +3,10 @@
   home.packages = with pkgs; [
     # utils
     fd
-    curl
     jq
     tree
     less
     ripgrep
-    # gnused
     mkcert
     rip2
 
