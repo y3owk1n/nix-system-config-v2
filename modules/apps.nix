@@ -16,11 +16,10 @@
   # The packages installed here are available to all users, and are reproducible across machines, and are rollbackable.
   # But on macOS, it's less stable than homebrew.
   #
+  # Whenever is possible, install packages on home manager instead
+  #
   # Related Discussion: https://discourse.nixos.org/t/darwin-again/29331
   environment.systemPackages = with pkgs; [
-    neovim
-    git
-    just # use Justfile to simplify nix-darwin's commands
     ncurses
   ];
   environment.variables.EDITOR = "nvim";
