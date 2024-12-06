@@ -31,7 +31,6 @@
     # --- node ---
     corepack_latest
     fnm
-    bun
 
     # --- go ---
     go
