@@ -74,18 +74,11 @@
 
     taps = [
       "homebrew/services"
-      # --- aerospace ---
-      # "nikitabobko/tap"
       "y3owk1n/tap"
     ];
 
     # `brew install`
     brews = [
-      "sqlite"
-      "gnu-sed"
-      "btop"
-      "mkcert"
-      "rip2"
       "kanata"
       "y3owk1n/tap/cpenv"
     ];
@@ -95,25 +88,15 @@
       "onyx"
       "imageoptim"
       "whatsapp"
-      # "lulu"
       "zerotier-one"
-      "keka"
-      "appcleaner"
       "pronotes"
       "hammerspoon" # mainly used for safari vim mode
-      # "homerow"
 
       # --- docker desktop alternative ---
       "orbstack"
 
-      # --- tiling manager ---
-      # "aerospace"
-
-      # --- terminal ---
-      "alacritty"
-
       # --- browser ---
-      "brave-browser"
+      # "brave-browser"
       # "zen-browser"
     ];
   };

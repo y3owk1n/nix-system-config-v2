@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ pkgs, ... }:
 {
   home.packages = with pkgs; [
     # utils
@@ -8,11 +8,24 @@
     tree
     less
     ripgrep
+    # gnused
+    mkcert
+    rip2
 
     # --- misc ---
+    # sqlite
     stripe-cli
     minio
     just
+    btop
+
+    # --- apps ---
+    keka
+    appcleaner
+    brave
+
+    # --- terminal ---
+    alacritty
 
     # --- rust ---
     cargo
