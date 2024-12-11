@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ pkgs, ... }:
 {
   programs = {
     tmux = {
@@ -9,21 +9,9 @@
       historyLimit = 50000;
       keyMode = "vi";
       mouse = true;
-      # prefix = "C-t";
-      sensibleOnTop = true;
+      sensibleOnTop = false;
       terminal = "screen-256color";
       plugins = with pkgs; [
-        {
-          plugin = tmuxPlugins.sensible.overrideAttrs (_: {
-            src = pkgs.fetchFromGitHub {
-              owner = "tmux-plugins";
-              repo = "tmux-sensible";
-              rev = "25cb91f42d020f675bb0a2ce3fbd3a5d96119efa";
-              sha256 = "sha256-sw9g1Yzmv2fdZFLJSGhx1tatQ+TtjDYNZI5uny0+5Hg=";
-            };
-          });
-
-        }
         {
           plugin = tmuxPlugins.vim-tmux-navigator.overrideAttrs (_: {
             src = pkgs.fetchFromGitHub {
@@ -31,9 +19,7 @@
               repo = "vim-tmux-navigator";
               rev = "424b5caa154bff34dc258ee53cec5a8e36cf7ea8";
               hash = "sha256-ZwJuBG0P20eQ9uVHeWF4Z8AaFo14MxNSCdjW/O6vLws=";
-
             };
-
           });
         }
         {
@@ -56,33 +42,33 @@
             set -g @catppuccin_window_current_number "#I"
           '';
         }
-        # {
-        #   plugin = tmuxPlugins.resurrect.overrideAttrs (_: {
-        #     src = pkgs.fetchFromGitHub {
-        #       owner = "tmux-plugins";
-        #       repo = "tmux-resurrect";
-        #       rev = "cff343cf9e81983d3da0c8562b01616f12e8d548";
-        #       sha256 = "sha256-FcSjYyWjXM1B+WmiK2bqUNJYtH7sJBUsY2IjSur5TjY=";
-        #     };
-        #   });
-        #   extraConfig = ''
-        #     set -g @resurrect-capture-pane-contents 'on'
-        #     set -g @resurrect-strategy-nvim 'session'
-        #   '';
-        # }
-        # {
-        #   plugin = tmuxPlugins.continuum.overrideAttrs (_: {
-        #     src = pkgs.fetchFromGitHub {
-        #       owner = "tmux-plugins";
-        #       repo = "tmux-continuum";
-        #       rev = "0698e8f4b17d6454c71bf5212895ec055c578da0";
-        #       sha256 = "sha256-W71QyLwC/MXz3bcLR2aJeWcoXFI/A3itjpcWKAdVFJY=";
-        #     };
-        #   });
-        #   extraConfig = ''
-        #     set -g @continuum-restore 'on'
-        #   '';
-        # }
+        {
+          plugin = tmuxPlugins.resurrect.overrideAttrs (_: {
+            src = pkgs.fetchFromGitHub {
+              owner = "tmux-plugins";
+              repo = "tmux-resurrect";
+              rev = "cff343cf9e81983d3da0c8562b01616f12e8d548";
+              sha256 = "sha256-FcSjYyWjXM1B+WmiK2bqUNJYtH7sJBUsY2IjSur5TjY=";
+            };
+          });
+          extraConfig = ''
+            set -g @resurrect-capture-pane-contents 'on'
+            set -g @resurrect-strategy-nvim 'session'
+          '';
+        }
+        {
+          plugin = tmuxPlugins.continuum.overrideAttrs (_: {
+            src = pkgs.fetchFromGitHub {
+              owner = "tmux-plugins";
+              repo = "tmux-continuum";
+              rev = "0698e8f4b17d6454c71bf5212895ec055c578da0";
+              sha256 = "sha256-W71QyLwC/MXz3bcLR2aJeWcoXFI/A3itjpcWKAdVFJY=";
+            };
+          });
+          extraConfig = ''
+            set -g @continuum-restore 'on'
+          '';
+        }
       ];
       extraConfig = ''
         # unbind o
