@@ -23,7 +23,7 @@
     brave
 
     # --- terminal ---
-    alacritty
+    # alacritty
 
     # --- rust ---
     cargo
