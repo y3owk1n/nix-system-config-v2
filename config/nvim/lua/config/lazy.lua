@@ -37,7 +37,6 @@ local config = {
 		-- add extras ui
 		{ import = "lazyvim.plugins.extras.ui.treesitter-context" },
 		-- add extras coding
-		{ import = "lazyvim.plugins.extras.coding.blink" },
 		{ import = "lazyvim.plugins.extras.coding.neogen" },
 		{ import = "lazyvim.plugins.extras.coding.yanky" },
 		{ import = "lazyvim.plugins.extras.coding.mini-surround" },
@@ -45,7 +44,6 @@ local config = {
 		-- add extras editor
 		{ import = "lazyvim.plugins.extras.editor.inc-rename" },
 		{ import = "lazyvim.plugins.extras.editor.mini-files" },
-		{ import = "lazyvim.plugins.extras.editor.fzf" },
 		-- add extras formatting
 		{ import = "lazyvim.plugins.extras.formatting.prettier" },
 		{ import = "lazyvim.plugins.extras.formatting.biome" },
