@@ -15,6 +15,9 @@ return {
 				fzf = true,
 			},
 		},
+		config = function(_, opts)
+			require("catppuccin").setup(opts)
+		end,
 	},
 	{
 		"LazyVim/LazyVim",
