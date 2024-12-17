@@ -1,6 +1,10 @@
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
+-- Better start & end line
+vim.keymap.set({ 'n', 'v' }, 'H', '^', { desc = 'Move to start of line' })
+vim.keymap.set({ 'n', 'v' }, 'L', '$', { desc = 'Move to end of line' })
+
 vim.keymap.set(
 	{ 'n', 'x' },
 	'j',

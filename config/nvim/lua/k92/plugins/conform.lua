@@ -94,7 +94,6 @@ return {
 	},
 	{
 		'stevearc/conform.nvim',
-		lazy = true,
 		event = { 'BufWritePre' },
 		cmd = { 'ConformInfo' },
 		dependencies = { 'mason.nvim' },
@@ -108,7 +107,7 @@ return {
 					}
 				end,
 				mode = '',
-				desc = '[F]ormat buffer',
+				desc = 'Format buffer',
 			},
 		},
 		opts = {

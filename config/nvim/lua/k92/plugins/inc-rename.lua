@@ -1,6 +1,7 @@
 return {
-	'windwp/nvim-ts-autotag',
+	'smjonas/inc-rename.nvim',
 	lazy = true,
 	event = 'VeryLazy',
+	cmd = 'IncRename',
 	opts = {},
 }

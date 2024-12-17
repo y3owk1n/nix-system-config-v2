@@ -1,9 +1,9 @@
 return {
 	'mfussenegger/nvim-lint',
-	lazy = true,
+	event = 'VeryLazy',
 	opts = {
-		-- Event to trigger linters
 		events = { 'BufWritePost', 'BufReadPost', 'InsertLeave' },
+		-- Event to trigger linters
 		linters_by_ft = {
 			fish = { 'fish' },
 			dockerfile = { 'hadolint' },

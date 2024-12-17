@@ -1,6 +1,7 @@
 return {
 	-- Main LSP Configuration
 	'neovim/nvim-lspconfig',
+	event = 'VeryLazy',
 	dependencies = {
 		-- Automatically install LSPs and related tools to stdpath for Neovim
 		{
@@ -34,12 +35,11 @@ return {
 				-- for LSP related items. It sets the mode, buffer and description for us each time.
 				local map = function(keys, func, desc, mode)
 					mode = mode or 'n'
-					vim.keymap.set(
-						mode,
-						keys,
-						func,
-						{ buffer = event.buf, desc = 'LSP: ' .. desc }
-					)
+					vim.keymap.set(mode, keys, func, {
+						buffer = event.buf,
+						silent = true,
+						desc = 'LSP: ' .. desc,
+					})
 				end
 
 				local fzf = require 'fzf-lua'
@@ -47,47 +47,49 @@ return {
 				-- Jump to the definition of the word under your cursor.
 				--  This is where a variable was first declared, or where a function is defined, etc.
 				--  To jump back, press <C-t>.
-				map('gd', fzf.lsp_definitions, '[G]oto [D]efinition')
+				map('gd', fzf.lsp_definitions, 'Goto definition')
 
 				-- Find references for the word under your cursor.
-				map('gr', fzf.lsp_references, '[G]oto [R]eferences')
+				map('gr', fzf.lsp_references, 'Goto references')
 
 				-- Jump to the implementation of the word under your cursor.
 				--  Useful when your language has ways of declaring types without an actual implementation.
-				map('gI', fzf.lsp_implementations, '[G]oto [I]mplementation')
+				map('gI', fzf.lsp_implementations, 'Goto implementation')
 
 				-- Fuzzy find all the symbols in your current document.
 				--  Symbols are things like variables, functions, types, etc.
 				map(
-					'<leader>ds',
+					'<leader>ss',
 					fzf.lsp_document_symbols,
-					'[D]ocument [S]ymbols'
+					'Search for document symbols'
 				)
 
 				-- Fuzzy find all the symbols in your current workspace.
 				--  Similar to document symbols, except searches over your entire project.
 				map(
-					'<leader>ws',
+					'<leader>sS',
 					fzf.lsp_workspace_symbols,
-					'[W]orkspace [S]ymbols'
+					'Search for workspace symbols'
 				)
 
 				-- Rename the variable under your cursor.
 				--  Most Language Servers support renaming across files, etc.
-				map('<leader>cr', vim.lsp.buf.rename, '[R]e[n]ame')
+				vim.keymap.set('n', '<leader>cr', function()
+					return ':IncRename ' .. vim.fn.expand '<cword>'
+				end, { expr = true, desc = 'Rename word' })
 
 				-- Execute a code action, usually your cursor needs to be on top of an error
 				-- or a suggestion from your LSP for this to activate.
 				map(
 					'<leader>ca',
 					vim.lsp.buf.code_action,
-					'[C]ode [A]ction',
+					'Code actions',
 					{ 'n', 'x' }
 				)
 
 				-- WARN: This is not Goto Definition, this is Goto Declaration.
 				--  For example, in C this would take you to the header.
-				map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+				map('gD', vim.lsp.buf.declaration, 'Goto declaration')
 
 				-- The following two autocommands are used to highlight references of the
 				-- word under your cursor when your cursor rests there for a little while.
