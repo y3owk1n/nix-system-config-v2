@@ -106,75 +106,50 @@ return {
 			'n',
 			'<leader>sh',
 			fzf.helptags,
-			{ desc = '[S]earch [H]elp' }
+			{ desc = 'Search help' }
 		)
 		vim.keymap.set(
 			'n',
 			'<leader>sk',
 			fzf.keymaps,
-			{ desc = '[S]earch [K]eymaps' }
+			{ desc = 'Search keymaps' }
 		)
-		vim.keymap.set(
-			'n',
-			'<leader>sf',
-			fzf.files,
-			{ desc = '[S]earch [F]iles' }
-		)
-		vim.keymap.set(
-			'n',
-			'<leader>ss',
-			fzf.builtin,
-			{ desc = '[S]earch [S]elect Fzf' }
-		)
+		vim.keymap.set('n', '<leader>sf', fzf.files, { desc = 'Search files' })
 		vim.keymap.set(
 			'n',
 			'<leader>sw',
 			fzf.grep_cword,
-			{ desc = '[S]earch current [W]ord' }
+			{ desc = 'Search current word' }
 		)
 		vim.keymap.set(
 			'n',
 			'<leader>sg',
 			fzf.live_grep,
-			{ desc = '[S]earch by [G]rep' }
+			{ desc = 'Search by grep' }
 		)
 		vim.keymap.set(
 			'n',
 			'<leader>sd',
 			fzf.diagnostics_document,
-			{ desc = '[S]earch [D]iagnostics Document' }
+			{ desc = 'Search diagnostics document' }
 		)
 		vim.keymap.set(
 			'n',
-			'<leader>sr',
+			'<leader>sR',
 			fzf.resume,
-			{ desc = '[S]earch [R]esume' }
-		)
-		vim.keymap.set(
-			'n',
-			'<leader>s.',
-			fzf.oldfiles,
-			{ desc = '[S]earch Recent Files ("." for repeat)' }
+			{ desc = 'Resume search' }
 		)
 		vim.keymap.set(
 			'n',
 			'<leader>sb',
 			fzf.buffers,
-			{ desc = '[S]earch existing [B]uffers' }
+			{ desc = 'Search buffers' }
 		)
-
-		-- It's also possible to pass additional configuration options.
-		--  See `:help telescope.builtin.live_grep()` for information about particular keys
 		vim.keymap.set(
 			'n',
 			'<leader><leader>',
 			fzf.files,
-			{ desc = '[S]earch [/] in Open Files' }
+			{ desc = 'Search files' }
 		)
-
-		-- Shortcut for searching your Neovim configuration files
-		vim.keymap.set('n', '<leader>sn', function()
-			fzf.find_files { cwd = vim.fn.stdpath 'config' }
-		end, { desc = '[S]earch [N]eovim files' })
 	end,
 }

@@ -8,7 +8,7 @@ return {
 			width_preview = 30,
 		},
 		mappings = {
-			close = '<esc>',
+			close = 'q',
 			go_in = '',
 			go_in_plus = '<CR>',
 			go_out = '',
