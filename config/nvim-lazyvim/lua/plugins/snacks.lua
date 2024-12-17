@@ -3,6 +3,7 @@ return {
 	opts = {
 		dashboard = {
 			preset = {
+				pick = "fzf-lua",
 				keys = {
 					{
 						icon = " ",
@@ -41,13 +42,6 @@ return {
 						action = ":Mason",
 					},
 					{
-						icon = " ",
-						key = "x",
-						desc = "Lazy Extras",
-						action = ":LazyExtras",
-						enabled = package.loaded.lazy,
-					},
-					{
 						icon = "󰒲 ",
 						key = "l",
 						desc = "Lazy",
@@ -59,8 +53,8 @@ return {
 				header = [[
 ██╗  ██╗██╗   ██╗██╗     ███████╗
 ██║ ██╔╝╚██╗ ██╔╝██║     ██╔════╝
-█████╔╝  ╚████╔╝ ██║     █████╗  
-██╔═██╗   ╚██╔╝  ██║     ██╔══╝  
+█████╔╝  ╚████╔╝ ██║     █████╗
+██╔═██╗   ╚██╔╝  ██║     ██╔══╝
 ██║  ██╗   ██║   ███████╗███████╗
 ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚══════╝
 ]],

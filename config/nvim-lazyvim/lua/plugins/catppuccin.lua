@@ -1,6 +1,7 @@
 return {
 	{
 		"catppuccin/nvim",
+		name = "catppuccin",
 		---@module 'catppuccin'
 		---@type CatppuccinOptions
 		opts = {
@@ -15,9 +16,6 @@ return {
 				fzf = true,
 			},
 		},
-		config = function(_, opts)
-			require("catppuccin").setup(opts)
-		end,
 	},
 	{
 		"LazyVim/LazyVim",
