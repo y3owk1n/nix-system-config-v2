@@ -8,6 +8,12 @@
     };
   };
 
+  xdg.configFile.nvim-lazyvim = {
+    enable = true;
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/nvim-lazyvim";
+    recursive = true;
+  };
+
   xdg.configFile.nvim = {
     enable = true;
     source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/nvim";

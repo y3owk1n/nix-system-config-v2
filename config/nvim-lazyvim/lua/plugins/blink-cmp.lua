@@ -14,7 +14,7 @@ return {
 	---@type blink.cmp.Config
 	opts = {
 		keymap = {
-			preset = "default",
+			preset = "super-tab",
 			["<CR>"] = { "accept", "fallback" },
 			["<Esc>"] = {
 				function(cmp)
@@ -40,6 +40,7 @@ return {
 						return cmp.show()
 					end
 				end,
+				LazyVim.cmp.map({ "snippet_forward", "ai_accept" }),
 				"fallback",
 			},
 			["<S-Tab>"] = {
