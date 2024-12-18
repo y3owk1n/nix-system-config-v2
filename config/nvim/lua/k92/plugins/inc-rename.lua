@@ -1,7 +1,7 @@
 return {
-	'smjonas/inc-rename.nvim',
+	"smjonas/inc-rename.nvim",
 	lazy = true,
-	event = 'VeryLazy',
-	cmd = 'IncRename',
+	event = "VeryLazy",
+	cmd = "IncRename",
 	opts = {},
 }

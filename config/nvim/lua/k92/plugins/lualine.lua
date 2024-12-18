@@ -1,13 +1,13 @@
-local catppuccin_palettes = require('catppuccin.palettes').get_palette()
+local catppuccin_palettes = require("catppuccin.palettes").get_palette()
 
 return {
-	'nvim-lualine/lualine.nvim',
-	event = 'VeryLazy',
+	"nvim-lualine/lualine.nvim",
+	event = "VeryLazy",
 	init = function()
 		vim.g.lualine_laststatus = vim.o.laststatus
 		if vim.fn.argc(-1) > 0 then
 			-- set an empty statusline till lualine loads
-			vim.o.statusline = ' '
+			vim.o.statusline = " "
 		else
 			-- hide the statusline on the starter page
 			vim.o.laststatus = 0
@@ -15,7 +15,7 @@ return {
 	end,
 	opts = function()
 		-- PERF: we don't need this lualine require madness 🤷
-		local lualine_require = require 'lualine_require'
+		local lualine_require = require("lualine_require")
 		lualine_require.require = require
 
 		vim.o.laststatus = vim.g.lualine_laststatus
@@ -23,12 +23,12 @@ return {
 		local opts = {
 			options = {
 				icons_enabled = true,
-				theme = 'catppuccin',
+				theme = "catppuccin",
 				globalstatus = vim.o.laststatus == 3,
-				component_separators = { left = '', right = '' },
-				section_separators = { left = '', right = '' },
+				component_separators = { left = "", right = "" },
+				section_separators = { left = "", right = "" },
 				disabled_filetypes = {
-					statusline = { 'snacks_dashboard' },
+					statusline = { "snacks_dashboard" },
 					winbar = {},
 				},
 				ignore_focus = {},
@@ -41,15 +41,15 @@ return {
 				},
 			},
 			sections = {
-				lualine_a = { 'mode' },
+				lualine_a = { "mode" },
 				lualine_b = {
-					'branch',
+					"branch",
 					{
-						'diff',
+						"diff",
 						symbols = {
-							added = ' ',
-							modified = ' ',
-							removed = ' ',
+							added = " ",
+							modified = " ",
+							removed = " ",
 						},
 						source = function()
 							local gitsigns = vim.b.gitsigns_status_dict
@@ -63,36 +63,36 @@ return {
 						end,
 					},
 					{
-						'diagnostics',
+						"diagnostics",
 						symbols = {
-							error = ' ',
-							warn = ' ',
-							info = ' ',
-							hint = ' ',
+							error = " ",
+							warn = " ",
+							info = " ",
+							hint = " ",
 						},
 					},
 				},
 				lualine_c = {
 					{
 
-						'filename',
+						"filename",
 						path = 4,
 					},
 				},
 				lualine_x = {
 					{
-						'grapple',
+						"grapple",
 						color = { fg = catppuccin_palettes.flamingo },
 					},
 				},
-				lualine_y = { 'filetype' },
-				lualine_z = { 'progress' },
+				lualine_y = { "filetype" },
+				lualine_z = { "progress" },
 			},
 			inactive_sections = {
 				lualine_a = {},
 				lualine_b = {},
-				lualine_c = { 'filename' },
-				lualine_x = { 'location' },
+				lualine_c = { "filename" },
+				lualine_x = { "location" },
 				lualine_y = {},
 				lualine_z = {},
 			},
@@ -100,12 +100,12 @@ return {
 			winbar = {},
 			inactive_winbar = {},
 			extensions = {
-				'lazy',
-				'fzf',
-				'man',
-				'mason',
-				'quickfix',
-				'trouble',
+				"lazy",
+				"fzf",
+				"man",
+				"mason",
+				"quickfix",
+				"trouble",
 			},
 		}
 

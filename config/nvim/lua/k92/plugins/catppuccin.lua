@@ -1,7 +1,8 @@
 return {
-	'catppuccin/nvim',
-	name = 'catppuccin',
+	"catppuccin/nvim",
+	name = "catppuccin",
 	priority = 1000,
+	---@type CatppuccinOptions
 	opts = {
 		custom_highlights = function(colors)
 			return {
@@ -24,10 +25,10 @@ return {
 			native_lsp = {
 				enabled = true,
 				underlines = {
-					errors = { 'undercurl' },
-					hints = { 'undercurl' },
-					warnings = { 'undercurl' },
-					information = { 'undercurl' },
+					errors = { "undercurl" },
+					hints = { "undercurl" },
+					warnings = { "undercurl" },
+					information = { "undercurl" },
 				},
 			},
 			noice = true,
@@ -41,8 +42,8 @@ return {
 		},
 	},
 	config = function(_, opts)
-		require('catppuccin').setup(opts)
+		require("catppuccin").setup(opts)
 
-		vim.cmd 'colorscheme catppuccin-macchiato'
+		vim.cmd("colorscheme catppuccin-macchiato")
 	end,
 }
