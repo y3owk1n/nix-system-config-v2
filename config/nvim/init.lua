@@ -7,6 +7,7 @@ vim.g.maplocalleader = ' '
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
+-- Disable snacks animation
 vim.g.snacks_animate = false
 
 require 'k92.health'

@@ -1,8 +1,9 @@
 return {
 	'folke/which-key.nvim',
 	lazy = true,
-	event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+	event = 'VeryLazy',
 	opts = {
+		preset = 'modern',
 		icons = {
 			-- set icon mappings to true if you have a Nerd Font
 			mappings = vim.g.have_nerd_font,

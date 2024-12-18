@@ -99,7 +99,14 @@ return {
 			tabline = {},
 			winbar = {},
 			inactive_winbar = {},
-			extensions = { 'lazy' },
+			extensions = {
+				'lazy',
+				'fzf',
+				'man',
+				'mason',
+				'quickfix',
+				'trouble',
+			},
 		}
 
 		return opts

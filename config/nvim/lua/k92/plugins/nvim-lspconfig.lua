@@ -53,17 +53,23 @@ return {
 
 				local fzf = require 'fzf-lua'
 
+				map('<leader>cl', '<cmd>LspInfo<cr>', 'Lsp Info')
+
 				-- Jump to the definition of the word under your cursor.
 				--  This is where a variable was first declared, or where a function is defined, etc.
 				--  To jump back, press <C-t>.
-				map('gd', fzf.lsp_definitions, 'Goto definition')
+				map('gd', vim.lsp.buf.definition, 'Goto definition')
+				-- map('gd', fzf.lsp_definitions, 'Goto definition')
 
 				-- Find references for the word under your cursor.
 				map('gr', fzf.lsp_references, 'Goto references')
 
 				-- Jump to the implementation of the word under your cursor.
 				--  Useful when your language has ways of declaring types without an actual implementation.
-				map('gI', fzf.lsp_implementations, 'Goto implementation')
+				map('gi', fzf.lsp_implementations, 'Goto implementation')
+
+				map('gt', fzf.lsp_typedefs, 'Goto Type Definition')
+				-- map('gt', vim.lsp.buf.type_definition, 'Goto Type Definition')
 
 				-- Fuzzy find all the symbols in your current document.
 				--  Symbols are things like variables, functions, types, etc.
@@ -99,6 +105,9 @@ return {
 				-- WARN: This is not Goto Definition, this is Goto Declaration.
 				--  For example, in C this would take you to the header.
 				map('gD', vim.lsp.buf.declaration, 'Goto declaration')
+
+				map('K', vim.lsp.buf.hover, 'Hover')
+				map('gK', vim.lsp.buf.signature_help, 'Signature help')
 
 				-- The following two autocommands are used to highlight references of the
 				-- word under your cursor when your cursor rests there for a little while.

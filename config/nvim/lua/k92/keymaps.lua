@@ -128,8 +128,5 @@ vim.keymap.set('n', '<leader>gf', function()
 	Snacks.lazygit.log_file()
 end, { desc = 'Lazygit Current File History' })
 vim.keymap.set('n', '<leader>gl', function()
-	Snacks.lazygit.log { cwd = LazyVim.root.git() }
-end, { desc = 'Lazygit Log' })
-vim.keymap.set('n', '<leader>gL', function()
 	Snacks.lazygit.log()
 end, { desc = 'Lazygit Log (cwd)' })
