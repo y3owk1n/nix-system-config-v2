@@ -19,7 +19,16 @@ return {
 
 		-- Useful status updates for LSP.
 		-- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-		{ 'j-hui/fidget.nvim', opts = {} },
+		{
+			'j-hui/fidget.nvim',
+			opts = {
+				notification = {
+					window = {
+						winblend = 0,
+					},
+				},
+			},
+		},
 	},
 	config = function()
 		vim.api.nvim_create_autocmd('LspAttach', {
@@ -162,7 +171,7 @@ return {
 		-- Change diagnostic symbols in the sign column (gutter)
 		if vim.g.have_nerd_font then
 			local signs =
-				{ ERROR = '', WARN = '', INFO = '', HINT = '' }
+				{ ERROR = ' ', WARN = ' ', INFO = ' ', HINT = ' ' }
 			local diagnostic_signs = {}
 			for type, icon in pairs(signs) do
 				diagnostic_signs[vim.diagnostic.severity[type]] = icon

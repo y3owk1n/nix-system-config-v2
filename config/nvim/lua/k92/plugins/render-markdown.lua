@@ -1,6 +1,7 @@
 return {
 	'MeanderingProgrammer/render-markdown.nvim',
 	lazy = true,
+	event = { 'BufReadPre' },
 	opts = {
 		code = {
 			sign = false,

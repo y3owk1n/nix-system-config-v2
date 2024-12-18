@@ -23,7 +23,7 @@ return {
 		local opts = {
 			options = {
 				icons_enabled = true,
-				theme = 'auto',
+				theme = 'catppuccin',
 				globalstatus = vim.o.laststatus == 3,
 				component_separators = { left = '', right = '' },
 				section_separators = { left = '', right = '' },
@@ -42,17 +42,51 @@ return {
 			},
 			sections = {
 				lualine_a = { 'mode' },
-				lualine_b = { 'branch', 'diff', 'diagnostics' },
+				lualine_b = {
+					'branch',
+					{
+						'diff',
+						symbols = {
+							added = ' ',
+							modified = ' ',
+							removed = ' ',
+						},
+						source = function()
+							local gitsigns = vim.b.gitsigns_status_dict
+							if gitsigns then
+								return {
+									added = gitsigns.added,
+									modified = gitsigns.changed,
+									removed = gitsigns.removed,
+								}
+							end
+						end,
+					},
+					{
+						'diagnostics',
+						symbols = {
+							error = ' ',
+							warn = ' ',
+							info = ' ',
+							hint = ' ',
+						},
+					},
+				},
 				lualine_c = {
-					'filename',
+					{
+
+						'filename',
+						path = 4,
+					},
+				},
+				lualine_x = {
 					{
 						'grapple',
 						color = { fg = catppuccin_palettes.flamingo },
 					},
 				},
-				lualine_x = { 'encoding', 'fileformat', 'filetype' },
-				lualine_y = { 'progress' },
-				lualine_z = { 'location' },
+				lualine_y = { 'filetype' },
+				lualine_z = { 'progress' },
 			},
 			inactive_sections = {
 				lualine_a = {},
