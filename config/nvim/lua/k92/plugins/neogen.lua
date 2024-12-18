@@ -1,6 +1,7 @@
 return {
 	'danymat/neogen',
 	lazy = true,
+	event = 'VeryLazy',
 	cmd = 'Neogen',
 	keys = {
 		{
