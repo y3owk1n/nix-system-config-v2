@@ -1,11 +1,12 @@
 return {
-	'MeanderingProgrammer/render-markdown.nvim',
+	"MeanderingProgrammer/render-markdown.nvim",
 	lazy = true,
-	event = { 'BufReadPre' },
+	event = { "BufReadPre" },
+	---@type render.md.UserConfig
 	opts = {
 		code = {
 			sign = false,
-			width = 'block',
+			width = "block",
 			right_pad = 1,
 		},
 		heading = {
@@ -13,22 +14,23 @@ return {
 			icons = {},
 		},
 	},
-	ft = { 'markdown', 'norg', 'rmd', 'org' },
+	ft = { "markdown", "norg", "rmd", "org" },
+	---@param opts render.md.UserConfig
 	config = function(_, opts)
-		require('render-markdown').setup(opts)
+		require("render-markdown").setup(opts)
 		Snacks.toggle({
-			name = 'Render Markdown',
+			name = "Render Markdown",
 			get = function()
-				return require('render-markdown.state').enabled
+				return require("render-markdown.state").enabled
 			end,
 			set = function(enabled)
-				local m = require 'render-markdown'
+				local m = require("render-markdown")
 				if enabled then
 					m.enable()
 				else
 					m.disable()
 				end
 			end,
-		}):map '<leader>um'
+		}):map("<leader>um")
 	end,
 }

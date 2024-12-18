@@ -1,6 +1,6 @@
 return {
-	'dmmulroy/ts-error-translator.nvim',
+	"dmmulroy/ts-error-translator.nvim",
 	lazy = true,
-	event = { 'BufReadPre', 'BufNewFile' },
+	event = { "BufReadPre", "BufNewFile" },
 	opts = {},
 }

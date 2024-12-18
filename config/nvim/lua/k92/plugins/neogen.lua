@@ -1,24 +1,20 @@
 return {
-	'danymat/neogen',
+	"danymat/neogen",
 	lazy = true,
-	event = 'VeryLazy',
-	cmd = 'Neogen',
+	event = "VeryLazy",
+	cmd = "Neogen",
 	keys = {
 		{
-			'<leader>cn',
+			"<leader>cn",
 			function()
-				require('neogen').generate()
+				require("neogen").generate()
 			end,
-			desc = 'Generate Annotations (Neogen)',
+			desc = "Generate Annotations (Neogen)",
 		},
 	},
-	opts = function(_, opts)
-		if opts.snippet_engine ~= nil then
-			return
-		end
-
-		if vim.snippet then
-			opts.snippet_engine = 'nvim'
-		end
-	end,
+	---@type neogen.Configuration
+	---@diagnostic disable-next-line: missing-fields
+	opts = {
+		snippet_engine = "nvim",
+	},
 }

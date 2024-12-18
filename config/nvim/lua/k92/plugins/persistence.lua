@@ -1,34 +1,35 @@
 return {
-	'folke/persistence.nvim',
+	"folke/persistence.nvim",
 	lazy = true,
-	event = 'BufReadPre',
+	event = "BufReadPre",
+	---@type Persistence.Config
 	opts = {},
 	keys = {
 		{
-			'<leader>qs',
+			"<leader>qs",
 			function()
-				require('persistence').load()
+				require("persistence").load()
 			end,
-			desc = 'Restore Session',
+			desc = "Restore Session",
 		},
 		{
-			'<leader>qS',
+			"<leader>qS",
 			function()
-				require('persistence').select()
+				require("persistence").select()
 			end,
-			desc = 'Select Session',
+			desc = "Select Session",
 		},
 		{
-			'<leader>ql',
+			"<leader>ql",
 			function()
-				require('persistence').load { last = true }
+				require("persistence").load({ last = true })
 			end,
-			desc = 'Restore Last Session',
+			desc = "Restore Last Session",
 		},
 		{
-			'<leader>qd',
+			"<leader>qd",
 			function()
-				require('persistence').stop()
+				require("persistence").stop()
 			end,
 			desc = "Don't Save Current Session",
 		},

@@ -1,23 +1,26 @@
 return {
-	'MagicDuck/grug-far.nvim',
+	"MagicDuck/grug-far.nvim",
 	lazy = true,
+	event = "VeryLazy",
+	---@type GrugFarOptions
+	---@diagnostic disable-next-line: missing-fields
 	opts = { headerMaxWidth = 80 },
-	cmd = 'GrugFar',
+	cmd = "GrugFar",
 	keys = {
 		{
-			'<leader>sr',
+			"<leader>sr",
 			function()
-				local grug = require 'grug-far'
-				local ext = vim.bo.buftype == '' and vim.fn.expand '%:e'
-				grug.open {
+				local grug = require("grug-far")
+				local ext = vim.bo.buftype == "" and vim.fn.expand("%:e")
+				grug.open({
 					transient = true,
 					prefills = {
-						filesFilter = ext and ext ~= '' and '*.' .. ext or nil,
+						filesFilter = ext and ext ~= "" and "*." .. ext or nil,
 					},
-				}
+				})
 			end,
-			mode = { 'n', 'v' },
-			desc = 'Search and Replace',
+			mode = { "n", "v" },
+			desc = "Search and Replace",
 		},
 	},
 }
