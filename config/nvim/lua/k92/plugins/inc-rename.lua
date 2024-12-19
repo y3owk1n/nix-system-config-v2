@@ -1,6 +1,6 @@
 return {
 	"smjonas/inc-rename.nvim",
-	event = "VeryLazy",
+	event = { "BufReadPre" },
 	cmd = "IncRename",
 	opts = {},
 }
