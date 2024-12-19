@@ -130,3 +130,5 @@ end, { desc = "Lazygit Current File History" })
 vim.keymap.set("n", "<leader>gl", function()
 	Snacks.lazygit.log()
 end, { desc = "Lazygit Log (cwd)" })
+
+-- vim: ts=2 sts=2 sw=2 et

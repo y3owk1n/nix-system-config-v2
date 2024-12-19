@@ -30,7 +30,246 @@ return {
 			},
 		},
 	},
-	config = function()
+	opts = function()
+		---@class PluginLspOpts
+		local ret = {
+			-- options for vim.diagnostic.config()
+			---@type vim.diagnostic.Opts
+			diagnostics = {
+				underline = true,
+				update_in_insert = false,
+				virtual_text = {
+					spacing = 4,
+					source = "if_many",
+					prefix = "●",
+					-- this will set set the prefix to a function that returns the diagnostics icon based on the severity
+					-- this only works on a recent 0.10.0 build. Will be set to "●" when not supported
+					-- prefix = "icons",
+				},
+				severity_sort = true,
+				signs = {
+					text = {
+						[vim.diagnostic.severity.ERROR] = " ",
+						[vim.diagnostic.severity.WARN] = " ",
+						[vim.diagnostic.severity.INFO] = " ",
+						[vim.diagnostic.severity.HINT] = " ",
+					},
+				},
+				float = {
+					border = "rounded",
+				},
+			},
+			-- add any global capabilities here
+			capabilities = {
+				workspace = {
+					fileOperations = {
+						didRename = true,
+						willRename = true,
+					},
+				},
+			},
+			-- LSP Server Settings
+			---@type lspconfig.options
+			servers = {
+				lua_ls = {
+					settings = {
+						Lua = {
+							workspace = {
+								checkThirdParty = false,
+							},
+							completion = {
+								callSnippet = "Replace",
+							},
+							doc = {
+								privateName = { "^_" },
+							},
+							hint = {
+								enable = true,
+								setType = false,
+								paramType = true,
+								paramName = "Disable",
+								semicolon = "Disable",
+								arrayIndex = "Disable",
+							},
+						},
+					},
+				},
+
+				dockerls = {},
+				docker_compose_language_service = {},
+
+				marksman = {},
+
+				nil_ls = {},
+
+				prismals = {},
+
+				tailwindcss = {
+					-- exclude a filetype from the default_config
+					filetypes_exclude = { "markdown" },
+					-- add additional filetypes to the default_config
+					filetypes_include = {},
+				},
+
+				gopls = {
+					settings = {
+						gopls = {
+							gofumpt = true,
+							codelenses = {
+								gc_details = false,
+								generate = true,
+								regenerate_cgo = true,
+								run_govulncheck = true,
+								test = true,
+								tidy = true,
+								upgrade_dependency = true,
+								vendor = true,
+							},
+							hints = {
+								assignVariableTypes = true,
+								compositeLiteralFields = true,
+								compositeLiteralTypes = true,
+								constantValues = true,
+								functionTypeParameters = true,
+								parameterNames = true,
+								rangeVariableTypes = true,
+							},
+							analyses = {
+								fieldalignment = true,
+								nilness = true,
+								unusedparams = true,
+								unusedwrite = true,
+								useany = true,
+							},
+							usePlaceholders = true,
+							completeUnimported = true,
+							staticcheck = true,
+							directoryFilters = {
+								"-.git",
+								"-.vscode",
+								"-.idea",
+								"-.vscode-test",
+								"-node_modules",
+							},
+							semanticTokens = true,
+						},
+					},
+				},
+
+				jsonls = {
+					-- lazy-load schemastore when needed
+					on_new_config = function(new_config)
+						new_config.settings.json.schemas = new_config.settings.json.schemas
+							or {}
+						vim.list_extend(
+							new_config.settings.json.schemas,
+							require("schemastore").json.schemas()
+						)
+					end,
+					settings = {
+						json = {
+							format = {
+								enable = true,
+							},
+							validate = { enable = true },
+						},
+					},
+				},
+
+				eslint = {
+					settings = {
+						-- helps eslint find the eslintrc when it's placed in a subfolder instead of the cwd root
+						workingDirectories = { mode = "auto" },
+						format = false,
+					},
+				},
+
+				-- ts_ls = {
+				-- 	enabled = false,
+				-- },
+
+				biome = {},
+
+				vtsls = {
+					filetypes = {
+						"javascript",
+						"javascriptreact",
+						"javascript.jsx",
+						"typescript",
+						"typescriptreact",
+						"typescript.tsx",
+					},
+					settings = {
+						complete_function_calls = true,
+						vtsls = {
+							enableMoveToFileCodeAction = true,
+							autoUseWorkspaceTsdk = true,
+							experimental = {
+								maxInlayHintLength = 30,
+								completion = {
+									enableServerSideFuzzyMatch = true,
+								},
+							},
+						},
+						typescript = {
+							updateImportsOnFileMove = { enabled = "always" },
+							suggest = {
+								completeFunctionCalls = true,
+							},
+							inlayHints = {
+								enumMemberValues = { enabled = true },
+								functionLikeReturnTypes = { enabled = true },
+								parameterNames = { enabled = "literals" },
+								parameterTypes = { enabled = true },
+								propertyDeclarationTypes = { enabled = true },
+								variableTypes = { enabled = false },
+							},
+						},
+					},
+				},
+
+				yamlls = {
+					-- Have to add this for yamlls to understand that we support line folding
+					capabilities = {
+						textDocument = {
+							foldingRange = {
+								dynamicRegistration = false,
+								lineFoldingOnly = true,
+							},
+						},
+					},
+					-- lazy-load schemastore when needed
+					on_new_config = function(new_config)
+						new_config.settings.yaml.schemas = vim.tbl_deep_extend(
+							"force",
+							new_config.settings.yaml.schemas or {},
+							require("schemastore").yaml.schemas()
+						)
+					end,
+					settings = {
+						redhat = { telemetry = { enabled = false } },
+						yaml = {
+							keyOrdering = false,
+							format = {
+								enable = true,
+							},
+							validate = true,
+							schemaStore = {
+								-- Must disable built-in schemaStore support to use
+								-- schemas from SchemaStore.nvim plugin
+								enable = false,
+								-- Avoid TypeError: Cannot read properties of undefined (reading 'length')
+								url = "",
+							},
+						},
+					},
+				},
+			},
+		}
+		return ret
+	end,
+	---@param opts PluginLspOpts
+	config = function(_, opts)
 		vim.api.nvim_create_autocmd("LspAttach", {
 			group = vim.api.nvim_create_augroup(
 				"k92-lsp-attach",
@@ -177,217 +416,18 @@ return {
 			end,
 		})
 
-		-- Change diagnostic symbols in the sign column (gutter)
-		if vim.g.have_nerd_font then
-			local signs =
-				{ ERROR = " ", WARN = " ", INFO = " ", HINT = " " }
-			local diagnostic_signs = {}
-			for type, icon in pairs(signs) do
-				diagnostic_signs[vim.diagnostic.severity[type]] = icon
-			end
-			vim.diagnostic.config({ signs = { text = diagnostic_signs } })
-		end
+		-- Update opts for diagnostics
+		vim.diagnostic.config(opts.diagnostics)
 
-		vim.diagnostic.config({
-			virtual_text = false,
-			float = {
-				border = "rounded",
-			},
-		})
-
-		local capabilities = vim.lsp.protocol.make_client_capabilities()
-		capabilities = vim.tbl_deep_extend(
+		local capabilities = vim.tbl_deep_extend(
 			"force",
-			capabilities,
-			require("blink.cmp").get_lsp_capabilities()
+			{},
+			vim.lsp.protocol.make_client_capabilities(),
+			require("blink.cmp").get_lsp_capabilities(),
+			opts.capabilities or {}
 		)
 
-		local servers = {
-			dockerls = {},
-			docker_compose_language_service = {},
-
-			marksman = {},
-
-			nil_ls = {},
-
-			prismals = {},
-
-			tailwindcss = {
-				-- exclude a filetype from the default_config
-				filetypes_exclude = { "markdown" },
-				-- add additional filetypes to the default_config
-				filetypes_include = {},
-			},
-
-			gopls = {
-				settings = {
-					gopls = {
-						gofumpt = true,
-						codelenses = {
-							gc_details = false,
-							generate = true,
-							regenerate_cgo = true,
-							run_govulncheck = true,
-							test = true,
-							tidy = true,
-							upgrade_dependency = true,
-							vendor = true,
-						},
-						hints = {
-							assignVariableTypes = true,
-							compositeLiteralFields = true,
-							compositeLiteralTypes = true,
-							constantValues = true,
-							functionTypeParameters = true,
-							parameterNames = true,
-							rangeVariableTypes = true,
-						},
-						analyses = {
-							fieldalignment = true,
-							nilness = true,
-							unusedparams = true,
-							unusedwrite = true,
-							useany = true,
-						},
-						usePlaceholders = true,
-						completeUnimported = true,
-						staticcheck = true,
-						directoryFilters = {
-							"-.git",
-							"-.vscode",
-							"-.idea",
-							"-.vscode-test",
-							"-node_modules",
-						},
-						semanticTokens = true,
-					},
-				},
-			},
-
-			jsonls = {
-				-- lazy-load schemastore when needed
-				on_new_config = function(new_config)
-					new_config.settings.json.schemas = new_config.settings.json.schemas
-						or {}
-					vim.list_extend(
-						new_config.settings.json.schemas,
-						require("schemastore").json.schemas()
-					)
-				end,
-				settings = {
-					json = {
-						format = {
-							enable = true,
-						},
-						validate = { enable = true },
-					},
-				},
-			},
-
-			eslint = {
-				settings = {
-					-- helps eslint find the eslintrc when it's placed in a subfolder instead of the cwd root
-					workingDirectories = { mode = "auto" },
-					format = false,
-				},
-			},
-
-			-- ts_ls = {
-			-- 	enabled = false,
-			-- },
-
-			biome = {},
-
-			vtsls = {
-				filetypes = {
-					"javascript",
-					"javascriptreact",
-					"javascript.jsx",
-					"typescript",
-					"typescriptreact",
-					"typescript.tsx",
-				},
-				settings = {
-					complete_function_calls = true,
-					vtsls = {
-						enableMoveToFileCodeAction = true,
-						autoUseWorkspaceTsdk = true,
-						experimental = {
-							maxInlayHintLength = 30,
-							completion = {
-								enableServerSideFuzzyMatch = true,
-							},
-						},
-					},
-					typescript = {
-						updateImportsOnFileMove = { enabled = "always" },
-						suggest = {
-							completeFunctionCalls = true,
-						},
-						inlayHints = {
-							enumMemberValues = { enabled = true },
-							functionLikeReturnTypes = { enabled = true },
-							parameterNames = { enabled = "literals" },
-							parameterTypes = { enabled = true },
-							propertyDeclarationTypes = { enabled = true },
-							variableTypes = { enabled = false },
-						},
-					},
-				},
-			},
-
-			yamlls = {
-				-- Have to add this for yamlls to understand that we support line folding
-				capabilities = {
-					textDocument = {
-						foldingRange = {
-							dynamicRegistration = false,
-							lineFoldingOnly = true,
-						},
-					},
-				},
-				-- lazy-load schemastore when needed
-				on_new_config = function(new_config)
-					new_config.settings.yaml.schemas = vim.tbl_deep_extend(
-						"force",
-						new_config.settings.yaml.schemas or {},
-						require("schemastore").yaml.schemas()
-					)
-				end,
-				settings = {
-					redhat = { telemetry = { enabled = false } },
-					yaml = {
-						keyOrdering = false,
-						format = {
-							enable = true,
-						},
-						validate = true,
-						schemaStore = {
-							-- Must disable built-in schemaStore support to use
-							-- schemas from SchemaStore.nvim plugin
-							enable = false,
-							-- Avoid TypeError: Cannot read properties of undefined (reading 'length')
-							url = "",
-						},
-					},
-				},
-			},
-
-			lua_ls = {
-				-- cmd = { ... },
-				-- filetypes = { ... },
-				-- capabilities = {},
-				settings = {
-					Lua = {
-						completion = {
-							callSnippet = "Replace",
-						},
-						-- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-						-- diagnostics = { disable = { 'missing-fields' } },
-					},
-				},
-			},
-		}
+		local servers = opts.servers or {}
 
 		require("mason").setup()
 
@@ -399,7 +439,7 @@ return {
 			"gofumpt",
 			"gomodifytags",
 			"impl",
-			"delve",
+			-- "delve",
 			"markdownlint-cli2",
 			"markdown-toc",
 			"biome",
@@ -409,22 +449,19 @@ return {
 			ensure_installed = ensure_installed,
 		})
 
+		---@diagnostic disable-next-line: missing-fields
 		require("mason-lspconfig").setup({
 			handlers = {
-				function(server_name)
-					local server = servers[server_name] or {}
-					-- This handles overriding only values explicitly passed
-					-- by the server configuration above. Useful when disabling
-					-- certain features of an LSP (for example, turning off formatting for ts_ls)
-					server.capabilities = vim.tbl_deep_extend(
-						"force",
-						{},
-						capabilities,
-						server.capabilities or {}
-					)
-					require("lspconfig")[server_name].setup(server)
+				function(server)
+					local server_opts = vim.tbl_deep_extend("force", {
+						capabilities = vim.deepcopy(capabilities),
+					}, servers[server] or {})
+
+					require("lspconfig")[server].setup(server_opts)
 				end,
 			},
 		})
 	end,
 }
+
+-- vim: ts=2 sts=2 sw=2 et

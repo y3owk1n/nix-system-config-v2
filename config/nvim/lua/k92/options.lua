@@ -104,3 +104,5 @@ vim.opt.viewoptions:remove("curdir") -- disable saving current directory with vi
 vim.opt.backspace:append({ "nostop" }) -- don't stop backspace at insert
 
 vim.opt.whichwrap:append("<,>,[,],h,l")
+
+-- vim: ts=2 sts=2 sw=2 et
