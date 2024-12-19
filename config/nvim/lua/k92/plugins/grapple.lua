@@ -1,6 +1,6 @@
 return {
 	"cbochs/grapple.nvim",
-	lazy = true,
+	event = "VeryLazy",
 	opts = {
 		scope = "git", -- also try out "git_branch"
 		win_opts = {

@@ -1,6 +1,5 @@
 return {
 	"MeanderingProgrammer/render-markdown.nvim",
-	lazy = true,
 	event = { "BufReadPre" },
 	---@type render.md.UserConfig
 	opts = {

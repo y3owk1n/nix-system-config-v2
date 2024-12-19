@@ -1,6 +1,5 @@
 return {
 	"folke/noice.nvim",
-	lazy = true,
 	event = "VeryLazy",
 	---@type NoiceConfig
 	---@diagnostic disable-next-line: missing-fields

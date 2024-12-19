@@ -1,6 +1,6 @@
 return {
 	"folke/trouble.nvim",
-	lazy = true,
+	event = "VeryLazy",
 	cmd = { "Trouble" },
 	---@class trouble.Config.mod: trouble.Config
 	opts = {
