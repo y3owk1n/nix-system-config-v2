@@ -4,6 +4,7 @@ return {
 	cmd = { "Trouble" },
 	---@class trouble.Config.mod: trouble.Config
 	opts = {
+		focus = true,
 		modes = {
 			lsp = {
 				win = { position = "right" },

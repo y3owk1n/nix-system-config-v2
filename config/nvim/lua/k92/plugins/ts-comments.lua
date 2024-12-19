@@ -1,5 +1,5 @@
 return {
 	"folke/ts-comments.nvim",
-	event = "VeryLazy",
+	event = { "BufReadPre", "BufNewFile" },
 	opts = {},
 }

@@ -1,6 +1,6 @@
 return {
 	"danymat/neogen",
-	event = "VeryLazy",
+	event = { "BufReadPre", "BufNewFile" },
 	cmd = "Neogen",
 	keys = {
 		{
