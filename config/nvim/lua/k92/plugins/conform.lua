@@ -95,7 +95,7 @@ return {
 	},
 	{
 		"stevearc/conform.nvim",
-		event = { "BufReadPre", "BufNewFile" },
+		event = { "BufWritePre" },
 		cmd = { "ConformInfo" },
 		dependencies = { "mason.nvim" },
 		keys = {
@@ -176,3 +176,5 @@ return {
 		},
 	},
 }
+
+-- vim: ts=2 sts=2 sw=2 et

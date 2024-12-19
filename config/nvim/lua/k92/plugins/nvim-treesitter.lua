@@ -113,3 +113,5 @@ return {
 		vim.treesitter.language.register("markdown", "mdx")
 	end,
 }
+
+-- vim: ts=2 sts=2 sw=2 et
