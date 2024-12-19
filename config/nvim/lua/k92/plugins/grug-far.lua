@@ -1,6 +1,5 @@
 return {
 	"MagicDuck/grug-far.nvim",
-	lazy = true,
 	event = "VeryLazy",
 	---@type GrugFarOptions
 	---@diagnostic disable-next-line: missing-fields

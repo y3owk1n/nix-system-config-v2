@@ -1,6 +1,5 @@
 return {
 	"folke/persistence.nvim",
-	lazy = true,
 	event = "BufReadPre",
 	---@type Persistence.Config
 	opts = {},

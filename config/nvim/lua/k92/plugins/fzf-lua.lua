@@ -1,7 +1,6 @@
 return {
 	"ibhagwan/fzf-lua",
-	lazy = true,
-	event = "VimEnter",
+	event = "VeryLazy",
 	cmd = "FzfLua",
 	dependencies = {
 		{ "echasnovski/mini.icons", enabled = vim.g.have_nerd_font },
