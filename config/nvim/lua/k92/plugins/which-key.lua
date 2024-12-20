@@ -7,7 +7,7 @@ return {
 	end,
 	---@class wk.Config: wk.Opts
 	opts = {
-		preset = "modern",
+		preset = "helix",
 		icons = {
 			-- set icon mappings to true if you have a Nerd Font
 			mappings = vim.g.have_nerd_font,
@@ -54,7 +54,6 @@ return {
 				{ "<leader>f", group = "file/find" },
 				{ "<leader>h", group = "grapple" },
 				{ "<leader>g", group = "git" },
-				{ "<leader>gh", group = "hunks" },
 				{ "<leader>q", group = "quit/session" },
 				{ "<leader>s", group = "search" },
 				{
