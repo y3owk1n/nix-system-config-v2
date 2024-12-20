@@ -23,9 +23,7 @@ return {
 			["<CR>"] = { "accept", "fallback" },
 			["<Esc>"] = {
 				function(cmp)
-					if
-						require("blink.cmp.completion.windows.menu").win:is_open()
-					then
+					if cmp.is_visible() then
 						if cmp.snippet_active() then
 							return cmp.hide()
 						end
@@ -35,9 +33,7 @@ return {
 			},
 			["<Tab>"] = {
 				function(cmp)
-					if
-						require("blink.cmp.completion.windows.menu").win:is_open()
-					then
+					if cmp.is_visible() then
 						return cmp.select_next()
 					elseif cmp.snippet_active() then
 						return cmp.snippet_forward()
@@ -49,9 +45,7 @@ return {
 			},
 			["<S-Tab>"] = {
 				function(cmp)
-					if
-						require("blink.cmp.completion.windows.menu").win:is_open()
-					then
+					if cmp.is_visible() then
 						return cmp.select_prev()
 					elseif cmp.snippet_active() then
 						return cmp.snippet_backward()
@@ -71,6 +65,7 @@ return {
 
 		sources = {
 			default = { "lsp", "path", "snippets", "buffer", "lazydev" },
+			cmdline = {},
 			providers = {
 				lazydev = {
 					name = "LazyDev",
@@ -80,22 +75,13 @@ return {
 			},
 		},
 
-		-- experimental signature help support
-		-- signature = { enabled = true },
-
 		completion = {
-			accept = {
-				-- experimental auto-brackets support
-				auto_brackets = {
-					enabled = true,
-				},
-			},
 			list = {
 				selection = "auto_insert",
 			},
 			menu = {
 				draw = {
-					treesitter = true,
+					treesitter = { "lsp" },
 				},
 				border = "rounded",
 				winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
@@ -103,12 +89,6 @@ return {
 			documentation = {
 				auto_show = true,
 				auto_show_delay_ms = 200,
-				window = {
-					border = "rounded",
-					winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
-				},
-			},
-			signature = {
 				window = {
 					border = "rounded",
 					winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
