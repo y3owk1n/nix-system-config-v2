@@ -12,7 +12,7 @@ end
 
 return {
 	"saghen/blink.cmp",
-	lazy = false, -- lazy loading handled internally
+	event = "InsertEnter",
 	dependencies = "rafamadriz/friendly-snippets",
 	version = "v0.*",
 	---@module 'blink.cmp'
@@ -64,24 +64,45 @@ return {
 		appearance = {
 			use_nvim_cmp_as_default = true,
 			nerd_font_variant = "mono",
+			kind_icons = {
+				Color = "██", -- Use block instead of icon for color items to make swatches more usable
+			},
 		},
 
 		sources = {
-			default = { "lsp", "path", "snippets", "buffer" },
+			default = { "lsp", "path", "snippets", "buffer", "lazydev" },
+			providers = {
+				lazydev = {
+					name = "LazyDev",
+					module = "lazydev.integrations.blink",
+					score_offset = 100, -- show at a higher priority than lsp
+				},
+			},
 		},
 
 		-- experimental signature help support
-		signature = { enabled = true },
+		-- signature = { enabled = true },
 
 		completion = {
+			accept = {
+				-- experimental auto-brackets support
+				auto_brackets = {
+					enabled = true,
+				},
+			},
 			list = {
 				selection = "auto_insert",
 			},
 			menu = {
+				draw = {
+					treesitter = true,
+				},
 				border = "rounded",
 				winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
 			},
 			documentation = {
+				auto_show = true,
+				auto_show_delay_ms = 200,
 				window = {
 					border = "rounded",
 					winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
