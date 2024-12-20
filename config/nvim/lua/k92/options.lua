@@ -42,6 +42,8 @@ vim.opt.undodir = os.getenv("HOME") .. "/.vim/undodir"
 vim.opt.swapfile = false
 vim.opt.updatetime = 50 -- Save swap file and trigger CursorHold
 
+vim.opt.completeopt = { "menu", "menuone", "noselect" }
+
 -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
@@ -68,10 +70,12 @@ vim.opt.cursorline = true
 vim.opt.wrap = false
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 8
+-- vim.opt.scrolloff = 8
 
 -- Remove tablines
 vim.opt.showtabline = 0
+
+vim.opt.synmaxcol = 300 -- Don't syntax highlight long lines
 
 -- words
 vim.opt.path:append("**")
@@ -97,6 +101,7 @@ vim.opt.formatoptions:append({ "r" })
 vim.opt.spelllang:append("cjk") -- disable spellchecking for asian characters (VIM algorithm does not support it)
 vim.opt.shortmess:append("c") -- don't show redundant messages from ins-completion-menu
 vim.opt.shortmess:append("I") -- don't show the default intro message
+vim.opt.shortmess:append("A") -- Ignore swap file messages
 vim.opt.shortmess:append({ s = true, I = true }) -- disable search count wrap and startup messages
 
 vim.opt.viewoptions:remove("curdir") -- disable saving current directory with views
