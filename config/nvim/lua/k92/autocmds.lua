@@ -74,18 +74,21 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 
 -- Remove whitespace on save
 vim.api.nvim_create_autocmd("BufWritePre", {
+	group = augroup("remove_whitespace_on_save"),
 	pattern = "",
 	command = ":%s/\\s\\+$//e",
 })
 
 -- Don't auto commenting new lines
 vim.api.nvim_create_autocmd("BufEnter", {
+	group = augroup("no_auto_commeting_new_lines"),
 	pattern = "",
 	command = "set fo-=c fo-=r fo-=o",
 })
 
 -- close mini.files with <q> or <esc>
 vim.api.nvim_create_autocmd("FileType", {
+	group = augroup("close_with_q_mini_files"),
 	pattern = {
 		"MiniFiles",
 	},
@@ -102,6 +105,7 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- Turn off paste mode when leaving insert
 vim.api.nvim_create_autocmd("InsertLeave", {
+	group = augroup("paste_mode_off_leaving_insert"),
 	pattern = "*",
 	command = "set nopaste",
 })
@@ -122,31 +126,43 @@ vim.api.nvim_create_autocmd(
 	{
 		desc = "Always keep the cursor vertically centered",
 		pattern = "*",
+		group = augroup("scrolloff_centered"),
 		callback = function()
 			set_scrolloff(0)
 		end,
 	}
 )
 
-vim.api.nvim_create_autocmd("FocusGained", {
-	desc = "Reload files from disk when we focus vim",
-	pattern = "*",
-	command = "if getcmdwintype() == '' | checktime | endif",
+-- Check if we need to reload the file when it changed
+vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
+	group = augroup("checktime"),
+	callback = function()
+		if vim.o.buftype ~= "nofile" then
+			vim.cmd("checktime")
+		end
+	end,
 })
-vim.api.nvim_create_autocmd("BufEnter", {
-	desc = "Every time we enter an unmodified buffer, check if it changed on disk",
-	pattern = "*",
-	command = "if &buftype == '' && !&modified && expand('%') != '' | exec 'checktime ' . expand('<abuf>') | endif",
+
+-- Resize splits if window got resized
+vim.api.nvim_create_autocmd({ "VimResized" }, {
+	group = augroup("resize_splits"),
+	callback = function()
+		local current_tab = vim.fn.tabpagenr()
+		vim.cmd("tabdo wincmd =")
+		vim.cmd("tabnext " .. current_tab)
+	end,
 })
 
 -- Close the scratch preview automatically
 vim.api.nvim_create_autocmd({ "CursorMovedI", "InsertLeave" }, {
+	group = augroup("close_scratch_preview"),
 	desc = "Close the popup-menu automatically",
 	pattern = "*",
 	command = "if pumvisible() == 0 && !&pvw && getcmdwintype() == ''|pclose|endif",
 })
 
 vim.api.nvim_create_autocmd("BufNew", {
+	group = augroup("edit_files_with_line"),
 	desc = "Edit files with :line at the end",
 	pattern = "*",
 	callback = function(args)
@@ -169,6 +185,7 @@ vim.api.nvim_create_autocmd("BufNew", {
 
 -- show cursor line only in active window
 vim.api.nvim_create_autocmd({ "InsertLeave", "WinEnter" }, {
+	group = augroup("auto_cursorline_show"),
 	callback = function()
 		if vim.w.auto_cursorline then
 			vim.wo.cursorline = true
@@ -177,6 +194,7 @@ vim.api.nvim_create_autocmd({ "InsertLeave", "WinEnter" }, {
 	end,
 })
 vim.api.nvim_create_autocmd({ "InsertEnter", "WinLeave" }, {
+	group = augroup("auto_cursorline_hide"),
 	callback = function()
 		if vim.wo.cursorline then
 			vim.w.auto_cursorline = true

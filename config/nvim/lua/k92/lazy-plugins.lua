@@ -29,6 +29,9 @@ require("lazy").setup({
 		border = "rounded",
 		backdrop = 100,
 	},
+	install = {
+		colorscheme = { "catppuccin" },
+	},
 	performance = {
 		rtp = {
 			-- disable some rtp plugins
