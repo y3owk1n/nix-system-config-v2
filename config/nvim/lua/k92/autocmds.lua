@@ -106,4 +106,65 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 	command = "set nopaste",
 })
 
+-- Always keep the cursor vertically centered
+local obs = false
+local function set_scrolloff(winid)
+	if obs then
+		vim.wo[winid].scrolloff =
+			math.floor(math.max(10, vim.api.nvim_win_get_height(winid) / 10))
+	else
+		vim.wo[winid].scrolloff = 1
+			+ math.floor(vim.api.nvim_win_get_height(winid) / 2)
+	end
+end
+vim.api.nvim_create_autocmd(
+	{ "BufEnter", "WinEnter", "WinNew", "VimResized" },
+	{
+		desc = "Always keep the cursor vertically centered",
+		pattern = "*",
+		callback = function()
+			set_scrolloff(0)
+		end,
+	}
+)
+
+vim.api.nvim_create_autocmd("FocusGained", {
+	desc = "Reload files from disk when we focus vim",
+	pattern = "*",
+	command = "if getcmdwintype() == '' | checktime | endif",
+})
+vim.api.nvim_create_autocmd("BufEnter", {
+	desc = "Every time we enter an unmodified buffer, check if it changed on disk",
+	pattern = "*",
+	command = "if &buftype == '' && !&modified && expand('%') != '' | exec 'checktime ' . expand('<abuf>') | endif",
+})
+
+-- Close the scratch preview automatically
+vim.api.nvim_create_autocmd({ "CursorMovedI", "InsertLeave" }, {
+	desc = "Close the popup-menu automatically",
+	pattern = "*",
+	command = "if pumvisible() == 0 && !&pvw && getcmdwintype() == ''|pclose|endif",
+})
+
+vim.api.nvim_create_autocmd("BufNew", {
+	desc = "Edit files with :line at the end",
+	pattern = "*",
+	callback = function(args)
+		local bufname = vim.api.nvim_buf_get_name(args.buf)
+		local root, line = bufname:match("^(.*):(%d+)$")
+		if
+			vim.fn.filereadable(bufname) == 0
+			and root
+			and line
+			and vim.fn.filereadable(root) == 1
+		then
+			vim.schedule(function()
+				vim.cmd.edit({ args = { root } })
+				pcall(vim.api.nvim_win_set_cursor, 0, { tonumber(line), 0 })
+				vim.api.nvim_buf_delete(args.buf, { force = true })
+			end)
+		end
+	end,
+})
+
 -- vim: ts=2 sts=2 sw=2 et

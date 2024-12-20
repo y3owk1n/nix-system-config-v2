@@ -39,6 +39,7 @@ return {
 				underline = true,
 				update_in_insert = false,
 				virtual_text = {
+					severity = { min = vim.diagnostic.severity.W },
 					spacing = 4,
 					source = "if_many",
 					prefix = "●",
@@ -54,9 +55,15 @@ return {
 						[vim.diagnostic.severity.INFO] = " ",
 						[vim.diagnostic.severity.HINT] = " ",
 					},
+					numhl = {
+						[vim.diagnostic.severity.ERROR] = "DiagnosticSignError",
+						[vim.diagnostic.severity.WARN] = "DiagnosticSignWarn",
+					},
 				},
 				float = {
+					source = true,
 					border = "rounded",
+					severity_sort = true,
 				},
 			},
 			-- add any global capabilities here
