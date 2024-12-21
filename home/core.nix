@@ -7,6 +7,7 @@
     tree
     less
     ripgrep
+    ast-grep
     mkcert
     rip2
 
