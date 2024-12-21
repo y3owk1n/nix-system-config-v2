@@ -1,5 +1,3 @@
----@diagnostic disable: missing-fields
-
 local function has_words_before()
 	local line, col = (unpack or table.unpack)(vim.api.nvim_win_get_cursor(0))
 	return col ~= 0
@@ -116,5 +114,3 @@ return {
 	-- without having to redefine it
 	opts_extend = { "sources.default" },
 }
-
--- vim: ts=2 sts=2 sw=2 et

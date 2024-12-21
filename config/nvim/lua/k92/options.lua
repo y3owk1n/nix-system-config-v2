@@ -25,10 +25,10 @@ vim.schedule(function()
 end)
 
 -- tabs & indentation
-vim.opt.tabstop = 4 -- 2 spaces for tabs (prettier default)
+vim.opt.tabstop = 8 -- 2 spaces for tabs (prettier default)
 vim.opt.shiftwidth = 4 -- 2 spaces for indent width
 vim.opt.softtabstop = 4 -- 2 spaces for softtab
-vim.opt.expandtab = true -- expand tab to spaces
+vim.opt.expandtab = false -- expand tab to spaces
 vim.opt.autoindent = true -- copy indent from current line when starting new one
 
 -- Enable break indent
@@ -109,5 +109,3 @@ vim.opt.viewoptions:remove("curdir") -- disable saving current directory with vi
 vim.opt.backspace:append({ "nostop" }) -- don't stop backspace at insert
 
 vim.opt.whichwrap:append("<,>,[,],h,l")
-
--- vim: ts=2 sts=2 sw=2 et
