@@ -1,11 +1,6 @@
 local function has_words_before()
 	local line, col = (unpack or table.unpack)(vim.api.nvim_win_get_cursor(0))
-	return col ~= 0
-		and vim.api
-				.nvim_buf_get_lines(0, line - 1, line, true)[1]
-				:sub(col, col)
-				:match("%s")
-			== nil
+	return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
 end
 
 return {
@@ -84,14 +79,12 @@ return {
 						kind_icon = {
 							ellipsis = false,
 							text = function(ctx)
-								local kind_icon, _, _ =
-									require("mini.icons").get("lsp", ctx.kind)
+								local kind_icon, _, _ = require("mini.icons").get("lsp", ctx.kind)
 								return kind_icon
 							end,
 							-- Optionally, you may also use the highlights from mini.icons
 							highlight = function(ctx)
-								local _, hl, _ =
-									require("mini.icons").get("lsp", ctx.kind)
+								local _, hl, _ = require("mini.icons").get("lsp", ctx.kind)
 								return hl
 							end,
 						},

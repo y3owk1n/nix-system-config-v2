@@ -18,6 +18,3 @@ require("k92.lazy-plugins")
 require("k92.options")
 require("k92.keymaps")
 require("k92.autocmds")
-
--- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et

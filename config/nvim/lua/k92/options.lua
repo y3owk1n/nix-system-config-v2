@@ -11,7 +11,7 @@ vim.opt.relativenumber = true
 
 vim.opt.mouse = ""
 
-vim.opt.colorcolumn = "80" -- make width to 80
+vim.opt.colorcolumn = "120" -- make width to 80
 
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
