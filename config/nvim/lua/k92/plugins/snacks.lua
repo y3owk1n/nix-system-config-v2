@@ -64,22 +64,22 @@ return {
 ]],
 			},
 		},
-		indent = { enabled = true },
-		input = { enabled = true },
+		indent = {
+			enabled = true,
+			scope = {
+				enabled = false, -- enable highlighting the current scope
+			},
+			chunk = {
+				enabled = true,
+				only_current = true,
+			},
+		},
 		notifier = {
 			enabled = true,
 			timeout = 3000,
 		},
 		quickfile = { enabled = true },
-		scroll = { enabled = true },
 		scope = { enabled = true },
-		statuscolumn = { enabled = true },
-		words = { enabled = true },
-		styles = {
-			notification = {
-				-- wo = { wrap = true } -- Wrap notifications
-			},
-		},
 	},
 	keys = {
 		{
@@ -180,5 +180,3 @@ return {
 		})
 	end,
 }
-
--- vim: ts=2 sts=2 sw=2 et
