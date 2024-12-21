@@ -166,12 +166,8 @@ return {
 				jsonls = {
 					-- lazy-load schemastore when needed
 					on_new_config = function(new_config)
-						new_config.settings.json.schemas = new_config.settings.json.schemas
-							or {}
-						vim.list_extend(
-							new_config.settings.json.schemas,
-							require("schemastore").json.schemas()
-						)
+						new_config.settings.json.schemas = new_config.settings.json.schemas or {}
+						vim.list_extend(new_config.settings.json.schemas, require("schemastore").json.schemas())
 					end,
 					settings = {
 						json = {
@@ -278,10 +274,7 @@ return {
 	---@param opts PluginLspOpts
 	config = function(_, opts)
 		vim.api.nvim_create_autocmd("LspAttach", {
-			group = vim.api.nvim_create_augroup(
-				"k92-lsp-attach",
-				{ clear = true }
-			),
+			group = vim.api.nvim_create_augroup("k92-lsp-attach", { clear = true }),
 			callback = function(event)
 				-- NOTE: Remember that Lua is a real programming language, and as such it is possible
 				-- to define small helper and utility functions so you don't have to repeat yourself.
@@ -319,19 +312,11 @@ return {
 
 				-- Fuzzy find all the symbols in your current document.
 				--  Symbols are things like variables, functions, types, etc.
-				map(
-					"<leader>ss",
-					fzf.lsp_document_symbols,
-					"Search for document symbols"
-				)
+				map("<leader>ss", fzf.lsp_document_symbols, "Search for document symbols")
 
 				-- Fuzzy find all the symbols in your current workspace.
 				--  Similar to document symbols, except searches over your entire project.
-				map(
-					"<leader>sS",
-					fzf.lsp_workspace_symbols,
-					"Search for workspace symbols"
-				)
+				map("<leader>sS", fzf.lsp_workspace_symbols, "Search for workspace symbols")
 
 				-- Rename the variable under your cursor.
 				--  Most Language Servers support renaming across files, etc.
@@ -341,12 +326,7 @@ return {
 
 				-- Execute a code action, usually your cursor needs to be on top of an error
 				-- or a suggestion from your LSP for this to activate.
-				map(
-					"<leader>ca",
-					vim.lsp.buf.code_action,
-					"Code actions",
-					{ "n", "x" }
-				)
+				map("<leader>ca", vim.lsp.buf.code_action, "Code actions", { "n", "x" })
 
 				-- WARN: This is not Goto Definition, this is Goto Declaration.
 				--  For example, in C this would take you to the header.
@@ -361,39 +341,22 @@ return {
 				--
 				-- When you move your cursor, the highlights will be cleared (the second autocommand).
 				local client = vim.lsp.get_client_by_id(event.data.client_id)
-				if
-					client
-					and client.supports_method(
-						vim.lsp.protocol.Methods.textDocument_documentHighlight
-					)
-				then
-					local highlight_augroup = vim.api.nvim_create_augroup(
-						"k92-lsp-highlight",
-						{ clear = false }
-					)
-					vim.api.nvim_create_autocmd(
-						{ "CursorHold", "CursorHoldI" },
-						{
-							buffer = event.buf,
-							group = highlight_augroup,
-							callback = vim.lsp.buf.document_highlight,
-						}
-					)
+				if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
+					local highlight_augroup = vim.api.nvim_create_augroup("k92-lsp-highlight", { clear = false })
+					vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+						buffer = event.buf,
+						group = highlight_augroup,
+						callback = vim.lsp.buf.document_highlight,
+					})
 
-					vim.api.nvim_create_autocmd(
-						{ "CursorMoved", "CursorMovedI" },
-						{
-							buffer = event.buf,
-							group = highlight_augroup,
-							callback = vim.lsp.buf.clear_references,
-						}
-					)
+					vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+						buffer = event.buf,
+						group = highlight_augroup,
+						callback = vim.lsp.buf.clear_references,
+					})
 
 					vim.api.nvim_create_autocmd("LspDetach", {
-						group = vim.api.nvim_create_augroup(
-							"k92-lsp-detach",
-							{ clear = true }
-						),
+						group = vim.api.nvim_create_augroup("k92-lsp-detach", { clear = true }),
 						callback = function(event2)
 							vim.lsp.buf.clear_references()
 							vim.api.nvim_clear_autocmds({
@@ -404,13 +367,8 @@ return {
 					})
 				end
 
-				if
-					client
-					and client.name == "gopls"
-					and not client.server_capabilities.semanticTokensProvider
-				then
-					local semantic =
-						client.config.capabilities.textDocument.semanticTokens
+				if client and client.name == "gopls" and not client.server_capabilities.semanticTokensProvider then
+					local semantic = client.config.capabilities.textDocument.semanticTokens
 					client.server_capabilities.semanticTokensProvider = {
 						full = true,
 						legend = {
