@@ -8,7 +8,6 @@ return {
 	opts = function()
 		local config = require("fzf-lua.config")
 
-		-- Quickfix
 		config.defaults.keymap.fzf["ctrl-d"] = "preview-page-down"
 		config.defaults.keymap.fzf["ctrl-u"] = "preview-page-up"
 		config.defaults.keymap.builtin["<c-d>"] = "preview-page-down"
@@ -25,15 +24,6 @@ return {
 			},
 			defaults = {
 				formatter = "path.filename_first",
-			},
-			winopts = {
-				width = 0.8,
-				height = 0.8,
-				row = 0.5,
-				col = 0.5,
-				preview = {
-					scrollchars = { "┃", "" },
-				},
 			},
 			files = {
 				cwd_prompt = false,
