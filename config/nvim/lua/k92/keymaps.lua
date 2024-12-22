@@ -1,21 +1,21 @@
--- [[ Basic Keymaps ]]
---  See `:help vim.keymap.set()`
-
 -- Better start & end line
 vim.keymap.set({ "n", "v" }, "H", "^", { desc = "Move to start of line" })
 vim.keymap.set({ "n", "v" }, "L", "$", { desc = "Move to end of line" })
 
+-- Better up & down
 vim.keymap.set({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
 vim.keymap.set({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", expr = true, silent = true })
 
+-- Better indentation
 vim.keymap.set("v", "<", "<gv")
 vim.keymap.set("v", ">", ">gv")
 
+-- Launch lazy window
 vim.keymap.set("n", "<leader>l", "<cmd>Lazy<cr>", { desc = "Lazy" })
 
+-- Location & Quickfix
 vim.keymap.set("n", "<leader>xl", "<cmd>lopen<cr>", { desc = "Location List" })
 vim.keymap.set("n", "<leader>xq", "<cmd>copen<cr>", { desc = "Quickfix List" })
-
 vim.keymap.set("n", "[q", vim.cmd.cprev, { desc = "Previous Quickfix" })
 vim.keymap.set("n", "]q", vim.cmd.cnext, { desc = "Next Quickfix" })
 
@@ -61,6 +61,7 @@ vim.keymap.set("n", "Q", "<nop>", { desc = "No op" })
 -- Mason
 vim.keymap.set("n", "<leader>m", "<cmd>Mason<cr>", { desc = "Mason" })
 
+-- Lazygit
 vim.keymap.set("n", "<leader>gg", function()
 	Snacks.lazygit()
 end, { desc = "Lazygit (cwd)" })
