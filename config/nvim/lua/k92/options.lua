@@ -81,6 +81,8 @@ vim.opt.synmaxcol = 300 -- Don't syntax highlight long lines
 
 vim.opt.virtualedit = "block" -- Allow going past the end of line in visual block mode
 
+vim.opt.cmdheight = 0
+
 -- words
 vim.opt.path:append("**")
 vim.opt.iskeyword:append("-") -- consider string-string as whole words
