@@ -1,13 +1,8 @@
--- [[ Basic Autocommands ]]
---  See `:help lua-guide-autocommands`
-
 local function augroup(name)
 	return vim.api.nvim_create_augroup("k92_" .. name, { clear = true })
 end
 
 -- Highlight when yanking (copying) text
---  Try it with `yap` in normal mode
---  See `:help vim.highlight.on_yank()`
 vim.api.nvim_create_autocmd("TextYankPost", {
 	desc = "Highlight when yanking (copying) text",
 	group = augroup("highlight_yank"),
