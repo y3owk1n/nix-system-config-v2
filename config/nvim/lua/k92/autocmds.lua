@@ -184,3 +184,10 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "WinLeave" }, {
 		end
 	end,
 })
+
+-- automatically Split help Buffers to the right
+vim.api.nvim_create_autocmd("FileType", {
+	group = augroup("split_help_right"),
+	pattern = "help",
+	command = "wincmd L",
+})
