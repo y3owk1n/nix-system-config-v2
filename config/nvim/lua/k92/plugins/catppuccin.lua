@@ -1,6 +1,6 @@
 return {
 	"catppuccin/nvim",
-	lazy = false,
+	event = "VeryLazy",
 	name = "catppuccin",
 	priority = 1000,
 	---@type CatppuccinOptions
