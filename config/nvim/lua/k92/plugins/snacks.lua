@@ -5,6 +5,21 @@ return {
 	---@type snacks.Config
 	opts = {
 		bigfile = { enabled = true },
+		indent = {
+			enabled = true,
+			scope = {
+				enabled = false, -- enable highlighting the current scope
+			},
+			chunk = {
+				enabled = true,
+				only_current = true,
+			},
+		},
+		notifier = {
+			enabled = true,
+			timeout = 3000,
+		},
+		quickfile = { enabled = true, exclude = { "latex" } },
 		dashboard = {
 			enabled = true,
 			preset = {
@@ -64,22 +79,6 @@ return {
 ]],
 			},
 		},
-		indent = {
-			enabled = true,
-			scope = {
-				enabled = false, -- enable highlighting the current scope
-			},
-			chunk = {
-				enabled = true,
-				only_current = true,
-			},
-		},
-		notifier = {
-			enabled = true,
-			timeout = 3000,
-		},
-		quickfile = { enabled = true },
-		scope = { enabled = true },
 	},
 	keys = {
 		{
@@ -88,13 +87,6 @@ return {
 				Snacks.notifier.show_history()
 			end,
 			desc = "Notification History",
-		},
-		{
-			"<leader>bd",
-			function()
-				Snacks.bufdelete()
-			end,
-			desc = "Delete Buffer",
 		},
 		{
 			"<leader>cR",

@@ -70,14 +70,6 @@ return {
 				{ "]", group = "next" },
 				{ "g", group = "goto" },
 				{ "gs", group = "surround" },
-				{ "z", group = "fold" },
-				{
-					"<leader>b",
-					group = "buffer",
-					expand = function()
-						return require("which-key.extras").expand.buf()
-					end,
-				},
 				{
 					"<leader>w",
 					group = "windows",
