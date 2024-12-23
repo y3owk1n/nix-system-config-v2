@@ -3,6 +3,31 @@ local fn = vim.fn
 local diagnostic = vim.diagnostic
 local bo = vim.bo
 
+local config = {
+	icons = {
+		git = {
+			added = " ",
+			changed = " ",
+			removed = " ",
+		},
+		diagnostics = {
+			error = " ",
+			warn = " ",
+			info = " ",
+			hint = " ",
+		},
+		separator = "| ",
+	},
+	segments = {
+		mode = true,
+		filename = true,
+		git = true,
+		diagnostics = true,
+		filetype = true,
+		location = true,
+	},
+}
+
 local function setup_colors()
 	local status_ok, catppuccin = pcall(require, "catppuccin.palettes")
 	if not status_ok then
@@ -43,14 +68,7 @@ local function setup_colors()
 
 	for _, hl in ipairs(highlights) do
 		local name, fg, bg = unpack(hl)
-		local cmd = "hi " .. name
-		if fg then
-			cmd = cmd .. " guifg=" .. fg
-		end
-		if bg then
-			cmd = cmd .. " guibg=" .. bg
-		end
-		api.nvim_command(cmd)
+		api.nvim_set_hl(0, name, { fg = fg, bg = bg })
 	end
 end
 
@@ -76,156 +94,191 @@ local modes = {
 	["!"] = "SHELL",
 	["t"] = "TERMINAL",
 }
+local mode_colors = {
+	n = "StatuslineAccent",
+	i = "StatuslineInsertAccent",
+	v = "StatuslineVisualAccent",
+	V = "StatuslineVisualAccent",
+	[""] = "StatuslineVisualAccent",
+	R = "StatuslineReplaceAccent",
+	c = "StatuslineCmdLineAccent",
+	t = "StatuslineTerminalAccent",
+}
 
-local function mode()
-	local current_mode = api.nvim_get_mode().mode
-	return string.format(" %s ", modes[current_mode]):upper()
-end
+local components = {
+	mode = function()
+		local current_mode = api.nvim_get_mode().mode
+		return string.format(" %s ", modes[current_mode]):upper()
+	end,
 
-local function update_mode_colors()
-	local current_mode = api.nvim_get_mode().mode
-	local mode_color = "%#StatusLineAccent#"
-	if current_mode == "n" then
-		mode_color = "%#StatuslineAccent#"
-	elseif current_mode == "i" or current_mode == "ic" then
-		mode_color = "%#StatuslineInsertAccent#"
-	elseif current_mode == "v" or current_mode == "V" or current_mode == "" then
-		mode_color = "%#StatuslineVisualAccent#"
-	elseif current_mode == "R" then
-		mode_color = "%#StatuslineReplaceAccent#"
-	elseif current_mode == "c" then
-		mode_color = "%#StatuslineCmdLineAccent#"
-	elseif current_mode == "t" then
-		mode_color = "%#StatuslineTerminalAccent#"
-	end
-	return mode_color
-end
+	mode_color = function()
+		local current_mode = api.nvim_get_mode().mode
+		return "%#" .. (mode_colors[current_mode] or "StatuslineAccent") .. "#"
+	end,
 
-local function filepath()
-	local fpath = fn.fnamemodify(vim.fn.expand("%"), ":~:.:h")
-	if fpath == "" or fpath == "." then
-		return " "
-	end
+	filepath = function()
+		local fpath = fn.fnamemodify(fn.expand("%"), ":~:.:h")
+		if fpath == "" or fpath == "." then
+			return " "
+		end
 
-	return string.format(" %%<%s/", fpath)
-end
+		-- Split the file path into components
+		local path_components = vim.split(fpath, "/", { plain = true })
 
-local function filename()
-	local fname = fn.expand("%:t")
-	if fname == "" then
+		-- Only show the last two components (adjust as needed)
+		local max_components = 2
+		local display_path =
+			table.concat(vim.list_slice(path_components, #path_components - max_components + 1, #path_components), "/")
+
+		return string.format(" %%<%s/", display_path)
+	end,
+
+	filename = function()
+		local fname = fn.expand("%:t")
+		if fname == "" then
+			return ""
+		end
+		return fname .. " "
+	end,
+
+	filesize = function()
+		local size = fn.getfsize(fn.expand("%:p"))
+		if size <= 0 then
+			return ""
+		end
+
+		local suffixes = { "b", "k", "m", "g" }
+		local i = 1
+		while size > 1024 and i < #suffixes do
+			size = size / 1024
+			i = i + 1
+		end
+		return string.format(" %.1f%s ", size, suffixes[i])
+	end,
+
+	filetype = function()
+		local icon = ""
+		local has_devicons, devicons = pcall(require, "nvim-web-devicons")
+		if has_devicons then
+			icon = devicons.get_icon(fn.expand("%:t"), bo.filetype) or ""
+			icon = icon .. " "
+		end
+		return string.format(" %s%s ", icon, bo.filetype):upper()
+	end,
+
+	lineinfo = function()
+		if bo.filetype == "alpha" then
+			return ""
+		end
+		return " %P %l:%c "
+	end,
+
+	lsp = function()
+		local levels = {
+			errors = vim.diagnostic.severity.ERROR,
+			warnings = vim.diagnostic.severity.WARN,
+			info = vim.diagnostic.severity.INFO,
+			hints = vim.diagnostic.severity.HINT,
+		}
+
+		local diagnostics = {}
+		for type, level in pairs(levels) do
+			local count = #diagnostic.get(0, { severity = level })
+			if count > 0 then
+				table.insert(
+					diagnostics,
+					string.format(
+						" %%#LspDiagnosticsSign%s#%s %d",
+						level,
+						config.icons.diagnostics[type:sub(1, -2)],
+						count
+					)
+				)
+			end
+		end
+
+		if #diagnostics > 0 then
+			return table.concat(diagnostics) .. "%#Normal#"
+		end
 		return ""
-	end
-	return fname .. " "
-end
+	end,
 
-local function lsp()
-	local count = {}
-	local levels = {
-		errors = vim.diagnostic.severity.ERROR,
-		warnings = vim.diagnostic.severity.WARN,
-		info = vim.diagnostic.severity.INFO,
-		hints = vim.diagnostic.severity.HINT,
-	}
+	git = function()
+		local git_info = vim.b.gitsigns_status_dict
+		if not git_info or git_info.head == "" then
+			return ""
+		end
 
-	for k, level in pairs(levels) do
-		count[k] = vim.tbl_count(diagnostic.get(0, { severity = level }))
-	end
+		local parts = {
+			"%#GitSignsAdd# " .. git_info.head .. " ",
+		}
 
-	local errors = ""
-	local warnings = ""
-	local hints = ""
-	local info = ""
+		local changes = {
+			{ git_info.added, "Add", config.icons.git.added },
+			{ git_info.changed, "Change", config.icons.git.changed },
+			{ git_info.removed, "Delete", config.icons.git.removed },
+		}
 
-	if count["errors"] ~= 0 then
-		errors = " %#LspDiagnosticsSignError# " .. count["errors"]
-	end
-	if count["warnings"] ~= 0 then
-		warnings = " %#LspDiagnosticsSignWarning# " .. count["warnings"]
-	end
-	if count["hints"] ~= 0 then
-		hints = " %#LspDiagnosticsSignHint# " .. count["hints"]
-	end
-	if count["info"] ~= 0 then
-		info = " %#LspDiagnosticsSignInformation# " .. count["info"]
-	end
+		for _, change in ipairs(changes) do
+			local count, type, icon = unpack(change)
+			if count and count > 0 then
+				table.insert(parts, string.format("%%#GitSigns%s#%s%d ", type, icon, count))
+			end
+		end
 
-	return errors .. warnings .. hints .. info .. "%#Normal#"
-end
+		return table.concat(parts) .. "%#Normal#"
+	end,
 
-local function filetype()
-	return string.format(" %s ", bo.filetype):upper()
-end
+	grapple = function()
+		local ok, grapple = pcall(require, "grapple")
+		if not ok then
+			return ""
+		end
 
-local function lineinfo()
-	if bo.filetype == "alpha" then
+		local statusline = grapple.statusline()
+		if statusline then
+			return table.concat({
+				"%#Normal#",
+				"%#GrappleStatusLine#",
+				" ",
+				statusline,
+				"%#Normal#",
+			})
+		end
 		return ""
-	end
-	return " %P %l:%c "
-end
-
-local function vcs()
-	local git_info = vim.b.gitsigns_status_dict
-	if not git_info or git_info.head == "" then
-		return ""
-	end
-	local added = git_info.added and ("%#GitSignsAdd# " .. git_info.added .. " ") or ""
-	local changed = git_info.changed and ("%#GitSignsChange# " .. git_info.changed .. " ") or ""
-	local removed = git_info.removed and ("%#GitSignsDelete# " .. git_info.removed .. " ") or ""
-	if git_info.added == 0 then
-		added = ""
-	end
-	if git_info.changed == 0 then
-		changed = ""
-	end
-	if git_info.removed == 0 then
-		removed = ""
-	end
-	return table.concat({
-		" ",
-		"%#GitSignsAdd# ",
-		git_info.head,
-		" ",
-		added,
-		changed,
-		removed,
-		" %#Normal#",
-	})
-end
-
-local grapple = function()
-	local statusline = require("grapple").statusline()
-	if statusline then
-		return table.concat({
-			"%#GrappleStatusLine#", -- Apply the color
-			" ",
-			statusline,
-			"%#Normal#", -- Reset the color
-		})
-	end
-
-	return ""
-end
+	end,
+}
 
 Statusline = {}
 
 Statusline.active = function()
-	return table.concat({
+	local parts = {}
+	local function add(...)
+		for _, part in ipairs({ ... }) do
+			table.insert(parts, part)
+		end
+	end
+
+	add(
 		"%#Statusline#",
-		update_mode_colors(),
-		mode(),
+		components.mode_color(),
+		components.mode(),
 		"%#Normal#",
 		" ",
-		vcs(),
-		grapple(),
+		components.git(),
+		components.grapple(),
 		"%#Normal# ",
-		filepath(),
-		filename(),
+		components.filepath(),
+		components.filename(),
+		components.filesize(),
 		"%#Normal#",
-		lsp(),
-		"%=%#StatusLineExtra#",
-		filetype(),
-		lineinfo(),
-	})
+		components.lsp()
+	)
+
+	-- Right side
+	add("%=", "%#StatusLineExtra#", components.filetype(), components.lineinfo())
+
+	return table.concat(parts)
 end
 
 function Statusline.inactive()
