@@ -7,7 +7,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	desc = "Highlight when yanking (copying) text",
 	group = augroup("highlight_yank"),
 	callback = function()
-		vim.highlight.on_yank()
+		(vim.hl or vim.highlight).on_yank()
 	end,
 })
 
