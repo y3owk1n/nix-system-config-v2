@@ -311,8 +311,12 @@ return {
 				--  For example, in C this would take you to the header.
 				map("gD", vim.lsp.buf.declaration, "Goto declaration")
 
-				map("K", vim.lsp.buf.hover, "Hover")
-				map("gK", vim.lsp.buf.signature_help, "Signature help")
+				map("K", function()
+					vim.lsp.buf.hover({ border = opts.border or "rounded" })
+				end, "Hover")
+				map("gK", function()
+					vim.lsp.buf.signature_help({ border = opts.border or "rounded" })
+				end, "Signature help")
 
 				-- The following two autocommands are used to highlight references of the
 				-- word under your cursor when your cursor rests there for a little while.
@@ -394,12 +398,6 @@ return {
 				severity_sort = true,
 			},
 		})
-
-		-- Make border rounded for hover & signatureHelp
-		vim.lsp.handlers["textDocument/hover"] =
-			vim.lsp.with(vim.lsp.handlers.hover, { border = opts.border or "rounded" })
-		vim.lsp.handlers["textDocument/signatureHelp"] =
-			vim.lsp.with(vim.lsp.handlers.signature_help, { border = opts.border or "rounded" })
 
 		local capabilities = vim.tbl_deep_extend(
 			"force",
