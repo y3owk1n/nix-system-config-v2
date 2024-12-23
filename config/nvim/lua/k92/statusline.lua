@@ -257,14 +257,12 @@ local components = {
 			return ""
 		end
 
-		local exists = grapple.exists()
 		local statusline = grapple.statusline()
 
-		if exists and statusline then
+		if statusline then
 			return table.concat({
 				"%#Normal#",
 				"%#GrappleStatusLine#",
-				" ",
 				statusline,
 				"%#Normal#",
 			})
