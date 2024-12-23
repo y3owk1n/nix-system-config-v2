@@ -4,6 +4,11 @@ local diagnostic = vim.diagnostic
 local bo = vim.bo
 local cmd = vim.cmd
 
+local function try_require(module)
+	local ok, result = pcall(require, module)
+	return ok and result or nil
+end
+
 local config = {
 	icons = {
 		git = {
@@ -19,19 +24,11 @@ local config = {
 		},
 		separator = "| ",
 	},
-	segments = {
-		mode = true,
-		filename = true,
-		git = true,
-		diagnostics = true,
-		filetype = true,
-		location = true,
-	},
 }
 
 local function setup_colors()
-	local status_ok, catppuccin = pcall(require, "catppuccin.palettes")
-	if not status_ok then
+	local catppuccin = try_require("catppuccin.palettes")
+	if not catppuccin then
 		vim.notify("Catppuccin colorscheme not found", vim.log.levels.WARN)
 		return
 	end
@@ -119,7 +116,7 @@ local components = {
 	end,
 
 	filepath = function()
-		local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":~")
+		local cwd = fn.fnamemodify(fn.getcwd(), ":~")
 		local fpath = fn.fnamemodify(fn.expand("%"), ":~:.:h")
 		if fpath == "" or fpath == "." then
 			return string.format(" %s/", cwd)
@@ -133,7 +130,7 @@ local components = {
 		local display_path
 
 		if path_depth > 1 then
-			display_path = ".../" .. path_components[path_depth]
+			display_path = "~/" .. path_components[path_depth]
 		else
 			display_path = path_components[1]
 		end
@@ -166,41 +163,54 @@ local components = {
 
 	filetype = function()
 		local icon = ""
-		local has_devicons, devicons = pcall(require, "nvim-web-devicons")
-		if has_devicons then
+		local devicons = try_require("nvim-web-devicons")
+		if devicons then
 			icon = devicons.get_icon(fn.expand("%:t"), bo.filetype) or ""
 			icon = icon .. " "
 		end
 		return string.format(" %s%s ", icon, bo.filetype):upper()
 	end,
 
+	file_format = function()
+		local enc = bo.fileencoding or "utf-8"
+		local fmt = bo.fileformat == "unix" and "LF" or "CRLF"
+		return string.format(" %s %s ", enc:upper(), fmt)
+	end,
+
 	lineinfo = function()
-		if bo.filetype == "alpha" then
-			return ""
-		end
 		return " %P  %l:%c "
 	end,
 
+	read_only = function()
+		if bo.readonly then
+			return ""
+		end
+		if bo.modifiable == false then
+			return ""
+		end
+		if bo.modified then
+			return ""
+		end
+		return ""
+	end,
+
 	diagnostics = function()
-		local levels = {
-			error = vim.diagnostic.severity.ERROR,
-			warn = vim.diagnostic.severity.WARN,
-			info = vim.diagnostic.severity.INFO,
-			hint = vim.diagnostic.severity.HINT,
+		local severities = {
+			{ "error", diagnostic.severity.ERROR, config.icons.diagnostics.error },
+			{ "warn", diagnostic.severity.WARN, config.icons.diagnostics.warn },
+			{ "info", diagnostic.severity.INFO, config.icons.diagnostics.info },
+			{ "hint", diagnostic.severity.HINT, config.icons.diagnostics.hint },
 		}
 
 		local diagnostics = {}
-		for name, level in pairs(levels) do
-			local count = #diagnostic.get(0, { severity = level })
+		for _, severity in pairs(severities) do
+			local level, level_num, icon = unpack(severity)
+			local count = #diagnostic.get(0, { severity = level_num })
+
 			if count > 0 then
 				table.insert(
 					diagnostics,
-					string.format(
-						" %%#LspDiagnosticsSign%s#%s%d",
-						name:sub(1, 1):upper() .. name:sub(2), -- Capitalize first letter
-						config.icons.diagnostics[name],
-						count
-					)
+					string.format(" %%#LspDiagnosticsSign%s#%s%d", level:sub(1, 1):upper() .. level:sub(2), icon, count)
 				)
 			end
 		end
@@ -213,15 +223,17 @@ local components = {
 	end,
 
 	lsp = function()
-		local clients = {}
-		for _, client in pairs(vim.lsp.get_clients({ bufnr = 0 })) do
-			table.insert(clients, client.name)
-		end
-
+		local clients = vim.lsp.get_clients({ bufnr = 0 })
 		if #clients > 0 then
-			return " " .. table.concat(clients, ",") .. " "
+			return " "
+				.. table.concat(
+					vim.tbl_map(function(client)
+						return client.name
+					end, clients),
+					","
+				)
+				.. " "
 		end
-
 		return ""
 	end,
 
@@ -252,8 +264,8 @@ local components = {
 	end,
 
 	grapple = function()
-		local ok, grapple = pcall(require, "grapple")
-		if not ok then
+		local grapple = try_require("grapple")
+		if not grapple then
 			return ""
 		end
 
@@ -281,6 +293,7 @@ Statusline.active = function()
 		end
 	end
 
+	-- Left side
 	add(
 		"%#Statusline#",
 		components.mode_color(),
@@ -302,7 +315,9 @@ Statusline.active = function()
 		components.lsp(),
 		"%#StatusLineExtra#",
 		components.filetype(),
+		components.read_only(),
 		components.filesize(),
+		components.file_format(),
 		components.lineinfo()
 	)
 
@@ -333,10 +348,13 @@ api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
 	end,
 })
 
-local timer = vim.loop.new_timer()
+local statusline_timer
 api.nvim_create_autocmd({ "DiagnosticChanged", "LspAttach" }, {
 	callback = function()
-		timer:start(
+		if not statusline_timer then
+			statusline_timer = vim.loop.new_timer()
+		end
+		statusline_timer:start(
 			100,
 			0,
 			vim.schedule_wrap(function()
