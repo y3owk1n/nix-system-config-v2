@@ -14,6 +14,11 @@ vim.opt.showmode = false
 
 vim.opt.ruler = false -- Don't show cursor position in command line
 
+vim.opt.pumblend = 10 -- Popup blend
+vim.opt.pumheight = 10 -- Maximum number of entries in a popup
+
+vim.opt.laststatus = 3
+
 -- Sync clipboard between OS and Neovim.
 vim.schedule(function()
 	vim.opt.clipboard = "unnamedplus"
@@ -51,6 +56,8 @@ vim.opt.incsearch = true -- follow the searches
 -- Keep signcolumn on by default
 vim.opt.signcolumn = "yes"
 
+vim.opt.statuscolumn = [[%!v:lua.require'snacks.statuscolumn'.get()]]
+
 -- Decrease mapped sequence wait time
 -- Displays which-key popup sooner
 vim.opt.timeoutlen = 300
@@ -82,6 +89,8 @@ vim.opt.synmaxcol = 300 -- Don't syntax highlight long lines
 vim.opt.virtualedit = "block" -- Allow going past the end of line in visual block mode
 
 vim.opt.cmdheight = 0
+
+vim.opt.sessionoptions = { "buffers", "curdir", "tabpages", "winsize", "help", "globals", "skiprtp", "folds" }
 
 -- words
 vim.opt.path:append("**")

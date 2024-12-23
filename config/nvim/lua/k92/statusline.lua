@@ -45,9 +45,10 @@ local function setup_colors()
 		{ "StatuslineTerminalAccent", colors.base, colors.teal },
 
 		-- Git colors
-		{ "GitSignsAdd", colors.green, nil },
-		{ "GitSignsChange", colors.yellow, nil },
-		{ "GitSignsDelete", colors.red, nil },
+		{ "GitSignsAccent", nil, colors.surface0 },
+		{ "GitSignsAdd", colors.green, colors.surface0 },
+		{ "GitSignsChange", colors.yellow, colors.surface0 },
+		{ "GitSignsDelete", colors.red, colors.surface0 },
 
 		-- LSP colors
 		{ "LspDiagnosticsSignError", colors.red, nil },
@@ -228,7 +229,7 @@ local components = {
 			return " "
 				.. table.concat(
 					vim.tbl_map(function(client)
-						return client.name
+						return client.name:upper()
 					end, clients),
 					","
 				)
@@ -244,7 +245,7 @@ local components = {
 		end
 
 		local parts = {
-			"%#GitSignsAdd# " .. git_info.head .. " ",
+			"%#GitSignsAccent# 󰘬 " .. git_info.head:upper() .. " ",
 		}
 
 		local changes = {
@@ -273,7 +274,6 @@ local components = {
 
 		if statusline then
 			return table.concat({
-				"%#Normal#",
 				"%#GrappleStatusLine#",
 				statusline,
 				"%#Normal#",
@@ -299,12 +299,12 @@ Statusline.active = function()
 		components.mode_color(),
 		components.mode(),
 		"%#Normal#",
-		" ",
 		components.git(),
 		components.grapple(),
 		"%#Normal# ",
 		components.filepath(),
 		components.filename(),
+		components.read_only(),
 		"%#Normal#",
 		components.diagnostics()
 	)
@@ -315,7 +315,6 @@ Statusline.active = function()
 		components.lsp(),
 		"%#StatusLineExtra#",
 		components.filetype(),
-		components.read_only(),
 		components.filesize(),
 		components.file_format(),
 		components.lineinfo()
@@ -349,7 +348,7 @@ api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
 })
 
 local statusline_timer = vim.loop.new_timer()
-api.nvim_create_autocmd({ "DiagnosticChanged", "LspAttach" }, {
+api.nvim_create_autocmd({ "DiagnosticChanged", "LspAttach", "LspDetach" }, {
 	callback = function()
 		statusline_timer:start(
 			100,
