@@ -21,10 +21,23 @@ vim.keymap.set("n", "]q", vim.cmd.cnext, { desc = "Next Quickfix" })
 
 -- Diagnostics
 local diagnostic_goto = function(next, severity)
-	local go = next and vim.diagnostic.goto_next or vim.diagnostic.goto_prev
 	severity = severity and vim.diagnostic.severity[severity] or nil
-	return function()
-		go({ severity = severity })
+
+	if vim.fn.has("nvim-0.11") == 0 then
+		local count
+		if next then
+			count = 1
+		else
+			count = -1
+		end
+		return function()
+			vim.diagnostic.jump({ severity = severity, count = count, float = true })
+		end
+	else
+		local go = next and vim.diagnostic.goto_next or vim.diagnostic.goto_prev
+		return function()
+			go({ severity = severity })
+		end
 	end
 end
 vim.keymap.set("n", "<leader>cd", vim.diagnostic.open_float, { desc = "Line Diagnostics" })
