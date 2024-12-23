@@ -2,6 +2,7 @@ local api = vim.api
 local fn = vim.fn
 local diagnostic = vim.diagnostic
 local bo = vim.bo
+local cmd = vim.cmd
 
 local config = {
 	icons = {
@@ -40,11 +41,11 @@ local function setup_colors()
 	local highlights = {
 		-- Mode colors
 		{ "StatuslineAccent", colors.lavender, colors.crust },
-		{ "StatuslineInsertAccent", colors.green, colors.crust },
-		{ "StatuslineVisualAccent", colors.mauve, colors.crust },
-		{ "StatuslineReplaceAccent", colors.red, colors.crust },
-		{ "StatuslineCmdLineAccent", colors.peach, colors.crust },
-		{ "StatuslineTerminalAccent", colors.teal, colors.crust },
+		{ "StatuslineInsertAccent", colors.base, colors.green },
+		{ "StatuslineVisualAccent", colors.base, colors.mauve },
+		{ "StatuslineReplaceAccent", colors.base, colors.red },
+		{ "StatuslineCmdLineAccent", colors.base, colors.peach },
+		{ "StatuslineTerminalAccent", colors.base, colors.teal },
 
 		-- Git colors
 		{ "GitSignsAdd", colors.green, nil },
@@ -53,13 +54,13 @@ local function setup_colors()
 
 		-- LSP colors
 		{ "LspDiagnosticsSignError", colors.red, nil },
-		{ "LspDiagnosticsSignWarning", colors.yellow, nil },
-		{ "LspDiagnosticsSignInformation", colors.sky, nil },
+		{ "LspDiagnosticsSignWarn", colors.yellow, nil },
+		{ "LspDiagnosticsSignInfo", colors.sky, nil },
 		{ "LspDiagnosticsSignHint", colors.teal, nil },
 
 		-- Statusline backgrounds
 		{ "StatusLine", nil, colors.mantle },
-		{ "StatusLineNC", nil, colors.crust },
+		{ "StatusLineNC", nil, nil },
 		{ "StatusLineExtra", colors.subtext1, colors.surface0 },
 
 		-- Grapple colors
@@ -94,6 +95,7 @@ local modes = {
 	["!"] = "SHELL",
 	["t"] = "TERMINAL",
 }
+
 local mode_colors = {
 	n = "StatuslineAccent",
 	i = "StatuslineInsertAccent",
@@ -117,20 +119,26 @@ local components = {
 	end,
 
 	filepath = function()
+		local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":~")
 		local fpath = fn.fnamemodify(fn.expand("%"), ":~:.:h")
 		if fpath == "" or fpath == "." then
-			return " "
+			return string.format(" %s/", cwd)
 		end
 
 		-- Split the file path into components
 		local path_components = vim.split(fpath, "/", { plain = true })
 
-		-- Only show the last two components (adjust as needed)
-		local max_components = 2
-		local display_path =
-			table.concat(vim.list_slice(path_components, #path_components - max_components + 1, #path_components), "/")
+		-- Determine whether to add "..."
+		local path_depth = #path_components
+		local display_path
 
-		return string.format(" %%<%s/", display_path)
+		if path_depth > 1 then
+			display_path = ".../" .. path_components[path_depth]
+		else
+			display_path = path_components[1]
+		end
+
+		return string.format("%s/%s/", cwd, display_path)
 	end,
 
 	filename = function()
@@ -170,27 +178,27 @@ local components = {
 		if bo.filetype == "alpha" then
 			return ""
 		end
-		return " %P %l:%c "
+		return " %P  %l:%c "
 	end,
 
-	lsp = function()
+	diagnostics = function()
 		local levels = {
-			errors = vim.diagnostic.severity.ERROR,
-			warnings = vim.diagnostic.severity.WARN,
+			error = vim.diagnostic.severity.ERROR,
+			warn = vim.diagnostic.severity.WARN,
 			info = vim.diagnostic.severity.INFO,
-			hints = vim.diagnostic.severity.HINT,
+			hint = vim.diagnostic.severity.HINT,
 		}
 
 		local diagnostics = {}
-		for type, level in pairs(levels) do
+		for name, level in pairs(levels) do
 			local count = #diagnostic.get(0, { severity = level })
 			if count > 0 then
 				table.insert(
 					diagnostics,
 					string.format(
-						" %%#LspDiagnosticsSign%s#%s %d",
-						level,
-						config.icons.diagnostics[type:sub(1, -2)],
+						" %%#LspDiagnosticsSign%s#%s%d",
+						name:sub(1, 1):upper() .. name:sub(2), -- Capitalize first letter
+						config.icons.diagnostics[name],
 						count
 					)
 				)
@@ -198,8 +206,22 @@ local components = {
 		end
 
 		if #diagnostics > 0 then
-			return table.concat(diagnostics) .. "%#Normal#"
+			return table.concat(diagnostics) .. "%#Normal#" .. " "
 		end
+
+		return ""
+	end,
+
+	lsp = function()
+		local clients = {}
+		for _, client in pairs(vim.lsp.get_clients({ bufnr = 0 })) do
+			table.insert(clients, client.name)
+		end
+
+		if #clients > 0 then
+			return " " .. table.concat(clients, ",") .. " "
+		end
+
 		return ""
 	end,
 
@@ -235,8 +257,10 @@ local components = {
 			return ""
 		end
 
+		local exists = grapple.exists()
 		local statusline = grapple.statusline()
-		if statusline then
+
+		if exists and statusline then
 			return table.concat({
 				"%#Normal#",
 				"%#GrappleStatusLine#",
@@ -270,13 +294,19 @@ Statusline.active = function()
 		"%#Normal# ",
 		components.filepath(),
 		components.filename(),
-		components.filesize(),
 		"%#Normal#",
-		components.lsp()
+		components.diagnostics()
 	)
 
 	-- Right side
-	add("%=", "%#StatusLineExtra#", components.filetype(), components.lineinfo())
+	add(
+		"%=",
+		components.lsp(),
+		"%#StatusLineExtra#",
+		components.filetype(),
+		components.filesize(),
+		components.lineinfo()
+	)
 
 	return table.concat(parts)
 end
@@ -302,5 +332,18 @@ api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
 	group = statusline_group,
 	callback = function()
 		vim.opt_local.statusline = "%!v:lua.Statusline.inactive()"
+	end,
+})
+
+local timer = vim.loop.new_timer()
+api.nvim_create_autocmd({ "DiagnosticChanged", "LspAttach" }, {
+	callback = function()
+		timer:start(
+			100,
+			0,
+			vim.schedule_wrap(function()
+				cmd("redrawstatus")
+			end)
+		)
 	end,
 })
