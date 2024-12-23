@@ -349,6 +349,7 @@ api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
 
 local statusline_timer = vim.loop.new_timer()
 api.nvim_create_autocmd({ "DiagnosticChanged", "LspAttach", "LspDetach" }, {
+	group = statusline_group,
 	callback = function()
 		statusline_timer:start(
 			100,
