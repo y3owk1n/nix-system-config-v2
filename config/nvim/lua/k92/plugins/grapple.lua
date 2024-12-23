@@ -2,6 +2,9 @@ return {
 	"cbochs/grapple.nvim",
 	event = "VeryLazy",
 	opts = {
+		statusline = {
+			icon = "",
+		},
 		scope = "git", -- also try out "git_branch"
 		win_opts = {
 			border = "rounded",
