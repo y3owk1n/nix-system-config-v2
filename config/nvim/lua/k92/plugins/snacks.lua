@@ -19,6 +19,18 @@ return {
 			enabled = true,
 			timeout = 3000,
 		},
+		zen = {
+			toggles = {
+				dim = false,
+				git_signs = true,
+				mini_diff_signs = true,
+				diagnostics = true,
+				inlay_hints = true,
+			},
+			show = {
+				statusline = true, -- can only be shown when using the global statusline
+			},
+		},
 		quickfile = { enabled = true, exclude = { "latex" } },
 		dashboard = {
 			enabled = true,
@@ -81,6 +93,13 @@ return {
 		},
 	},
 	keys = {
+		{
+			"<leader>z",
+			function()
+				Snacks.zen()
+			end,
+			desc = "Toggle Zen Mode",
+		},
 		{
 			"<leader>n",
 			function()
