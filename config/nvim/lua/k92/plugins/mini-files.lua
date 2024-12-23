@@ -42,7 +42,8 @@ return {
 		},
 	},
 	config = function(_, opts)
-		require("mini.files").setup(opts)
+		local MiniFiles = require("mini.files")
+		MiniFiles.setup(opts)
 
 		local show_dotfiles = true
 		local filter_show = function()
@@ -55,7 +56,7 @@ return {
 		local toggle_dotfiles = function()
 			show_dotfiles = not show_dotfiles
 			local new_filter = show_dotfiles and filter_show or filter_hide
-			require("mini.files").refresh({ content = { filter = new_filter } })
+			MiniFiles.refresh({ content = { filter = new_filter } })
 		end
 
 		local map_split = function(buf_id, lhs, direction, close_on_file)
@@ -68,8 +69,8 @@ return {
 						new_target_window = vim.api.nvim_get_current_win()
 					end)
 
-					require("mini.files").set_target_window(new_target_window)
-					require("mini.files").go_in({
+					MiniFiles.set_target_window(new_target_window)
+					MiniFiles.go_in({
 						close_on_file = close_on_file,
 					})
 				end
