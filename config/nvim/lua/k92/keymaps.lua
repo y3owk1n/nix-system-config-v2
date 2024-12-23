@@ -52,8 +52,8 @@ vim.keymap.set("n", "N", "'nN'[v:searchforward].'zz'", { expr = true, desc = "Se
 vim.keymap.set("n", "x", '"_x', { desc = "Delete a character without copying it" })
 
 --- Move lines
-vim.keymap.set("v", "J", ":m '>+1<cr>gv=gv", { desc = "Move line up" })
-vim.keymap.set("v", "K", ":m '<-2<cr>gv=gv", { desc = "Move line down" })
+vim.keymap.set("v", "K", ":<C-u>execute \"'<,'>move '<-\" . (v:count1 + 1)<cr>gv=gv", { desc = "Move line down" })
+vim.keymap.set("v", "J", ":<C-u>execute \"'<,'>move '>+\" . v:count1<cr>gv=gv", { desc = "Move line up" })
 
 -- No op
 vim.keymap.set("n", "Q", "<nop>", { desc = "No op" })
