@@ -29,12 +29,11 @@ vim.opt.tabstop = 4 -- 2 spaces for tabs (prettier default)
 vim.opt.shiftwidth = 4 -- 2 spaces for indent width
 vim.opt.softtabstop = 4 -- 2 spaces for softtab
 vim.opt.expandtab = false -- expand tab to spaces
-vim.opt.autoindent = true -- copy indent from current line when starting new one
+vim.opt.shiftround = true -- round indent
+vim.opt.smartindent = true -- Make indenting smart
 
 -- Enable break indent
 vim.opt.breakindent = true
-
-vim.opt.smartindent = true -- Make indenting smart
 
 -- Save undo history
 vim.opt.undofile = true
