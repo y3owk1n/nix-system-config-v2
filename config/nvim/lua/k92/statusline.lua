@@ -205,7 +205,8 @@ local components = {
 
 		local diagnostics = {}
 		for _, severity in pairs(severities) do
-			local level, level_num, icon = unpack(severity)
+			local level, _, icon = unpack(severity)
+			local level_num = severity[2]
 			local count = #diagnostic.get(0, { severity = level_num })
 
 			if count > 0 then
@@ -347,16 +348,18 @@ api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
 	end,
 })
 
-local statusline_timer = vim.loop.new_timer()
+local statusline_timer = vim.uv.new_timer()
 api.nvim_create_autocmd({ "DiagnosticChanged", "LspAttach", "LspDetach" }, {
 	group = statusline_group,
 	callback = function()
-		statusline_timer:start(
-			100,
-			0,
-			vim.schedule_wrap(function()
-				cmd("redrawstatus")
-			end)
-		)
+		if statusline_timer ~= nil then
+			statusline_timer:start(
+				100,
+				0,
+				vim.schedule_wrap(function()
+					cmd("redrawstatus")
+				end)
+			)
+		end
 	end,
 })
