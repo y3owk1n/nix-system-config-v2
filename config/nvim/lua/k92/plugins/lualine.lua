@@ -40,7 +40,11 @@ return {
 				},
 			},
 			sections = {
-				lualine_a = { "mode" },
+				lualine_a = {
+					{
+						"mode",
+					},
+				},
 				lualine_b = {
 					"branch",
 					{
@@ -64,43 +68,8 @@ return {
 				},
 				lualine_c = {
 					{
-						function()
-							local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":~")
-							local fpath = vim.fn.fnamemodify(vim.fn.expand("%"), ":~:.:h")
-							local fname = vim.fn.expand("%:t")
-
-							if fpath == "" or fpath == "." then
-								return string.format(" %s/", cwd)
-							end
-
-							-- Split the file path into components
-							local path_components = vim.split(fpath, "/", { plain = true })
-
-							-- Determine whether to add "..."
-							local path_depth = #path_components
-							local display_path
-
-							if path_depth > 1 then
-								display_path = "~/" .. path_components[path_depth]
-							else
-								display_path = path_components[1]
-							end
-
-							local function read_only()
-								if vim.bo.readonly then
-									return ""
-								end
-								if vim.bo.modifiable == false then
-									return ""
-								end
-								if vim.bo.modified then
-									return ""
-								end
-								return ""
-							end
-
-							return string.format("%s/%s/%s %s", cwd, display_path, fname or "", read_only())
-						end,
+						"filename",
+						path = 4,
 					},
 					{
 						"diagnostics",
