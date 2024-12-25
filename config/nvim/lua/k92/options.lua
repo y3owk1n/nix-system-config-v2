@@ -17,8 +17,6 @@ vim.opt.ruler = false -- Don't show cursor position in command line
 vim.opt.pumblend = 10 -- Popup blend
 vim.opt.pumheight = 10 -- Maximum number of entries in a popup
 
-vim.opt.laststatus = 3
-
 -- Sync clipboard between OS and Neovim.
 vim.schedule(function()
 	vim.opt.clipboard = "unnamedplus"
