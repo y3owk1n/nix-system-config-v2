@@ -43,10 +43,55 @@ return {
 				lualine_a = {
 					{
 						"mode",
+						fmt = function(string)
+							local mode_names = {
+								NORMAL = "N",
+								["NORMAL-OPERATOR-PENDING"] = "N?",
+								["NORMAL-OPERATOR-PENDING-VISUAL"] = "N?",
+								["NORMAL-OPERATOR-PENDING-VISUAL-BLOCK"] = "N?",
+								["NORMAL-OPERATOR-PENDING-VISUAL-CTRL-V"] = "N?",
+								["NORMAL-INSERT"] = "Ni",
+								["NORMAL-REPLACE"] = "Nr",
+								["NORMAL-VISUAL"] = "Nv",
+								["NORMAL-TERMINAL"] = "Nt",
+								VISUAL = "V",
+								["VISUAL-SELECT"] = "Vs",
+								["V-LINE"] = "V_",
+								["VISUAL-SELECT-LINE"] = "Vs",
+								["VISUAL-CTRL-V"] = "^V",
+								["VISUAL-CTRL-V-SELECT"] = "^V",
+								SELECT = "S",
+								["SELECT-LINE"] = "S_",
+								["SELECT-CTRL-S"] = "^S",
+								INSERT = "I",
+								["INSERT-COMPLETION"] = "Ic",
+								["INSERT-COMPLETION-FAIL"] = "Ix",
+								REPLACE = "R",
+								["REPLACE-COMPLETION"] = "Rc",
+								["REPLACE-COMPLETION-FAIL"] = "Rx",
+								["REPLACE-VISUAL"] = "Rv",
+								["REPLACE-VISUAL-COMPLETION"] = "Rv",
+								["REPLACE-VISUAL-COMPLETION-FAIL"] = "Rv",
+								COMMAND = "C",
+								["COMMAND-EX"] = "Ex",
+								PROMPT = "...",
+								["PROMPT-MORE"] = "M",
+								["PROMPT-QUESTION"] = "?",
+								["SHELL"] = "!",
+								TERMINAL = "T",
+							}
+
+							return " " .. mode_names[string]
+						end,
 					},
 				},
 				lualine_b = {
-					"branch",
+					{
+						"branch",
+						icon = {
+							"",
+						},
+					},
 					{
 						"diff",
 						symbols = {
@@ -90,14 +135,14 @@ return {
 						function()
 							local clients = vim.lsp.get_clients({ bufnr = 0 })
 							if #clients > 0 then
-								return " "
+								return "  ["
 									.. table.concat(
 										vim.tbl_map(function(client)
 											return client.name
 										end, clients),
 										","
 									)
-									.. " "
+									.. "] "
 							end
 							return ""
 						end,
