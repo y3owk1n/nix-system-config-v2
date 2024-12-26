@@ -323,7 +323,20 @@ return {
 				--
 				-- When you move your cursor, the highlights will be cleared (the second autocommand).
 				local client = vim.lsp.get_client_by_id(event.data.client_id)
-				if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
+				local has_support_document_highlight
+
+				-- TODO: Can remove this on 0.11
+				-- 0.11 -> client:supports_method
+				-- 0.10 -> client.supports_method
+				if vim.fn.has("nvim-0.11") == 1 then
+					has_support_document_highlight = client
+						and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight)
+				else
+					has_support_document_highlight = client
+						and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight)
+				end
+
+				if has_support_document_highlight then
 					local highlight_augroup = vim.api.nvim_create_augroup("k92-lsp-highlight", { clear = false })
 					vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
 						buffer = event.buf,
