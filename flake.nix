@@ -23,8 +23,6 @@
     };
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/0.1";
     nix-darwin.url = "github:LnL7/nix-darwin";
-
-    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
   };
 
   # The `outputs` function will return all the build results of the flake.
@@ -39,7 +37,6 @@
       darwin,
       determinate,
       home-manager,
-      neovim-nightly-overlay,
       ...
     }:
     let
