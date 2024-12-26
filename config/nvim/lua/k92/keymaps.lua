@@ -23,7 +23,8 @@ vim.keymap.set("n", "]q", vim.cmd.cnext, { desc = "Next Quickfix" })
 local diagnostic_goto = function(next, severity)
 	severity = severity and vim.diagnostic.severity[severity] or nil
 
-	if vim.fn.has("nvim-0.11") == 0 then
+	-- TODO: Update this when update to 0.11
+	if vim.fn.has("nvim-0.11") == 1 then
 		local count
 		if next then
 			count = 1
