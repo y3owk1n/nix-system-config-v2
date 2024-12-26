@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  neovim-nightly-overlay,
   ...
 }:
 {
@@ -10,7 +9,6 @@
       enable = true;
       defaultEditor = true;
       vimAlias = true;
-      package = neovim-nightly-overlay.packages.${pkgs.system}.default;
     };
   };
 
