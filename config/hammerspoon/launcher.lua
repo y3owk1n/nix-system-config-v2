@@ -34,10 +34,37 @@ local function launchOrFocusOrCycle(appName)
 	hs.application.enableSpotlightForNameSearches(true)
 	local app = hs.application.find(appName)
 
+	local function hideOtherApps(targetAppName)
+		local visibleWindows = hs.window.visibleWindows()
+		local otherApps = {}
+
+		logWithTimestamp("Identifying visible apps:")
+
+		-- Collect all apps from visible windows that are not the target app
+		for _, window in ipairs(visibleWindows) do
+			local windowApp = window:application()
+			logWithTimestamp(string.format(" - Found window: '%s' (App: '%s')", window:title(), appName))
+			if windowApp and windowApp:name() ~= targetAppName then
+				otherApps[windowApp:name()] = windowApp
+			else
+				logWithTimestamp(" - Found a window without an associated application.")
+			end
+		end
+
+		logWithTimestamp("Hiding apps that are not the target:")
+
+		-- Hide all collected apps
+		for _, otherApp in pairs(otherApps) do
+			logWithTimestamp(string.format(" - Hiding app: '%s'", appName))
+			otherApp:hide()
+		end
+	end
+
 	if not app then
 		logWithTimestamp(string.format("Application '%s' not found. Launching it.", appName))
 		-- App isn't running, so launch it
 		hs.application.launchOrFocus(appName)
+		hideOtherApps(appName)
 		return
 	end
 
@@ -47,6 +74,7 @@ local function launchOrFocusOrCycle(appName)
 	if not app:isRunning() then
 		logWithTimestamp(string.format("Application '%s' is not running. Activating it.", appName))
 		hs.application.launchOrFocus(appName)
+		hideOtherApps(appName)
 		return
 	end
 
@@ -70,6 +98,7 @@ local function launchOrFocusOrCycle(appName)
 		logWithTimestamp(string.format("No visible standard windows found for '%s'. Activating app.", appName))
 		-- No windows, just focus the app
 		hs.application.launchOrFocus(appName)
+		hideOtherApps(appName)
 		return
 	end
 
@@ -78,6 +107,7 @@ local function launchOrFocusOrCycle(appName)
 	if not focusedWindow then
 		logWithTimestamp("No currently focused window. Focusing the first window.")
 		windows[1]:focus()
+		hideOtherApps(appName)
 		return
 	end
 
@@ -87,6 +117,7 @@ local function launchOrFocusOrCycle(appName)
 		logWithTimestamp("Focused window does not belong to the target app. Focusing the first window.")
 		-- App's window not focused, focus first window
 		windows[1]:focus()
+		hideOtherApps(appName)
 		return
 	end
 
@@ -113,6 +144,7 @@ local function launchOrFocusOrCycle(appName)
 
 	-- Focus next window
 	windows[nextIndex]:focus()
+	hideOtherApps(appName)
 end
 
 -- Set up all keybindings from the configuration table
