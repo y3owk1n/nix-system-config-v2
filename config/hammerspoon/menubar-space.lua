@@ -16,11 +16,19 @@ function menuBar.delete()
 end
 
 local function setSpaceNumber()
-	-- Get the current focused space
-	local spaceNumber = hs.spaces.focusedSpace()
+	local spaces = hs.spaces.spacesForScreen(hs.screen.mainScreen())
+	local currentID = hs.spaces.focusedSpace()
+	local visualNumber
 
-	-- Set the menubar item title to the space number
-	menuBar.item:setTitle(tostring(spaceNumber))
+	for i, spaceID in ipairs(spaces) do
+		if spaceID == currentID then
+			visualNumber = i
+			break
+		end
+	end
+
+	-- Set the menubar item title to the visual space number
+	menuBar.item:setTitle(tostring(visualNumber))
 end
 
 function obj:start()
