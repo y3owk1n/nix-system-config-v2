@@ -120,7 +120,7 @@
     GIT_EDITOR = "nvim";
     SYSTEMD_COLORS = "true";
     COLORTERM = "truecolor";
-    TERMINAL = "alacritty";
+    TERMINAL = "ghostty";
     HOMEBREW_NO_AUTO_UPDATE = 1;
     PAGER = "less";
     CLICOLOR = 1;

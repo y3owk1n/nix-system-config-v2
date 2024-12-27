@@ -109,6 +109,10 @@ in
           run = 'move-node-to-workspace 2'
 
           [[on-window-detected]]
+          if.app-id = 'com.mitchellh.ghostty'
+          run = 'move-node-to-workspace 2'
+
+          [[on-window-detected]]
           if.app-id = 'com.apple.Terminal'
           run = 'move-node-to-workspace 2'
 
