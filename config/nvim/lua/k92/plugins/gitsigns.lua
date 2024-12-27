@@ -17,5 +17,8 @@ return {
 			topdelete = { text = "" },
 			changedelete = { text = "▎" },
 		},
+		on_attach = function()
+			vim.cmd("redrawstatus")
+		end,
 	},
 }
