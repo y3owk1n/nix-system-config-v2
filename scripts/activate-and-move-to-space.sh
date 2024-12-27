@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "App bindings processing started."
+
 get_space_ids() {
   # Query the spaces and extract both ManagedSpaceID and uuid
   # Clean up the UUIDs by removing semicolons
@@ -36,16 +38,16 @@ while IFS=$'\t' read -r space_id uuid; do
   if [ -z "${seen_spaces[$space_id]}" ]; then
     seen_spaces["$space_id"]=1
     space_map["$current_space"]="$uuid"  # Map space number to UUID
-    echo "Mapping Space $current_space -> UUID $uuid (Space ID: $space_id)"
+    # echo "Mapping Space $current_space -> UUID $uuid (Space ID: $space_id)"
     ((current_space++))
   fi
 done <<< "$deduped_space_ids"
 
 # Debug: Verify the space_map is correctly populated
-echo -e "\nSpaces and their UUIDs (Deduplicated):"
-for space_num in "${!space_map[@]}"; do
-  echo "Space $space_num -> UUID ${space_map[$space_num]}"
-done
+# echo -e "\nSpaces and their UUIDs (Deduplicated):"
+# for space_num in "${!space_map[@]}"; do
+#   echo "Space $space_num -> UUID ${space_map[$space_num]}"
+# done
 
 update_app_bindings() {
   local app_id="$1"
@@ -70,9 +72,9 @@ defaults delete com.apple.spaces "app-bindings" 2>/dev/null || true
 
 # Process each app binding
 for app_id in "${!app_bindings[@]}"; do
-	echo -e "\nProcessing $app_id"
+	# echo -e "\nProcessing $app_id"
 	space_number="${app_bindings[$app_id]}"
-	echo "Desired Space Number: $space_number"
+	# echo "Desired Space Number: $space_number"
 
   # Ensure space_number is valid before accessing space_map
   if [[ -z "$space_number" ]]; then
@@ -82,7 +84,7 @@ for app_id in "${!app_bindings[@]}"; do
 
   # Get the corresponding UUID for the space_number
   space_uuid="${space_map[$space_number]:-}"
-  echo "Retrieved UUID for Space $space_number: $space_uuid"
+  # echo "Retrieved UUID for Space $space_number: $space_uuid"
 
   # Update app binding if space_uuid exists
 	echo "Mapping $app_id to UUID $space_uuid (Space $space_number)"
@@ -90,4 +92,8 @@ for app_id in "${!app_bindings[@]}"; do
 	update_app_bindings "$app_id" "$space_uuid"
 done
 
-echo -e "\nApp bindings processing completed."
+echo "App bindings processing completed."
+
+killall Dock
+
+echo "Dock restarted."
