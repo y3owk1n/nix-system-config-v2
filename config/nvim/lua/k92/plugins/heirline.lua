@@ -423,14 +423,6 @@ return {
 			},
 		}
 
-		vim.opt.showcmdloc = "statusline"
-		local ShowCmd = {
-			condition = function()
-				return vim.o.cmdheight == 0
-			end,
-			provider = "%3.5(%S%)",
-		}
-
 		local DefaultStatusline = {
 			ViMode,
 			Space,
@@ -445,8 +437,6 @@ return {
 			Space,
 			Diagnostics,
 			Align,
-			ShowCmd,
-			Space,
 			MacroRec,
 			Space,
 			LSPActive,
