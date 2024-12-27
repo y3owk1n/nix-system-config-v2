@@ -92,7 +92,8 @@
       "pronotes"
       "hammerspoon" # mainly used for safari vim mode
 
-      "alacritty"
+      "ghostty"
+      # "alacritty"
 
       # --- docker desktop alternative ---
       "orbstack"

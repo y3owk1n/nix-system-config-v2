@@ -1,0 +1,21 @@
+term = xterm-256color
+
+theme = catppuccin-macchiato
+
+font-family = JetBrains NFM
+font-thicken = true
+font-size = 14
+
+window-padding-x = 10
+window-padding-y = 10
+window-decoration = false
+
+macos-titlebar-style = hidden
+
+confirm-close-surface=false
+
+macos-option-as-alt=true
+
+mouse-hide-while-typing = true
+
+copy-on-select = false

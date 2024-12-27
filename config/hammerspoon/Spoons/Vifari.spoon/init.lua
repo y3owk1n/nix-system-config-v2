@@ -116,6 +116,7 @@ local config = {
 	excludedApps = {
 		"Terminal",
 		"Alacritty",
+		"Ghostty",
 		"Screen Sharing",
 	},
 	browsers = {
