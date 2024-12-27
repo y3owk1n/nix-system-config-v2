@@ -61,6 +61,8 @@ in
     '';
 
     defaults = {
+      universalaccess.reduceMotion = true;
+
       menuExtraClock = {
         Show24Hour = false;
         ShowAMPM = true;
@@ -360,6 +362,29 @@ in
                 type = "standard";
               };
             };
+
+            "118" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  49
+                  18
+                  1966080
+                ];
+                type = "standard";
+              };
+            };
+            "119" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  50
+                  19
+                  1966080
+                ];
+                type = "standard";
+              };
+            };
             # Action not defined
             "12" = {
               enabled = 0;
@@ -368,6 +393,61 @@ in
                   65535
                   122
                   8650752
+                ];
+                type = "standard";
+              };
+            };
+            "120" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  51
+                  20
+                  1966080
+                ];
+                type = "standard";
+              };
+            };
+            "121" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  52
+                  21
+                  1966080
+                ];
+                type = "standard";
+              };
+            };
+            "122" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  53
+                  23
+                  1966080
+                ];
+                type = "standard";
+              };
+            };
+            "123" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  54
+                  22
+                  1966080
+                ];
+                type = "standard";
+              };
+            };
+            "124" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  55
+                  26
+                  1966080
                 ];
                 type = "standard";
               };
@@ -602,7 +682,7 @@ in
             };
             # Action not defined
             "27" = {
-              enabled = 0;
+              enabled = 1;
               value = {
                 parameters = [
                   96
@@ -792,6 +872,17 @@ in
                 type = "standard";
               };
             };
+            "79" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  123
+                  8650752
+                ];
+                type = "standard";
+              };
+            };
             # Action not defined
             "8" = {
               enabled = 0;
@@ -799,6 +890,17 @@ in
                 parameters = [
                   65535
                   99
+                  8650752
+                ];
+                type = "standard";
+              };
+            };
+            "81" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  124
                   8650752
                 ];
                 type = "standard";
@@ -812,6 +914,17 @@ in
                   65535
                   118
                   8650752
+                ];
+                type = "standard";
+              };
+            };
+            "98" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  47
+                  44
+                  1179648
                 ];
                 type = "standard";
               };
