@@ -1,5 +1,5 @@
 -- require("launcher")
--- require("window")
+require("window")
 local menubarSpace = require("menubar-space")
 
 hs.loadSpoon("Vifari")
