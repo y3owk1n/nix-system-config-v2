@@ -73,13 +73,30 @@ return {
 					t = "green",
 				},
 			},
-			provider = function(self)
-				return " %2(" .. self.mode_names[self.mode] .. "%) "
-			end,
-			hl = function(self)
-				local mode = self.mode:sub(1, 1) -- get only the first mode character
-				return { bg = self.mode_colors[mode], fg = "base", bold = true }
-			end,
+			{
+				provider = "",
+				hl = function(self)
+					local mode = self.mode:sub(1, 1) -- get only the first mode character
+					return { fg = self.mode_colors[mode], bg = "none" }
+				end,
+			},
+			{
+
+				provider = function(self)
+					return "%2(" .. self.mode_names[self.mode] .. "%)"
+				end,
+				hl = function(self)
+					local mode = self.mode:sub(1, 1) -- get only the first mode character
+					return { bg = self.mode_colors[mode], fg = "base", bold = true }
+				end,
+			},
+			{
+				provider = "",
+				hl = function(self)
+					local mode = self.mode:sub(1, 1) -- get only the first mode character
+					return { fg = self.mode_colors[mode], bg = "none" }
+				end,
+			},
 			update = {
 				"ModeChanged",
 				pattern = "*:*",
@@ -210,11 +227,22 @@ return {
 		}
 
 		local Ruler = {
-			-- %l = current line number
-			-- %L = number of lines in the buffer
-			-- %c = column number
-			-- %P = percentage through file of displayed window
-			provider = "%7(%l/%3L%):%2c %P",
+			{
+				provider = "",
+				hl = { fg = "surface1", bg = "none" },
+			},
+			{
+				-- %l = current line number
+				-- %L = number of lines in the buffer
+				-- %c = column number
+				-- %P = percentage through file of displayed window
+				provider = "%7(%l/%3L%):%2c %P",
+				hl = { bg = "surface1", fg = "text" },
+			},
+			{
+				provider = "",
+				hl = { fg = "surface1", bg = "none" },
+			},
 		}
 
 		local LSPActive = {
@@ -413,6 +441,7 @@ return {
 			Grapple,
 			Align,
 			FileNameBlock,
+			Space,
 			Space,
 			Diagnostics,
 			Align,
