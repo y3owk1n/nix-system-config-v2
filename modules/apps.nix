@@ -29,7 +29,7 @@
 
   # This is a custom module at ./custom/aerospace.nix
   aerospace = {
-    enable = true;
+    enable = false;
     package = (
       pkgs.aerospace.overrideAttrs (o: rec {
         version = "0.16.2-Beta";
