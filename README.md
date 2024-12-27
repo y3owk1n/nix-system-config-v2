@@ -7,14 +7,14 @@ This is a project to help me to manage my Nix system configuration, mainly with 
 ### General
 
 - Shell: [fish](https://fishshell.com/)
-- Terminal: [alacritty](https://alacritty.org/)
+- Terminal: [ghostty](https://ghostty.org/)
 - Editor: [neovim](https://neovim.io/)
 - Multiplexer: [tmux](https://github.com/tmux/tmux/wiki)
 - Prompt: [starship](https://starship.rs/)
-- Browser: [Zen Browser](https://zen-browser.app/)
+- Browser: Safari
 - Docker: [orbstack](https://orbstack.dev/)
 - Network: [tailscale](https://tailscale.com/)
-- Window Tiling Manager: ~~[yabai](https://github.com/koekeishiya/yabai)~~ [aerospace](https://nikitabobko.github.io/AeroSpace/guide)
+- Window Tiling Manager: [aerospace](https://nikitabobko.github.io/AeroSpace/guide)
 
 ## Notes for future me
 
