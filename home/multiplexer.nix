@@ -17,8 +17,8 @@
             src = pkgs.fetchFromGitHub {
               owner = "christoomey";
               repo = "vim-tmux-navigator";
-              rev = "424b5caa154bff34dc258ee53cec5a8e36cf7ea8";
-              hash = "sha256-ZwJuBG0P20eQ9uVHeWF4Z8AaFo14MxNSCdjW/O6vLws=";
+              rev = "d847ea942a5bb4d4fab6efebc9f30d787fd96e65";
+              hash = "sha256-EkuAlK7RSmyrRk3RKhyuhqKtrrEVJkkuOIPmzLHw2/0=";
             };
           });
         }
@@ -34,7 +34,7 @@
           extraConfig = ''
             set -g @catppuccin_flavor "macchiato"
             set -g @catppuccin_window_status_style "rounded"
-            set -g @catppuccin_status_background "#{@thm_bg}" 
+            set -g @catppuccin_status_background "#{@thm_bg}"
             set -g @catppuccin_window_number_position "right"
             set -g @catppuccin_window_text "#W"
             set -g @catppuccin_window_number "#I"
