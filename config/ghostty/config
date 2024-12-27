@@ -5,6 +5,9 @@ theme = catppuccin-macchiato
 font-family = JetBrains NFM
 font-thicken = true
 font-size = 14
+font-feature = -calt
+font-feature = -liga
+font-feature = -dlig
 
 window-padding-x = 10
 window-padding-y = 10
