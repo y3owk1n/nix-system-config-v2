@@ -26,13 +26,45 @@ return {
 			},
 		}
 
-		for i = 1, 5 do
-			table.insert(keys, {
-				"<leader>" .. i,
-				"<cmd>Grapple select index=" .. i .. "<cr>",
-				desc = "Grapple to File " .. i,
-			})
+		local tags = require("grapple").tags()
+
+		if #tags > 0 then
+			for i = 1, #tags do
+				table.insert(keys, {
+					"<leader>" .. i,
+					"<cmd>Grapple select index=" .. i .. "<cr>",
+					desc = "Grapple to File " .. i,
+				})
+			end
 		end
+
 		return keys
+	end,
+	config = function(_, opts)
+		require("grapple").setup(opts)
+
+		vim.api.nvim_create_autocmd("User", {
+			group = vim.api.nvim_create_augroup("k92_" .. "update_grapple_keymap", { clear = true }),
+			pattern = "GrappleUpdate",
+			callback = function()
+				-- Clear existing mappings first and silent the error
+				for i = 1, 9 do
+					pcall(vim.keymap.del, "n", "<leader>" .. i)
+				end
+
+				-- Set new mappings, limited to 9
+				local tags = require("grapple").tags()
+				local num_tags = math.min(#tags, 9)
+
+				for i = 1, num_tags do
+					vim.keymap.set(
+						"n",
+						"<leader>" .. i,
+						"<cmd>Grapple select index=" .. i .. "<cr>",
+						{ desc = "Grapple to File " .. i }
+					)
+				end
+			end,
+		})
 	end,
 }
