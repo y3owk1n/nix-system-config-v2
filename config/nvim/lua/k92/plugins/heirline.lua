@@ -253,14 +253,19 @@ return {
 			-- provider = " [LSP]",
 
 			-- Or complicate things a bit and get the servers names
-			provider = function()
-				local names = {}
-				for _, server in pairs(vim.lsp.get_clients({ bufnr = 0 })) do
-					table.insert(names, server.name)
-				end
-				return " [" .. table.concat(names, " ") .. "]"
-			end,
-			hl = { fg = "text", bold = true },
+			{
+				provider = Space.provider,
+			},
+			{
+				provider = function()
+					local names = {}
+					for _, server in pairs(vim.lsp.get_clients({ bufnr = 0 })) do
+						table.insert(names, server.name)
+					end
+					return " [" .. table.concat(names, " ") .. "]"
+				end,
+				hl = { fg = "text", bold = true },
+			},
 		}
 
 		local Diagnostics = {
@@ -282,6 +287,12 @@ return {
 
 			update = { "DiagnosticChanged", "BufEnter" },
 
+			{
+				provider = Space.provider,
+			},
+			{
+				provider = Space.provider,
+			},
 			{
 				provider = function(self)
 					-- 0 is just another output, we can decide to print it or not!
@@ -321,6 +332,12 @@ return {
 			hl = { fg = "teal", bold = true },
 
 			{
+				provider = Space.provider,
+			},
+			{
+				provider = Space.provider,
+			},
+			{
 				provider = function(self)
 					local output = {}
 
@@ -343,41 +360,50 @@ return {
 		}
 
 		local Git = {
-			condition = conditions.is_git_repo,
+			condition = function()
+				return vim.b.minigit_summary and vim.b.minidiff_summary
+			end,
 
 			init = function(self)
-				self.status_dict = vim.b.gitsigns_status_dict
-				self.has_changes = self.status_dict.added ~= 0
-					or self.status_dict.removed ~= 0
-					or self.status_dict.changed ~= 0
+				self.status_dict = vim.b.minidiff_summary
+				self.head = vim.b.minigit_summary.head_name
+				self.has_changes = self.status_dict.add ~= 0
+					or self.status_dict.delete ~= 0
+					or self.status_dict.change ~= 0
 			end,
 
 			hl = { fg = "rosewater" },
 
+			{
+				provider = Space.provider,
+			},
+			{
+				provider = Space.provider,
+			},
 			{ -- git branch name
 				provider = function(self)
-					return " " .. self.status_dict.head
+					return " " .. self.head
 				end,
 				hl = { bold = true },
 			},
 			-- You could handle delimiters, icons and counts similar to Diagnostics
 			{
 				provider = function(self)
-					local count = self.status_dict.added or 0
+					local count = self.status_dict.add or 0
 					return count > 0 and ("  " .. count)
 				end,
 				hl = { fg = "green" },
 			},
 			{
 				provider = function(self)
-					local count = self.status_dict.removed or 0
+					local count = self.status_dict.delete or 0
 					return count > 0 and ("  " .. count)
 				end,
 				hl = { fg = "red" },
 			},
 			{
 				provider = function(self)
-					local count = self.status_dict.changed or 0
+					local count = self.status_dict.change or 0
 					return count > 0 and ("  " .. count)
 				end,
 				hl = { fg = "yellow" },
@@ -425,29 +451,20 @@ return {
 
 		local DefaultStatusline = {
 			ViMode,
-			Space,
-			Space,
 			Git,
-			Space,
-			Space,
 			Grapple,
 			Align,
 			FileNameBlock,
-			Space,
-			Space,
 			Diagnostics,
 			Align,
 			MacroRec,
-			Space,
 			LSPActive,
-			Space,
 			Space,
 			FileTypeBlock,
 			Space,
 			FileSize,
 			Space,
 			Ruler,
-			Space,
 		}
 
 		local InactiveStatusline = {
