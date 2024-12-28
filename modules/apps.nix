@@ -92,7 +92,8 @@
       "pronotes"
       "hammerspoon" # mainly used for safari vim mode
 
-      "ghostty"
+      # "ghostty"
+      "ghostty@tip" # nightly
       # "alacritty"
 
       # --- docker desktop alternative ---
