@@ -60,12 +60,20 @@ update_app_bindings() {
 declare -A app_bindings
 app_bindings=(
 	["com.apple.safari"]="1"
+	["com.brave.Browser"]="1"
 	["com.mitchellh.ghostty"]="2"
+	["com.apple.Terminal"]="2"
+	["dev.kdrag0n.MacVirt"]="2"
 	["com.apple.notes"]="3"
 	["com.apple.reminders"]="3"
 	["net.whatsapp.whatsapp"]="4"
-	["com.apple.ical"]="5"
+	["com.apple.MobileSMS"]="4"
 	["com.apple.mail"]="5"
+	["com.apple.ical"]="5"
+	["com.adobe.Photoshop"]="6"
+	["com.adobe.illustrator"]="6"
+	["com.apple.ScreenSharing"]="6"
+	["com.apple.Music"]="7"
 )
 
 defaults delete com.apple.spaces "app-bindings" 2>/dev/null || true
