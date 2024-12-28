@@ -16,6 +16,8 @@ return {
 		-- Trouble
 		config.defaults.actions.files["ctrl-t"] = require("trouble.sources.fzf").actions.open
 
+		local img_previewer = { "chafa", "--format=symbols", "{file}" }
+
 		---@type fzf.Opts
 		return {
 			fzf_colors = true,
@@ -24,6 +26,17 @@ return {
 			},
 			defaults = {
 				formatter = "path.filename_first",
+			},
+			previewers = {
+				builtin = {
+					extensions = {
+						["png"] = img_previewer,
+						["jpg"] = img_previewer,
+						["jpeg"] = img_previewer,
+						["gif"] = img_previewer,
+						["webp"] = img_previewer,
+					},
+				},
 			},
 			files = {
 				cwd_prompt = false,
