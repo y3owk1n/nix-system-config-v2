@@ -6,3 +6,8 @@ hs.loadSpoon("Vifari")
 spoon.Vifari:start() -- this will add hooks. `:stop()` to remove hooks
 
 menubarSpace:start()
+
+-- Reload hs config
+hs.hotkey.bind({ "cmd", "shift" }, ",", function()
+	hs.reload()
+end)
