@@ -17,6 +17,7 @@
     minio
     just
     btop
+    chafa
 
     # --- apps ---
     keka
