@@ -11,13 +11,13 @@ local mapping = {
 	{ modifiers = HYPER, key = "L", cmd = "focusWindowInDirection", arg = "east" },
 	{ modifiers = HYPER, key = "J", cmd = "focusWindowInDirection", arg = "south" },
 	{ modifiers = HYPER, key = "K", cmd = "focusWindowInDirection", arg = "north" },
-	{ modifiers = { "alt", "shift" }, key = "1", cmd = "moveWindowToSpace", arg = "1" },
-	{ modifiers = { "alt", "shift" }, key = "2", cmd = "moveWindowToSpace", arg = "2" },
-	{ modifiers = { "alt", "shift" }, key = "3", cmd = "moveWindowToSpace", arg = "3" },
-	{ modifiers = { "alt", "shift" }, key = "4", cmd = "moveWindowToSpace", arg = "4" },
-	{ modifiers = { "alt", "shift" }, key = "5", cmd = "moveWindowToSpace", arg = "5" },
-	{ modifiers = { "alt", "shift" }, key = "6", cmd = "moveWindowToSpace", arg = "6" },
-	{ modifiers = { "alt", "shift" }, key = "7", cmd = "moveWindowToSpace", arg = "7" },
+	{ modifiers = { "ctrl", "shift" }, key = "1", cmd = "moveWindowToSpace", arg = "1" },
+	{ modifiers = { "ctrl", "shift" }, key = "2", cmd = "moveWindowToSpace", arg = "2" },
+	{ modifiers = { "ctrl", "shift" }, key = "3", cmd = "moveWindowToSpace", arg = "3" },
+	{ modifiers = { "ctrl", "shift" }, key = "4", cmd = "moveWindowToSpace", arg = "4" },
+	{ modifiers = { "ctrl", "shift" }, key = "5", cmd = "moveWindowToSpace", arg = "5" },
+	{ modifiers = { "ctrl", "shift" }, key = "6", cmd = "moveWindowToSpace", arg = "6" },
+	{ modifiers = { "ctrl", "shift" }, key = "7", cmd = "moveWindowToSpace", arg = "7" },
 	-- Add more bindings here
 }
 
@@ -221,13 +221,9 @@ function commands.focusWindowInDirection(direction)
 
 	if success == nil then
 		logWithTimestamp("Search couldn't take place")
-		return false
 	elseif not success then
 		logWithTimestamp("No window found in the " .. direction .. " direction")
-		return false
 	end
-
-	return true
 end
 
 -- Function to handle app launch, focus, and window cycling
