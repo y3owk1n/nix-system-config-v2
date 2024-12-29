@@ -2,7 +2,7 @@ term = xterm-256color
 
 theme = catppuccin-macchiato
 
-font-family = JetBrainsMono Nerd Font Mono
+font-family = JetBrainsMonoL Nerd Font Mono
 font-thicken = true
 font-feature = -calt
 font-feature = -liga
@@ -11,6 +11,7 @@ font-feature = -dlig
 window-padding-x = 10
 window-padding-y = 10
 window-decoration = false
+window-padding-balance = true
 
 macos-titlebar-style = hidden
 
