@@ -81,9 +81,8 @@ return {
 				end,
 			},
 			{
-
 				provider = function(self)
-					return "%2(" .. self.mode_names[self.mode] .. "%)"
+					return "%2(" .. self.mode_names[self.mode] .. "%)"
 				end,
 				hl = function(self)
 					local mode = self.mode:sub(1, 1) -- get only the first mode character
@@ -335,9 +334,6 @@ return {
 				provider = Space.provider,
 			},
 			{
-				provider = Space.provider,
-			},
-			{
 				provider = function(self)
 					local output = {}
 
@@ -372,19 +368,18 @@ return {
 					or self.status_dict.change ~= 0
 			end,
 
-			hl = { fg = "rosewater" },
-
 			{
 				provider = Space.provider,
 			},
 			{
-				provider = Space.provider,
+				provider = "",
+				hl = { fg = "surface0" },
 			},
 			{ -- git branch name
 				provider = function(self)
-					return " " .. self.head
+					return " " .. self.head
 				end,
-				hl = { bold = true },
+				hl = { bold = true, bg = "surface0", fg = "rosewater" },
 			},
 			-- You could handle delimiters, icons and counts similar to Diagnostics
 			{
@@ -392,21 +387,26 @@ return {
 					local count = self.status_dict.add or 0
 					return count > 0 and ("  " .. count)
 				end,
-				hl = { fg = "green" },
+				hl = { fg = "green", bg = "surface0" },
 			},
 			{
 				provider = function(self)
 					local count = self.status_dict.delete or 0
 					return count > 0 and ("  " .. count)
 				end,
-				hl = { fg = "red" },
+				hl = { fg = "red", bg = "surface0" },
 			},
 			{
 				provider = function(self)
 					local count = self.status_dict.change or 0
 					return count > 0 and ("  " .. count)
 				end,
-				hl = { fg = "yellow" },
+				hl = { fg = "yellow", bg = "surface0" },
+			},
+
+			{
+				provider = "",
+				hl = { fg = "surface0" },
 			},
 		}
 
