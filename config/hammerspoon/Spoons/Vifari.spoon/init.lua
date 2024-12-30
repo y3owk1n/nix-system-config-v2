@@ -484,80 +484,71 @@ function marks.clear()
 	marks.data = {}
 end
 
-function marks.drawOne(markIndex)
-	local mark = marks.data[markIndex]
-	local visibleArea = current.visibleArea()
-	local canvas = marks.canvas
-
-	if not mark then
-		return
-	end
-	if not marks.canvas then
-		return
-	end
-
-	local position = mark.element:attributeValue("AXFrame") or mark.element:attributeValue("AXPosition")
-	if not position then
-		return
-	end
-
-	local padding = 2
-	local fontSize = 14
-	local bgRect = hs.geometry.rect(position.x, position.y, fontSize * 1.5 + 2 * padding, fontSize + 2 * padding)
-
-	-- Different colors for different types of elements
-	local fillColor
-	local role = mark.element:attributeValue("AXRole")
-	if role == "AXLink" then
-		fillColor = { ["red"] = 1, ["green"] = 1, ["blue"] = 0, ["alpha"] = 0.9 }
-	elseif role == "AXButton" then
-		fillColor = { ["red"] = 0.3, ["green"] = 0.8, ["blue"] = 1, ["alpha"] = 0.9 }
-	elseif tblContains(config.axEditableRoles, role) then
-		fillColor = { ["red"] = 0.8, ["green"] = 0.5, ["blue"] = 1, ["alpha"] = 0.9 }
-	else
-		fillColor = { ["red"] = 0.5, ["green"] = 1, ["blue"] = 0, ["alpha"] = 0.9 }
-	end
-
-	canvas:appendElements({
-		type = "rectangle",
-		fillColor = fillColor,
-		strokeColor = { ["red"] = 0, ["green"] = 0, ["blue"] = 0, ["alpha"] = 1 },
-		strokeWidth = 1,
-		roundedRectRadii = { xRadius = 3, yRadius = 3 },
-		frame = {
-			x = bgRect.x - visibleArea.x,
-			y = bgRect.y - visibleArea.y,
-			w = bgRect.w,
-			h = bgRect.h,
-		},
-	})
-
-	canvas:appendElements({
-		type = "text",
-		text = string.upper(allCombinations[markIndex]),
-		textAlignment = "center",
-		textColor = { ["red"] = 0, ["green"] = 0, ["blue"] = 0, ["alpha"] = 1 },
-		textSize = fontSize,
-		padding = padding,
-		frame = {
-			x = bgRect.x - visibleArea.x,
-			y = bgRect.y - visibleArea.y,
-			w = bgRect.w,
-			h = bgRect.h,
-		},
-	})
-end
-
 function marks.draw()
 	if not marks.canvas then
 		marks.canvas = hs.canvas.new(current.visibleArea())
 	end
 
+	local elementsToDraw = {}
 	for i, _ in ipairs(marks.data) do
-		marks.drawOne(i)
+		local element = marks.prepareElementForDrawing(i)
+		if element then
+			for _, el in ipairs(element) do
+				table.insert(elementsToDraw, el)
+			end
+		end
 	end
 
+	marks.canvas:replaceElements(elementsToDraw)
+
 	marks.canvas:show()
+end
+
+function marks.prepareElementForDrawing(markIndex)
+	local mark = marks.data[markIndex]
+	if not mark then
+		return nil
+	end
+
+	local position = mark.element:attributeValue("AXFrame")
+	if not position then
+		return nil
+	end
+
+	local padding = 2
+	local fontSize = 14
+	local bgRect = hs.geometry.rect(position.x, position.y, fontSize * 1.5 + 2 * padding, fontSize + 2 * padding)
+	local visibleArea = current.visibleArea()
+
+	return {
+		{
+			type = "rectangle",
+			fillColor = { red = 0.5, green = 1, blue = 0, alpha = 0.9 },
+			strokeColor = { ["red"] = 0, ["green"] = 0, ["blue"] = 0, ["alpha"] = 1 },
+			strokeWidth = 1,
+			roundedRectRadii = { xRadius = 3, yRadius = 3 },
+			frame = {
+				x = bgRect.x - visibleArea.x,
+				y = bgRect.y - visibleArea.y,
+				w = bgRect.w,
+				h = bgRect.h,
+			},
+		},
+		{
+			type = "text",
+			text = string.upper(allCombinations[markIndex]),
+			textAlignment = "center",
+			textColor = { ["red"] = 0, ["green"] = 0, ["blue"] = 0, ["alpha"] = 1 },
+			textSize = fontSize,
+			padding = padding,
+			frame = {
+				x = bgRect.x - visibleArea.x,
+				y = bgRect.y - visibleArea.y,
+				w = bgRect.w,
+				h = bgRect.h,
+			},
+		},
+	}
 end
 
 function marks.add(element)
