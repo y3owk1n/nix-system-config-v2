@@ -1,3 +1,12 @@
+local floor = math.floor
+local insert = table.insert
+local format = string.format
+local sub = string.sub
+local pcall = pcall
+local timer = hs.timer
+local mouse = hs.mouse
+local eventtap = hs.eventtap
+
 local obj = {}
 obj.__index = obj
 
@@ -63,7 +72,7 @@ local config = {
 	mapping = mapping,
 	scrollStep = 100,
 	scrollStepHalfPage = 500,
-	smoothScroll = false,
+	smoothScroll = true,
 	smoothScrollHalfPage = true,
 	depth = 10,
 	axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea" },
@@ -133,7 +142,7 @@ local config = {
 -- helpers
 --------------------------------------------------------------------------------
 
-local cached = {}
+local cached = setmetatable({}, { __mode = "k" })
 local current = {}
 local marks = { data = {} }
 local menuBar = {}
@@ -142,7 +151,7 @@ local windowFilter
 local eventLoop
 local modes = { DISABLED = 1, NORMAL = 2, INSERT = 3, MULTI = 4, LINKS = 5 }
 local linkCapture
-local lastEscape = hs.timer.absoluteTime()
+local lastEscape = timer.absoluteTime()
 local mappingPrefixes
 local allCombinations
 
@@ -152,7 +161,7 @@ local function logWithTimestamp(message)
 	end
 
 	local timestamp = os.date("%Y-%m-%d %H:%M:%S") -- Get current date and time
-	local ms = math.floor(hs.timer.absoluteTime() / 1e6) % 1000
+	local ms = floor(timer.absoluteTime() / 1e6) % 1000
 	hs.printf("[%s.%03d] %s", timestamp, ms, message) -- Print the message with the timestamp
 end
 
@@ -297,25 +306,35 @@ local function generateCombinations()
 	allCombinations = {}
 	for i = 1, #chars do
 		for j = 1, #chars do
-			table.insert(allCombinations, chars:sub(i, i) .. chars:sub(j, j))
+			insert(allCombinations, chars:sub(i, i) .. chars:sub(j, j))
 		end
 	end
 end
 
 local function smoothScroll(x, y, smooth)
-	if smooth then
-		local xstep = x / 5
-		local ystep = y / 5
-		hs.eventtap.event.newScrollEvent({ xstep, ystep }, {}, "pixel"):post()
-		hs.timer.doAfter(0.01, function()
-			hs.eventtap.event.newScrollEvent({ xstep * 3, ystep * 3 }, {}, "pixel"):post()
-		end)
-		hs.timer.doAfter(0.01, function()
-			hs.eventtap.event.newScrollEvent({ xstep, ystep }, {}, "pixel"):post()
-		end)
-	else
-		hs.eventtap.event.newScrollEvent({ x, y }, {}, "pixel"):post()
+	if not smooth then
+		eventtap.event.newScrollEvent({ x, y }, {}, "pixel"):post()
+		return
 	end
+
+	local steps = 5
+	local dx = x / steps
+	local dy = y / steps
+	local frame = 0
+
+	local function animate()
+		frame = frame + 1
+		if frame > steps then
+			return
+		end
+
+		local factor = frame <= steps / 2 and 2 or 0.5
+		eventtap.event.newScrollEvent({ dx * factor, dy * factor }, {}, "pixel"):post()
+
+		timer.doAfter(0.016, animate) -- ~60fps
+	end
+
+	animate()
 end
 
 local function openUrlInNewTab(url)
@@ -367,13 +386,13 @@ local function openUrlInNewTab(url)
 
 	-- Select script based on current browser
 	if browserScripts[currentApp] then
-		script = string.format(browserScripts[currentApp], url)
+		script = format(browserScripts[currentApp], url)
 	else
 		-- Fallback to Safari if not a known browser
-		script = string.format(browserScripts["Safari"], url)
+		script = format(browserScripts["Safari"], url)
 	end
 
-	-- script = string.format(script, url)
+	-- script = format(script, url)
 	hs.osascript.applescript(script)
 end
 
@@ -440,7 +459,7 @@ local function setMode(mode, char)
 	end
 	if previousMode == modes.LINKS and current.mode ~= modes.LINKS then
 		linkCapture = nil
-		hs.timer.doAfter(0, marks.clear)
+		timer.doAfter(0, marks.clear)
 	end
 
 	if current.mode == modes.MULTI then
@@ -530,27 +549,19 @@ function marks.drawOne(markIndex)
 end
 
 function marks.draw()
-	marks.canvas = hs.canvas.new(current.visibleArea())
-
-	-- area testing
-	-- marksCanvas:appendElements({
-	--   type = "rectangle",
-	--   fillColor = { ["red"] = 0, ["green"] = 1, ["blue"] = 0, ["alpha"] = 0.1 },
-	--   strokeColor = { ["red"] = 1, ["green"] = 0, ["blue"] = 0, ["alpha"] = 1 },
-	--   strokeWidth = 2,
-	--   frame = { x = 0, y = 0, w = visibleArea.w, h = visibleArea.h }
-	-- })
+	if not marks.canvas then
+		marks.canvas = hs.canvas.new(current.visibleArea())
+	end
 
 	for i, _ in ipairs(marks.data) do
 		marks.drawOne(i)
 	end
 
-	-- marksCanvas:bringToFront(true)
 	marks.canvas:show()
 end
 
 function marks.add(element)
-	table.insert(marks.data, { element = element })
+	insert(marks.data, { element = element })
 end
 
 function marks.isElementPartiallyVisible(element)
@@ -598,9 +609,9 @@ function marks.isElementActionable(element)
 			end
 			break
 		else
-			for i, jumpableRole in ipairs(axJumpableRolesCopy) do
+			for _, jumpableRole in ipairs(axJumpableRolesCopy) do
 				if jumpableRole ~= "AXStaticText" then
-					table.insert(axJumpableRolesCopy, "AXStaticText")
+					insert(axJumpableRolesCopy, "AXStaticText")
 					break -- Exit the loop once the item is found and removed
 				end
 			end
@@ -645,7 +656,7 @@ function marks.show(withUrls)
 
 	logWithTimestamp("startElement: " .. hs.inspect(startElement))
 
-	marks.data = {}
+	marks.clear()
 	-- Find all clickable elements
 	marks.findClickableElements(startElement, withUrls, 0)
 
@@ -677,26 +688,32 @@ end
 --------------------------------------------------------------------------------
 
 function commands.cmdScrollLeft()
+	-- smoothScroll(config.scrollStep, 0, config.smoothScroll)
 	smoothScroll(config.scrollStep, 0, config.smoothScroll)
 end
 
 function commands.cmdScrollRight()
+	-- smoothScroll(-config.scrollStep, 0, config.smoothScroll)
 	smoothScroll(-config.scrollStep, 0, config.smoothScroll)
 end
 
 function commands.cmdScrollUp()
+	-- smoothScroll(0, config.scrollStep, config.smoothScroll)
 	smoothScroll(0, config.scrollStep, config.smoothScroll)
 end
 
 function commands.cmdScrollDown()
+	-- smoothScroll(0, -config.scrollStep, config.smoothScroll)
 	smoothScroll(0, -config.scrollStep, config.smoothScroll)
 end
 
 function commands.cmdScrollHalfPageDown()
+	-- smoothScroll(0, -config.scrollStepHalfPage, config.smoothScrollHalfPage)
 	smoothScroll(0, -config.scrollStepHalfPage, config.smoothScrollHalfPage)
 end
 
 function commands.cmdScrollHalfPageUp()
+	-- smoothScroll(0, config.scrollStepHalfPage, config.smoothScrollHalfPage)
 	smoothScroll(0, config.scrollStepHalfPage, config.smoothScrollHalfPage)
 end
 
@@ -753,20 +770,20 @@ function commands.cmdGotoLink(char)
 			local clickY = position.y + (size.h / 2)
 
 			-- Save current mouse position
-			local originalPosition = hs.mouse.absolutePosition()
+			local originalPosition = mouse.absolutePosition()
 
 			-- Perform click sequence
 			local clickSuccess, clickErr = pcall(function()
 				-- Move mouse
-				hs.mouse.absolutePosition({ x = clickX, y = clickY })
-				hs.timer.usleep(50000) -- Wait 50ms
+				mouse.absolutePosition({ x = clickX, y = clickY })
+				timer.usleep(50000) -- Wait 50ms
 
 				-- Click
-				hs.eventtap.leftClick({ x = clickX, y = clickY })
+				eventtap.leftClick({ x = clickX, y = clickY })
 
 				-- Restore mouse position
-				hs.timer.doAfter(0.1, function()
-					hs.mouse.absolutePosition(originalPosition)
+				timer.doAfter(0.1, function()
+					mouse.absolutePosition(originalPosition)
 				end)
 			end)
 
@@ -780,16 +797,16 @@ function commands.cmdGotoLink(char)
 		-- Method 3: Try to get position from the mark itself
 		if mark.x and mark.y then
 			local clickSuccess, clickErr = pcall(function()
-				local originalPosition = hs.mouse.absolutePosition()
+				local originalPosition = mouse.absolutePosition()
 
 				-- Move and click
-				hs.mouse.absolutePosition({ x = mark.x, y = mark.y })
-				hs.timer.usleep(50000)
-				hs.eventtap.leftClick({ x = mark.x, y = mark.y })
+				mouse.absolutePosition({ x = mark.x, y = mark.y })
+				timer.usleep(50000)
+				eventtap.leftClick({ x = mark.x, y = mark.y })
 
 				-- Restore position
-				hs.timer.doAfter(0.1, function()
-					hs.mouse.absolutePosition(originalPosition)
+				timer.doAfter(0.1, function()
+					mouse.absolutePosition(originalPosition)
 				end)
 			end)
 
@@ -804,8 +821,8 @@ function commands.cmdGotoLink(char)
 		logWithTimestamp("Falling back to focus + return method")
 		local focusSuccess, focusErr = pcall(function()
 			element:setAttributeValue("AXFocused", true)
-			hs.timer.doAfter(0.1, function()
-				hs.eventtap.keyStroke({}, "return", 0)
+			timer.doAfter(0.1, function()
+				eventtap.keyStroke({}, "return", 0)
 			end)
 		end)
 
@@ -813,7 +830,7 @@ function commands.cmdGotoLink(char)
 			logWithTimestamp("Focus fallback failed: " .. tostring(focusErr))
 		end
 	end
-	hs.timer.doAfter(0, marks.show)
+	timer.doAfter(0, marks.show)
 end
 
 function commands.cmdRightClick(char)
@@ -854,20 +871,20 @@ function commands.cmdRightClick(char)
 			local clickY = position.y + (size.h / 2)
 
 			-- Save current mouse position
-			local originalPosition = hs.mouse.absolutePosition()
+			local originalPosition = mouse.absolutePosition()
 
 			-- Perform click sequence
 			local clickSuccess, clickErr = pcall(function()
 				-- Move mouse
-				hs.mouse.absolutePosition({ x = clickX, y = clickY })
-				hs.timer.usleep(50000) -- Wait 50ms
+				mouse.absolutePosition({ x = clickX, y = clickY })
+				timer.usleep(50000) -- Wait 50ms
 
 				-- Click
-				hs.eventtap.rightClick({ x = clickX, y = clickY })
+				eventtap.rightClick({ x = clickX, y = clickY })
 
 				-- Restore mouse position
-				hs.timer.doAfter(0.1, function()
-					hs.mouse.absolutePosition(originalPosition)
+				timer.doAfter(0.1, function()
+					mouse.absolutePosition(originalPosition)
 				end)
 			end)
 
@@ -878,7 +895,7 @@ function commands.cmdRightClick(char)
 			end
 		end
 	end
-	hs.timer.doAfter(0, marks.show)
+	timer.doAfter(0, marks.show)
 end
 
 function commands.cmdGotoLinkNewTab(char)
@@ -895,7 +912,7 @@ function commands.cmdGotoLinkNewTab(char)
 					openUrlInNewTab(axURL.url)
 				end
 			end
-			hs.timer.doAfter(0, function()
+			timer.doAfter(0, function()
 				marks.show(true)
 			end)
 			break
@@ -907,13 +924,13 @@ function commands.cmdMoveMouseToLink(char)
 	setMode(modes.LINKS, char)
 	marks.onClickCallback = function(mark)
 		local frame = mark.element:attributeValue("AXFrame")
-		hs.mouse.absolutePosition({ x = frame.x + frame.w / 2, y = frame.y + frame.h / 2 })
+		mouse.absolutePosition({ x = frame.x + frame.w / 2, y = frame.y + frame.h / 2 })
 	end
-	hs.timer.doAfter(0, marks.show)
+	timer.doAfter(0, marks.show)
 end
 
 function commands.cmdMoveMouseToCenter()
-	hs.mouse.absolutePosition({
+	mouse.absolutePosition({
 		x = current.visibleArea().x + current.visibleArea().w / 2,
 		y = current.visibleArea().y + current.visibleArea().h / 2,
 	})
@@ -925,7 +942,7 @@ function commands.cmdCopyLinkUrlToClipboard(char)
 		local axURL = mark.element:attributeValue("AXURL")
 		setClipboardContents(axURL.url)
 	end
-	hs.timer.doAfter(0, function()
+	timer.doAfter(0, function()
 		marks.show(true)
 	end)
 end
@@ -938,7 +955,7 @@ local function fetchMappingPrefixes()
 	mappingPrefixes = {}
 	for k, _ in pairs(config.mapping) do
 		if #k == 2 then
-			mappingPrefixes[string.sub(k, 1, 1)] = true
+			mappingPrefixes[sub(k, 1, 1)] = true
 		end
 	end
 	logWithTimestamp("mappingPrefixes: " .. hs.inspect(mappingPrefixes))
@@ -967,7 +984,7 @@ local function vimLoop(char)
 		if type(foundMapping) == "string" then
 			commands[foundMapping](char)
 		elseif type(foundMapping) == "table" then
-			hs.eventtap.keyStroke(foundMapping[1], foundMapping[2], 0)
+			eventtap.keyStroke(foundMapping[1], foundMapping[2], 0)
 		else
 			logWithTimestamp("Unknown mapping for " .. char .. " " .. hs.inspect(foundMapping))
 		end
@@ -996,8 +1013,8 @@ local function eventHandler(event)
 	end
 
 	if event:getKeyCode() == hs.keycodes.map["escape"] then
-		local delaySinceLastEscape = (hs.timer.absoluteTime() - lastEscape) / 1e9 -- nanoseconds in seconds
-		lastEscape = hs.timer.absoluteTime()
+		local delaySinceLastEscape = (timer.absoluteTime() - lastEscape) / 1e9 -- nanoseconds in seconds
+		lastEscape = timer.absoluteTime()
 
 		if delaySinceLastEscape < config.doublePressDelay then
 			setMode(modes.NORMAL)
@@ -1022,7 +1039,7 @@ local function eventHandler(event)
 		return false
 	end
 
-	hs.timer.doAfter(0, function()
+	timer.doAfter(0, function()
 		vimLoop(char)
 	end)
 	return true
@@ -1031,7 +1048,7 @@ end
 local function onWindowFocused()
 	logWithTimestamp("onWindowFocused")
 	if not eventLoop then
-		eventLoop = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, eventHandler):start()
+		eventLoop = eventtap.new({ hs.eventtap.event.types.keyDown }, eventHandler):start()
 	end
 	if not isExcludedApp() then
 		setMode(modes.NORMAL)
@@ -1049,9 +1066,17 @@ local function onWindowUnfocused()
 	setMode(modes.DISABLED)
 end
 
+-- Memory management
+local function clearCaches()
+	cached = setmetatable({}, { __mode = "k" })
+end
+
 function obj:start()
 	windowFilter = hs.window.filter.new()
-	windowFilter:subscribe(hs.window.filter.windowFocused, onWindowFocused)
+	windowFilter:subscribe(hs.window.filter.windowFocused, function()
+		clearCaches()
+		onWindowFocused()
+	end)
 	windowFilter:subscribe(hs.window.filter.windowUnfocused, onWindowUnfocused)
 	menuBar.new()
 	fetchMappingPrefixes()
