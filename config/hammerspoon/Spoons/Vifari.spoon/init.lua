@@ -74,7 +74,7 @@ local config = {
 	scrollStepHalfPage = 500,
 	smoothScroll = true,
 	smoothScrollHalfPage = true,
-	depth = 10,
+	depth = 20,
 	axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea" },
 	axJumpableRoles = {
 		"AXLink",
@@ -628,6 +628,7 @@ function marks.findClickableElements(element, withUrls, depth)
 	end
 
 	logWithTimestamp("clickableElement: " .. hs.inspect(element))
+	logWithTimestamp("depth: " .. depth)
 
 	if marks.isElementPartiallyVisible(element) then
 		-- Check if the element itself is clickable
