@@ -65,6 +65,7 @@ local config = {
 	scrollStepHalfPage = 500,
 	smoothScroll = false,
 	smoothScrollHalfPage = true,
+	depth = 10,
 	axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea" },
 	axJumpableRoles = {
 		"AXLink",
@@ -264,6 +265,8 @@ function current.visibleArea()
 		w = visibleWidth,
 		h = visibleHeight,
 	}
+
+	logWithTimestamp("visibleArea: " .. hs.inspect(cached.visibleArea))
 
 	return cached.visibleArea
 end
@@ -557,13 +560,7 @@ function marks.isElementPartiallyVisible(element)
 	end
 
 	local frame = element:attributeValue("AXFrame")
-
-	if not frame then
-		return false
-	end
-
-	-- Check if element has zero size
-	if frame.w == 0 or frame.h == 0 then
+	if not frame or frame.w == 0 or frame.h == 0 then
 		return false
 	end
 
@@ -614,26 +611,27 @@ function marks.isElementActionable(element)
 	return (tblContains(axJumpableRolesCopy, role))
 end
 
-function marks.findClickableElements(element, withUrls)
-	if not element then
+function marks.findClickableElements(element, withUrls, depth)
+	if not element or (depth and depth > config.depth) then
 		return
 	end
 
-	-- Check if the element itself is clickable
-	if marks.isElementActionable(element) and marks.isElementPartiallyVisible(element) then
-		local shouldAdd = true
-		if withUrls then
-			shouldAdd = element:attributeValue("AXURL") ~= nil
-		end
-		if shouldAdd then
+	logWithTimestamp("clickableElement: " .. hs.inspect(element))
+
+	if marks.isElementPartiallyVisible(element) then
+		-- Check if the element itself is clickable
+		local actionable = marks.isElementActionable(element)
+		local hasUrl = not withUrls or element:attributeValue("AXURL")
+
+		if actionable and hasUrl then
 			marks.add(element)
 		end
-	end
 
-	local children = element:attributeValue("AXChildren")
-	if children then
-		for _, child in ipairs(children) do
-			marks.findClickableElements(child, withUrls)
+		local children = element:attributeValue("AXChildren")
+		if children and #children > 0 then
+			for i = 1, #children do
+				marks.findClickableElements(children[i], withUrls, (depth or 0) + 1)
+			end
 		end
 	end
 end
@@ -645,8 +643,11 @@ function marks.show(withUrls)
 		return
 	end
 
+	logWithTimestamp("startElement: " .. hs.inspect(startElement))
+
+	marks.data = {}
 	-- Find all clickable elements
-	marks.findClickableElements(startElement, withUrls)
+	marks.findClickableElements(startElement, withUrls, 0)
 
 	-- Only draw if we found any elements
 	if #marks.data > 0 then
