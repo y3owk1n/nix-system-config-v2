@@ -225,6 +225,18 @@ in
           # automatically switch to a new space when switching to the application
           # AppleSpacesSwitchOnActivate = true;
           "com.apple.mouse.scaling" = 9;
+          AppleLanguages = [
+            "en-US"
+            "ms-MY"
+            "zh-Hant-MY"
+          ];
+          NSUserKeyEquivalents = {
+            Bottom = "^$j";
+            Fill = "^$m";
+            Left = "^$h";
+            Right = "^$l";
+            Top = "^$k";
+          };
         };
         NSGlobalDomain = {
           # Add a context menu item for showing the Web Inspector in web views
