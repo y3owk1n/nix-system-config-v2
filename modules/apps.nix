@@ -21,6 +21,7 @@
   # Related Discussion: https://discourse.nixos.org/t/darwin-again/29331
   environment.systemPackages = with pkgs; [
     ncurses
+    coreutils
   ];
   environment.variables.EDITOR = "nvim";
   environment.etc.terminfo = {
