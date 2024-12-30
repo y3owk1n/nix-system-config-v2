@@ -362,7 +362,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "11" = {
               enabled = 0;
               value = {
@@ -374,7 +373,6 @@ in
                 type = "standard";
               };
             };
-
             "118" = {
               enabled = 1;
               value = {
@@ -397,7 +395,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "12" = {
               enabled = 0;
               value = {
@@ -464,7 +461,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "13" = {
               enabled = 0;
               value = {
@@ -476,7 +472,17 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
+            "159" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  36
+                  262144
+                ];
+                type = "standard";
+              };
+            };
             "162" = {
               enabled = 0;
               value = {
@@ -512,7 +518,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "190" = {
               enabled = 0;
               value = {
@@ -524,7 +529,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "21" = {
               enabled = 0;
               value = {
@@ -536,7 +540,61 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
+            "215" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            "216" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            "217" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            "218" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
+            "219" = {
+              enabled = 0;
+              value = {
+                parameters = [
+                  65535
+                  65535
+                  0
+                ];
+                type = "standard";
+              };
+            };
             "222" = {
               enabled = 0;
               value = {
@@ -548,7 +606,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "223" = {
               enabled = 0;
               value = {
@@ -560,7 +617,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "224" = {
               enabled = 0;
               value = {
@@ -572,7 +628,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "225" = {
               enabled = 0;
               value = {
@@ -584,7 +639,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "226" = {
               enabled = 0;
               value = {
@@ -596,7 +650,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "227" = {
               enabled = 0;
               value = {
@@ -608,7 +661,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "228" = {
               enabled = 0;
               value = {
@@ -620,7 +672,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "229" = {
               enabled = 0;
               value = {
@@ -632,7 +683,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "230" = {
               enabled = 0;
               value = {
@@ -644,7 +694,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "231" = {
               enabled = 0;
               value = {
@@ -656,7 +705,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "232" = {
               enabled = 0;
               value = {
@@ -668,7 +716,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "25" = {
               enabled = 0;
               value = {
@@ -680,7 +727,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "26" = {
               enabled = 0;
               value = {
@@ -692,7 +738,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "27" = {
               enabled = 1;
               value = {
@@ -704,7 +749,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "28" = {
               enabled = 1;
               value = {
@@ -728,7 +772,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "32" = {
               enabled = 0;
               value = {
@@ -740,7 +783,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "33" = {
               enabled = 0;
               value = {
@@ -752,7 +794,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "36" = {
               enabled = 0;
               value = {
@@ -764,7 +805,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "52" = {
               enabled = 0;
               value = {
@@ -776,7 +816,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "53" = {
               enabled = 0;
               value = {
@@ -788,7 +827,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "54" = {
               enabled = 0;
               value = {
@@ -800,7 +838,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "57" = {
               enabled = 0;
               value = {
@@ -812,7 +849,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "59" = {
               enabled = 0;
               value = {
@@ -836,7 +872,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "61" = {
               enabled = 0;
               value = {
@@ -860,7 +895,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "65" = {
               enabled = 0;
               value = {
@@ -872,7 +906,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "7" = {
               enabled = 0;
               value = {
@@ -895,7 +928,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "8" = {
               enabled = 0;
               value = {
@@ -918,7 +950,6 @@ in
                 type = "standard";
               };
             };
-            # Action not defined
             "9" = {
               enabled = 0;
               value = {
