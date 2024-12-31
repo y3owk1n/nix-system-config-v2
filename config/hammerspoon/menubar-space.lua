@@ -1,18 +1,19 @@
-local obj = {}
-local menuBar = {}
+local M = {
+	menuBar = {},
+}
 
-function menuBar.new()
-	if menuBar.item then
-		menuBar.delete()
+function M.menuBar.new()
+	if M.menuBar.item then
+		M.menuBar.delete()
 	end
-	menuBar.item = hs.menubar.new()
+	M.menuBar.item = hs.menubar.new()
 end
 
-function menuBar.delete()
-	if menuBar.item then
-		menuBar.item:delete()
+function M.menuBar.delete()
+	if M.menuBar.item then
+		M.menuBar.item:delete()
 	end
-	menuBar.item = nil
+	M.menuBar.item = nil
 end
 
 local function setSpaceNumber()
@@ -28,11 +29,11 @@ local function setSpaceNumber()
 	end
 
 	-- Set the menubar item title to the visual space number
-	menuBar.item:setTitle(tostring(visualNumber))
+	M.menuBar.item:setTitle(tostring(visualNumber))
 end
 
-function obj:start()
-	menuBar.new()
+function M:start()
+	M.menuBar.new()
 	setSpaceNumber()
 
 	-- Watch for space changes
@@ -43,8 +44,8 @@ function obj:start()
 		:start()
 end
 
-function obj:stop()
-	menuBar.delete()
+function M:stop()
+	M.menuBar.delete()
 end
 
-return obj
+return M
