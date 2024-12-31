@@ -78,6 +78,7 @@ local config = {
 	scrollStepHalfPage = 500,
 	scrollStepFullPage = 100000, -- make it a super big number and not worry
 	smoothScroll = true,
+	smoothScrollFrameRate = 120,
 	depth = 20, -- depth for traversing children when creating marks
 	axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea" },
 	axJumpableRoles = {
@@ -350,6 +351,8 @@ local function smoothScroll(x, y, smooth)
 	end
 	local frame = 0
 
+	local interval = 1 / config.smoothScrollFrameRate
+
 	local function animate()
 		frame = frame + 1
 		if frame > steps then
@@ -359,7 +362,7 @@ local function smoothScroll(x, y, smooth)
 		local factor = frame <= steps / 2 and 2 or 0.5
 		eventtap.event.newScrollEvent({ dx * factor, dy * factor }, {}, "pixel"):post()
 
-		timer.doAfter(0.016, animate) -- ~60fps
+		timer.doAfter(interval, animate) -- ~60fps
 	end
 
 	animate()
