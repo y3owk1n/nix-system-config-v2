@@ -908,11 +908,11 @@ function commands.cmdScrollHalfPageUp()
 end
 
 function commands.cmdScrollToTop()
-	smoothScroll(0, -config.scrollFullPage, config.smoothScroll)
+	smoothScroll(0, -config.scrollStepFullPage, config.smoothScroll)
 end
 
 function commands.cmdScrollToBottom()
-	smoothScroll(0, config.scrollFullPage, config.smoothScroll)
+	smoothScroll(0, config.scrollStepFullPage, config.smoothScroll)
 end
 
 function commands.cmdCopyPageUrlToClipboard()
