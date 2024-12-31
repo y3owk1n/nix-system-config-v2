@@ -496,18 +496,8 @@ end
 
 local function isInBrowser()
 	local currentAppName = current.app():name()
-	logWithTimestamp("currentAppName: " .. hs.inspect(currentAppName))
 
-	local result = false
-
-	for _, browserName in ipairs(config.browsers) do
-		if currentAppName == browserName then
-			result = true
-			break
-		end
-	end
-
-	return result
+	return tblContains(config.browsers, currentAppName)
 end
 
 --------------------------------------------------------------------------------
@@ -668,12 +658,10 @@ function marks.isElementActionable(element)
 		return false
 	end
 
-	local currentAppName = current.app():name()
 	local axJumpableRoles = config.axJumpableRoles
 
 	-- Adjust roles if the app is in the browsers list
-	local isBrowser = tblContains(config.browsers, currentAppName)
-	if isBrowser then
+	if isInBrowser() then
 		-- Remove "AXStaticText" if present
 		axJumpableRoles = filter(axJumpableRoles, function(r)
 			return r ~= "AXStaticText"
