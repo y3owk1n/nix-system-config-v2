@@ -339,8 +339,15 @@ local function smoothScroll(x, y, smooth)
 	end
 
 	local steps = 5
-	local dx = x / steps
-	local dy = y / steps
+	local dx = 0
+	local dy = 0
+
+	if x then
+		dx = x / steps
+	end
+	if y then
+		dy = y / steps
+	end
 	local frame = 0
 
 	local function animate()
