@@ -19,6 +19,7 @@ obj.version = "0.0.2"
 obj.author = "Sergey Tarasov <dzirtusss@gmail.com>"
 obj.homepage = "https://github.com/dzirtusss/vifari"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
+obj.modifiedBy = "Kyle Wong <wongyeowkin@gmail.com>"
 
 --------------------------------------------------------------------------------
 --- config
