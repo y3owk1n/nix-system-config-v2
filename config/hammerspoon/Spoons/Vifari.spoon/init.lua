@@ -75,6 +75,7 @@ local config = {
 	mapping = mapping,
 	scrollStep = 100,
 	scrollStepHalfPage = 500,
+	scrollStepFullPage = 100000, -- make it a super big number and not worry
 	smoothScroll = true,
 	depth = 20,
 	axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea" },
@@ -962,12 +963,12 @@ function commands.cmdScrollHalfPageUp()
 end
 
 function commands.cmdScrollToTop()
-	smoothScroll(0, -10000, config.smoothScroll)
+	smoothScroll(0, -config.scrollFullPage, config.smoothScroll)
 end
 
 -- Function to scroll to the bottom
 function commands.cmdScrollToBottom()
-	smoothScroll(0, 10000, config.smoothScroll)
+	smoothScroll(0, config.scrollFullPage, config.smoothScroll)
 end
 
 function commands.cmdCopyPageUrlToClipboard()
