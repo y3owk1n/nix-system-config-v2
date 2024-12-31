@@ -68,7 +68,7 @@ local mapping = {
 
 local config = {
 	doublePressDelay = 0.3, -- seconds
-	showLogs = true,
+	showLogs = false,
 	mapping = mapping,
 	scrollStep = 100,
 	scrollStepHalfPage = 500,
@@ -102,7 +102,16 @@ local config = {
 		"AXDecrementor",
 		"AXDisclosureTriangle",
 	},
-	axScrollableRoles = { "AXScrollArea", "AXScrollView", "AXGroup" },
+	axScrollableRoles = {
+		"AXScrollArea",
+		"AXScrollView",
+		"AXOverflow",
+		"AXGroup",
+		"AXScrollable",
+		"AXHorizontalScroll",
+		"AXVerticalScroll",
+		"AXWebArea",
+	},
 	axContentRoles = {
 		"AXWindow",
 		"AXSplitGroup",
@@ -680,6 +689,23 @@ function marks.isElementActionable(element)
 	return tblContains(axJumpableRoles, role)
 end
 
+function marks.isElementScrollable(element)
+	if not element then
+		return false
+	end
+
+	-- Cache role and app name
+	local role = element:attributeValue("AXRole")
+	if not role then
+		return false
+	end
+
+	local axScrollableRoles = config.axScrollableRoles
+
+	-- Check if the role is actionable
+	return tblContains(axScrollableRoles, role)
+end
+
 function marks.getAllDescendants(element)
 	if not element then
 		return {}
@@ -739,7 +765,72 @@ function marks.findClickableElements(element, withUrls, depth)
 	end
 end
 
-function marks.show(withUrls)
+function marks.findScrollableElement(element, depth)
+	if not element or (depth and depth > config.depth) then
+		return
+	end
+
+	logWithTimestamp("scrollableElement: " .. hs.inspect(element))
+	-- logWithTimestamp("depth: " .. depth)
+
+	local elementFrame = element:attributeValue("AXFrame")
+	if not elementFrame or not marks.isElementPartiallyVisible(element) then
+		return
+	end
+
+	-- Check actionable and URL together to avoid unnecessary processing
+	if marks.isElementScrollable(element) then
+		marks.add(element)
+	end
+
+	-- Process children only if parent is visible
+	local children = element:attributeValue("AXChildren")
+	if children then
+		local chunk_size = 10
+		for i = 1, #children, chunk_size do
+			local end_idx = math.min(i + chunk_size - 1, #children)
+			for j = i, end_idx do
+				marks.findScrollableElement(children[j], (depth or 0) + 1)
+			end
+			-- Optional: Add a tiny delay between chunks if needed
+			-- hs.timer.usleep(1)
+		end
+	end
+end
+
+function marks.findUrlElement(element, depth)
+	if not element or (depth and depth > config.depth) then
+		return
+	end
+
+	local elementFrame = element:attributeValue("AXFrame")
+	if not elementFrame or not marks.isElementPartiallyVisible(element) then
+		return
+	end
+
+	-- Check actionable and URL together to avoid unnecessary processing
+	if element:attributeValue("AXURL") then
+		marks.add(element)
+	end
+
+	-- Process children only if parent is visible
+	local children = element:attributeValue("AXChildren")
+	if children then
+		local chunk_size = 10
+		for i = 1, #children, chunk_size do
+			local end_idx = math.min(i + chunk_size - 1, #children)
+			for j = i, end_idx do
+				marks.findUrlElement(children[j], (depth or 0) + 1)
+			end
+			-- Optional: Add a tiny delay between chunks if needed
+			-- hs.timer.usleep(1)
+		end
+	end
+end
+
+---@param withUrls boolean
+---@param type? string
+function marks.show(withUrls, type)
 	-- Start from the focused window's content
 	local startElement = current.axWindow()
 	if not startElement then
@@ -750,7 +841,17 @@ function marks.show(withUrls)
 
 	marks.clear()
 	-- Find all clickable elements
-	marks.findClickableElements(startElement, withUrls, 0)
+	if type == "link" then
+		marks.findClickableElements(startElement, withUrls, 0)
+	end
+
+	if type == "scroll" then
+		marks.findScrollableElement(startElement, 0)
+	end
+
+	if type == "url" then
+		marks.findUrlElement(startElement, 0)
+	end
 
 	-- Only draw if we found any elements
 	if #marks.data > 0 then
@@ -889,7 +990,9 @@ function commands.cmdGotoLink(char)
 			end
 		end
 	end
-	timer.doAfter(0, marks.show)
+	timer.doAfter(0, function()
+		marks.show(false, "link")
+	end)
 end
 
 function commands.cmdRightClick(char)
@@ -935,7 +1038,9 @@ function commands.cmdRightClick(char)
 		end
 	end
 
-	timer.doAfter(0, marks.show)
+	timer.doAfter(0, function()
+		marks.show(false, "link")
+	end)
 end
 
 function commands.cmdGotoLinkNewTab(char)
@@ -948,7 +1053,7 @@ function commands.cmdGotoLinkNewTab(char)
 			end
 		end
 		timer.doAfter(0, function()
-			marks.show(true)
+			marks.show(true, "link")
 		end)
 	end
 end
@@ -959,7 +1064,9 @@ function commands.cmdMoveMouseToLink(char)
 		local frame = mark.element:attributeValue("AXFrame")
 		mouse.absolutePosition({ x = frame.x + frame.w / 2, y = frame.y + frame.h / 2 })
 	end
-	timer.doAfter(0, marks.show)
+	timer.doAfter(0, function()
+		marks.show(true, "scroll")
+	end)
 end
 
 function commands.cmdMoveMouseToCenter()
@@ -976,7 +1083,7 @@ function commands.cmdCopyLinkUrlToClipboard(char)
 		setClipboardContents(axURL.url)
 	end
 	timer.doAfter(0, function()
-		marks.show(true)
+		marks.show(true, "url")
 	end)
 end
 
