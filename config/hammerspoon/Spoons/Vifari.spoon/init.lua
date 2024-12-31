@@ -899,10 +899,14 @@ function commands.cmdScrollHalfPageUp()
 end
 
 function commands.cmdCopyPageUrlToClipboard()
-	local element = current.axWebArea()
-	local url = element and element:attributeValue("AXURL")
-	if url then
-		setClipboardContents(url.url)
+	if isInBrowser() then
+		local element = current.axWebArea()
+		local url = element and element:attributeValue("AXURL")
+		if url then
+			setClipboardContents(url.url)
+		end
+	else
+		hs.alert.show("Copy page url is only available for browser")
 	end
 end
 
@@ -1043,6 +1047,8 @@ function commands.cmdGotoLinkNewTab(char)
 		timer.doAfter(0, function()
 			marks.show(true, "link")
 		end)
+	else
+		hs.alert.show("Go to Link New Tab is only available for browser")
 	end
 end
 
@@ -1065,14 +1071,18 @@ function commands.cmdMoveMouseToCenter()
 end
 
 function commands.cmdCopyLinkUrlToClipboard(char)
-	setMode(modes.LINKS, char)
-	marks.onClickCallback = function(mark)
-		local axURL = mark.element:attributeValue("AXURL")
-		setClipboardContents(axURL.url)
+	if isInBrowser() then
+		setMode(modes.LINKS, char)
+		marks.onClickCallback = function(mark)
+			local axURL = mark.element:attributeValue("AXURL")
+			setClipboardContents(axURL.url)
+		end
+		timer.doAfter(0, function()
+			marks.show(true, "url")
+		end)
+	else
+		hs.alert.show("Copy link url is only available for browser")
 	end
-	timer.doAfter(0, function()
-		marks.show(true, "url")
-	end)
 end
 
 --------------------------------------------------------------------------------
