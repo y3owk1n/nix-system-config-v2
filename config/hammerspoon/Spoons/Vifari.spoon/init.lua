@@ -68,7 +68,7 @@ local mapping = {
 
 local config = {
 	doublePressDelay = 0.3, -- seconds
-	showLogs = false,
+	showLogs = true,
 	mapping = mapping,
 	scrollStep = 100,
 	scrollStepHalfPage = 500,
@@ -415,11 +415,48 @@ local function setClipboardContents(contents)
 	end
 end
 
+local function getFocusedElement(element, depth)
+	if not element or (depth and depth > config.depth) then
+		return
+	end
+
+	local elementFrame = element:attributeValue("AXFrame")
+	if not elementFrame or not marks.isElementPartiallyVisible(element) then
+		return
+	end
+
+	-- Check actionable and URL together to avoid unnecessary processing
+	if element:attributeValue("AXFocused") then
+		logWithTimestamp("Focused element found: " .. hs.inspect(element))
+		-- Unfocus the element by setting AXFocused to false
+		element:setAttributeValue("AXFocused", false)
+		logWithTimestamp("Focused element unfocused.")
+	end
+
+	-- Process children only if parent is visible
+	local children = element:attributeValue("AXChildren")
+	if children then
+		local chunk_size = 10
+		for i = 1, #children, chunk_size do
+			local end_idx = math.min(i + chunk_size - 1, #children)
+			for j = i, end_idx do
+				getFocusedElement(children[j], (depth or 0) + 1)
+			end
+			-- Optional: Add a tiny delay between chunks if needed
+			-- hs.timer.usleep(1)
+		end
+	end
+end
+
 local function forceUnfocus()
 	logWithTimestamp("forced unfocus on escape")
-	if current.axContentArea() then
-		current.axContentArea():setAttributeValue("AXFocused", true)
+
+	local startElement = current.axWindow()
+	if not startElement then
+		return
 	end
+
+	getFocusedElement(startElement, 0)
 end
 
 local function getElementPositionAndSize(element)
@@ -446,6 +483,22 @@ local function restoreMousePosition(originalPosition)
 	timer.doAfter(0.05, function()
 		mouse.absolutePosition(originalPosition)
 	end)
+end
+
+local function isInBrowser()
+	local currentAppName = current.app():name()
+	logWithTimestamp("currentAppName: " .. hs.inspect(currentAppName))
+
+	local result = false
+
+	for _, browserName in ipairs(config.browsers) do
+		if currentAppName == browserName then
+			result = true
+			break
+		end
+	end
+
+	return result
 end
 
 --------------------------------------------------------------------------------
@@ -886,24 +939,17 @@ function commands.cmdRightClick(char)
 end
 
 function commands.cmdGotoLinkNewTab(char)
-	local currentAppName = current.app():name()
-	logWithTimestamp("currentAppName: " .. hs.inspect(currentAppName))
-
-	-- Check if the current app is in the list of browsers
-	for _, browserName in ipairs(config.browsers) do
-		if currentAppName == browserName then
-			setMode(modes.LINKS, char)
-			marks.onClickCallback = function(mark)
-				local axURL = mark.element:attributeValue("AXURL")
-				if axURL then
-					openUrlInNewTab(axURL.url)
-				end
+	if isInBrowser() then
+		setMode(modes.LINKS, char)
+		marks.onClickCallback = function(mark)
+			local axURL = mark.element:attributeValue("AXURL")
+			if axURL then
+				openUrlInNewTab(axURL.url)
 			end
-			timer.doAfter(0, function()
-				marks.show(true)
-			end)
-			break
 		end
+		timer.doAfter(0, function()
+			marks.show(true)
+		end)
 	end
 end
 
@@ -1003,7 +1049,7 @@ local function eventHandler(event)
 		local delaySinceLastEscape = (timer.absoluteTime() - lastEscape) / 1e9 -- nanoseconds in seconds
 		lastEscape = timer.absoluteTime()
 
-		if delaySinceLastEscape < config.doublePressDelay then
+		if isInBrowser() and delaySinceLastEscape < config.doublePressDelay then
 			setMode(modes.NORMAL)
 			forceUnfocus()
 			return true
