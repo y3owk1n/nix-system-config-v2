@@ -849,26 +849,35 @@ function commands.cmdRightClick(char)
 			return
 		end
 
-		-- Get position and size
-		local position, size = getElementPositionAndSize(element)
+		local actions = element:actionNames()
 
-		if position and size then
-			-- Calculate center point of the element
-			local clickX = position.x + (size.w / 2)
-			local clickY = position.y + (size.h / 2)
-			local originalPosition = mouse.absolutePosition()
+		logWithTimestamp(hs.inspect(actions))
 
-			-- Perform right-click
-			local clickSuccess, clickErr = pcall(function()
-				mouse.absolutePosition({ x = clickX, y = clickY })
-				eventtap.rightClick({ x = clickX, y = clickY })
-				restoreMousePosition(originalPosition)
-			end)
+		if tblContains(actions, "AXShowMenu") then
+			mark.element:performAction("AXShowMenu")
+			logWithTimestamp("Success AXShowMenu")
+		else
+			-- Get position and size
+			local position, size = getElementPositionAndSize(element)
 
-			if clickSuccess then
-				return
-			else
-				logWithTimestamp("Right-click failed: " .. tostring(clickErr))
+			if position and size then
+				-- Calculate center point of the element
+				local clickX = position.x + (size.w / 2)
+				local clickY = position.y + (size.h / 2)
+				local originalPosition = mouse.absolutePosition()
+
+				-- Perform right-click
+				local clickSuccess, clickErr = pcall(function()
+					mouse.absolutePosition({ x = clickX, y = clickY })
+					eventtap.rightClick({ x = clickX, y = clickY })
+					restoreMousePosition(originalPosition)
+				end)
+
+				if clickSuccess then
+					return
+				else
+					logWithTimestamp("Right-click failed: " .. tostring(clickErr))
+				end
 			end
 		end
 	end
