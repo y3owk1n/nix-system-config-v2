@@ -59,6 +59,7 @@ local mapping = {
 	["r"] = "cmdRightClick",
 	["F"] = "cmdGotoLinkNewTab",
 	["gf"] = "cmdMoveMouseToLink",
+	["gi"] = "cmdGotoInput",
 	-- mouse
 	["zz"] = "cmdMoveMouseToCenter",
 	-- clipboard
@@ -130,6 +131,10 @@ local config = {
 		"AXTable",
 		"AXSplitGroup",
 		"AXDrawer",
+	},
+	axInputRoles = {
+		"AXTextField",
+		"AXTextArea",
 	},
 	-- Apps where we want to disable vim navigation
 	excludedApps = {
@@ -694,6 +699,22 @@ function marks.isElementScrollable(element)
 	return tblContains(axScrollableRoles, role)
 end
 
+function marks.isElementInput(element)
+	if not element then
+		return false
+	end
+
+	-- Cache role and app name
+	local role = element:attributeValue("AXRole")
+	if not role then
+		return false
+	end
+
+	local axInputRoles = config.axInputRoles
+
+	-- Check if the role is actionable
+	return tblContains(axInputRoles, role)
+end
 function marks.getAllDescendants(element)
 	if not element then
 		return {}
@@ -809,6 +830,29 @@ function marks.findUrlElement(element, depth)
 			local end_idx = math.min(i + chunk_size - 1, #children)
 			for j = i, end_idx do
 				marks.findUrlElement(children[j], (depth or 0) + 1)
+function marks.findInputElements(element, depth)
+	if not element or (depth and depth > config.depth) then
+		return
+	end
+
+	local elementFrame = element:attributeValue("AXFrame")
+	if not elementFrame or not marks.isElementPartiallyVisible(element) then
+		return
+	end
+
+	-- Check actionable and URL together to avoid unnecessary processing
+	if marks.isElementInput(element) then
+		marks.add(element)
+	end
+
+	-- Process children only if parent is visible
+	local children = element:attributeValue("AXChildren")
+	if children then
+		local chunk_size = 10
+		for i = 1, #children, chunk_size do
+			local end_idx = math.min(i + chunk_size - 1, #children)
+			for j = i, end_idx do
+				marks.findInputElements(children[j], (depth or 0) + 1)
 			end
 			-- Optional: Add a tiny delay between chunks if needed
 			-- hs.timer.usleep(1)
@@ -839,6 +883,13 @@ function marks.show(withUrls, type)
 
 	if type == "url" then
 		marks.findUrlElement(startElement, 0)
+	if type == "input" then
+		marks.findInputElements(startElement, 0)
+		hs.alert.show(#marks.data)
+		if #marks.data == 1 then
+			marks.onClickCallback(marks.data[1])
+			return
+		end
 	end
 
 	-- Only draw if we found any elements
@@ -1049,6 +1100,83 @@ function commands.cmdGotoLinkNewTab(char)
 		end)
 	else
 		hs.alert.show("Go to Link New Tab is only available for browser")
+	end
+end
+
+function commands.cmdGotoInput(char)
+	if isInBrowser() then
+		setMode(modes.LINKS, char)
+		marks.onClickCallback = function(mark)
+			local element = mark.element
+			if not element then
+				logWithTimestamp("Error: Invalid element")
+				return
+			end
+
+			local actions = element:actionNames()
+
+			logWithTimestamp("actions available: " .. hs.inspect(actions))
+
+			if tblContains(actions, "AXPress") then
+				mark.element:performAction("AXPress")
+				logWithTimestamp("Success AXPress")
+			else
+				-- Try different methods to get position
+				local position, size = getElementPositionAndSize(element)
+
+				if position and size then
+					local clickX = position.x + (size.w / 2)
+					local clickY = position.y + (size.h / 2)
+					local originalPosition = mouse.absolutePosition()
+
+					local clickSuccess, clickErr = pcall(function()
+						mouse.absolutePosition({ x = clickX, y = clickY })
+						eventtap.leftClick({ x = clickX, y = clickY })
+						restoreMousePosition(originalPosition)
+					end)
+
+					if clickSuccess then
+						return
+					else
+						logWithTimestamp("Click failed: " .. tostring(clickErr))
+					end
+				end
+
+				-- Fallback: Click using mark coordinates
+				if mark.x and mark.y then
+					local clickSuccess, clickErr = pcall(function()
+						local originalPosition = mouse.absolutePosition()
+						mouse.absolutePosition({ x = mark.x, y = mark.y })
+						eventtap.leftClick({ x = mark.x, y = mark.y })
+						restoreMousePosition(originalPosition)
+					end)
+
+					if clickSuccess then
+						return
+					else
+						logWithTimestamp("Mark click failed: " .. tostring(clickErr))
+					end
+				end
+
+				-- Final fallback: focus + return key
+				logWithTimestamp("Falling back to focus + return method")
+				local focusSuccess, focusErr = pcall(function()
+					element:setAttributeValue("AXFocused", true)
+					timer.doAfter(0.1, function()
+						eventtap.keyStroke({}, "return", 0)
+					end)
+				end)
+
+				if not focusSuccess then
+					logWithTimestamp("Focus fallback failed: " .. tostring(focusErr))
+				end
+			end
+		end
+		timer.doAfter(0, function()
+			marks.show(true, "input")
+		end)
+	else
+		hs.alert.show("Go to input is only available for browser")
 	end
 end
 
