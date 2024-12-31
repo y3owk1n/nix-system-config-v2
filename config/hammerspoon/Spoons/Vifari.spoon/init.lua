@@ -863,6 +863,7 @@ function marks.show(withUrls, type)
 		marks.findInputElements(startElement, 0)
 		if #marks.data == 1 then
 			marks.onClickCallback(marks.data[1])
+			setMode(modes.NORMAL)
 			return
 		end
 	end
@@ -871,6 +872,7 @@ function marks.show(withUrls, type)
 		marks.draw()
 	else
 		hs.alert.show("No elements found")
+		setMode(modes.NORMAL)
 	end
 end
 
