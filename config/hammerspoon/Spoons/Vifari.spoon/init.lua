@@ -91,8 +91,8 @@ local config = {
 		"AXStaticText", -- Sometimes clickable text
 		-- "AXCell", -- Table cells
 		-- "AXRow", -- Table rows
-		"AXList",
-		"AXListItem",
+		-- "AXList",
+		-- "AXListItem",
 		"AXToolbar",
 		"AXToolbarButton",
 		"AXTabGroup",
@@ -172,6 +172,17 @@ local function tblContains(tbl, val)
 		end
 	end
 	return false
+end
+
+-- Filter a table based on a predicate function
+local function filter(tbl, predicate)
+	local result = {}
+	for _, v in ipairs(tbl) do
+		if predicate(v) then
+			table.insert(result, v)
+		end
+	end
+	return result
 end
 
 function current.app()
@@ -411,19 +422,30 @@ local function forceUnfocus()
 	end
 end
 
-local function deepCopy(orig)
-	local orig_type = type(orig)
-	local copy
-	if orig_type == "table" then
-		copy = {}
-		for orig_key, orig_value in next, orig, nil do
-			copy[deepCopy(orig_key)] = deepCopy(orig_value)
-		end
-		setmetatable(copy, deepCopy(getmetatable(orig)))
-	else -- number, string, boolean, etc
-		copy = orig
+local function getElementPositionAndSize(element)
+	local frame = element:attributeValue("AXFrame")
+	if frame then
+		return { x = frame.x, y = frame.y }, { w = frame.w, h = frame.h }
 	end
-	return copy
+
+	local successPos, position = pcall(function()
+		return element:attributeValue("AXPosition")
+	end)
+	local successSize, size = pcall(function()
+		return element:attributeValue("AXSize")
+	end)
+
+	if successPos and successSize and position and size then
+		return position, size
+	end
+
+	return nil, nil
+end
+
+local function restoreMousePosition(originalPosition)
+	timer.doAfter(0.05, function()
+		mouse.absolutePosition(originalPosition)
+	end)
 end
 
 --------------------------------------------------------------------------------
@@ -493,15 +515,16 @@ function marks.draw()
 	for i, _ in ipairs(marks.data) do
 		local element = marks.prepareElementForDrawing(i)
 		if element then
-			for _, el in ipairs(element) do
-				table.insert(elementsToDraw, el)
-			end
+			table.move(element, 1, #element, #elementsToDraw + 1, elementsToDraw)
 		end
 	end
 
-	marks.canvas:replaceElements(elementsToDraw)
-
-	marks.canvas:show()
+	if #elementsToDraw > 0 then
+		marks.canvas:replaceElements(elementsToDraw)
+		marks.canvas:show()
+	else
+		marks.canvas:hide() -- Optional: Hide canvas if no elements to draw
+	end
 end
 
 function marks.prepareElementForDrawing(markIndex)
@@ -556,31 +579,19 @@ function marks.add(element)
 end
 
 function marks.isElementPartiallyVisible(element)
-	-- Check if element exists and is not hidden
-	if not element or element:attributeValue("AXHidden") then
+	-- Validate the element and its attributes
+	local frame = element and not element:attributeValue("AXHidden") and element:attributeValue("AXFrame")
+	if not frame or frame.w <= 0 or frame.h <= 0 then
 		return false
 	end
 
-	local frame = element:attributeValue("AXFrame")
-	if not frame or frame.w == 0 or frame.h == 0 then
-		return false
-	end
-
+	-- Cache visible area properties for faster access
 	local visibleArea = current.visibleArea()
+	local vx, vy, vw, vh = visibleArea.x, visibleArea.y, visibleArea.w, visibleArea.h
+	local fx, fy, fw, fh = frame.x, frame.y, frame.w, frame.h
 
-	if
-		frame.x + frame.w <= visibleArea.x
-		or frame.x >= visibleArea.x + visibleArea.w
-		or frame.y + frame.h <= visibleArea.y
-		or frame.y >= visibleArea.y + visibleArea.h
-	then
-		return
-	end
-
-	local xOverlap = (frame.x < visibleArea.x + visibleArea.w) and (frame.x + frame.w > visibleArea.x)
-	local yOverlap = (frame.y < visibleArea.y + visibleArea.h) and (frame.y + frame.h > visibleArea.y)
-
-	return xOverlap and yOverlap
+	-- Return the result of overlap checks directly
+	return fx < vx + vw and fx + fw > vx and fy < vy + vh and fy + fh > vy
 end
 
 -- Helper function to check if an element is actionable
@@ -589,37 +600,57 @@ function marks.isElementActionable(element)
 		return false
 	end
 
+	-- Cache role and app name
 	local role = element:attributeValue("AXRole")
 	if not role then
 		return false
 	end
 
 	local currentAppName = current.app():name()
+	local axJumpableRoles = config.axJumpableRoles
 
-	local axJumpableRolesCopy = deepCopy(config.axJumpableRoles)
-
-	-- Check if its safari
-	for _, browserName in ipairs(config.browsers) do
-		if currentAppName == browserName then
-			for i, jumpableRole in ipairs(axJumpableRolesCopy) do
-				if jumpableRole == "AXStaticText" then
-					table.remove(axJumpableRolesCopy, i)
-					break -- Exit the loop once the item is found and removed
-				end
-			end
-			break
-		else
-			for _, jumpableRole in ipairs(axJumpableRolesCopy) do
-				if jumpableRole ~= "AXStaticText" then
-					insert(axJumpableRolesCopy, "AXStaticText")
-					break -- Exit the loop once the item is found and removed
-				end
-			end
+	-- Adjust roles if the app is in the browsers list
+	local isBrowser = tblContains(config.browsers, currentAppName)
+	if isBrowser then
+		-- Remove "AXStaticText" if present
+		axJumpableRoles = filter(axJumpableRoles, function(r)
+			return r ~= "AXStaticText"
+		end)
+	else
+		-- Ensure "AXStaticText" is included
+		if not tblContains(axJumpableRoles, "AXStaticText") then
+			table.insert(axJumpableRoles, "AXStaticText")
 		end
 	end
 
-	-- Return true if element has a supported role and is actionable
-	return (tblContains(axJumpableRolesCopy, role))
+	-- Check if the role is actionable
+	return tblContains(axJumpableRoles, role)
+end
+
+function marks.getAllDescendants(element)
+	if not element then
+		return {}
+	end
+
+	local toProcess, results = { element }, {}
+	local index = 1
+
+	while index <= #toProcess do
+		local currentIndex = toProcess[index]
+		local children = currentIndex:attributeValue("AXChildren")
+
+		if children then
+			for _, child in ipairs(children) do
+				table.insert(toProcess, child)
+			end
+		else
+			table.insert(results, currentIndex)
+		end
+
+		index = index + 1
+	end
+
+	return results
 end
 
 function marks.findClickableElements(element, withUrls, depth)
@@ -627,27 +658,30 @@ function marks.findClickableElements(element, withUrls, depth)
 		return
 	end
 
-	logWithTimestamp("clickableElement: " .. hs.inspect(element))
-	logWithTimestamp("depth: " .. depth)
+	-- logWithTimestamp("clickableElement: " .. hs.inspect(element))
+	-- logWithTimestamp("depth: " .. depth)
 
-	if marks.isElementPartiallyVisible(element) then
-		-- Check if the element itself is clickable
-		local actionable = marks.isElementActionable(element)
-		local hasUrl = not withUrls or element:attributeValue("AXURL")
-
-		if actionable and hasUrl then
-			marks.add(element)
-		end
+	local elementFrame = element:attributeValue("AXFrame")
+	if not elementFrame or not marks.isElementPartiallyVisible(element) then
+		return
 	end
 
-	local children = element:attributeValue("AXChildren")
+	-- Check actionable and URL together to avoid unnecessary processing
+	if marks.isElementActionable(element) and (not withUrls or element:attributeValue("AXURL")) then
+		marks.add(element)
+	end
 
-	if children and #children > 0 then
-		for i = 1, #children do
-			local childEl = children[i]
-			if marks.isElementPartiallyVisible(childEl) then
-				marks.findClickableElements(childEl, withUrls, (depth or 0) + 1)
+	-- Process children only if parent is visible
+	local children = element:attributeValue("AXChildren")
+	if children then
+		local chunk_size = 10
+		for i = 1, #children, chunk_size do
+			local end_idx = math.min(i + chunk_size - 1, #children)
+			for j = i, end_idx do
+				marks.findClickableElements(children[j], withUrls, (depth or 0) + 1)
 			end
+			-- Optional: Add a tiny delay between chunks if needed
+			-- hs.timer.usleep(1)
 		end
 	end
 end
@@ -677,12 +711,12 @@ function marks.click(combination)
 	logWithTimestamp("marks.click")
 	for i, c in ipairs(allCombinations) do
 		if c == combination and marks.data[i] and marks.onClickCallback then
-			-- Try to perform the action
-			local success, err = pcall(function()
-				marks.onClickCallback(marks.data[i])
-			end)
-			if not success then
-				logWithTimestamp("Error clicking element: " .. tostring(err))
+			local mark = marks.data[i]
+			if mark then
+				local success, err = pcall(marks.onClickCallback, mark)
+				if not success then
+					logWithTimestamp("Error clicking element: " .. tostring(err))
+				end
 			end
 		end
 	end
@@ -744,52 +778,17 @@ function commands.cmdGotoLink(char)
 		end
 
 		-- Try different methods to get position
-		local position, size
+		local position, size = getElementPositionAndSize(element)
 
-		-- Method 1: Try direct AXPosition and AXSize
-		local success, posResult = pcall(function()
-			return element:attributeValue("AXPosition")
-		end)
-		local successSize, sizeResult = pcall(function()
-			return element:attributeValue("AXSize")
-		end)
-
-		if success and successSize and posResult and sizeResult then
-			position = posResult
-			size = sizeResult
-		end
-
-		-- Method 2: Try getting frame
-		if not position or not size then
-			local frame = element:attributeValue("AXFrame")
-			if frame then
-				position = { x = frame.x, y = frame.y }
-				size = { w = frame.w, h = frame.h }
-			end
-		end
-
-		-- If we have position info, try mouse click
 		if position and size then
-			-- Calculate center point of the element
 			local clickX = position.x + (size.w / 2)
 			local clickY = position.y + (size.h / 2)
-
-			-- Save current mouse position
 			local originalPosition = mouse.absolutePosition()
 
-			-- Perform click sequence
 			local clickSuccess, clickErr = pcall(function()
-				-- Move mouse
 				mouse.absolutePosition({ x = clickX, y = clickY })
-				timer.usleep(50000) -- Wait 50ms
-
-				-- Click
 				eventtap.leftClick({ x = clickX, y = clickY })
-
-				-- Restore mouse position
-				timer.doAfter(0.1, function()
-					mouse.absolutePosition(originalPosition)
-				end)
+				restoreMousePosition(originalPosition)
 			end)
 
 			if clickSuccess then
@@ -799,20 +798,13 @@ function commands.cmdGotoLink(char)
 			end
 		end
 
-		-- Method 3: Try to get position from the mark itself
+		-- Fallback: Click using mark coordinates
 		if mark.x and mark.y then
 			local clickSuccess, clickErr = pcall(function()
 				local originalPosition = mouse.absolutePosition()
-
-				-- Move and click
 				mouse.absolutePosition({ x = mark.x, y = mark.y })
-				timer.usleep(50000)
 				eventtap.leftClick({ x = mark.x, y = mark.y })
-
-				-- Restore position
-				timer.doAfter(0.1, function()
-					mouse.absolutePosition(originalPosition)
-				end)
+				restoreMousePosition(originalPosition)
 			end)
 
 			if clickSuccess then
@@ -840,6 +832,7 @@ end
 
 function commands.cmdRightClick(char)
 	setMode(modes.LINKS, char)
+
 	marks.onClickCallback = function(mark)
 		local element = mark.element
 		if not element then
@@ -847,59 +840,30 @@ function commands.cmdRightClick(char)
 			return
 		end
 
-		local position, size
-
-		local success, posResult = pcall(function()
-			return element:attributeValue("AXPosition")
-		end)
-		local successSize, sizeResult = pcall(function()
-			return element:attributeValue("AXSize")
-		end)
-
-		if success and successSize and posResult and sizeResult then
-			position = posResult
-			size = sizeResult
-		end
-
-		-- Method 2: Try getting frame
-		if not position or not size then
-			local frame = element:attributeValue("AXFrame")
-			if frame then
-				position = { x = frame.x, y = frame.y }
-				size = { w = frame.w, h = frame.h }
-			end
-		end
+		-- Get position and size
+		local position, size = getElementPositionAndSize(element)
 
 		if position and size then
 			-- Calculate center point of the element
 			local clickX = position.x + (size.w / 2)
 			local clickY = position.y + (size.h / 2)
-
-			-- Save current mouse position
 			local originalPosition = mouse.absolutePosition()
 
-			-- Perform click sequence
+			-- Perform right-click
 			local clickSuccess, clickErr = pcall(function()
-				-- Move mouse
 				mouse.absolutePosition({ x = clickX, y = clickY })
-				timer.usleep(50000) -- Wait 50ms
-
-				-- Click
 				eventtap.rightClick({ x = clickX, y = clickY })
-
-				-- Restore mouse position
-				timer.doAfter(0.1, function()
-					mouse.absolutePosition(originalPosition)
-				end)
+				restoreMousePosition(originalPosition)
 			end)
 
 			if clickSuccess then
 				return
 			else
-				logWithTimestamp("Click failed: " .. tostring(clickErr))
+				logWithTimestamp("Right-click failed: " .. tostring(clickErr))
 			end
 		end
 	end
+
 	timer.doAfter(0, marks.show)
 end
 
@@ -1001,7 +965,7 @@ local function vimLoop(char)
 end
 
 local function eventHandler(event)
-	cached = {}
+	cached = setmetatable({}, { __mode = "k" })
 
 	if isExcludedApp() then
 		return false
@@ -1071,17 +1035,9 @@ local function onWindowUnfocused()
 	setMode(modes.DISABLED)
 end
 
--- Memory management
-local function clearCaches()
-	cached = setmetatable({}, { __mode = "k" })
-end
-
 function obj:start()
 	windowFilter = hs.window.filter.new()
-	windowFilter:subscribe(hs.window.filter.windowFocused, function()
-		clearCaches()
-		onWindowFocused()
-	end)
+	windowFilter:subscribe(hs.window.filter.windowFocused, onWindowFocused)
 	windowFilter:subscribe(hs.window.filter.windowUnfocused, onWindowUnfocused)
 	menuBar.new()
 	fetchMappingPrefixes()
