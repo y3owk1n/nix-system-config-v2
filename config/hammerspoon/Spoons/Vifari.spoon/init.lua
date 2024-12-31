@@ -77,7 +77,7 @@ local config = {
 	scrollStepHalfPage = 500,
 	scrollStepFullPage = 100000, -- make it a super big number and not worry
 	smoothScroll = true,
-	depth = 20,
+	depth = 20, -- depth for traversing children when creating marks
 	axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea" },
 	axJumpableRoles = {
 		"AXLink",
@@ -91,11 +91,7 @@ local config = {
 		"AXMenuButton",
 		"AXRadioButton",
 		"AXCheckBox",
-		"AXStaticText", -- Sometimes clickable text
-		-- "AXCell", -- Table cells
-		-- "AXRow", -- Table rows
-		-- "AXList",
-		-- "AXListItem",
+		"AXStaticText",
 		"AXToolbar",
 		"AXToolbarButton",
 		"AXTabGroup",
@@ -145,6 +141,7 @@ local config = {
 		"Ghostty",
 		"Screen Sharing",
 	},
+	-- Browser names to be considered
 	browsers = {
 		"Safari",
 		"Google Chrome",
@@ -176,9 +173,9 @@ local function logWithTimestamp(message)
 		return
 	end
 
-	local timestamp = os.date("%Y-%m-%d %H:%M:%S") -- Get current date and time
+	local timestamp = os.date("%Y-%m-%d %H:%M:%S")
 	local ms = floor(timer.absoluteTime() / 1e6) % 1000
-	hs.printf("[%s.%03d] %s", timestamp, ms, message) -- Print the message with the timestamp
+	hs.printf("[%s.%03d] %s", timestamp, ms, message)
 end
 
 local function tblContains(tbl, val)
@@ -190,7 +187,6 @@ local function tblContains(tbl, val)
 	return false
 end
 
--- Filter a table based on a predicate function
 local function filter(tbl, predicate)
 	local result = {}
 	for _, v in ipairs(tbl) do
@@ -251,13 +247,11 @@ function current.axScrollArea()
 	return cached.axScrollArea
 end
 
--- webarea path from window: AXWindow>AXSplitGroup>AXTabGroup>AXGroup>AXGroup>AXScrollArea>AXWebArea
 function current.axWebArea()
 	cached.axWebArea = cached.axWebArea or findAXRole(current.axScrollArea(), "AXWebArea")
 	return cached.axWebArea
 end
 
--- Modified to handle different types of content areas
 function current.axContentArea()
 	if cached.axContentArea then
 		return cached.axContentArea
@@ -327,7 +321,6 @@ local function isSpotlightActive()
 	return #windows > 0
 end
 
--- TODO: do some better logic here
 local function generateCombinations()
 	local chars = "abcdefghijklmnopqrstuvwxyz"
 	allCombinations = {}
@@ -411,7 +404,6 @@ local function openUrlInNewTab(url)
 	local currentApp = current.app():name()
 	local script
 
-	-- Select script based on current browser
 	if browserScripts[currentApp] then
 		script = format(browserScripts[currentApp], url)
 	else
@@ -419,7 +411,6 @@ local function openUrlInNewTab(url)
 		script = format(browserScripts["Safari"], url)
 	end
 
-	-- script = format(script, url)
 	hs.osascript.applescript(script)
 end
 
@@ -441,15 +432,12 @@ local function getFocusedElement(element, depth)
 		return
 	end
 
-	-- Check actionable and URL together to avoid unnecessary processing
 	if element:attributeValue("AXFocused") then
 		logWithTimestamp("Focused element found: " .. hs.inspect(element))
-		-- Unfocus the element by setting AXFocused to false
 		element:setAttributeValue("AXFocused", false)
 		logWithTimestamp("Focused element unfocused.")
 	end
 
-	-- Process children only if parent is visible
 	local children = element:attributeValue("AXChildren")
 	if children then
 		local chunk_size = 10
@@ -458,8 +446,6 @@ local function getFocusedElement(element, depth)
 			for j = i, end_idx do
 				getFocusedElement(children[j], (depth or 0) + 1)
 			end
-			-- Optional: Add a tiny delay between chunks if needed
-			-- hs.timer.usleep(1)
 		end
 	end
 end
@@ -583,7 +569,7 @@ function marks.draw()
 		marks.canvas:replaceElements(elementsToDraw)
 		marks.canvas:show()
 	else
-		marks.canvas:hide() -- Optional: Hide canvas if no elements to draw
+		marks.canvas:hide()
 	end
 end
 
@@ -639,28 +625,23 @@ function marks.add(element)
 end
 
 function marks.isElementPartiallyVisible(element)
-	-- Validate the element and its attributes
 	local frame = element and not element:attributeValue("AXHidden") and element:attributeValue("AXFrame")
 	if not frame or frame.w <= 0 or frame.h <= 0 then
 		return false
 	end
 
-	-- Cache visible area properties for faster access
 	local visibleArea = current.visibleArea()
 	local vx, vy, vw, vh = visibleArea.x, visibleArea.y, visibleArea.w, visibleArea.h
 	local fx, fy, fw, fh = frame.x, frame.y, frame.w, frame.h
 
-	-- Return the result of overlap checks directly
 	return fx < vx + vw and fx + fw > vx and fy < vy + vh and fy + fh > vy
 end
 
--- Helper function to check if an element is actionable
 function marks.isElementActionable(element)
 	if not element then
 		return false
 	end
 
-	-- Cache role and app name
 	local role = element:attributeValue("AXRole")
 	if not role then
 		return false
@@ -668,20 +649,18 @@ function marks.isElementActionable(element)
 
 	local axJumpableRoles = config.axJumpableRoles
 
-	-- Adjust roles if the app is in the browsers list
 	if isInBrowser() then
-		-- Remove "AXStaticText" if present
+		-- remove "AXStaticText" if present
 		axJumpableRoles = filter(axJumpableRoles, function(r)
 			return r ~= "AXStaticText"
 		end)
 	else
-		-- Ensure "AXStaticText" is included
+		-- ensure "AXStaticText" is included
 		if not tblContains(axJumpableRoles, "AXStaticText") then
 			table.insert(axJumpableRoles, "AXStaticText")
 		end
 	end
 
-	-- Check if the role is actionable
 	return tblContains(axJumpableRoles, role)
 end
 
@@ -690,7 +669,6 @@ function marks.isElementScrollable(element)
 		return false
 	end
 
-	-- Cache role and app name
 	local role = element:attributeValue("AXRole")
 	if not role then
 		return false
@@ -698,7 +676,6 @@ function marks.isElementScrollable(element)
 
 	local axScrollableRoles = config.axScrollableRoles
 
-	-- Check if the role is actionable
 	return tblContains(axScrollableRoles, role)
 end
 
@@ -707,7 +684,6 @@ function marks.isElementInput(element)
 		return false
 	end
 
-	-- Cache role and app name
 	local role = element:attributeValue("AXRole")
 	if not role then
 		return false
@@ -715,7 +691,6 @@ function marks.isElementInput(element)
 
 	local axInputRoles = config.axInputRoles
 
-	-- Check if the role is actionable
 	return tblContains(axInputRoles, role)
 end
 
@@ -750,20 +725,15 @@ function marks.findClickableElements(element, withUrls, depth)
 		return
 	end
 
-	-- logWithTimestamp("clickableElement: " .. hs.inspect(element))
-	-- logWithTimestamp("depth: " .. depth)
-
 	local elementFrame = element:attributeValue("AXFrame")
 	if not elementFrame or not marks.isElementPartiallyVisible(element) then
 		return
 	end
 
-	-- Check actionable and URL together to avoid unnecessary processing
 	if marks.isElementActionable(element) and (not withUrls or element:attributeValue("AXURL")) then
 		marks.add(element)
 	end
 
-	-- Process children only if parent is visible
 	local children = element:attributeValue("AXChildren")
 	if children then
 		local chunk_size = 10
@@ -772,8 +742,6 @@ function marks.findClickableElements(element, withUrls, depth)
 			for j = i, end_idx do
 				marks.findClickableElements(children[j], withUrls, (depth or 0) + 1)
 			end
-			-- Optional: Add a tiny delay between chunks if needed
-			-- hs.timer.usleep(1)
 		end
 	end
 end
@@ -783,20 +751,15 @@ function marks.findScrollableElements(element, depth)
 		return
 	end
 
-	logWithTimestamp("scrollableElement: " .. hs.inspect(element))
-	-- logWithTimestamp("depth: " .. depth)
-
 	local elementFrame = element:attributeValue("AXFrame")
 	if not elementFrame or not marks.isElementPartiallyVisible(element) then
 		return
 	end
 
-	-- Check actionable and URL together to avoid unnecessary processing
 	if marks.isElementScrollable(element) then
 		marks.add(element)
 	end
 
-	-- Process children only if parent is visible
 	local children = element:attributeValue("AXChildren")
 	if children then
 		local chunk_size = 10
@@ -805,8 +768,6 @@ function marks.findScrollableElements(element, depth)
 			for j = i, end_idx do
 				marks.findScrollableElements(children[j], (depth or 0) + 1)
 			end
-			-- Optional: Add a tiny delay between chunks if needed
-			-- hs.timer.usleep(1)
 		end
 	end
 end
@@ -821,12 +782,10 @@ function marks.findUrlElements(element, depth)
 		return
 	end
 
-	-- Check actionable and URL together to avoid unnecessary processing
 	if element:attributeValue("AXURL") then
 		marks.add(element)
 	end
 
-	-- Process children only if parent is visible
 	local children = element:attributeValue("AXChildren")
 	if children then
 		local chunk_size = 10
@@ -835,8 +794,6 @@ function marks.findUrlElements(element, depth)
 			for j = i, end_idx do
 				marks.findUrlElements(children[j], (depth or 0) + 1)
 			end
-			-- Optional: Add a tiny delay between chunks if needed
-			-- hs.timer.usleep(1)
 		end
 	end
 end
@@ -851,12 +808,10 @@ function marks.findInputElements(element, depth)
 		return
 	end
 
-	-- Check actionable and URL together to avoid unnecessary processing
 	if marks.isElementInput(element) then
 		marks.add(element)
 	end
 
-	-- Process children only if parent is visible
 	local children = element:attributeValue("AXChildren")
 	if children then
 		local chunk_size = 10
@@ -865,8 +820,6 @@ function marks.findInputElements(element, depth)
 			for j = i, end_idx do
 				marks.findInputElements(children[j], (depth or 0) + 1)
 			end
-			-- Optional: Add a tiny delay between chunks if needed
-			-- hs.timer.usleep(1)
 		end
 	end
 end
@@ -874,7 +827,6 @@ end
 ---@param withUrls boolean
 ---@param type? string
 function marks.show(withUrls, type)
-	-- Start from the focused window's content
 	local startElement = current.axWindow()
 	if not startElement then
 		return
@@ -883,7 +835,7 @@ function marks.show(withUrls, type)
 	logWithTimestamp("startElement: " .. hs.inspect(startElement))
 
 	marks.clear()
-	-- Find all clickable elements
+
 	if type == "link" then
 		marks.findClickableElements(startElement, withUrls, 0)
 	end
@@ -898,14 +850,12 @@ function marks.show(withUrls, type)
 
 	if type == "input" then
 		marks.findInputElements(startElement, 0)
-		hs.alert.show(#marks.data)
 		if #marks.data == 1 then
 			marks.onClickCallback(marks.data[1])
 			return
 		end
 	end
 
-	-- Only draw if we found any elements
 	if #marks.data > 0 then
 		marks.draw()
 	else
@@ -933,32 +883,26 @@ end
 --------------------------------------------------------------------------------
 
 function commands.cmdScrollLeft()
-	-- smoothScroll(config.scrollStep, 0, config.smoothScroll)
 	smoothScroll(config.scrollStep, 0, config.smoothScroll)
 end
 
 function commands.cmdScrollRight()
-	-- smoothScroll(-config.scrollStep, 0, config.smoothScroll)
 	smoothScroll(-config.scrollStep, 0, config.smoothScroll)
 end
 
 function commands.cmdScrollUp()
-	-- smoothScroll(0, config.scrollStep, config.smoothScroll)
 	smoothScroll(0, config.scrollStep, config.smoothScroll)
 end
 
 function commands.cmdScrollDown()
-	-- smoothScroll(0, -config.scrollStep, config.smoothScroll)
 	smoothScroll(0, -config.scrollStep, config.smoothScroll)
 end
 
 function commands.cmdScrollHalfPageDown()
-	-- smoothScroll(0, -config.scrollStepHalfPage, config.smoothScrollHalfPage)
 	smoothScroll(0, -config.scrollStepHalfPage, config.smoothScroll)
 end
 
 function commands.cmdScrollHalfPageUp()
-	-- smoothScroll(0, config.scrollStepHalfPage, config.smoothScrollHalfPage)
 	smoothScroll(0, config.scrollStepHalfPage, config.smoothScroll)
 end
 
@@ -966,7 +910,6 @@ function commands.cmdScrollToTop()
 	smoothScroll(0, -config.scrollFullPage, config.smoothScroll)
 end
 
--- Function to scroll to the bottom
 function commands.cmdScrollToBottom()
 	smoothScroll(0, config.scrollFullPage, config.smoothScroll)
 end
@@ -1078,16 +1021,13 @@ function commands.cmdRightClick(char)
 			mark.element:performAction("AXShowMenu")
 			logWithTimestamp("Success AXShowMenu")
 		else
-			-- Get position and size
 			local position, size = getElementPositionAndSize(element)
 
 			if position and size then
-				-- Calculate center point of the element
 				local clickX = position.x + (size.w / 2)
 				local clickY = position.y + (size.h / 2)
 				local originalPosition = mouse.absolutePosition()
 
-				-- Perform right-click
 				local clickSuccess, clickErr = pcall(function()
 					mouse.absolutePosition({ x = clickX, y = clickY })
 					eventtap.rightClick({ x = clickX, y = clickY })
