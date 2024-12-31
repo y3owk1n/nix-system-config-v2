@@ -471,6 +471,7 @@ local function forceUnfocus()
 	end
 
 	getFocusedElement(startElement, 0)
+	hs.alert.show("Force unfocused!")
 end
 
 local function getElementPositionAndSize(element)
@@ -906,7 +907,7 @@ function marks.show(withUrls, type)
 	if #marks.data > 0 then
 		marks.draw()
 	else
-		logWithTimestamp("No clickable elements found")
+		hs.alert.show("No elements found")
 	end
 end
 
