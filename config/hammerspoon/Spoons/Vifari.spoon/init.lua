@@ -74,7 +74,6 @@ local config = {
 	scrollStep = 100,
 	scrollStepHalfPage = 500,
 	smoothScroll = true,
-	smoothScrollHalfPage = true,
 	depth = 20,
 	axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea" },
 	axJumpableRoles = {
@@ -952,12 +951,12 @@ end
 
 function commands.cmdScrollHalfPageDown()
 	-- smoothScroll(0, -config.scrollStepHalfPage, config.smoothScrollHalfPage)
-	smoothScroll(0, -config.scrollStepHalfPage, config.smoothScrollHalfPage)
+	smoothScroll(0, -config.scrollStepHalfPage, config.smoothScroll)
 end
 
 function commands.cmdScrollHalfPageUp()
 	-- smoothScroll(0, config.scrollStepHalfPage, config.smoothScrollHalfPage)
-	smoothScroll(0, config.scrollStepHalfPage, config.smoothScrollHalfPage)
+	smoothScroll(0, config.scrollStepHalfPage, config.smoothScroll)
 end
 
 function commands.cmdCopyPageUrlToClipboard()
