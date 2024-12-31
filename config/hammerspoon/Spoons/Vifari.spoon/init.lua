@@ -33,8 +33,10 @@ local mapping = {
 	["l"] = "cmdScrollRight",
 	["d"] = "cmdScrollHalfPageDown",
 	["u"] = "cmdScrollHalfPageUp",
-	["gg"] = { "cmd", "up" },
-	["G"] = { "cmd", "down" },
+	-- ["gg"] = { "cmd", "up" },
+	-- ["G"] = { "cmd", "down" },
+	["gg"] = "cmdScrollToBottom",
+	["G"] = "cmdScrollToTop",
 	-- tabs
 	-- ["q"] = { { "cmd", "shift" }, "[" }, -- tab left
 	-- ["w"] = { { "cmd", "shift" }, "]" }, -- tab right
@@ -957,6 +959,15 @@ end
 function commands.cmdScrollHalfPageUp()
 	-- smoothScroll(0, config.scrollStepHalfPage, config.smoothScrollHalfPage)
 	smoothScroll(0, config.scrollStepHalfPage, config.smoothScroll)
+end
+
+function commands.cmdScrollToTop()
+	smoothScroll(0, -10000, config.smoothScroll)
+end
+
+-- Function to scroll to the bottom
+function commands.cmdScrollToBottom()
+	smoothScroll(0, 10000, config.smoothScroll)
 end
 
 function commands.cmdCopyPageUrlToClipboard()
