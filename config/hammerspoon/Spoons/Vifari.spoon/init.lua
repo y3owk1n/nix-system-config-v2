@@ -715,6 +715,7 @@ function marks.isElementInput(element)
 	-- Check if the role is actionable
 	return tblContains(axInputRoles, role)
 end
+
 function marks.getAllDescendants(element)
 	if not element then
 		return {}
@@ -774,7 +775,7 @@ function marks.findClickableElements(element, withUrls, depth)
 	end
 end
 
-function marks.findScrollableElement(element, depth)
+function marks.findScrollableElements(element, depth)
 	if not element or (depth and depth > config.depth) then
 		return
 	end
@@ -799,7 +800,7 @@ function marks.findScrollableElement(element, depth)
 		for i = 1, #children, chunk_size do
 			local end_idx = math.min(i + chunk_size - 1, #children)
 			for j = i, end_idx do
-				marks.findScrollableElement(children[j], (depth or 0) + 1)
+				marks.findScrollableElements(children[j], (depth or 0) + 1)
 			end
 			-- Optional: Add a tiny delay between chunks if needed
 			-- hs.timer.usleep(1)
@@ -807,7 +808,7 @@ function marks.findScrollableElement(element, depth)
 	end
 end
 
-function marks.findUrlElement(element, depth)
+function marks.findUrlElements(element, depth)
 	if not element or (depth and depth > config.depth) then
 		return
 	end
@@ -829,7 +830,14 @@ function marks.findUrlElement(element, depth)
 		for i = 1, #children, chunk_size do
 			local end_idx = math.min(i + chunk_size - 1, #children)
 			for j = i, end_idx do
-				marks.findUrlElement(children[j], (depth or 0) + 1)
+				marks.findUrlElements(children[j], (depth or 0) + 1)
+			end
+			-- Optional: Add a tiny delay between chunks if needed
+			-- hs.timer.usleep(1)
+		end
+	end
+end
+
 function marks.findInputElements(element, depth)
 	if not element or (depth and depth > config.depth) then
 		return
@@ -878,11 +886,13 @@ function marks.show(withUrls, type)
 	end
 
 	if type == "scroll" then
-		marks.findScrollableElement(startElement, 0)
+		marks.findScrollableElements(startElement, 0)
 	end
 
 	if type == "url" then
-		marks.findUrlElement(startElement, 0)
+		marks.findUrlElements(startElement, 0)
+	end
+
 	if type == "input" then
 		marks.findInputElements(startElement, 0)
 		hs.alert.show(#marks.data)
