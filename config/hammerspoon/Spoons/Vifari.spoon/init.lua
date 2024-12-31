@@ -80,7 +80,7 @@ local config = {
 	smoothScroll = true,
 	smoothScrollFrameRate = 120,
 	depth = 20, -- depth for traversing children when creating marks
-	axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea" },
+	axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea", "AXSearchField" },
 	axJumpableRoles = {
 		"AXLink",
 		"AXButton",
@@ -131,10 +131,6 @@ local config = {
 		"AXTable",
 		"AXSplitGroup",
 		"AXDrawer",
-	},
-	axInputRoles = {
-		"AXTextField",
-		"AXTextArea",
 	},
 	-- Apps where we want to disable vim navigation
 	excludedApps = {
@@ -700,9 +696,9 @@ function marks.isElementInput(element)
 		return false
 	end
 
-	local axInputRoles = config.axInputRoles
+	local axEditableRoles = config.axEditableRoles
 
-	return tblContains(axInputRoles, role)
+	return tblContains(axEditableRoles, role)
 end
 
 function marks.getAllDescendants(element)
