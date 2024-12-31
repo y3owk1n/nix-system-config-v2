@@ -568,6 +568,15 @@ function marks.isElementPartiallyVisible(element)
 
 	local visibleArea = current.visibleArea()
 
+	if
+		frame.x + frame.w <= visibleArea.x
+		or frame.x >= visibleArea.x + visibleArea.w
+		or frame.y + frame.h <= visibleArea.y
+		or frame.y >= visibleArea.y + visibleArea.h
+	then
+		return
+	end
+
 	local xOverlap = (frame.x < visibleArea.x + visibleArea.w) and (frame.x + frame.w > visibleArea.x)
 	local yOverlap = (frame.y < visibleArea.y + visibleArea.h) and (frame.y + frame.h > visibleArea.y)
 
@@ -629,11 +638,15 @@ function marks.findClickableElements(element, withUrls, depth)
 		if actionable and hasUrl then
 			marks.add(element)
 		end
+	end
 
-		local children = element:attributeValue("AXChildren")
-		if children and #children > 0 then
-			for i = 1, #children do
-				marks.findClickableElements(children[i], withUrls, (depth or 0) + 1)
+	local children = element:attributeValue("AXChildren")
+
+	if children and #children > 0 then
+		for i = 1, #children do
+			local childEl = children[i]
+			if marks.isElementPartiallyVisible(childEl) then
+				marks.findClickableElements(childEl, withUrls, (depth or 0) + 1)
 			end
 		end
 	end
