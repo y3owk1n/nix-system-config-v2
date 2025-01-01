@@ -85,16 +85,6 @@ M.config = {
 		-- "AXVerticalScroll",
 		-- "AXWebArea",
 	},
-	axContentRoles = {
-		"AXWindow",
-		"AXSplitGroup",
-		"AXTabGroup",
-		"AXWebArea",
-		"AXScrollArea",
-		"AXGroup",
-		"AXDocument",
-		"AXTextArea",
-	},
 	-- Apps where we want to disable vim navigation
 	excludedApps = {
 		"Terminal",
@@ -216,42 +206,18 @@ M.current.axWebArea = function()
 	return M.cached.axWebArea
 end
 
-M.current.axContentArea = function()
-	if M.cached.axContentArea then
-		return M.cached.axContentArea
-	end
-
-	for _, role in ipairs(M.config.axContentRoles) do
-		M.cached.axContentArea = M.findAXRole(M.current.axWindow(), role)
-		if M.cached.axContentArea then
-			break
-		end
-	end
-
-	return M.cached.axContentArea
-end
-
 M.current.visibleArea = function()
 	if M.cached.visibleArea then
 		return M.cached.visibleArea
 	end
 
 	local winFrame = M.current.axWindow():attributeValue("AXFrame")
-	local contentArea = M.current.axContentArea()
 
-	if not contentArea then
-		return winFrame
-	end
+	local visibleX = math.max(winFrame.x)
+	local visibleY = math.max(winFrame.y)
 
-	local contentFrame = contentArea:attributeValue("AXFrame")
-
-	local scrollFrame = M.current.axScrollArea() and M.current.axScrollArea():attributeValue("AXFrame") or contentFrame
-
-	local visibleX = math.max(winFrame.x, contentFrame.x)
-	local visibleY = math.max(winFrame.y, scrollFrame.y)
-
-	local visibleWidth = math.min(winFrame.x + winFrame.w, contentFrame.x + contentFrame.w) - visibleX
-	local visibleHeight = math.min(winFrame.y + winFrame.h, contentFrame.y + contentFrame.h) - visibleY
+	local visibleWidth = math.min(winFrame.x + winFrame.w) - visibleX
+	local visibleHeight = math.min(winFrame.y + winFrame.h) - visibleY
 
 	M.cached.visibleArea = {
 		x = visibleX,
