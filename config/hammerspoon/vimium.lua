@@ -65,7 +65,6 @@ M.config = {
 		"AXMenuButton",
 		"AXRadioButton",
 		"AXCheckBox",
-		"AXStaticText",
 		"AXToolbar",
 		"AXToolbarButton",
 		"AXTabGroup",
@@ -74,6 +73,7 @@ M.config = {
 		"AXIncrementor",
 		"AXDecrementor",
 		"AXDisclosureTriangle",
+		"AXGroup",
 	},
 	axScrollableRoles = {
 		"AXScrollArea",
@@ -663,21 +663,7 @@ M.marks.isElementActionable = function(element)
 		return false
 	end
 
-	local axJumpableRoles = M.config.axJumpableRoles
-
-	if M.isInBrowser() then
-		-- remove "AXStaticText" if present
-		axJumpableRoles = M.filter(axJumpableRoles, function(r)
-			return r ~= "AXStaticText"
-		end)
-	else
-		-- ensure "AXStaticText" is included
-		if not M.tblContains(axJumpableRoles, "AXStaticText") then
-			table.insert(axJumpableRoles, "AXStaticText")
-		end
-	end
-
-	return M.tblContains(axJumpableRoles, role)
+	return M.tblContains(M.config.axJumpableRoles, role)
 end
 
 M.marks.isElementScrollable = function(element)
