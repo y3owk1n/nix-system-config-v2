@@ -1281,59 +1281,88 @@ M.commands.cmdDownloadImage = function(char)
 
 				-- Try downloading the image
 				local downloadURLAttr = element:attributeValue("AXURL")
+
 				if downloadURLAttr then
 					M.logWithTimestamp("AXURL attribute value: " .. hs.inspect(downloadURLAttr))
 					local downloadUrl = downloadURLAttr.url
 					M.logWithTimestamp("Downloading image from URL: " .. downloadUrl)
+					if downloadUrl:match("^data:image/") then
+						M.logWithTimestamp("Detected data:image URL, saving image directly.")
 
-					hs.http.asyncGet(downloadUrl, nil, function(status, body, headers)
-						if status == 200 then
-							local contentType = headers["Content-Type"] or ""
-							if contentType:match("^image/") then
-								M.logWithTimestamp("Valid image detected. Content-Type: " .. contentType)
+						-- Extract the Base64 encoded data from the URL
+						local base64Data = downloadUrl:match("^data:image/[^;]+;base64,(.+)$")
+						if base64Data then
+							-- Decode the Base64 data
+							local decodedData = hs.base64.decode(base64Data)
 
-								-- Extract filename from headers or URL
-								local fileName = headers["Content-Disposition"]
-										and headers["Content-Disposition"]:match('filename="?(.-)"?$')
-									or downloadUrl:match("^.+/(.+)$")
+							-- Extract filename from image description or fallback
+							local fileName = imageDescription:gsub("%W+", "_") .. ".jpg"
+							local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
+							M.logWithTimestamp("Saving Base64 image to: " .. filePath)
 
-								if not fileName or fileName == "" then
-									fileName = "no-name.jpg" -- Default filename with extension
-								elseif not fileName:match("^.+%.%w+$") then
-									fileName = fileName .. ".jpg" -- Add default extension
-								end
-
-								local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
-								M.logWithTimestamp("Downloading image to: " .. filePath)
-
-								-- Download the image
-								hs.http.asyncGet(downloadUrl, nil, function(status2, body2)
-									if status2 == 200 then
-										local file, err = io.open(filePath, "wb")
-										if file then
-											file:write(body2)
-											file:close()
-											M.logWithTimestamp("Image downloaded successfully to: " .. filePath)
-											hs.alert.show("Image downloaded successfully to: " .. filePath)
-										else
-											M.logWithTimestamp("Failed to save image: " .. tostring(err))
-										end
-									else
-										M.logWithTimestamp(
-											"Failed to download image. HTTP Status: " .. tostring(status2)
-										)
-									end
-								end)
+							-- Write the decoded data to a file
+							local file, err = io.open(filePath, "wb")
+							if file then
+								file:write(decodedData)
+								file:close()
+								M.logWithTimestamp("Image saved successfully to: " .. filePath)
+								hs.alert.show("Image downloaded successfully to: " .. filePath)
 							else
-								M.logWithTimestamp(
-									"Error: URL does not point to an image. Content-Type: " .. contentType
-								)
+								M.logWithTimestamp("Failed to save image: " .. tostring(err))
 							end
 						else
-							M.logWithTimestamp("Failed to validate URL. HTTP Status: " .. tostring(status))
+							M.logWithTimestamp("Error: Failed to extract Base64 data from URL.")
 						end
-					end)
-					return
+					else
+						hs.http.asyncGet(downloadUrl, nil, function(status, body, headers)
+							if status == 200 then
+								local contentType = headers["Content-Type"] or ""
+								if contentType:match("^image/") then
+									M.logWithTimestamp("Valid image detected. Content-Type: " .. contentType)
+
+									-- Extract filename from headers or URL
+									local fileName = headers["Content-Disposition"]
+											and headers["Content-Disposition"]:match('filename="?(.-)"?$')
+										or downloadUrl:match("^.+/(.+)$")
+
+									if not fileName or fileName == "" then
+										fileName = "no-name.jpg" -- Default filename with extension
+									elseif not fileName:match("^.+%.%w+$") then
+										fileName = fileName .. ".jpg" -- Add default extension
+									end
+
+									local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
+									M.logWithTimestamp("Downloading image to: " .. filePath)
+
+									-- Download the image
+									hs.http.asyncGet(downloadUrl, nil, function(status2, body2)
+										if status2 == 200 then
+											local file, err = io.open(filePath, "wb")
+											if file then
+												file:write(body2)
+												file:close()
+												M.logWithTimestamp("Image downloaded successfully to: " .. filePath)
+												hs.alert.show("Image downloaded successfully to: " .. filePath)
+											else
+												M.logWithTimestamp("Failed to save image: " .. tostring(err))
+											end
+										else
+											M.logWithTimestamp(
+												"Failed to download image. HTTP Status: " .. tostring(status2)
+											)
+										end
+									end)
+								else
+									M.logWithTimestamp(
+										"Error: URL does not point to an image. Content-Type: " .. contentType
+									)
+								end
+							else
+								M.logWithTimestamp("Failed to validate URL. HTTP Status: " .. tostring(status))
+							end
+						end)
+						return
+					end
 				else
 					M.logWithTimestamp("Error: No download URL available for the image.")
 				end
