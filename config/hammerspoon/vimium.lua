@@ -595,42 +595,133 @@ M.marks.prepareElementForDrawing = function(markIndex)
 		return nil
 	end
 
-	local position = mark.element:attributeValue("AXFrame")
-	if not position then
+	local position, size = M.getElementPositionAndSize(mark.element)
+	if not position or not size then
 		return nil
 	end
 
 	local padding = 2
-	local fontSize = 14
-	local bgRect = hs.geometry.rect(position.x, position.y, fontSize * 1.5 + 2 * padding, fontSize + 2 * padding)
+	local fontSize = 10
+	local text = string.upper(M.allCombinations[markIndex])
+
+	local textWidth = #text * (fontSize * 1.1) -- Approximate adjustment
+	local textHeight = fontSize * 1.1 -- Approximate adjustment
+
+	local containerWidth = textWidth + (padding * 2)
+	local containerHeight = textHeight + (padding * 2)
+
+	local arrowHeight = 3
+	local arrowWidth = 6
+	local cornerRadius = 2
+
+	local fillColor = { red = 1, green = 0.96, blue = 0.52, alpha = 1 }
+	local borderColor = { red = 0, green = 0, blue = 0, alpha = 1 }
+	local gradientColor = {
+		red = 1,
+		green = 0.77,
+		blue = 0.26,
+		alpha = 1,
+	}
+
+	local bgRect = hs.geometry.rect(
+		position.x + (size.w / 2) - (containerWidth / 2),
+		position.y + (size.h / 3 * 2) + arrowHeight,
+		containerWidth,
+		containerHeight
+	)
 	local visibleArea = M.current.visibleArea()
+
+	local rx = bgRect.x - visibleArea.x
+	local ry = bgRect.y - visibleArea.y
+	local rw = bgRect.w
+	local rh = bgRect.h
+
+	local arrowLeft = rx + (rw / 2) - (arrowWidth / 2)
+	local arrowRight = arrowLeft + arrowWidth
+	local arrowTop = ry - arrowHeight
+	local arrowBottom = ry
+	local arrowMiddle = arrowLeft + (arrowWidth / 2)
 
 	return {
 		{
-			type = "rectangle",
-			fillColor = { red = 0.5, green = 1, blue = 0, alpha = 0.9 },
-			strokeColor = { ["red"] = 0, ["green"] = 0, ["blue"] = 0, ["alpha"] = 1 },
+			type = "segments",
+			fillGradient = "linear",
+			fillGradientColors = { fillColor, gradientColor },
+			fillGradientAngle = 135,
+			strokeColor = borderColor,
 			strokeWidth = 1,
-			roundedRectRadii = { xRadius = 3, yRadius = 3 },
-			frame = {
-				x = bgRect.x - visibleArea.x,
-				y = bgRect.y - visibleArea.y,
-				w = bgRect.w,
-				h = bgRect.h,
+			withShadow = true,
+			shadow = { blurRadius = 5.0, color = { alpha = 1 / 3 }, offset = { h = -1.0, w = 1.0 } },
+			closed = true,
+			coordinates = {
+				-- Draw arrow
+				{ x = arrowLeft, y = arrowBottom },
+				{ x = arrowMiddle, y = arrowTop },
+				{ x = arrowRight, y = arrowBottom },
+				-- Top right corner
+				{
+					x = rx + rw - cornerRadius,
+					y = ry,
+					c1x = rx + rw - cornerRadius,
+					c1y = ry,
+					c2x = rx + rw,
+					c2y = ry,
+				},
+				{ x = rx + rw, y = ry + cornerRadius, c1x = rx + rw, c1y = ry, c2x = rx + rw, c2y = ry + cornerRadius },
+				-- Bottom right corner
+				{
+					x = rx + rw,
+					y = ry + rh - cornerRadius,
+					c1x = rx + rw,
+					c1y = ry + rh - cornerRadius,
+					c2x = rx + rw,
+					c2y = ry + rh,
+				},
+				{
+					x = rx + rw - cornerRadius,
+					y = ry + rh,
+					c1x = rx + rw,
+					c1y = ry + rh,
+					c2x = rx + rw - cornerRadius,
+					c2y = ry + rh,
+				},
+				-- Bottom left corner
+				{
+					x = rx + cornerRadius,
+					y = ry + rh,
+					c1x = rx + cornerRadius,
+					c1y = ry + rh,
+					c2x = rx,
+					c2y = ry + rh,
+				},
+				{
+					x = rx,
+					y = ry + rh - cornerRadius,
+					c1x = rx,
+					c1y = ry + rh,
+					c2x = rx,
+					c2y = ry + rh - cornerRadius,
+				},
+				-- Top left corner
+				{ x = rx, y = ry + cornerRadius, c1x = rx, c1y = ry + cornerRadius, c2x = rx, c2y = ry },
+				{ x = rx + cornerRadius, y = ry, c1x = rx, c1y = ry, c2x = rx + cornerRadius, c2y = ry },
+				-- Back to start
+				{ x = arrowLeft, y = arrowBottom },
 			},
 		},
 		{
 			type = "text",
-			text = string.upper(M.allCombinations[markIndex]),
+			text = text,
 			textAlignment = "center",
 			textColor = { ["red"] = 0, ["green"] = 0, ["blue"] = 0, ["alpha"] = 1 },
 			textSize = fontSize,
-			padding = padding,
+			textFont = ".AppleSystemUIFontHeavy",
+			textLineBreak = "clip",
 			frame = {
-				x = bgRect.x - visibleArea.x,
-				y = bgRect.y - visibleArea.y,
-				w = bgRect.w,
-				h = bgRect.h,
+				x = rx,
+				y = ry - (arrowHeight / 2) + ((rh - textHeight) / 2), -- Vertically center
+				w = rw,
+				h = textHeight,
 			},
 		},
 	}
