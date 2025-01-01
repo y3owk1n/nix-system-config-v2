@@ -765,11 +765,13 @@ M.marks.isElementImage = function(element)
 	end
 
 	local role = element:attributeValue("AXRole")
+	local url = element:attributeValue("AXURL")
+
 	if not role then
 		return false
 	end
 
-	return role == "AXImage"
+	return role == "AXImage" and url ~= nil
 end
 
 M.marks.getAllDescendants = function(element)
@@ -1269,10 +1271,6 @@ M.commands.cmdDownloadImage = function(char)
 				M.logWithTimestamp("Error: Invalid element")
 				return
 			end
-
-			local actions = element:actionNames()
-
-			M.logWithTimestamp(hs.inspect(actions))
 
 			-- Check if the element is an image
 			if element:attributeValue("AXRole") == "AXImage" then
