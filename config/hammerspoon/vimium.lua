@@ -1,3 +1,7 @@
+--------------------------------------------------------------------------------
+-- Imports and Initialization
+--------------------------------------------------------------------------------
+
 local floor = math.floor
 local insert = table.insert
 local format = string.format
@@ -10,8 +14,10 @@ local eventtap = hs.eventtap
 local M = {}
 
 --------------------------------------------------------------------------------
---- config
+-- Constants and Configuration
 --------------------------------------------------------------------------------
+
+M.modes = { DISABLED = 1, NORMAL = 2, INSERT = 3, MULTI = 4, LINKS = 5 }
 
 M.mapping = {
 	["i"] = "cmdInsertMode",
@@ -115,6 +121,10 @@ M.config = {
 	},
 }
 
+--------------------------------------------------------------------------------
+-- State Management
+--------------------------------------------------------------------------------
+
 M.cached = setmetatable({}, { __mode = "k" })
 M.current = {}
 M.marks = { data = {} }
@@ -122,16 +132,16 @@ M.menuBar = {}
 M.commands = {}
 M.windowFilter = nil
 M.eventLoop = nil
-M.modes = { DISABLED = 1, NORMAL = 2, INSERT = 3, MULTI = 4, LINKS = 5 }
 M.linkCapture = nil
 M.lastEscape = timer.absoluteTime()
 M.mappingPrefixes = {}
 M.allCombinations = {}
 
 --------------------------------------------------------------------------------
--- helpers
+-- Utility Functions
 --------------------------------------------------------------------------------
 
+--- @param message string # The message to log.
 M.logWithTimestamp = function(message)
 	if not M.config.showLogs then
 		return
@@ -142,6 +152,10 @@ M.logWithTimestamp = function(message)
 	hs.printf("[%s.%03d] %s", timestamp, ms, message)
 end
 
+--- @generic T
+--- @param tbl T[] # The table to search.
+--- @param val T # The value to search for.
+--- @return boolean # Returns `true` if the value is found, otherwise `false`.
 M.tblContains = function(tbl, val)
 	for _, v in ipairs(tbl) do
 		if v == val then
@@ -151,6 +165,10 @@ M.tblContains = function(tbl, val)
 	return false
 end
 
+--- @generic T
+--- @param tbl T[] # The table to filter.
+--- @param predicate fun(item: T): boolean # The function that determines if an item should be included.
+--- @return T[] # A new table containing only the items for which the predicate returned true.
 M.filter = function(tbl, predicate)
 	local result = {}
 	for _, v in ipairs(tbl) do
@@ -160,6 +178,10 @@ M.filter = function(tbl, predicate)
 	end
 	return result
 end
+
+--------------------------------------------------------------------------------
+-- Element State & Access Functions
+--------------------------------------------------------------------------------
 
 M.current.app = function()
 	M.cached.app = M.cached.app or hs.application.frontmostApplication()
@@ -184,19 +206,6 @@ end
 M.current.axFocusedElement = function()
 	M.cached.axFocusedElement = M.cached.axFocusedElement or M.current.axApp():attributeValue("AXFocusedUIElement")
 	return M.cached.axFocusedElement
-end
-
-M.findAXRole = function(rootElement, role)
-	if rootElement:attributeValue("AXRole") == role then
-		return rootElement
-	end
-
-	for _, child in ipairs(rootElement:attributeValue("AXChildren") or {}) do
-		local result = M.findAXRole(child, role)
-		if result then
-			return result
-		end
-	end
 end
 
 M.current.axScrollArea = function()
@@ -265,6 +274,80 @@ M.current.visibleArea = function()
 	return M.cached.visibleArea
 end
 
+M.getFocusedElement = function(element, depth)
+	if not element or (depth and depth > M.config.depth) then
+		return
+	end
+
+	local elementFrame = element:attributeValue("AXFrame")
+	if not elementFrame or not M.marks.isElementPartiallyVisible(element) then
+		return
+	end
+
+	if element:attributeValue("AXFocused") then
+		M.logWithTimestamp("Focused element found: " .. hs.inspect(element))
+		element:setAttributeValue("AXFocused", false)
+		M.logWithTimestamp("Focused element unfocused.")
+	end
+
+	local children = element:attributeValue("AXChildren")
+	if children then
+		local chunk_size = 10
+		for i = 1, #children, chunk_size do
+			local end_idx = math.min(i + chunk_size - 1, #children)
+			for j = i, end_idx do
+				M.getFocusedElement(children[j], (depth or 0) + 1)
+			end
+		end
+	end
+end
+
+M.getElementPositionAndSize = function(element)
+	local frame = element:attributeValue("AXFrame")
+	if frame then
+		return { x = frame.x, y = frame.y }, { w = frame.w, h = frame.h }
+	end
+
+	local successPos, position = pcall(function()
+		return element:attributeValue("AXPosition")
+	end)
+	local successSize, size = pcall(function()
+		return element:attributeValue("AXSize")
+	end)
+
+	if successPos and successSize and position and size then
+		return position, size
+	end
+
+	return nil, nil
+end
+
+--------------------------------------------------------------------------------
+-- Helper & Action Functions
+--------------------------------------------------------------------------------
+
+M.fetchMappingPrefixes = function()
+	for k, _ in pairs(M.config.mapping) do
+		if #k == 2 then
+			M.mappingPrefixes[sub(k, 1, 1)] = true
+		end
+	end
+	M.logWithTimestamp("mappingPrefixes: " .. hs.inspect(M.mappingPrefixes))
+end
+
+M.findAXRole = function(rootElement, role)
+	if rootElement:attributeValue("AXRole") == role then
+		return rootElement
+	end
+
+	for _, child in ipairs(rootElement:attributeValue("AXChildren") or {}) do
+		local result = M.findAXRole(child, role)
+		if result then
+			return result
+		end
+	end
+end
+
 M.isEditableControlInFocus = function()
 	if M.current.axFocusedElement() then
 		return M.tblContains(M.config.axEditableRoles, M.current.axFocusedElement():attributeValue("AXRole"))
@@ -294,6 +377,9 @@ M.generateCombinations = function()
 	end
 end
 
+--- @param x number|nil # The horizontal scroll amount in pixels (can be `nil` for vertical-only scrolling).
+--- @param y number|nil # The vertical scroll amount in pixels (can be `nil` for horizontal-only scrolling).
+--- @param smooth boolean # Whether to perform smooth scrolling.
 M.smoothScroll = function(x, y, smooth)
 	if not smooth then
 		eventtap.event.newScrollEvent({ x, y }, {}, "pixel"):post()
@@ -329,6 +415,7 @@ M.smoothScroll = function(x, y, smooth)
 	animate()
 end
 
+--- @param url string # The URL to open in a new browser tab.
 M.openUrlInNewTab = function(url)
 	local browserScripts = {
 		Safari = [[
@@ -386,39 +473,12 @@ M.openUrlInNewTab = function(url)
 	hs.osascript.applescript(script)
 end
 
+--- @param contents string|nil # The text to copy to the clipboard. If `nil`, the operation will fail.
 M.setClipboardContents = function(contents)
 	if contents and hs.pasteboard.setContents(contents) then
 		hs.alert.show("Copied to clipboard: " .. contents, nil, nil, 4)
 	else
 		hs.alert.show("Failed to copy to clipboard", nil, nil, 4)
-	end
-end
-
-M.getFocusedElement = function(element, depth)
-	if not element or (depth and depth > M.config.depth) then
-		return
-	end
-
-	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not M.marks.isElementPartiallyVisible(element) then
-		return
-	end
-
-	if element:attributeValue("AXFocused") then
-		M.logWithTimestamp("Focused element found: " .. hs.inspect(element))
-		element:setAttributeValue("AXFocused", false)
-		M.logWithTimestamp("Focused element unfocused.")
-	end
-
-	local children = element:attributeValue("AXChildren")
-	if children then
-		local chunk_size = 10
-		for i = 1, #children, chunk_size do
-			local end_idx = math.min(i + chunk_size - 1, #children)
-			for j = i, end_idx do
-				M.getFocusedElement(children[j], (depth or 0) + 1)
-			end
-		end
 	end
 end
 
@@ -434,26 +494,6 @@ M.forceUnfocus = function()
 	hs.alert.show("Force unfocused!")
 end
 
-M.getElementPositionAndSize = function(element)
-	local frame = element:attributeValue("AXFrame")
-	if frame then
-		return { x = frame.x, y = frame.y }, { w = frame.w, h = frame.h }
-	end
-
-	local successPos, position = pcall(function()
-		return element:attributeValue("AXPosition")
-	end)
-	local successSize, size = pcall(function()
-		return element:attributeValue("AXSize")
-	end)
-
-	if successPos and successSize and position and size then
-		return position, size
-	end
-
-	return nil, nil
-end
-
 M.restoreMousePosition = function(originalPosition)
 	timer.doAfter(0.05, function()
 		mouse.absolutePosition(originalPosition)
@@ -467,7 +507,7 @@ M.isInBrowser = function()
 end
 
 --------------------------------------------------------------------------------
--- menubar
+-- Menubar
 --------------------------------------------------------------------------------
 
 function M.menuBar.new()
@@ -484,6 +524,8 @@ function M.menuBar.delete()
 	M.menuBar.item = nil
 end
 
+--- @param mode integer # The mode to set. Expected values are in `M.modes`.
+--- @param char string|nil # An optional character representing the mode in the menu bar.
 M.setMode = function(mode, char)
 	local defaultModeChars = {
 		[M.modes.DISABLED] = "X",
@@ -513,7 +555,7 @@ M.setMode = function(mode, char)
 end
 
 --------------------------------------------------------------------------------
--- marks
+-- Marks
 --------------------------------------------------------------------------------
 
 M.marks.clear = function()
@@ -545,6 +587,8 @@ M.marks.draw = function()
 	end
 end
 
+--- @param markIndex number # The index of the mark in `M.marks.data`.
+--- @return table|nil # A table representing the graphical elements to draw or `nil` if the mark is invalid.
 M.marks.prepareElementForDrawing = function(markIndex)
 	local mark = M.marks.data[markIndex]
 	if not mark then
@@ -796,8 +840,8 @@ M.marks.findInputElements = function(element, depth)
 	end
 end
 
----@param withUrls boolean
----@param type? string
+--- @param withUrls boolean # If true, includes URLs when finding clickable elements.
+--- @param type "link"|"scroll"|"url"|"input" # The type of elements to find ("link", "scroll", "url", "input").
 M.marks.show = function(withUrls, type)
 	local startElement = M.current.axWindow()
 	if not startElement then
@@ -837,6 +881,7 @@ M.marks.show = function(withUrls, type)
 	end
 end
 
+--- @param combination string # The combination that matches the element to be clicked.
 M.marks.click = function(combination)
 	M.logWithTimestamp("M.marks.click")
 	for i, c in ipairs(M.allCombinations) do
@@ -853,7 +898,7 @@ M.marks.click = function(combination)
 end
 
 --------------------------------------------------------------------------------
--- commands
+-- Commands
 --------------------------------------------------------------------------------
 
 M.commands.cmdScrollLeft = function()
@@ -900,6 +945,7 @@ M.commands.cmdCopyPageUrlToClipboard = function()
 	end
 end
 
+--- @param char string|nil # Optional character to display for the INSERT mode in the menu bar.
 M.commands.cmdInsertMode = function(char)
 	M.setMode(M.modes.INSERT, char)
 end
@@ -977,6 +1023,7 @@ M.commands.cmdGotoLink = function(char)
 	end)
 end
 
+--- @param char string # Character to display for the LINKS mode in the menu bar.
 M.commands.cmdRightClick = function(char)
 	M.setMode(M.modes.LINKS, char)
 
@@ -1022,6 +1069,7 @@ M.commands.cmdRightClick = function(char)
 	end)
 end
 
+--- @param char string # Character to display for the LINKS mode in the menu bar.
 M.commands.cmdGotoLinkNewTab = function(char)
 	if M.isInBrowser() then
 		M.setMode(M.modes.LINKS, char)
@@ -1039,6 +1087,7 @@ M.commands.cmdGotoLinkNewTab = function(char)
 	end
 end
 
+--- @param char string # Character to display for the LINKS mode in the menu bar.
 M.commands.cmdGotoInput = function(char)
 	if M.isInBrowser() then
 		M.setMode(M.modes.LINKS, char)
@@ -1116,6 +1165,7 @@ M.commands.cmdGotoInput = function(char)
 	end
 end
 
+--- @param char string # Character to display for the LINKS mode in the menu bar.
 M.commands.cmdMoveMouseToLink = function(char)
 	M.setMode(M.modes.LINKS, char)
 	M.marks.onClickCallback = function(mark)
@@ -1134,6 +1184,7 @@ M.commands.cmdMoveMouseToCenter = function()
 	})
 end
 
+--- @param char string # Character to display for the LINKS mode in the menu bar.
 M.commands.cmdCopyLinkUrlToClipboard = function(char)
 	if M.isInBrowser() then
 		M.setMode(M.modes.LINKS, char)
@@ -1150,18 +1201,10 @@ M.commands.cmdCopyLinkUrlToClipboard = function(char)
 end
 
 --------------------------------------------------------------------------------
---- vifari
+--- Event Handling and Input Processing
 --------------------------------------------------------------------------------
 
-M.fetchMappingPrefixes = function()
-	for k, _ in pairs(M.config.mapping) do
-		if #k == 2 then
-			M.mappingPrefixes[sub(k, 1, 1)] = true
-		end
-	end
-	M.logWithTimestamp("mappingPrefixes: " .. hs.inspect(M.mappingPrefixes))
-end
-
+--- @param char string # The character input that triggers specific actions or commands.
 M.vimLoop = function(char)
 	M.logWithTimestamp("vimLoop " .. char)
 
@@ -1266,6 +1309,10 @@ local function onWindowUnfocused()
 	end
 	M.setMode(M.modes.DISABLED)
 end
+
+--------------------------------------------------------------------------------
+-- Module Initialization and Cleanup
+--------------------------------------------------------------------------------
 
 function M:start()
 	M.windowFilter = hs.window.filter.new()
