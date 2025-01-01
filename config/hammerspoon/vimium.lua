@@ -35,6 +35,7 @@ M.mapping = {
 	["f"] = "cmdGotoLink",
 	["r"] = "cmdRightClick",
 	["F"] = "cmdGotoLinkNewTab",
+	-- ["di"] = "cmdDownloadImage",
 	["gf"] = "cmdMoveMouseToLink",
 	["gi"] = "cmdGotoInput",
 	["zz"] = "cmdMoveMouseToCenter",
@@ -758,6 +759,19 @@ M.marks.isElementInput = function(element)
 	return M.tblContains(axEditableRoles, role)
 end
 
+M.marks.isElementImage = function(element)
+	if not element then
+		return false
+	end
+
+	local role = element:attributeValue("AXRole")
+	if not role then
+		return false
+	end
+
+	return role == "AXImage"
+end
+
 M.marks.getAllDescendants = function(element)
 	if not element then
 		return {}
@@ -888,8 +902,35 @@ M.marks.findInputElements = function(element, depth)
 	end
 end
 
+M.marks.findImageElements = function(element, depth)
+	if not element or (depth and depth > M.config.depth) then
+		return
+	end
+
+	local elementFrame = element:attributeValue("AXFrame")
+	if not elementFrame or not M.marks.isElementPartiallyVisible(element) then
+		return
+	end
+
+	if M.marks.isElementImage(element) then
+		M.logWithTimestamp("found AXImage: " .. hs.inspect(element))
+		M.marks.add(element)
+	end
+
+	local children = element:attributeValue("AXChildren")
+	if children then
+		local chunk_size = 10
+		for i = 1, #children, chunk_size do
+			local end_idx = math.min(i + chunk_size - 1, #children)
+			for j = i, end_idx do
+				M.marks.findImageElements(children[j], (depth or 0) + 1)
+			end
+		end
+	end
+end
+
 --- @param withUrls boolean # If true, includes URLs when finding clickable elements.
---- @param type "link"|"scroll"|"url"|"input" # The type of elements to find ("link", "scroll", "url", "input").
+--- @param type "link"|"scroll"|"url"|"input"|"image" # The type of elements to find ("link", "scroll", "url", "input").
 M.marks.show = function(withUrls, type)
 	local startElement = M.current.axWindow()
 	if not startElement then
@@ -919,6 +960,10 @@ M.marks.show = function(withUrls, type)
 			M.setMode(M.modes.NORMAL)
 			return
 		end
+	end
+
+	if type == "image" then
+		M.marks.findImageElements(startElement, 0)
 	end
 
 	if #M.marks.data > 0 then
@@ -1210,6 +1255,96 @@ M.commands.cmdGotoInput = function(char)
 		end)
 	else
 		hs.alert.show("Go to input is only available for browser")
+	end
+end
+
+--- @param char string # Character to display for the LINKS mode in the menu bar.
+M.commands.cmdDownloadImage = function(char)
+	if M.isInBrowser() then
+		M.setMode(M.modes.LINKS, char)
+
+		M.marks.onClickCallback = function(mark)
+			local element = mark.element
+			if not element then
+				M.logWithTimestamp("Error: Invalid element")
+				return
+			end
+
+			local actions = element:actionNames()
+
+			M.logWithTimestamp(hs.inspect(actions))
+
+			-- Check if the element is an image
+			if element:attributeValue("AXRole") == "AXImage" then
+				local imageDescription = element:attributeValue("AXDescription") or "unknown"
+				M.logWithTimestamp("Image detected: " .. hs.inspect(imageDescription))
+
+				-- Try downloading the image
+				local downloadURLAttr = element:attributeValue("AXURL")
+				if downloadURLAttr then
+					M.logWithTimestamp("AXURL attribute value: " .. hs.inspect(downloadURLAttr))
+					local downloadUrl = downloadURLAttr.url
+					M.logWithTimestamp("Downloading image from URL: " .. downloadUrl)
+
+					hs.http.asyncGet(downloadUrl, nil, function(status, body, headers)
+						if status == 200 then
+							local contentType = headers["Content-Type"] or ""
+							if contentType:match("^image/") then
+								M.logWithTimestamp("Valid image detected. Content-Type: " .. contentType)
+
+								-- Extract filename from headers or URL
+								local fileName = headers["Content-Disposition"]
+										and headers["Content-Disposition"]:match('filename="?(.-)"?$')
+									or downloadUrl:match("^.+/(.+)$")
+
+								if not fileName or fileName == "" then
+									fileName = "no-name.jpg" -- Default filename with extension
+								elseif not fileName:match("^.+%.%w+$") then
+									fileName = fileName .. ".jpg" -- Add default extension
+								end
+
+								local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
+								M.logWithTimestamp("Downloading image to: " .. filePath)
+
+								-- Download the image
+								hs.http.asyncGet(downloadUrl, nil, function(status2, body2)
+									if status2 == 200 then
+										local file, err = io.open(filePath, "wb")
+										if file then
+											file:write(body2)
+											file:close()
+											M.logWithTimestamp("Image downloaded successfully to: " .. filePath)
+											hs.alert.show("Image downloaded successfully to: " .. filePath)
+										else
+											M.logWithTimestamp("Failed to save image: " .. tostring(err))
+										end
+									else
+										M.logWithTimestamp(
+											"Failed to download image. HTTP Status: " .. tostring(status2)
+										)
+									end
+								end)
+							else
+								M.logWithTimestamp(
+									"Error: URL does not point to an image. Content-Type: " .. contentType
+								)
+							end
+						else
+							M.logWithTimestamp("Failed to validate URL. HTTP Status: " .. tostring(status))
+						end
+					end)
+					return
+				else
+					M.logWithTimestamp("Error: No download URL available for the image.")
+				end
+			end
+		end
+
+		timer.doAfter(0, function()
+			M.marks.show(false, "image")
+		end)
+	else
+		hs.alert.show("Download image is only available for browser")
 	end
 end
 
