@@ -26,8 +26,8 @@ M.mapping = {
 	["j"] = "cmdScrollDown",
 	["k"] = "cmdScrollUp",
 	["l"] = "cmdScrollRight",
-	["d"] = "cmdScrollHalfPageDown",
-	["u"] = "cmdScrollHalfPageUp",
+	["C-d"] = "cmdScrollHalfPageDown",
+	["C-u"] = "cmdScrollHalfPageUp",
 	["gg"] = "cmdScrollToBottom",
 	["G"] = "cmdScrollToTop",
 	["H"] = { "cmd", "[" }, -- history back
@@ -35,7 +35,7 @@ M.mapping = {
 	["f"] = "cmdGotoLink",
 	["r"] = "cmdRightClick",
 	["F"] = "cmdGotoLinkNewTab",
-	-- ["di"] = "cmdDownloadImage",
+	["di"] = "cmdDownloadImage",
 	["gf"] = "cmdMoveMouseToLink",
 	["gi"] = "cmdGotoInput",
 	["zz"] = "cmdMoveMouseToCenter",
@@ -1388,8 +1388,9 @@ end
 --------------------------------------------------------------------------------
 
 --- @param char string # The character input that triggers specific actions or commands.
-M.vimLoop = function(char)
-	M.logWithTimestamp("vimLoop " .. char)
+--- @param modifiers table # Table of modifiers. Only supports ctrl for now
+M.vimLoop = function(char, modifiers)
+	M.logWithTimestamp("vimLoop " .. char .. ", modifiers " .. hs.inspect(modifiers))
 
 	if M.current.mode == M.modes.LINKS then
 		M.linkCapture = M.linkCapture .. char:lower()
@@ -1400,25 +1401,31 @@ M.vimLoop = function(char)
 		return
 	end
 
-	if M.current.mode == M.modes.MULTI then
-		char = M.current.multi .. char
+	local keyCombo = ""
+	if modifiers and modifiers.ctrl then
+		keyCombo = "C-"
 	end
-	local foundMapping = M.config.mapping[char]
+	keyCombo = keyCombo .. char
+
+	if M.current.mode == M.modes.MULTI then
+		keyCombo = M.current.multi .. keyCombo
+	end
+	local foundMapping = M.config.mapping[keyCombo]
 
 	if foundMapping then
 		M.setMode(M.modes.NORMAL)
 
 		if type(foundMapping) == "string" then
-			M.commands[foundMapping](char)
+			M.commands[foundMapping](keyCombo)
 		elseif type(foundMapping) == "table" then
 			eventtap.keyStroke(foundMapping[1], foundMapping[2], 0)
 		else
-			M.logWithTimestamp("Unknown mapping for " .. char .. " " .. hs.inspect(foundMapping))
+			M.logWithTimestamp("Unknown mapping for " .. keyCombo .. " " .. hs.inspect(foundMapping))
 		end
-	elseif M.mappingPrefixes[char] then
-		M.setMode(M.modes.MULTI, char)
+	elseif M.mappingPrefixes[keyCombo] then
+		M.setMode(M.modes.MULTI, keyCombo)
 	else
-		M.logWithTimestamp("Unknown char " .. char)
+		M.logWithTimestamp("Unknown char " .. keyCombo)
 	end
 end
 
@@ -1429,8 +1436,12 @@ M.eventHandler = function(event)
 		return false
 	end
 
-	for key, modifier in pairs(event:getFlags()) do
-		if modifier and key ~= "shift" then
+	local flags = event:getFlags()
+	local keyCode = event:getKeyCode()
+	local modifiers = { ctrl = flags.ctrl }
+
+	for key, modifier in pairs(flags) do
+		if modifier and key ~= "shift" and key ~= "ctrl" then
 			return false
 		end
 	end
@@ -1439,7 +1450,7 @@ M.eventHandler = function(event)
 		return false
 	end
 
-	if event:getKeyCode() == hs.keycodes.map["escape"] then
+	if keyCode == hs.keycodes.map["escape"] then
 		local delaySinceLastEscape = (timer.absoluteTime() - M.lastEscape) / 1e9 -- nanoseconds in seconds
 		M.lastEscape = timer.absoluteTime()
 
@@ -1461,13 +1472,31 @@ M.eventHandler = function(event)
 		return false
 	end
 
-	local char = event:getCharacters()
+	local char = hs.keycodes.map[keyCode]
+	if flags.shift then
+		char = event:getCharacters()
+	end
+
 	if not char:match("[%a%d%[%]%$]") then
 		return false
 	end
 
+	if modifiers and modifiers.ctrl then
+		local filteredMappings = {}
+
+		for key, _ in pairs(M.mapping) do
+			if key:sub(1, 2) == "C-" then
+				table.insert(filteredMappings, key:sub(3))
+			end
+		end
+
+		if M.tblContains(filteredMappings, char) == false then
+			return false
+		end
+	end
+
 	timer.doAfter(0, function()
-		M.vimLoop(char)
+		M.vimLoop(char, modifiers)
 	end)
 	return true
 end
