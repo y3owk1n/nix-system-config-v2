@@ -1500,11 +1500,14 @@ M.eventHandler = function(event)
 	end
 
 	local char = hs.keycodes.map[keyCode]
+
+	M.logWithTimestamp("char: " .. char)
+
 	if flags.shift then
 		char = event:getCharacters()
 	end
 
-	if not char:match("[%a%d%[%]%$]") then
+	if not char:match("[%a%d%[%]%$]") or #char ~= 1 then
 		return false
 	end
 
