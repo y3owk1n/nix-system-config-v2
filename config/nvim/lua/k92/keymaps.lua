@@ -85,3 +85,10 @@ end, { desc = "Lazygit Current File History" })
 vim.keymap.set("n", "<leader>gl", function()
 	Snacks.lazygit.log()
 end, { desc = "Lazygit Log (cwd)" })
+
+-- Delete default neovim lsp bindings
+vim.keymap.del("n", "gra")
+vim.keymap.del("n", "gri")
+vim.keymap.del("n", "grn")
+vim.keymap.del("n", "grr")
+vim.keymap.del("x", "gra")
