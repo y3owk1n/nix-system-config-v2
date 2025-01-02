@@ -11,15 +11,13 @@ local timer = hs.timer
 local mouse = hs.mouse
 local eventtap = hs.eventtap
 
-local M = {}
-
 --------------------------------------------------------------------------------
 -- Constants and Configuration
 --------------------------------------------------------------------------------
 
-M.modes = { DISABLED = 1, NORMAL = 2, INSERT = 3, MULTI = 4, LINKS = 5 }
+local modes = { DISABLED = 1, NORMAL = 2, INSERT = 3, MULTI = 4, LINKS = 5 }
 
-M.mapping = {
+local mapping = {
 	["i"] = "cmdInsertMode",
 	-- movements
 	["h"] = "cmdScrollLeft",
@@ -43,10 +41,10 @@ M.mapping = {
 	["yf"] = "cmdCopyLinkUrlToClipboard",
 }
 
-M.config = {
+local config = {
 	doublePressDelay = 0.3, -- seconds
 	showLogs = false,
-	mapping = M.mapping,
+	mapping = mapping,
 	scrollStep = 100,
 	scrollStepHalfPage = 500,
 	scrollStepFullPage = 100000, -- make it a super big number and not worry
@@ -104,28 +102,35 @@ M.config = {
 }
 
 --------------------------------------------------------------------------------
--- State Management
+-- State & Cache Management
 --------------------------------------------------------------------------------
 
-M.cached = setmetatable({}, { __mode = "k" })
-M.current = {}
-M.marks = { data = {} }
-M.menuBar = {}
-M.commands = {}
-M.windowFilter = nil
-M.eventLoop = nil
-M.linkCapture = nil
-M.lastEscape = timer.absoluteTime()
-M.mappingPrefixes = {}
-M.allCombinations = {}
+local state = {
+	elements = {},
+	marks = {},
+	windowFilter = nil,
+	eventLoop = nil,
+	linkCapture = nil,
+	lastEscape = timer.absoluteTime(),
+	mappingPrefixes = {},
+	allCombinations = {},
+}
+
+local marks = {}
+local actions = {}
+local menuBar = {}
+local commands = {}
+local utils = {}
+
+local cached = setmetatable({}, { __mode = "k" })
 
 --------------------------------------------------------------------------------
 -- Utility Functions
 --------------------------------------------------------------------------------
 
 --- @param message string # The message to log.
-M.logWithTimestamp = function(message)
-	if not M.config.showLogs then
+local function log(message)
+	if not config.showLogs then
 		return
 	end
 
@@ -138,7 +143,7 @@ end
 --- @param tbl T[] # The table to search.
 --- @param val T # The value to search for.
 --- @return boolean # Returns `true` if the value is found, otherwise `false`.
-M.tblContains = function(tbl, val)
+local function tblContains(tbl, val)
 	for _, v in ipairs(tbl) do
 		if v == val then
 			return true
@@ -151,7 +156,7 @@ end
 --- @param tbl T[] # The table to filter.
 --- @param predicate fun(item: T): boolean # The function that determines if an item should be included.
 --- @return T[] # A new table containing only the items for which the predicate returned true.
-M.filter = function(tbl, predicate)
+local function tblFilter(tbl, predicate)
 	local result = {}
 	for _, v in ipairs(tbl) do
 		if predicate(v) then
@@ -165,54 +170,54 @@ end
 -- Element State & Access Functions
 --------------------------------------------------------------------------------
 
-M.current.app = function()
-	M.cached.app = M.cached.app or hs.application.frontmostApplication()
-	return M.cached.app
+function state.elements.app()
+	cached.app = cached.app or hs.application.frontmostApplication()
+	return cached.app
 end
 
-M.current.axApp = function()
-	M.cached.axApp = M.cached.axApp or hs.axuielement.applicationElement(M.current.app())
-	return M.cached.axApp
+function state.elements.axApp()
+	cached.axApp = cached.axApp or hs.axuielement.applicationElement(state.elements.app())
+	return cached.axApp
 end
 
-M.current.window = function()
-	M.cached.window = M.cached.window or M.current.app():focusedWindow()
-	return M.cached.window
+function state.elements.window()
+	cached.window = cached.window or state.elements.app():focusedWindow()
+	return cached.window
 end
 
-M.current.axWindow = function()
-	M.cached.axWindow = M.cached.axWindow or hs.axuielement.windowElement(M.current.window())
-	return M.cached.axWindow
+function state.elements.axWindow()
+	cached.axWindow = cached.axWindow or hs.axuielement.windowElement(state.elements.window())
+	return cached.axWindow
 end
 
-M.current.axFocusedElement = function()
-	M.cached.axFocusedElement = M.cached.axFocusedElement or M.current.axApp():attributeValue("AXFocusedUIElement")
-	return M.cached.axFocusedElement
+function state.elements.axFocusedElement()
+	cached.axFocusedElement = cached.axFocusedElement or state.elements.axApp():attributeValue("AXFocusedUIElement")
+	return cached.axFocusedElement
 end
 
-M.current.axScrollArea = function()
-	if not M.cached.axScrollArea then
-		for _, role in ipairs(M.config.axScrollableRoles) do
-			M.cached.axScrollArea = M.findAXRole(M.current.axWindow(), role)
-			if M.cached.axScrollArea then
+function state.elements.axScrollArea()
+	if not cached.axScrollArea then
+		for _, role in ipairs(config.axScrollableRoles) do
+			cached.axScrollArea = state.elements.findAXRole(state.elements.axWindow(), role)
+			if cached.axScrollArea then
 				break
 			end
 		end
 	end
-	return M.cached.axScrollArea
+	return cached.axScrollArea
 end
 
-M.current.axWebArea = function()
-	M.cached.axWebArea = M.cached.axWebArea or M.findAXRole(M.current.axScrollArea(), "AXWebArea")
-	return M.cached.axWebArea
+function state.elements.axWebArea()
+	cached.axWebArea = cached.axWebArea or state.elements.findAXRole(state.elements.axScrollArea(), "AXWebArea")
+	return cached.axWebArea
 end
 
-M.current.visibleArea = function()
-	if M.cached.visibleArea then
-		return M.cached.visibleArea
+function state.elements.visibleArea()
+	if cached.visibleArea then
+		return cached.visibleArea
 	end
 
-	local winFrame = M.current.axWindow():attributeValue("AXFrame")
+	local winFrame = state.elements.axWindow():attributeValue("AXFrame")
 
 	local visibleX = math.max(winFrame.x)
 	local visibleY = math.max(winFrame.y)
@@ -220,32 +225,32 @@ M.current.visibleArea = function()
 	local visibleWidth = math.min(winFrame.x + winFrame.w) - visibleX
 	local visibleHeight = math.min(winFrame.y + winFrame.h) - visibleY
 
-	M.cached.visibleArea = {
+	cached.visibleArea = {
 		x = visibleX,
 		y = visibleY,
 		w = visibleWidth,
 		h = visibleHeight,
 	}
 
-	M.logWithTimestamp("visibleArea: " .. hs.inspect(M.cached.visibleArea))
+	log("visibleArea: " .. hs.inspect(cached.visibleArea))
 
-	return M.cached.visibleArea
+	return cached.visibleArea
 end
 
-M.getFocusedElement = function(element, depth)
-	if not element or (depth and depth > M.config.depth) then
+function state.elements.getFocusedElement(element, depth)
+	if not element or (depth and depth > config.depth) then
 		return
 	end
 
 	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not M.marks.isElementPartiallyVisible(element) then
+	if not elementFrame or not marks.isElementPartiallyVisible(element) then
 		return
 	end
 
 	if element:attributeValue("AXFocused") then
-		M.logWithTimestamp("Focused element found: " .. hs.inspect(element))
+		log("Focused element found: " .. hs.inspect(element))
 		element:setAttributeValue("AXFocused", false)
-		M.logWithTimestamp("Focused element unfocused.")
+		log("Focused element unfocused.")
 	end
 
 	local children = element:attributeValue("AXChildren")
@@ -254,13 +259,13 @@ M.getFocusedElement = function(element, depth)
 		for i = 1, #children, chunk_size do
 			local end_idx = math.min(i + chunk_size - 1, #children)
 			for j = i, end_idx do
-				M.getFocusedElement(children[j], (depth or 0) + 1)
+				state.elements.getFocusedElement(children[j], (depth or 0) + 1)
 			end
 		end
 	end
 end
 
-M.getElementPositionAndSize = function(element)
+function state.elements.getElementPositionAndSize(element)
 	local frame = element:attributeValue("AXFrame")
 	if frame then
 		return { x = frame.x, y = frame.y }, { w = frame.w, h = frame.h }
@@ -280,65 +285,105 @@ M.getElementPositionAndSize = function(element)
 	return nil, nil
 end
 
---------------------------------------------------------------------------------
--- Helper & Action Functions
---------------------------------------------------------------------------------
-
-M.fetchMappingPrefixes = function()
-	for k, _ in pairs(M.config.mapping) do
-		if #k == 2 then
-			M.mappingPrefixes[sub(k, 1, 1)] = true
-		end
-	end
-	M.logWithTimestamp("mappingPrefixes: " .. hs.inspect(M.mappingPrefixes))
-end
-
-M.findAXRole = function(rootElement, role)
+function state.elements.findAXRole(rootElement, role)
 	if rootElement:attributeValue("AXRole") == role then
 		return rootElement
 	end
 
 	for _, child in ipairs(rootElement:attributeValue("AXChildren") or {}) do
-		local result = M.findAXRole(child, role)
+		local result = state.elements.findAXRole(child, role)
 		if result then
 			return result
 		end
 	end
 end
 
-M.isEditableControlInFocus = function()
-	if M.current.axFocusedElement() then
-		return M.tblContains(M.config.axEditableRoles, M.current.axFocusedElement():attributeValue("AXRole"))
+function state.elements.isEditableControlInFocus()
+	if state.elements.axFocusedElement() then
+		return tblContains(config.axEditableRoles, state.elements.axFocusedElement():attributeValue("AXRole"))
 	else
 		return false
 	end
 end
 
-M.isExcludedApp = function()
-	local appName = M.current.app():name()
-	return M.tblContains(M.config.excludedApps, appName)
+--------------------------------------------------------------------------------
+-- Helper Functions
+--------------------------------------------------------------------------------
+
+function utils.fetchMappingPrefixes()
+	for k, _ in pairs(config.mapping) do
+		if #k == 2 then
+			state.mappingPrefixes[sub(k, 1, 1)] = true
+		end
+	end
+	log("mappingPrefixes: " .. hs.inspect(state.mappingPrefixes))
 end
 
-M.isSpotlightActive = function()
+function utils.isExcludedApp()
+	local appName = state.elements.app():name()
+	return tblContains(config.excludedApps, appName)
+end
+
+function utils.isSpotlightActive()
 	local app = hs.application.get("Spotlight")
 	local appElement = hs.axuielement.applicationElement(app)
 	local windows = appElement:attributeValue("AXWindows")
 	return #windows > 0
 end
 
-M.generateCombinations = function()
+function utils.generateCombinations()
 	local chars = "abcdefghijklmnopqrstuvwxyz"
 	for i = 1, #chars do
 		for j = 1, #chars do
-			insert(M.allCombinations, chars:sub(i, i) .. chars:sub(j, j))
+			insert(state.allCombinations, chars:sub(i, i) .. chars:sub(j, j))
 		end
 	end
 end
 
+function utils.isInBrowser()
+	local currentAppName = state.elements.app():name()
+
+	return tblContains(config.browsers, currentAppName)
+end
+
+--- @param mode integer # The mode to set. Expected values are in `M.modes`.
+--- @param char string|nil # An optional character representing the mode in the menu bar.
+function utils.setMode(mode, char)
+	local defaultModeChars = {
+		[modes.DISABLED] = "X",
+		[modes.NORMAL] = "V",
+	}
+
+	local previousMode = state.elements.mode
+	state.elements.mode = mode
+
+	if state.elements.mode == modes.LINKS and previousMode ~= modes.LINKS then
+		state.linkCapture = ""
+		marks.clear()
+	end
+	if previousMode == modes.LINKS and state.elements.mode ~= modes.LINKS then
+		state.linkCapture = nil
+		timer.doAfter(0, marks.clear)
+	end
+
+	if state.elements.mode == modes.MULTI then
+		state.elements.multi = char
+	end
+	if state.elements.mode ~= modes.MULTI then
+		state.elements.multi = nil
+	end
+
+	menuBar.item:setTitle(char or defaultModeChars[mode] or "?")
+end
+
+--------------------------------------------------------------------------------
+-- Action Functions
+--------------------------------------------------------------------------------
+
 --- @param x number|nil # The horizontal scroll amount in pixels (can be `nil` for vertical-only scrolling).
 --- @param y number|nil # The vertical scroll amount in pixels (can be `nil` for horizontal-only scrolling).
 --- @param smooth boolean # Whether to perform smooth scrolling.
-M.smoothScroll = function(x, y, smooth)
+function actions.smoothScroll(x, y, smooth)
 	if not smooth then
 		eventtap.event.newScrollEvent({ x, y }, {}, "pixel"):post()
 		return
@@ -356,7 +401,7 @@ M.smoothScroll = function(x, y, smooth)
 	end
 	local frame = 0
 
-	local interval = 1 / M.config.smoothScrollFrameRate
+	local interval = 1 / config.smoothScrollFrameRate
 
 	local function animate()
 		frame = frame + 1
@@ -374,7 +419,7 @@ M.smoothScroll = function(x, y, smooth)
 end
 
 --- @param url string # The URL to open in a new browser tab.
-M.openUrlInNewTab = function(url)
+function actions.openUrlInNewTab(url)
 	local browserScripts = {
 		Safari = [[
             tell application "Safari"
@@ -418,7 +463,7 @@ M.openUrlInNewTab = function(url)
         ]],
 	}
 
-	local currentApp = M.current.app():name()
+	local currentApp = state.elements.app():name()
 	local script
 
 	if browserScripts[currentApp] then
@@ -432,7 +477,7 @@ M.openUrlInNewTab = function(url)
 end
 
 --- @param contents string|nil # The text to copy to the clipboard. If `nil`, the operation will fail.
-M.setClipboardContents = function(contents)
+function actions.setClipboardContents(contents)
 	if contents and hs.pasteboard.setContents(contents) then
 		hs.alert.show("Copied to clipboard: " .. contents, nil, nil, 4)
 	else
@@ -440,127 +485,91 @@ M.setClipboardContents = function(contents)
 	end
 end
 
-M.forceUnfocus = function()
-	M.logWithTimestamp("forced unfocus on escape")
+function actions.forceUnfocus()
+	log("forced unfocus on escape")
 
-	local startElement = M.current.axWindow()
+	local startElement = state.elements.axWindow()
 	if not startElement then
 		return
 	end
 
-	M.getFocusedElement(startElement, 0)
+	state.elements.getFocusedElement(startElement, 0)
 	hs.alert.show("Force unfocused!")
 end
 
-M.restoreMousePosition = function(originalPosition)
+function actions.restoreMousePosition(originalPosition)
 	timer.doAfter(0.05, function()
 		mouse.absolutePosition(originalPosition)
 	end)
-end
-
-M.isInBrowser = function()
-	local currentAppName = M.current.app():name()
-
-	return M.tblContains(M.config.browsers, currentAppName)
 end
 
 --------------------------------------------------------------------------------
 -- Menubar
 --------------------------------------------------------------------------------
 
-function M.menuBar.new()
-	if M.menuBar.item then
-		M.menuBar.delete()
+function menuBar.new()
+	if menuBar.item then
+		menuBar.delete()
 	end
-	M.menuBar.item = hs.menubar.new()
+	menuBar.item = hs.menubar.new()
 end
 
-function M.menuBar.delete()
-	if M.menuBar.item then
-		M.menuBar.item:delete()
+function menuBar.delete()
+	if menuBar.item then
+		menuBar.item:delete()
 	end
-	M.menuBar.item = nil
-end
-
---- @param mode integer # The mode to set. Expected values are in `M.modes`.
---- @param char string|nil # An optional character representing the mode in the menu bar.
-M.setMode = function(mode, char)
-	local defaultModeChars = {
-		[M.modes.DISABLED] = "X",
-		[M.modes.NORMAL] = "V",
-	}
-
-	local previousMode = M.current.mode
-	M.current.mode = mode
-
-	if M.current.mode == M.modes.LINKS and previousMode ~= M.modes.LINKS then
-		M.linkCapture = ""
-		M.marks.clear()
-	end
-	if previousMode == M.modes.LINKS and M.current.mode ~= M.modes.LINKS then
-		M.linkCapture = nil
-		timer.doAfter(0, M.marks.clear)
-	end
-
-	if M.current.mode == M.modes.MULTI then
-		M.current.multi = char
-	end
-	if M.current.mode ~= M.modes.MULTI then
-		M.current.multi = nil
-	end
-
-	M.menuBar.item:setTitle(char or defaultModeChars[mode] or "?")
+	menuBar.item = nil
 end
 
 --------------------------------------------------------------------------------
 -- Marks
 --------------------------------------------------------------------------------
 
-M.marks.clear = function()
-	if M.marks.canvas then
-		M.marks.canvas:delete()
+function marks.clear()
+	if marks.canvas then
+		marks.canvas:delete()
 	end
-	M.marks.canvas = nil
-	M.marks.data = {}
+	marks.canvas = nil
+	state.marks = {}
 end
 
-M.marks.draw = function()
-	if not M.marks.canvas then
-		M.marks.canvas = hs.canvas.new(M.current.visibleArea())
+function marks.draw()
+	if not marks.canvas then
+		marks.canvas = hs.canvas.new(state.elements.visibleArea())
 	end
 
 	local elementsToDraw = {}
-	for i, _ in ipairs(M.marks.data) do
-		local element = M.marks.prepareElementForDrawing(i)
+	for i, _ in ipairs(state.marks) do
+		local element = marks.prepareElementForDrawing(i)
 		if element then
 			table.move(element, 1, #element, #elementsToDraw + 1, elementsToDraw)
 		end
 	end
 
 	if #elementsToDraw > 0 then
-		M.marks.canvas:replaceElements(elementsToDraw)
-		M.marks.canvas:show()
+		marks.canvas:replaceElements(elementsToDraw)
+		marks.canvas:show()
 	else
-		M.marks.canvas:hide()
+		marks.canvas:hide()
 	end
 end
 
---- @param markIndex number # The index of the mark in `M.marks.data`.
+--- @param markIndex number # The index of the mark in `state.marks`.
 --- @return table|nil # A table representing the graphical elements to draw or `nil` if the mark is invalid.
-M.marks.prepareElementForDrawing = function(markIndex)
-	local mark = M.marks.data[markIndex]
+function marks.prepareElementForDrawing(markIndex)
+	local mark = state.marks[markIndex]
 	if not mark then
 		return nil
 	end
 
-	local position, size = M.getElementPositionAndSize(mark.element)
+	local position, size = state.elements.getElementPositionAndSize(mark.element)
 	if not position or not size then
 		return nil
 	end
 
 	local padding = 2
 	local fontSize = 10
-	local text = string.upper(M.allCombinations[markIndex])
+	local text = string.upper(state.allCombinations[markIndex])
 
 	local textWidth = #text * (fontSize * 1.1) -- Approximate adjustment
 	local textHeight = fontSize * 1.1 -- Approximate adjustment
@@ -587,7 +596,7 @@ M.marks.prepareElementForDrawing = function(markIndex)
 		containerWidth,
 		containerHeight
 	)
-	local visibleArea = M.current.visibleArea()
+	local visibleArea = state.elements.visibleArea()
 
 	local rx = bgRect.x - visibleArea.x
 	local ry = bgRect.y - visibleArea.y
@@ -685,24 +694,24 @@ M.marks.prepareElementForDrawing = function(markIndex)
 	}
 end
 
-M.marks.add = function(element)
-	insert(M.marks.data, { element = element })
+function marks.add(element)
+	insert(state.marks, { element = element })
 end
 
-M.marks.isElementPartiallyVisible = function(element)
+function marks.isElementPartiallyVisible(element)
 	local frame = element and not element:attributeValue("AXHidden") and element:attributeValue("AXFrame")
 	if not frame or frame.w <= 0 or frame.h <= 0 then
 		return false
 	end
 
-	local visibleArea = M.current.visibleArea()
+	local visibleArea = state.elements.visibleArea()
 	local vx, vy, vw, vh = visibleArea.x, visibleArea.y, visibleArea.w, visibleArea.h
 	local fx, fy, fw, fh = frame.x, frame.y, frame.w, frame.h
 
 	return fx < vx + vw and fx + fw > vx and fy < vy + vh and fy + fh > vy
 end
 
-M.marks.isElementActionable = function(element)
+function marks.isElementActionable(element)
 	if not element then
 		return false
 	end
@@ -712,24 +721,24 @@ M.marks.isElementActionable = function(element)
 		return false
 	end
 
-	local axJumpableRoles = M.config.axJumpableRoles
+	local axJumpableRoles = config.axJumpableRoles
 
-	if M.isInBrowser() then
+	if utils.isInBrowser() then
 		-- remove "AXStaticText" if present
-		axJumpableRoles = M.filter(axJumpableRoles, function(r)
+		axJumpableRoles = tblFilter(axJumpableRoles, function(r)
 			return r ~= "AXStaticText"
 		end)
 	else
 		-- ensure "AXStaticText" is included
-		if not M.tblContains(axJumpableRoles, "AXStaticText") then
+		if not tblContains(axJumpableRoles, "AXStaticText") then
 			table.insert(axJumpableRoles, "AXStaticText")
 		end
 	end
 
-	return M.tblContains(axJumpableRoles, role)
+	return tblContains(axJumpableRoles, role)
 end
 
-M.marks.isElementScrollable = function(element)
+function marks.isElementScrollable(element)
 	if not element then
 		return false
 	end
@@ -739,12 +748,12 @@ M.marks.isElementScrollable = function(element)
 		return false
 	end
 
-	local axScrollableRoles = M.config.axScrollableRoles
+	local axScrollableRoles = config.axScrollableRoles
 
-	return M.tblContains(axScrollableRoles, role)
+	return tblContains(axScrollableRoles, role)
 end
 
-M.marks.isElementInput = function(element)
+function marks.isElementInput(element)
 	if not element then
 		return false
 	end
@@ -754,12 +763,12 @@ M.marks.isElementInput = function(element)
 		return false
 	end
 
-	local axEditableRoles = M.config.axEditableRoles
+	local axEditableRoles = config.axEditableRoles
 
-	return M.tblContains(axEditableRoles, role)
+	return tblContains(axEditableRoles, role)
 end
 
-M.marks.isElementImage = function(element)
+function marks.isElementImage(element)
 	if not element then
 		return false
 	end
@@ -774,7 +783,7 @@ M.marks.isElementImage = function(element)
 	return role == "AXImage" and url ~= nil
 end
 
-M.marks.getAllDescendants = function(element)
+function marks.getAllDescendants(element)
 	if not element then
 		return {}
 	end
@@ -800,18 +809,18 @@ M.marks.getAllDescendants = function(element)
 	return results
 end
 
-M.marks.findClickableElements = function(element, withUrls, depth)
-	if not element or (depth and depth > M.config.depth) then
+function marks.findClickableElements(element, withUrls, depth)
+	if not element or (depth and depth > config.depth) then
 		return
 	end
 
 	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not M.marks.isElementPartiallyVisible(element) then
+	if not elementFrame or not marks.isElementPartiallyVisible(element) then
 		return
 	end
 
-	if M.marks.isElementActionable(element) and (not withUrls or element:attributeValue("AXURL")) then
-		M.marks.add(element)
+	if marks.isElementActionable(element) and (not withUrls or element:attributeValue("AXURL")) then
+		marks.add(element)
 	end
 
 	local children = element:attributeValue("AXChildren")
@@ -820,24 +829,24 @@ M.marks.findClickableElements = function(element, withUrls, depth)
 		for i = 1, #children, chunk_size do
 			local end_idx = math.min(i + chunk_size - 1, #children)
 			for j = i, end_idx do
-				M.marks.findClickableElements(children[j], withUrls, (depth or 0) + 1)
+				marks.findClickableElements(children[j], withUrls, (depth or 0) + 1)
 			end
 		end
 	end
 end
 
-M.marks.findScrollableElements = function(element, depth)
-	if not element or (depth and depth > M.config.depth) then
+function marks.findScrollableElements(element, depth)
+	if not element or (depth and depth > config.depth) then
 		return
 	end
 
 	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not M.marks.isElementPartiallyVisible(element) then
+	if not elementFrame or not marks.isElementPartiallyVisible(element) then
 		return
 	end
 
-	if M.marks.isElementScrollable(element) then
-		M.marks.add(element)
+	if marks.isElementScrollable(element) then
+		marks.add(element)
 	end
 
 	local children = element:attributeValue("AXChildren")
@@ -846,24 +855,24 @@ M.marks.findScrollableElements = function(element, depth)
 		for i = 1, #children, chunk_size do
 			local end_idx = math.min(i + chunk_size - 1, #children)
 			for j = i, end_idx do
-				M.marks.findScrollableElements(children[j], (depth or 0) + 1)
+				marks.findScrollableElements(children[j], (depth or 0) + 1)
 			end
 		end
 	end
 end
 
-M.marks.findUrlElements = function(element, depth)
-	if not element or (depth and depth > M.config.depth) then
+function marks.findUrlElements(element, depth)
+	if not element or (depth and depth > config.depth) then
 		return
 	end
 
 	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not M.marks.isElementPartiallyVisible(element) then
+	if not elementFrame or not marks.isElementPartiallyVisible(element) then
 		return
 	end
 
 	if element:attributeValue("AXURL") then
-		M.marks.add(element)
+		marks.add(element)
 	end
 
 	local children = element:attributeValue("AXChildren")
@@ -872,24 +881,24 @@ M.marks.findUrlElements = function(element, depth)
 		for i = 1, #children, chunk_size do
 			local end_idx = math.min(i + chunk_size - 1, #children)
 			for j = i, end_idx do
-				M.marks.findUrlElements(children[j], (depth or 0) + 1)
+				marks.findUrlElements(children[j], (depth or 0) + 1)
 			end
 		end
 	end
 end
 
-M.marks.findInputElements = function(element, depth)
-	if not element or (depth and depth > M.config.depth) then
+function marks.findInputElements(element, depth)
+	if not element or (depth and depth > config.depth) then
 		return
 	end
 
 	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not M.marks.isElementPartiallyVisible(element) then
+	if not elementFrame or not marks.isElementPartiallyVisible(element) then
 		return
 	end
 
-	if M.marks.isElementInput(element) then
-		M.marks.add(element)
+	if marks.isElementInput(element) then
+		marks.add(element)
 	end
 
 	local children = element:attributeValue("AXChildren")
@@ -898,25 +907,25 @@ M.marks.findInputElements = function(element, depth)
 		for i = 1, #children, chunk_size do
 			local end_idx = math.min(i + chunk_size - 1, #children)
 			for j = i, end_idx do
-				M.marks.findInputElements(children[j], (depth or 0) + 1)
+				marks.findInputElements(children[j], (depth or 0) + 1)
 			end
 		end
 	end
 end
 
-M.marks.findImageElements = function(element, depth)
-	if not element or (depth and depth > M.config.depth) then
+function marks.findImageElements(element, depth)
+	if not element or (depth and depth > config.depth) then
 		return
 	end
 
 	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not M.marks.isElementPartiallyVisible(element) then
+	if not elementFrame or not marks.isElementPartiallyVisible(element) then
 		return
 	end
 
-	if M.marks.isElementImage(element) then
-		M.logWithTimestamp("found AXImage: " .. hs.inspect(element))
-		M.marks.add(element)
+	if marks.isElementImage(element) then
+		log("found AXImage: " .. hs.inspect(element))
+		marks.add(element)
 	end
 
 	local children = element:attributeValue("AXChildren")
@@ -925,7 +934,7 @@ M.marks.findImageElements = function(element, depth)
 		for i = 1, #children, chunk_size do
 			local end_idx = math.min(i + chunk_size - 1, #children)
 			for j = i, end_idx do
-				M.marks.findImageElements(children[j], (depth or 0) + 1)
+				marks.findImageElements(children[j], (depth or 0) + 1)
 			end
 		end
 	end
@@ -933,59 +942,59 @@ end
 
 --- @param withUrls boolean # If true, includes URLs when finding clickable elements.
 --- @param type "link"|"scroll"|"url"|"input"|"image" # The type of elements to find ("link", "scroll", "url", "input").
-M.marks.show = function(withUrls, type)
-	local startElement = M.current.axWindow()
+function marks.show(withUrls, type)
+	local startElement = state.elements.axWindow()
 	if not startElement then
 		return
 	end
 
-	M.logWithTimestamp("startElement: " .. hs.inspect(startElement))
+	log("startElement: " .. hs.inspect(startElement))
 
-	M.marks.clear()
+	marks.clear()
 
 	if type == "link" then
-		M.marks.findClickableElements(startElement, withUrls, 0)
+		marks.findClickableElements(startElement, withUrls, 0)
 	end
 
 	if type == "scroll" then
-		M.marks.findScrollableElements(startElement, 0)
+		marks.findScrollableElements(startElement, 0)
 	end
 
 	if type == "url" then
-		M.marks.findUrlElements(startElement, 0)
+		marks.findUrlElements(startElement, 0)
 	end
 
 	if type == "input" then
-		M.marks.findInputElements(startElement, 0)
-		if #M.marks.data == 1 then
-			M.marks.onClickCallback(M.marks.data[1])
-			M.setMode(M.modes.NORMAL)
+		marks.findInputElements(startElement, 0)
+		if #state.marks == 1 then
+			marks.onClickCallback(state.marks[1])
+			utils.setMode(modes.NORMAL)
 			return
 		end
 	end
 
 	if type == "image" then
-		M.marks.findImageElements(startElement, 0)
+		marks.findImageElements(startElement, 0)
 	end
 
-	if #M.marks.data > 0 then
-		M.marks.draw()
+	if #state.marks > 0 then
+		marks.draw()
 	else
 		hs.alert.show("No elements found")
-		M.setMode(M.modes.NORMAL)
+		utils.setMode(modes.NORMAL)
 	end
 end
 
 --- @param combination string # The combination that matches the element to be clicked.
-M.marks.click = function(combination)
-	M.logWithTimestamp("M.marks.click")
-	for i, c in ipairs(M.allCombinations) do
-		if c == combination and M.marks.data[i] and M.marks.onClickCallback then
-			local mark = M.marks.data[i]
+function marks.click(combination)
+	log("M.marks.click")
+	for i, c in ipairs(state.allCombinations) do
+		if c == combination and state.marks[i] and marks.onClickCallback then
+			local mark = state.marks[i]
 			if mark then
-				local success, err = pcall(M.marks.onClickCallback, mark)
+				local success, err = pcall(marks.onClickCallback, mark)
 				if not success then
-					M.logWithTimestamp("Error clicking element: " .. tostring(err))
+					log("Error clicking element: " .. tostring(err))
 				end
 			end
 		end
@@ -996,44 +1005,44 @@ end
 -- Commands
 --------------------------------------------------------------------------------
 
-M.commands.cmdScrollLeft = function()
-	M.smoothScroll(M.config.scrollStep, 0, M.config.smoothScroll)
+function commands.cmdScrollLeft()
+	actions.smoothScroll(config.scrollStep, 0, config.smoothScroll)
 end
 
-M.commands.cmdScrollRight = function()
-	M.smoothScroll(-M.config.scrollStep, 0, M.config.smoothScroll)
+function commands.cmdScrollRight()
+	actions.smoothScroll(-config.scrollStep, 0, config.smoothScroll)
 end
 
-M.commands.cmdScrollUp = function()
-	M.smoothScroll(0, M.config.scrollStep, M.config.smoothScroll)
+function commands.cmdScrollUp()
+	actions.smoothScroll(0, config.scrollStep, config.smoothScroll)
 end
 
-M.commands.cmdScrollDown = function()
-	M.smoothScroll(0, -M.config.scrollStep, M.config.smoothScroll)
+function commands.cmdScrollDown()
+	actions.smoothScroll(0, -config.scrollStep, config.smoothScroll)
 end
 
-M.commands.cmdScrollHalfPageDown = function()
-	M.smoothScroll(0, -M.config.scrollStepHalfPage, M.config.smoothScroll)
+function commands.cmdScrollHalfPageDown()
+	actions.smoothScroll(0, -config.scrollStepHalfPage, config.smoothScroll)
 end
 
-M.commands.cmdScrollHalfPageUp = function()
-	M.smoothScroll(0, M.config.scrollStepHalfPage, M.config.smoothScroll)
+function commands.cmdScrollHalfPageUp()
+	actions.smoothScroll(0, config.scrollStepHalfPage, config.smoothScroll)
 end
 
-M.commands.cmdScrollToTop = function()
-	M.smoothScroll(0, -M.config.scrollStepFullPage, M.config.smoothScroll)
+function commands.cmdScrollToTop()
+	actions.smoothScroll(0, -config.scrollStepFullPage, config.smoothScroll)
 end
 
-M.commands.cmdScrollToBottom = function()
-	M.smoothScroll(0, M.config.scrollStepFullPage, M.config.smoothScroll)
+function commands.cmdScrollToBottom()
+	actions.smoothScroll(0, config.scrollStepFullPage, config.smoothScroll)
 end
 
-M.commands.cmdCopyPageUrlToClipboard = function()
-	if M.isInBrowser() then
-		local element = M.current.axWebArea()
+function commands.cmdCopyPageUrlToClipboard()
+	if utils.isInBrowser() then
+		local element = state.elements.axWebArea()
 		local url = element and element:attributeValue("AXURL")
 		if url then
-			M.setClipboardContents(url.url)
+			actions.setClipboardContents(url.url)
 		end
 	else
 		hs.alert.show("Copy page url is only available for browser")
@@ -1041,29 +1050,29 @@ M.commands.cmdCopyPageUrlToClipboard = function()
 end
 
 --- @param char string|nil # Optional character to display for the INSERT mode in the menu bar.
-M.commands.cmdInsertMode = function(char)
-	M.setMode(M.modes.INSERT, char)
+function commands.cmdInsertMode(char)
+	utils.setMode(modes.INSERT, char)
 end
 
-M.commands.cmdGotoLink = function(char)
-	M.setMode(M.modes.LINKS, char)
-	M.marks.onClickCallback = function(mark)
+function commands.cmdGotoLink(char)
+	utils.setMode(modes.LINKS, char)
+	marks.onClickCallback = function(mark)
 		local element = mark.element
 		if not element then
-			M.logWithTimestamp("Error: Invalid element")
+			log("Error: Invalid element")
 			return
 		end
 
-		local actions = element:actionNames()
+		local actionsNames = element:actionNames()
 
-		M.logWithTimestamp("actions available: " .. hs.inspect(actions))
+		log("actions available: " .. hs.inspect(actionsNames))
 
-		if M.tblContains(actions, "AXPress") then
+		if tblContains(actionsNames, "AXPress") then
 			mark.element:performAction("AXPress")
-			M.logWithTimestamp("Success AXPress")
+			log("Success AXPress")
 		else
 			-- Try different methods to get position
-			local position, size = M.getElementPositionAndSize(element)
+			local position, size = state.elements.getElementPositionAndSize(element)
 
 			if position and size then
 				local clickX = position.x + (size.w / 2)
@@ -1073,13 +1082,13 @@ M.commands.cmdGotoLink = function(char)
 				local clickSuccess, clickErr = pcall(function()
 					mouse.absolutePosition({ x = clickX, y = clickY })
 					eventtap.leftClick({ x = clickX, y = clickY })
-					M.restoreMousePosition(originalPosition)
+					actions.restoreMousePosition(originalPosition)
 				end)
 
 				if clickSuccess then
 					return
 				else
-					M.logWithTimestamp("Click failed: " .. tostring(clickErr))
+					log("Click failed: " .. tostring(clickErr))
 				end
 			end
 
@@ -1089,18 +1098,18 @@ M.commands.cmdGotoLink = function(char)
 					local originalPosition = mouse.absolutePosition()
 					mouse.absolutePosition({ x = mark.x, y = mark.y })
 					eventtap.leftClick({ x = mark.x, y = mark.y })
-					M.restoreMousePosition(originalPosition)
+					actions.restoreMousePosition(originalPosition)
 				end)
 
 				if clickSuccess then
 					return
 				else
-					M.logWithTimestamp("Mark click failed: " .. tostring(clickErr))
+					log("Mark click failed: " .. tostring(clickErr))
 				end
 			end
 
 			-- Final fallback: focus + return key
-			M.logWithTimestamp("Falling back to focus + return method")
+			log("Falling back to focus + return method")
 			local focusSuccess, focusErr = pcall(function()
 				element:setAttributeValue("AXFocused", true)
 				timer.doAfter(0.1, function()
@@ -1109,35 +1118,35 @@ M.commands.cmdGotoLink = function(char)
 			end)
 
 			if not focusSuccess then
-				M.logWithTimestamp("Focus fallback failed: " .. tostring(focusErr))
+				log("Focus fallback failed: " .. tostring(focusErr))
 			end
 		end
 	end
 	timer.doAfter(0, function()
-		M.marks.show(false, "link")
+		marks.show(false, "link")
 	end)
 end
 
 --- @param char string # Character to display for the LINKS mode in the menu bar.
-M.commands.cmdRightClick = function(char)
-	M.setMode(M.modes.LINKS, char)
+function commands.cmdRightClick(char)
+	utils.setMode(modes.LINKS, char)
 
-	M.marks.onClickCallback = function(mark)
+	marks.onClickCallback = function(mark)
 		local element = mark.element
 		if not element then
-			M.logWithTimestamp("Error: Invalid element")
+			log("Error: Invalid element")
 			return
 		end
 
-		local actions = element:actionNames()
+		local actionsNames = element:actionNames()
 
-		M.logWithTimestamp(hs.inspect(actions))
+		log(hs.inspect(actionsNames))
 
-		if M.tblContains(actions, "AXShowMenu") then
+		if tblContains(actionsNames, "AXShowMenu") then
 			mark.element:performAction("AXShowMenu")
-			M.logWithTimestamp("Success AXShowMenu")
+			log("Success AXShowMenu")
 		else
-			local position, size = M.getElementPositionAndSize(element)
+			local position, size = state.elements.getElementPositionAndSize(element)
 
 			if position and size then
 				local clickX = position.x + (size.w / 2)
@@ -1147,35 +1156,35 @@ M.commands.cmdRightClick = function(char)
 				local clickSuccess, clickErr = pcall(function()
 					mouse.absolutePosition({ x = clickX, y = clickY })
 					eventtap.rightClick({ x = clickX, y = clickY })
-					M.restoreMousePosition(originalPosition)
+					actions.restoreMousePosition(originalPosition)
 				end)
 
 				if clickSuccess then
 					return
 				else
-					M.logWithTimestamp("Right-click failed: " .. tostring(clickErr))
+					log("Right-click failed: " .. tostring(clickErr))
 				end
 			end
 		end
 	end
 
 	timer.doAfter(0, function()
-		M.marks.show(false, "link")
+		marks.show(false, "link")
 	end)
 end
 
 --- @param char string # Character to display for the LINKS mode in the menu bar.
-M.commands.cmdGotoLinkNewTab = function(char)
-	if M.isInBrowser() then
-		M.setMode(M.modes.LINKS, char)
-		M.marks.onClickCallback = function(mark)
+function commands.cmdGotoLinkNewTab(char)
+	if utils.isInBrowser() then
+		utils.setMode(modes.LINKS, char)
+		marks.onClickCallback = function(mark)
 			local axURL = mark.element:attributeValue("AXURL")
 			if axURL then
-				M.openUrlInNewTab(axURL.url)
+				actions.openUrlInNewTab(axURL.url)
 			end
 		end
 		timer.doAfter(0, function()
-			M.marks.show(true, "link")
+			marks.show(true, "link")
 		end)
 	else
 		hs.alert.show("Go to Link New Tab is only available for browser")
@@ -1183,26 +1192,26 @@ M.commands.cmdGotoLinkNewTab = function(char)
 end
 
 --- @param char string # Character to display for the LINKS mode in the menu bar.
-M.commands.cmdGotoInput = function(char)
-	if M.isInBrowser() then
-		M.setMode(M.modes.LINKS, char)
-		M.marks.onClickCallback = function(mark)
+function commands.cmdGotoInput(char)
+	if utils.isInBrowser() then
+		utils.setMode(modes.LINKS, char)
+		marks.onClickCallback = function(mark)
 			local element = mark.element
 			if not element then
-				M.logWithTimestamp("Error: Invalid element")
+				log("Error: Invalid element")
 				return
 			end
 
-			local actions = element:actionNames()
+			local actionsNames = element:actionNames()
 
-			M.logWithTimestamp("actions available: " .. hs.inspect(actions))
+			log("actions available: " .. hs.inspect(actionsNames))
 
-			if M.tblContains(actions, "AXPress") then
+			if tblContains(actionsNames, "AXPress") then
 				mark.element:performAction("AXPress")
-				M.logWithTimestamp("Success AXPress")
+				log("Success AXPress")
 			else
 				-- Try different methods to get position
-				local position, size = M.getElementPositionAndSize(element)
+				local position, size = state.elements.getElementPositionAndSize(element)
 
 				if position and size then
 					local clickX = position.x + (size.w / 2)
@@ -1212,13 +1221,13 @@ M.commands.cmdGotoInput = function(char)
 					local clickSuccess, clickErr = pcall(function()
 						mouse.absolutePosition({ x = clickX, y = clickY })
 						eventtap.leftClick({ x = clickX, y = clickY })
-						M.restoreMousePosition(originalPosition)
+						actions.restoreMousePosition(originalPosition)
 					end)
 
 					if clickSuccess then
 						return
 					else
-						M.logWithTimestamp("Click failed: " .. tostring(clickErr))
+						log("Click failed: " .. tostring(clickErr))
 					end
 				end
 
@@ -1228,18 +1237,18 @@ M.commands.cmdGotoInput = function(char)
 						local originalPosition = mouse.absolutePosition()
 						mouse.absolutePosition({ x = mark.x, y = mark.y })
 						eventtap.leftClick({ x = mark.x, y = mark.y })
-						M.restoreMousePosition(originalPosition)
+						actions.restoreMousePosition(originalPosition)
 					end)
 
 					if clickSuccess then
 						return
 					else
-						M.logWithTimestamp("Mark click failed: " .. tostring(clickErr))
+						log("Mark click failed: " .. tostring(clickErr))
 					end
 				end
 
 				-- Final fallback: focus + return key
-				M.logWithTimestamp("Falling back to focus + return method")
+				log("Falling back to focus + return method")
 				local focusSuccess, focusErr = pcall(function()
 					element:setAttributeValue("AXFocused", true)
 					timer.doAfter(0.1, function()
@@ -1248,12 +1257,12 @@ M.commands.cmdGotoInput = function(char)
 				end)
 
 				if not focusSuccess then
-					M.logWithTimestamp("Focus fallback failed: " .. tostring(focusErr))
+					log("Focus fallback failed: " .. tostring(focusErr))
 				end
 			end
 		end
 		timer.doAfter(0, function()
-			M.marks.show(true, "input")
+			marks.show(true, "input")
 		end)
 	else
 		hs.alert.show("Go to input is only available for browser")
@@ -1261,31 +1270,31 @@ M.commands.cmdGotoInput = function(char)
 end
 
 --- @param char string # Character to display for the LINKS mode in the menu bar.
-M.commands.cmdDownloadImage = function(char)
-	if M.isInBrowser() then
-		M.setMode(M.modes.LINKS, char)
+function commands.cmdDownloadImage(char)
+	if utils.isInBrowser() then
+		utils.setMode(modes.LINKS, char)
 
-		M.marks.onClickCallback = function(mark)
+		marks.onClickCallback = function(mark)
 			local element = mark.element
 			if not element then
-				M.logWithTimestamp("Error: Invalid element")
+				log("Error: Invalid element")
 				return
 			end
 
 			-- Check if the element is an image
 			if element:attributeValue("AXRole") == "AXImage" then
 				local imageDescription = element:attributeValue("AXDescription") or "unknown"
-				M.logWithTimestamp("Image detected: " .. hs.inspect(imageDescription))
+				log("Image detected: " .. hs.inspect(imageDescription))
 
 				-- Try downloading the image
 				local downloadURLAttr = element:attributeValue("AXURL")
 
 				if downloadURLAttr then
-					M.logWithTimestamp("AXURL attribute value: " .. hs.inspect(downloadURLAttr))
+					log("AXURL attribute value: " .. hs.inspect(downloadURLAttr))
 					local downloadUrl = downloadURLAttr.url
-					M.logWithTimestamp("Downloading image from URL: " .. downloadUrl)
+					log("Downloading image from URL: " .. downloadUrl)
 					if downloadUrl:match("^data:image/") then
-						M.logWithTimestamp("Detected data:image URL, saving image directly.")
+						log("Detected data:image URL, saving image directly.")
 
 						-- Extract the Base64 encoded data from the URL
 						local base64Data = downloadUrl:match("^data:image/[^;]+;base64,(.+)$")
@@ -1296,27 +1305,27 @@ M.commands.cmdDownloadImage = function(char)
 							-- Extract filename from image description or fallback
 							local fileName = imageDescription:gsub("%W+", "_") .. ".jpg"
 							local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
-							M.logWithTimestamp("Saving Base64 image to: " .. filePath)
+							log("Saving Base64 image to: " .. filePath)
 
 							-- Write the decoded data to a file
 							local file, err = io.open(filePath, "wb")
 							if file then
 								file:write(decodedData)
 								file:close()
-								M.logWithTimestamp("Image saved successfully to: " .. filePath)
+								log("Image saved successfully to: " .. filePath)
 								hs.alert.show("Image downloaded successfully to: " .. filePath)
 							else
-								M.logWithTimestamp("Failed to save image: " .. tostring(err))
+								log("Failed to save image: " .. tostring(err))
 							end
 						else
-							M.logWithTimestamp("Error: Failed to extract Base64 data from URL.")
+							log("Error: Failed to extract Base64 data from URL.")
 						end
 					else
 						hs.http.asyncGet(downloadUrl, nil, function(status, body, headers)
 							if status == 200 then
 								local contentType = headers["Content-Type"] or ""
 								if contentType:match("^image/") then
-									M.logWithTimestamp("Valid image detected. Content-Type: " .. contentType)
+									log("Valid image detected. Content-Type: " .. contentType)
 
 									-- Extract filename from headers or URL
 									local fileName = headers["Content-Disposition"]
@@ -1330,7 +1339,7 @@ M.commands.cmdDownloadImage = function(char)
 									end
 
 									local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
-									M.logWithTimestamp("Downloading image to: " .. filePath)
+									log("Downloading image to: " .. filePath)
 
 									-- Download the image
 									hs.http.asyncGet(downloadUrl, nil, function(status2, body2)
@@ -1339,36 +1348,32 @@ M.commands.cmdDownloadImage = function(char)
 											if file then
 												file:write(body2)
 												file:close()
-												M.logWithTimestamp("Image downloaded successfully to: " .. filePath)
+												log("Image downloaded successfully to: " .. filePath)
 												hs.alert.show("Image downloaded successfully to: " .. filePath)
 											else
-												M.logWithTimestamp("Failed to save image: " .. tostring(err))
+												log("Failed to save image: " .. tostring(err))
 											end
 										else
-											M.logWithTimestamp(
-												"Failed to download image. HTTP Status: " .. tostring(status2)
-											)
+											log("Failed to download image. HTTP Status: " .. tostring(status2))
 										end
 									end)
 								else
-									M.logWithTimestamp(
-										"Error: URL does not point to an image. Content-Type: " .. contentType
-									)
+									log("Error: URL does not point to an image. Content-Type: " .. contentType)
 								end
 							else
-								M.logWithTimestamp("Failed to validate URL. HTTP Status: " .. tostring(status))
+								log("Failed to validate URL. HTTP Status: " .. tostring(status))
 							end
 						end)
 						return
 					end
 				else
-					M.logWithTimestamp("Error: No download URL available for the image.")
+					log("Error: No download URL available for the image.")
 				end
 			end
 		end
 
 		timer.doAfter(0, function()
-			M.marks.show(false, "image")
+			marks.show(false, "image")
 		end)
 	else
 		hs.alert.show("Download image is only available for browser")
@@ -1376,34 +1381,34 @@ M.commands.cmdDownloadImage = function(char)
 end
 
 --- @param char string # Character to display for the LINKS mode in the menu bar.
-M.commands.cmdMoveMouseToLink = function(char)
-	M.setMode(M.modes.LINKS, char)
-	M.marks.onClickCallback = function(mark)
+function commands.cmdMoveMouseToLink(char)
+	utils.setMode(modes.LINKS, char)
+	marks.onClickCallback = function(mark)
 		local frame = mark.element:attributeValue("AXFrame")
 		mouse.absolutePosition({ x = frame.x + frame.w / 2, y = frame.y + frame.h / 2 })
 	end
 	timer.doAfter(0, function()
-		M.marks.show(true, "scroll")
+		marks.show(true, "scroll")
 	end)
 end
 
-M.commands.cmdMoveMouseToCenter = function()
+function commands.cmdMoveMouseToCenter()
 	mouse.absolutePosition({
-		x = M.current.visibleArea().x + M.current.visibleArea().w / 2,
-		y = M.current.visibleArea().y + M.current.visibleArea().h / 2,
+		x = state.elements.visibleArea().x + state.elements.visibleArea().w / 2,
+		y = state.elements.visibleArea().y + state.elements.visibleArea().h / 2,
 	})
 end
 
 --- @param char string # Character to display for the LINKS mode in the menu bar.
-M.commands.cmdCopyLinkUrlToClipboard = function(char)
-	if M.isInBrowser() then
-		M.setMode(M.modes.LINKS, char)
-		M.marks.onClickCallback = function(mark)
+function commands.cmdCopyLinkUrlToClipboard(char)
+	if utils.isInBrowser() then
+		utils.setMode(modes.LINKS, char)
+		marks.onClickCallback = function(mark)
 			local axURL = mark.element:attributeValue("AXURL")
-			M.setClipboardContents(axURL.url)
+			actions.setClipboardContents(axURL.url)
 		end
 		timer.doAfter(0, function()
-			M.marks.show(true, "url")
+			marks.show(true, "url")
 		end)
 	else
 		hs.alert.show("Copy link url is only available for browser")
@@ -1416,14 +1421,14 @@ end
 
 --- @param char string # The character input that triggers specific actions or commands.
 --- @param modifiers table # Table of modifiers. Only supports ctrl for now
-M.vimLoop = function(char, modifiers)
-	M.logWithTimestamp("vimLoop " .. char .. ", modifiers " .. hs.inspect(modifiers))
+local function vimLoop(char, modifiers)
+	log("vimLoop " .. char .. ", modifiers " .. hs.inspect(modifiers))
 
-	if M.current.mode == M.modes.LINKS then
-		M.linkCapture = M.linkCapture .. char:lower()
-		if #M.linkCapture == 2 then
-			M.marks.click(M.linkCapture)
-			M.setMode(M.modes.NORMAL)
+	if state.elements.mode == modes.LINKS then
+		state.linkCapture = state.linkCapture .. char:lower()
+		if #state.linkCapture == 2 then
+			marks.click(state.linkCapture)
+			utils.setMode(modes.NORMAL)
 		end
 		return
 	end
@@ -1434,32 +1439,32 @@ M.vimLoop = function(char, modifiers)
 	end
 	keyCombo = keyCombo .. char
 
-	if M.current.mode == M.modes.MULTI then
-		keyCombo = M.current.multi .. keyCombo
+	if state.elements.mode == modes.MULTI then
+		keyCombo = state.elements.multi .. keyCombo
 	end
-	local foundMapping = M.config.mapping[keyCombo]
+	local foundMapping = config.mapping[keyCombo]
 
 	if foundMapping then
-		M.setMode(M.modes.NORMAL)
+		utils.setMode(modes.NORMAL)
 
 		if type(foundMapping) == "string" then
-			M.commands[foundMapping](keyCombo)
+			commands[foundMapping](keyCombo)
 		elseif type(foundMapping) == "table" then
 			eventtap.keyStroke(foundMapping[1], foundMapping[2], 0)
 		else
-			M.logWithTimestamp("Unknown mapping for " .. keyCombo .. " " .. hs.inspect(foundMapping))
+			log("Unknown mapping for " .. keyCombo .. " " .. hs.inspect(foundMapping))
 		end
-	elseif M.mappingPrefixes[keyCombo] then
-		M.setMode(M.modes.MULTI, keyCombo)
+	elseif state.mappingPrefixes[keyCombo] then
+		utils.setMode(modes.MULTI, keyCombo)
 	else
-		M.logWithTimestamp("Unknown char " .. keyCombo)
+		log("Unknown char " .. keyCombo)
 	end
 end
 
-M.eventHandler = function(event)
-	M.cached = setmetatable({}, { __mode = "k" })
+local function eventHandler(event)
+	cached = setmetatable({}, { __mode = "k" })
 
-	if M.isExcludedApp() then
+	if utils.isExcludedApp() then
 		return false
 	end
 
@@ -1473,35 +1478,35 @@ M.eventHandler = function(event)
 		end
 	end
 
-	if M.isSpotlightActive() then
+	if utils.isSpotlightActive() then
 		return false
 	end
 
 	if keyCode == hs.keycodes.map["escape"] then
-		local delaySinceLastEscape = (timer.absoluteTime() - M.lastEscape) / 1e9 -- nanoseconds in seconds
-		M.lastEscape = timer.absoluteTime()
+		local delaySinceLastEscape = (timer.absoluteTime() - state.lastEscape) / 1e9 -- nanoseconds in seconds
+		state.lastEscape = timer.absoluteTime()
 
-		if M.isInBrowser() and delaySinceLastEscape < M.config.doublePressDelay then
-			M.setMode(M.modes.NORMAL)
-			M.forceUnfocus()
+		if utils.isInBrowser() and delaySinceLastEscape < config.doublePressDelay then
+			utils.setMode(modes.NORMAL)
+			actions.forceUnfocus()
 			return true
 		end
 
-		if M.current.mode ~= M.modes.NORMAL then
-			M.setMode(M.modes.NORMAL)
+		if state.elements.mode ~= modes.NORMAL then
+			utils.setMode(modes.NORMAL)
 			return true
 		end
 
 		return false
 	end
 
-	if M.current.mode == M.modes.INSERT or M.isEditableControlInFocus() then
+	if state.elements.mode == modes.INSERT or state.elements.isEditableControlInFocus() then
 		return false
 	end
 
 	local char = hs.keycodes.map[keyCode]
 
-	M.logWithTimestamp("char: " .. char)
+	log("char: " .. char)
 
 	if flags.shift then
 		char = event:getCharacters()
@@ -1514,64 +1519,66 @@ M.eventHandler = function(event)
 	if modifiers and modifiers.ctrl then
 		local filteredMappings = {}
 
-		for key, _ in pairs(M.mapping) do
+		for key, _ in pairs(config.mapping) do
 			if key:sub(1, 2) == "C-" then
 				table.insert(filteredMappings, key:sub(3))
 			end
 		end
 
-		if M.tblContains(filteredMappings, char) == false then
+		if tblContains(filteredMappings, char) == false then
 			return false
 		end
 	end
 
 	timer.doAfter(0, function()
-		M.vimLoop(char, modifiers)
+		vimLoop(char, modifiers)
 	end)
 	return true
 end
 
 local function onWindowFocused()
-	M.logWithTimestamp("onWindowFocused")
-	if not M.eventLoop then
-		M.eventLoop = eventtap.new({ hs.eventtap.event.types.keyDown }, M.eventHandler):start()
+	log("onWindowFocused")
+	if not state.eventLoop then
+		state.eventLoop = eventtap.new({ hs.eventtap.event.types.keyDown }, eventHandler):start()
 	end
-	if not M.isExcludedApp() then
-		M.setMode(M.modes.NORMAL)
+	if not utils.isExcludedApp() then
+		utils.setMode(modes.NORMAL)
 	else
-		M.setMode(M.modes.DISABLED)
+		utils.setMode(modes.DISABLED)
 	end
 end
 
 local function onWindowUnfocused()
-	M.logWithTimestamp("onWindowUnfocused")
-	if M.eventLoop then
-		M.eventLoop:stop()
-		M.eventLoop = nil
+	log("onWindowUnfocused")
+	if state.eventLoop then
+		state.eventLoop:stop()
+		state.eventLoop = nil
 	end
-	M.setMode(M.modes.DISABLED)
+	utils.setMode(modes.DISABLED)
 end
 
 --------------------------------------------------------------------------------
 -- Module Initialization and Cleanup
 --------------------------------------------------------------------------------
 
+local M = {}
+
 function M:start()
-	M.windowFilter = hs.window.filter.new()
-	M.windowFilter:subscribe(hs.window.filter.windowFocused, onWindowFocused)
-	M.windowFilter:subscribe(hs.window.filter.windowUnfocused, onWindowUnfocused)
-	M.menuBar.new()
-	M.fetchMappingPrefixes()
-	M.generateCombinations()
+	state.windowFilter = hs.window.filter.new()
+	state.windowFilter:subscribe(hs.window.filter.windowFocused, onWindowFocused)
+	state.windowFilter:subscribe(hs.window.filter.windowUnfocused, onWindowUnfocused)
+	menuBar.new()
+	utils.fetchMappingPrefixes()
+	utils.generateCombinations()
 end
 
 function M:stop()
-	if M.windowFilter then
-		M.windowFilter:unsubscribe(onWindowFocused)
-		M.windowFilter:unsubscribe(onWindowUnfocused)
-		M.windowFilter = nil
+	if state.windowFilter then
+		state.windowFilter:unsubscribe(onWindowFocused)
+		state.windowFilter:unsubscribe(onWindowUnfocused)
+		state.windowFilter = nil
 	end
-	M.menuBar.delete()
+	menuBar.delete()
 end
 
 return M
