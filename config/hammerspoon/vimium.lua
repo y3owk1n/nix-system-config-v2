@@ -39,6 +39,8 @@ local mapping = {
 	["zz"] = "cmdMoveMouseToCenter",
 	["yy"] = "cmdCopyPageUrlToClipboard",
 	["yf"] = "cmdCopyLinkUrlToClipboard",
+	["]]"] = "cmdNextPage",
+	["[["] = "cmdPrevPage",
 }
 
 local config = {
@@ -263,6 +265,44 @@ function state.elements.getFocusedElement(element, depth)
 			end
 		end
 	end
+end
+
+--- @return boolean, boolean # found status, completed status
+function state.elements.getNextPrevElement(element, depth, direction)
+	if not element or (depth and depth > config.depth) then
+		return false, true
+	end
+
+	local elementFrame = element:attributeValue("AXFrame")
+	if not elementFrame or not marks.isElementPartiallyVisible(element) then
+		return false, true
+	end
+
+	local role = element:attributeValue("AXRole")
+	local title = element:attributeValue("AXTitle")
+
+	if role == "AXLink" or role == "AXButton" or role == "AXMenuItem" then
+		if title and title:lower():find(direction) then
+			element:performAction("AXPress")
+			return true, true
+		end
+	end
+
+	local children = element:attributeValue("AXChildren")
+	if children then
+		local chunk_size = 10
+		for i = 1, #children, chunk_size do
+			local end_idx = math.min(i + chunk_size - 1, #children)
+			for j = i, end_idx do
+				local found = state.elements.getNextPrevElement(children[j], (depth or 0) + 1, direction)
+				if found then
+					return true, true -- Element found in children, traversal complete
+				end
+			end
+		end
+	end
+
+	return false, true -- No element found, but traversal completed for this branch
 end
 
 function state.elements.getElementPositionAndSize(element)
@@ -1412,6 +1452,50 @@ function commands.cmdCopyLinkUrlToClipboard(char)
 		end)
 	else
 		hs.alert.show("Copy link url is only available for browser")
+	end
+end
+
+function commands.cmdNextPage()
+	if utils.isInBrowser() then
+		local navigateAction = function()
+			local startElement = state.elements.axWindow()
+			if not startElement then
+				return
+			end
+
+			local success, status = state.elements.getNextPrevElement(startElement, 0, "next")
+
+			if not success and status then
+				hs.alert.show("No Next button found")
+			end
+		end
+
+		-- Perform the navigation
+		timer.doAfter(0, navigateAction)
+	else
+		hs.alert.show("Next Page is only available for browser")
+	end
+end
+
+function commands.cmdPrevPage()
+	if utils.isInBrowser() then
+		local navigateAction = function()
+			local startElement = state.elements.axWindow()
+			if not startElement then
+				return
+			end
+
+			local success, status = state.elements.getNextPrevElement(startElement, 0, "prev")
+
+			if not success and status then
+				hs.alert.show("No Previous button found")
+			end
+		end
+
+		-- Perform the navigation
+		timer.doAfter(0, navigateAction)
+	else
+		hs.alert.show("Prev Page is only available for browser")
 	end
 end
 
