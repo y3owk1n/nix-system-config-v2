@@ -2,6 +2,8 @@
 
 This is a project to help me to manage my Nix system configuration, mainly with Darwin and Home Manager.
 
+> Best effort to try to use as many built-in features as possible instead of relying third party software, e.g. Raycast, Aerospace, Yabai
+
 ## What do I use?
 
 ### General
@@ -14,7 +16,15 @@ This is a project to help me to manage my Nix system configuration, mainly with 
 - Browser: Safari
 - Docker: [orbstack](https://orbstack.dev/)
 - Network: [tailscale](https://tailscale.com/)
-- Window Tiling Manager: [aerospace](https://nikitabobko.github.io/AeroSpace/guide)
+- Launcher: Built-in Spotlight Search
+- Window Tiling Manager: ~~[aerospace](https://nikitabobko.github.io/AeroSpace/guide)~~ MacOS Bulit-ins
+  - Changing spaces with built-in macos commands with reduced motion
+  - Managing windows with built-in macos commands
+    - Left | Right | Top | Bottom | Fill
+- Automation: [hammerspoon](https://www.hammerspoon.org/)
+  - Best effort of vimium implementation [code here](https://github.com/y3owk1n/nix-system-config-v2/blob/main/config/hammerspoon/vimium.lua)
+  - Menubar to show current space [code here](https://github.com/y3owk1n/nix-system-config-v2/blob/main/config/hammerspoon/menubar-space.lua)
+  - Moving window to spaces [code here](https://github.com/y3owk1n/nix-system-config-v2/blob/main/config/hammerspoon/window.lua)
 
 ## Notes for future me
 
