@@ -1,6 +1,14 @@
 return {
 	"MagicDuck/grug-far.nvim",
 	event = "VeryLazy",
+	specs = {
+		{
+			"catppuccin",
+			optional = true,
+			---@type CatppuccinOptions
+			opts = { integrations = { grug_far = true } },
+		},
+	},
 	---@type GrugFarOptions
 	---@diagnostic disable-next-line: missing-fields
 	opts = { headerMaxWidth = 80 },

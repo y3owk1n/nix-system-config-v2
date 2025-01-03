@@ -1,6 +1,14 @@
 return {
 	"MeanderingProgrammer/render-markdown.nvim",
 	event = { "BufReadPre" },
+	specs = {
+		{
+			"catppuccin",
+			optional = true,
+			---@type CatppuccinOptions
+			opts = { integrations = { render_markdown = true, markdown = true } },
+		},
+	},
 	---@type render.md.UserConfig
 	opts = {
 		code = {

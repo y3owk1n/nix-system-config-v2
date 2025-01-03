@@ -1,6 +1,14 @@
 return {
 	"folke/which-key.nvim",
 	event = "VeryLazy",
+	specs = {
+		{
+			"catppuccin",
+			optional = true,
+			---@type CatppuccinOptions
+			opts = { integrations = { which_key = true } },
+		},
+	},
 	init = function()
 		vim.o.timeout = true
 		vim.o.timeoutlen = 500

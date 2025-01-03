@@ -30,6 +30,22 @@ return {
 			},
 		},
 	},
+	specs = {
+		{
+			"catppuccin",
+			optional = true,
+			---@type CatppuccinOptions
+			opts = {
+				integrations = {
+					fidget = true,
+					mason = true,
+					native_lsp = {
+						enabled = true,
+					},
+				},
+			},
+		},
+	},
 	---@class PluginLspOpts
 	opts = {
 		-- specify the border for ui
