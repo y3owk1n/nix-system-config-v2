@@ -29,6 +29,8 @@ return {
 			servers = {},
 			-- table of functions that receive a client callback
 			additional_setup = {},
+			-- table of keymaps for autocmd
+			additional_keymaps = {},
 		},
 		---@param opts PluginLspOpts
 		config = function(_, opts)
@@ -99,9 +101,7 @@ return {
 
 					-- Rename the variable under your cursor.
 					--  Most Language Servers support renaming across files, etc.
-					vim.keymap.set("n", "<leader>cr", function()
-						return ":IncRename " .. vim.fn.expand("<cword>")
-					end, { expr = true, desc = "Rename word" })
+					-- map("<leader>cr", vim.lsp.buf.rename, "Rename word")
 
 					-- Execute a code action, usually your cursor needs to be on top of an error
 					-- or a suggestion from your LSP for this to activate.
@@ -118,6 +118,10 @@ return {
 					map("gK", function()
 						vim.lsp.buf.signature_help({ border = opts.border or "rounded" })
 					end, "Signature help")
+
+					for _, additional_keymap in pairs(opts.additional_keymaps) do
+						additional_keymap()
+					end
 
 					-- The following two autocommands are used to highlight references of the
 					-- word under your cursor when your cursor rests there for a little while.
