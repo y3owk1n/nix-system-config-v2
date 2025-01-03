@@ -1,3 +1,4 @@
+---@type LazySpec
 return {
 	"echasnovski/mini-git",
 	event = "VeryLazy",

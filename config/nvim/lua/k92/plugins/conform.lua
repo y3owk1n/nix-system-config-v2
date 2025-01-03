@@ -56,6 +56,7 @@ local function has_parser(ctx)
 	return ok and parser and parser ~= vim.NIL
 end
 
+---@type LazySpec
 return {
 	{
 		"stevearc/conform.nvim",

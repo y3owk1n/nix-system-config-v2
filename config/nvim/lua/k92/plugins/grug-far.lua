@@ -1,3 +1,4 @@
+---@type LazySpec
 return {
 	"MagicDuck/grug-far.nvim",
 	event = "VeryLazy",

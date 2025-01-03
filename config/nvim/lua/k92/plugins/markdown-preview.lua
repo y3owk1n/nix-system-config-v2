@@ -1,3 +1,4 @@
+---@type LazySpec
 return {
 	"iamcco/markdown-preview.nvim",
 	event = { "BufReadPre" },
