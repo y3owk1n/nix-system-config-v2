@@ -371,6 +371,9 @@ end
 function utils.isSpotlightActive()
 	local app = hs.application.get("Spotlight")
 	local appElement = hs.axuielement.applicationElement(app)
+	if not appElement then
+		return false
+	end
 	local windows = appElement:attributeValue("AXWindows")
 	return #windows > 0
 end
