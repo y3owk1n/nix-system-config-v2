@@ -64,6 +64,7 @@ local config = {
 		"AXCheckBox",
 		"AXRadioButton",
 		"AXDisclosureTriangle",
+		"AXRow", -- To support Mail.app without using "AXStaticText"
 		-- "AXStaticText",
 		-- "AXMenuItem",
 		-- "AXMenu",
@@ -762,18 +763,6 @@ function marks.isElementActionable(element)
 	end
 
 	local axJumpableRoles = config.axJumpableRoles
-
-	if utils.isInBrowser() then
-		-- remove "AXStaticText" if present
-		axJumpableRoles = tblFilter(axJumpableRoles, function(r)
-			return r ~= "AXStaticText"
-		end)
-	else
-		-- ensure "AXStaticText" is included
-		if not tblContains(axJumpableRoles, "AXStaticText") then
-			table.insert(axJumpableRoles, "AXStaticText")
-		end
-	end
 
 	return tblContains(axJumpableRoles, role)
 end
