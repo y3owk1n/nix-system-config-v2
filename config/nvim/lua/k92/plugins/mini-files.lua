@@ -2,18 +2,6 @@
 return {
 	"echasnovski/mini.files",
 	event = "VeryLazy",
-	specs = {
-		{
-			"catppuccin",
-			optional = true,
-			---@type CatppuccinOptions
-			opts = { integrations = {
-				mini = {
-					enabled = true,
-				},
-			} },
-		},
-	},
 	opts = {
 		windows = {
 			preview = true,
