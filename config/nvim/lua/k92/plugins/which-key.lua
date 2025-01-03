@@ -51,7 +51,6 @@ return {
 				{ "<leader>c", group = "code" },
 				{ "<leader>d", group = "debug" },
 				{ "<leader>dp", group = "profiler" },
-				{ "<leader>f", group = "file/find" },
 				{ "<leader>h", group = "grapple" },
 				{ "<leader>g", group = "git" },
 				{ "<leader>q", group = "quit/session" },
