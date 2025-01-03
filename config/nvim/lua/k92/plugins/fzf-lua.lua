@@ -28,6 +28,11 @@ return {
 			files = {
 				cwd_prompt = false,
 			},
+			winopts = {
+				preview = {
+					default = "bat_native",
+				},
+			},
 		}
 	end,
 	---@param opts fzf.Opts
