@@ -28,12 +28,7 @@ return {
 			indent = { enable = true },
 			ensure_installed = {
 				"bash",
-				"c",
-				"diff",
 				"html",
-				"printf",
-				"python",
-				"query",
 				"regex",
 				"toml",
 				"vim",
