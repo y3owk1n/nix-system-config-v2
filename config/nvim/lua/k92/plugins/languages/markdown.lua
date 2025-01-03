@@ -77,4 +77,13 @@ return {
 			}):map("<leader>um")
 		end,
 	},
+	{
+		"catppuccin/nvim",
+		opts = {
+			integrations = {
+				markdown = true,
+				render_markdown = true,
+			},
+		},
+	},
 }
