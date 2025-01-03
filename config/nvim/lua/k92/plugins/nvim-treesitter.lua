@@ -9,7 +9,7 @@ return {
 			"catppuccin",
 			optional = true,
 			---@type CatppuccinOptions
-			opts = { integrations = { treesitter = true } },
+			opts = { integrations = { treesitter = true, treesitter_context = true } },
 		},
 	},
 	init = function(plugin)
