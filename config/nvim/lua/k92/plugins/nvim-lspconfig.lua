@@ -51,76 +51,18 @@ return {
 						})
 					end
 
-					local fzf = require("fzf-lua")
-
 					map("<leader>cl", "<cmd>LspInfo<cr>", "Lsp Info")
-
-					-- Jump to the definition of the word under your cursor.
-					--  This is where a variable was first declared, or where a function is defined, etc.
-					--  To jump back, press <C-t>.
-					-- map("gd", vim.lsp.buf.definition, "Goto definition")
-					map("gd", function()
-						fzf.lsp_definitions({
-							jump_to_single_result = true,
-							ignore_current_line = true,
-						})
-					end, "Goto definition")
-
-					-- Find references for the word under your cursor.
-					map("gr", function()
-						fzf.lsp_references({
-							jump_to_single_result = true,
-							ignore_current_line = true,
-						})
-					end, "Goto references")
-
-					-- Jump to the implementation of the word under your cursor.
-					--  Useful when your language has ways of declaring types without an actual implementation.
-					map("gi", function()
-						fzf.lsp_implementations({
-							jump_to_single_result = true,
-							ignore_current_line = true,
-						})
-					end, "Goto implementation")
-
-					map("gt", function()
-						fzf.lsp_typedefs({
-							jump_to_single_result = true,
-							ignore_current_line = true,
-						})
-					end, "Goto Type Definition")
-					-- map('gt', vim.lsp.buf.type_definition, 'Goto Type Definition')
-
-					-- Fuzzy find all the symbols in your current document.
-					--  Symbols are things like variables, functions, types, etc.
-					map("<leader>ss", fzf.lsp_document_symbols, "Search for document symbols")
-
-					-- Fuzzy find all the symbols in your current workspace.
-					--  Similar to document symbols, except searches over your entire project.
-					map("<leader>sS", fzf.lsp_workspace_symbols, "Search for workspace symbols")
-
-					-- Rename the variable under your cursor.
-					--  Most Language Servers support renaming across files, etc.
-					-- map("<leader>cr", vim.lsp.buf.rename, "Rename word")
-
-					-- Execute a code action, usually your cursor needs to be on top of an error
-					-- or a suggestion from your LSP for this to activate.
-					map("<leader>ca", fzf.lsp_code_actions, "Code actions", { "n", "x" })
-					-- map("<leader>ca", vim.lsp.buf.code_action, "Code actions", { "n", "x" })
-
-					-- WARN: This is not Goto Definition, this is Goto Declaration.
-					--  For example, in C this would take you to the header.
-					map("gD", vim.lsp.buf.declaration, "Goto declaration")
 
 					map("K", function()
 						vim.lsp.buf.hover({ border = opts.border or "rounded" })
 					end, "Hover")
+
 					map("gK", function()
 						vim.lsp.buf.signature_help({ border = opts.border or "rounded" })
 					end, "Signature help")
 
 					for _, additional_keymap in pairs(opts.additional_keymaps) do
-						additional_keymap()
+						additional_keymap(map)
 					end
 
 					-- The following two autocommands are used to highlight references of the
