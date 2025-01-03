@@ -75,17 +75,6 @@ vim.keymap.set("n", "Q", "<nop>", { desc = "No op" })
 -- Mason
 vim.keymap.set("n", "<leader>m", "<cmd>Mason<cr>", { desc = "Mason" })
 
--- Lazygit
-vim.keymap.set("n", "<leader>gg", function()
-	Snacks.lazygit()
-end, { desc = "Lazygit (cwd)" })
-vim.keymap.set("n", "<leader>gf", function()
-	Snacks.lazygit.log_file()
-end, { desc = "Lazygit Current File History" })
-vim.keymap.set("n", "<leader>gl", function()
-	Snacks.lazygit.log()
-end, { desc = "Lazygit Log (cwd)" })
-
 -- Delete default neovim lsp bindings
 vim.keymap.del("n", "gra")
 vim.keymap.del("n", "gri")
