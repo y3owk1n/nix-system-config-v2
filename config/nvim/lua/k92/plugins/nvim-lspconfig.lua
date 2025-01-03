@@ -275,8 +275,10 @@ return {
 				-- Jump to the definition of the word under your cursor.
 				--  This is where a variable was first declared, or where a function is defined, etc.
 				--  To jump back, press <C-t>.
-				map("gd", vim.lsp.buf.definition, "Goto definition")
-				-- map('gd', fzf.lsp_definitions, 'Goto definition')
+				-- map("gd", vim.lsp.buf.definition, "Goto definition")
+				map("gd", function()
+					fzf.lsp_definitions({ jump_to_single_result = true })
+				end, "Goto definition")
 
 				-- Find references for the word under your cursor.
 				map("gr", fzf.lsp_references, "Goto references")
