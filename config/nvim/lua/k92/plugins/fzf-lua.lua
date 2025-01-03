@@ -62,4 +62,52 @@ return {
 			},
 		},
 	},
+	{
+		"neovim/nvim-lspconfig",
+		opts = {
+			additional_keymaps = {
+				["lsp_definitions"] = function(map)
+					map("gd", function()
+						require("fzf-lua").lsp_definitions({
+							jump_to_single_result = true,
+							ignore_current_line = true,
+						})
+					end, "Goto definition")
+				end,
+				["lsp_references"] = function(map)
+					map("gr", function()
+						require("fzf-lua").lsp_references({
+							jump_to_single_result = true,
+							ignore_current_line = true,
+						})
+					end, "Goto references")
+				end,
+				["lsp_implementations"] = function(map)
+					map("gi", function()
+						require("fzf-lua").lsp_implementations({
+							jump_to_single_result = true,
+							ignore_current_line = true,
+						})
+					end, "Goto implementation")
+				end,
+				["lsp_typedefs"] = function(map)
+					map("gt", function()
+						require("fzf-lua").lsp_typedefs({
+							jump_to_single_result = true,
+							ignore_current_line = true,
+						})
+					end, "Goto Type Definition")
+				end,
+				["lsp_document_symbols"] = function(map)
+					map("<leader>ss", require("fzf-lua").lsp_document_symbols, "Search for document symbols")
+				end,
+				["lsp_workspace_symbols"] = function(map)
+					map("<leader>sS", require("fzf-lua").lsp_workspace_symbols, "Search for workspace symbols")
+				end,
+				["lsp_code_actions"] = function(map)
+					map("<leader>ca", require("fzf-lua").lsp_code_actions, "Code actions", { "n", "x" })
+				end,
+			},
+		},
+	},
 }
