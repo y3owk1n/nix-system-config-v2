@@ -4,6 +4,14 @@ return {
 	build = ":TSUpdate",
 	event = { "BufReadPre", "BufNewFile" },
 	lazy = vim.fn.argc(-1) == 0, -- load treesitter early when opening a file from the cmdline
+	specs = {
+		{
+			"catppuccin",
+			optional = true,
+			---@type CatppuccinOptions
+			opts = { integrations = { treesitter = true } },
+		},
+	},
 	init = function(plugin)
 		-- PERF: add nvim-treesitter queries to the rtp and it's custom query predicates early
 		-- This is needed because a bunch of plugins no longer `require("nvim-treesitter")`, which

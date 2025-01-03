@@ -8,6 +8,27 @@ return {
 	event = "InsertEnter",
 	dependencies = "rafamadriz/friendly-snippets",
 	version = "*",
+	specs = {
+		{
+			"catppuccin",
+			optional = true,
+			---@type CatppuccinOptions
+			opts = {
+				custom_highlights = function(colors)
+					return {
+						-- TODO: Remove this when merged -> https://github.com/catppuccin/nvim/pull/809/files
+						BlinkCmpKind = { fg = colors.blue },
+						BlinkCmpMenu = { fg = colors.text },
+						BlinkCmpMenuBorder = { fg = colors.blue },
+						BlinkCmpDocBorder = { fg = colors.blue },
+						BlinkCmpSignatureHelpBorder = { fg = colors.blue },
+						BlinkCmpSignatureHelpActiveParameter = { bg = colors.mauve, fg = colors.crust },
+					}
+				end,
+				integrations = { blink_cmp = true },
+			},
+		},
+	},
 	---@module 'blink.cmp'
 	---@type blink.cmp.Config
 	opts = {

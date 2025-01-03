@@ -1,6 +1,18 @@
 return {
 	"echasnovski/mini.pairs",
 	event = { "InsertEnter" },
+	specs = {
+		{
+			"catppuccin",
+			optional = true,
+			---@type CatppuccinOptions
+			opts = { integrations = {
+				mini = {
+					enabled = true,
+				},
+			} },
+		},
+	},
 	opts = {
 		modes = { insert = true, command = true, terminal = false },
 		-- skip autopair when next character is one of these

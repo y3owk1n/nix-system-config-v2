@@ -1,6 +1,21 @@
 return {
 	"tzachar/highlight-undo.nvim",
 	event = { "BufReadPre" },
+	specs = {
+		{
+			"catppuccin",
+			optional = true,
+			---@type CatppuccinOptions
+			opts = {
+				custom_highlights = function(colors)
+					return {
+						HighlightUndo = { bg = colors.red, fg = colors.base },
+						HighlightRedo = { bg = colors.flamingo, fg = colors.base },
+					}
+				end,
+			},
+		},
+	},
 	opts = {
 		keymaps = {
 			undo = {
