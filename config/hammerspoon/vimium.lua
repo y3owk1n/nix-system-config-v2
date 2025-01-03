@@ -1222,80 +1222,76 @@ end
 
 --- @param char string # Character to display for the LINKS mode in the menu bar.
 function commands.cmdGotoInput(char)
-	if utils.isInBrowser() then
-		utils.setMode(modes.LINKS, char)
-		marks.onClickCallback = function(mark)
-			local element = mark.element
-			if not element then
-				log("Error: Invalid element")
-				return
-			end
+	utils.setMode(modes.LINKS, char)
+	marks.onClickCallback = function(mark)
+		local element = mark.element
+		if not element then
+			log("Error: Invalid element")
+			return
+		end
 
-			local actionsNames = element:actionNames()
+		local actionsNames = element:actionNames()
 
-			log("actions available: " .. hs.inspect(actionsNames))
+		log("actions available: " .. hs.inspect(actionsNames))
 
-			if tblContains(actionsNames, "AXPress") then
-				mark.element:performAction("AXPress")
-				log("Success AXPress")
-			else
-				-- Try different methods to get position
-				local position, size = state.elements.getElementPositionAndSize(element)
+		if tblContains(actionsNames, "AXPress") then
+			mark.element:performAction("AXPress")
+			log("Success AXPress")
+		else
+			-- Try different methods to get position
+			local position, size = state.elements.getElementPositionAndSize(element)
 
-				if position and size then
-					local clickX = position.x + (size.w / 2)
-					local clickY = position.y + (size.h / 2)
-					local originalPosition = mouse.absolutePosition()
+			if position and size then
+				local clickX = position.x + (size.w / 2)
+				local clickY = position.y + (size.h / 2)
+				local originalPosition = mouse.absolutePosition()
 
-					local clickSuccess, clickErr = pcall(function()
-						mouse.absolutePosition({ x = clickX, y = clickY })
-						eventtap.leftClick({ x = clickX, y = clickY })
-						actions.restoreMousePosition(originalPosition)
-					end)
-
-					if clickSuccess then
-						return
-					else
-						log("Click failed: " .. tostring(clickErr))
-					end
-				end
-
-				-- Fallback: Click using mark coordinates
-				if mark.x and mark.y then
-					local clickSuccess, clickErr = pcall(function()
-						local originalPosition = mouse.absolutePosition()
-						mouse.absolutePosition({ x = mark.x, y = mark.y })
-						eventtap.leftClick({ x = mark.x, y = mark.y })
-						actions.restoreMousePosition(originalPosition)
-					end)
-
-					if clickSuccess then
-						return
-					else
-						log("Mark click failed: " .. tostring(clickErr))
-					end
-				end
-
-				-- Final fallback: focus + return key
-				log("Falling back to focus + return method")
-				local focusSuccess, focusErr = pcall(function()
-					element:setAttributeValue("AXFocused", true)
-					timer.doAfter(0.1, function()
-						eventtap.keyStroke({}, "return", 0)
-					end)
+				local clickSuccess, clickErr = pcall(function()
+					mouse.absolutePosition({ x = clickX, y = clickY })
+					eventtap.leftClick({ x = clickX, y = clickY })
+					actions.restoreMousePosition(originalPosition)
 				end)
 
-				if not focusSuccess then
-					log("Focus fallback failed: " .. tostring(focusErr))
+				if clickSuccess then
+					return
+				else
+					log("Click failed: " .. tostring(clickErr))
 				end
 			end
+
+			-- Fallback: Click using mark coordinates
+			if mark.x and mark.y then
+				local clickSuccess, clickErr = pcall(function()
+					local originalPosition = mouse.absolutePosition()
+					mouse.absolutePosition({ x = mark.x, y = mark.y })
+					eventtap.leftClick({ x = mark.x, y = mark.y })
+					actions.restoreMousePosition(originalPosition)
+				end)
+
+				if clickSuccess then
+					return
+				else
+					log("Mark click failed: " .. tostring(clickErr))
+				end
+			end
+
+			-- Final fallback: focus + return key
+			log("Falling back to focus + return method")
+			local focusSuccess, focusErr = pcall(function()
+				element:setAttributeValue("AXFocused", true)
+				timer.doAfter(0.1, function()
+					eventtap.keyStroke({}, "return", 0)
+				end)
+			end)
+
+			if not focusSuccess then
+				log("Focus fallback failed: " .. tostring(focusErr))
+			end
 		end
-		timer.doAfter(0, function()
-			marks.show(true, "input")
-		end)
-	else
-		hs.alert.show("Go to input is only available for browser")
 	end
+	timer.doAfter(0, function()
+		marks.show(true, "input")
+	end)
 end
 
 --- @param char string # Character to display for the LINKS mode in the menu bar.
