@@ -1,3 +1,4 @@
+---@type LazySpec
 return {
 	"folke/todo-comments.nvim",
 	cmd = { "TodoTrouble", "TodoFzfLua" },

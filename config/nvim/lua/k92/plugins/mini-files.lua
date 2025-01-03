@@ -1,3 +1,4 @@
+---@type LazySpec
 return {
 	"echasnovski/mini.files",
 	event = "VeryLazy",

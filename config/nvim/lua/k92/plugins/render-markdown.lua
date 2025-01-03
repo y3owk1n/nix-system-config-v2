@@ -1,3 +1,4 @@
+---@type LazySpec
 return {
 	"MeanderingProgrammer/render-markdown.nvim",
 	event = { "BufReadPre" },
