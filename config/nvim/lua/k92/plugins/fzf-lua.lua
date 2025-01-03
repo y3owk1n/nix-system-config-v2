@@ -6,14 +6,6 @@ return {
 	dependencies = {
 		{ "echasnovski/mini.icons", enabled = vim.g.have_nerd_font },
 	},
-	specs = {
-		{
-			"catppuccin",
-			optional = true,
-			---@type CatppuccinOptions
-			opts = { integrations = { fzf = true } },
-		},
-	},
 	opts = function()
 		local config = require("fzf-lua.config")
 

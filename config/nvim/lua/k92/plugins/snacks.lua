@@ -3,14 +3,6 @@ return {
 	"folke/snacks.nvim",
 	priority = 1000,
 	lazy = false,
-	specs = {
-		{
-			"catppuccin",
-			optional = true,
-			---@type CatppuccinOptions
-			opts = { integrations = { snacks = true } },
-		},
-	},
 	---@type snacks.Config
 	opts = {
 		bigfile = { enabled = true },

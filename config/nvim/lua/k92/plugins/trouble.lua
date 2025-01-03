@@ -3,14 +3,6 @@ return {
 	"folke/trouble.nvim",
 	event = "VeryLazy",
 	cmd = { "Trouble" },
-	specs = {
-		{
-			"catppuccin",
-			optional = true,
-			---@type CatppuccinOptions
-			opts = { integrations = { lsp_trouble = true } },
-		},
-	},
 	---@class trouble.Config.mod: trouble.Config
 	opts = {
 		focus = true,
