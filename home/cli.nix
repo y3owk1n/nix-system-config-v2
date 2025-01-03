@@ -6,7 +6,7 @@
       enable = true;
       config = {
         theme = "catppuccin";
-        pager = "page -WO -q 90000";
+        # pager = "page -WO -q 90000";
         italic-text = "always";
         style = "plain"; # no line numbers, git status, etc... more like cat with colors
       };
@@ -15,8 +15,8 @@
           src = pkgs.fetchFromGitHub {
             owner = "catppuccin";
             repo = "bat"; # Bat uses sublime syntax for its themes
-            rev = "d2bbee4f7e7d5bac63c054e4d8eca57954b31471";
-            sha256 = "sha256-x1yqPCWuoBSx/cI94eA+AWwhiSA42cLNUOFJl7qjhmw=";
+            rev = "699f60fc8ec434574ca7451b444b880430319941";
+            sha256 = "sha256-6fWoCH90IGumAMc4buLRWL0N61op+AuMNN9CAR9/OdI=";
           };
           file = "themes/Catppuccin Macchiato.tmTheme";
         };
