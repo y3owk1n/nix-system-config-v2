@@ -277,17 +277,35 @@ return {
 				--  To jump back, press <C-t>.
 				-- map("gd", vim.lsp.buf.definition, "Goto definition")
 				map("gd", function()
-					fzf.lsp_definitions({ jump_to_single_result = true })
+					fzf.lsp_definitions({
+						jump_to_single_result = true,
+						ignore_current_line = true,
+					})
 				end, "Goto definition")
 
 				-- Find references for the word under your cursor.
-				map("gr", fzf.lsp_references, "Goto references")
+				map("gr", function()
+					fzf.lsp_references({
+						jump_to_single_result = true,
+						ignore_current_line = true,
+					})
+				end, "Goto references")
 
 				-- Jump to the implementation of the word under your cursor.
 				--  Useful when your language has ways of declaring types without an actual implementation.
-				map("gi", fzf.lsp_implementations, "Goto implementation")
+				map("gi", function()
+					fzf.lsp_implementations({
+						jump_to_single_result = true,
+						ignore_current_line = true,
+					})
+				end, "Goto implementation")
 
-				map("gt", fzf.lsp_typedefs, "Goto Type Definition")
+				map("gt", function()
+					fzf.lsp_typedefs({
+						jump_to_single_result = true,
+						ignore_current_line = true,
+					})
+				end, "Goto Type Definition")
 				-- map('gt', vim.lsp.buf.type_definition, 'Goto Type Definition')
 
 				-- Fuzzy find all the symbols in your current document.
