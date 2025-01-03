@@ -46,6 +46,7 @@ return {
 		vim.keymap.set("n", "<leader>sw", fzf.grep_cword, { desc = "Search current word" })
 		vim.keymap.set("n", "<leader>sg", fzf.live_grep, { desc = "Search by grep" })
 		vim.keymap.set("n", "<leader>sd", fzf.diagnostics_document, { desc = "Search diagnostics document" })
+		vim.keymap.set("n", "<leader>sD", fzf.diagnostics_workspace, { desc = "Search diagnostics workspace" })
 		vim.keymap.set("n", "<leader>sR", fzf.resume, { desc = "Resume search" })
 		vim.keymap.set("n", "<leader>sb", fzf.buffers, { desc = "Search buffers" })
 		vim.keymap.set("n", "<leader><leader>", fzf.files, { desc = "Search files" })
