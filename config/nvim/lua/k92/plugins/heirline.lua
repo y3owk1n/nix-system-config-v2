@@ -2,7 +2,7 @@
 return {
 	"rebelot/heirline.nvim",
 	event = "VeryLazy",
-	opts = function()
+	opts = function(_, opts)
 		local conditions = require("heirline.conditions")
 		local utils = require("heirline.utils")
 
@@ -523,18 +523,10 @@ return {
 			DefaultStatusline,
 		}
 
-		return {
-			opts = {
-				colors = C,
-			},
-			statusline = StatusLines,
-			--    winbar = {...},
-			--    tabline = {...},
-			--    statuscolumn = {...},
+		opts.opts = {
+			colors = C,
 		}
-	end,
 
-	config = function(_, opts)
-		require("heirline").setup(opts)
+		opts.statusline = StatusLines
 	end,
 }
