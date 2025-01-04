@@ -3,8 +3,9 @@ local _table = require("k92.utils.table")
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
-		opts = { ensure_installed = { "markdown", "markdown_inline" } },
-		config = function()
+		opts = function(_, opts)
+			opts.ensure_installed = opts.ensure_installed or {}
+			_table.add_unique_items(opts.ensure_installed, { "markdown", "markdown_inline" })
 			vim.filetype.add({
 				extension = { mdx = "markdown.mdx" },
 			})
