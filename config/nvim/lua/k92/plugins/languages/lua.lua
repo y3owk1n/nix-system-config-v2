@@ -1,3 +1,5 @@
+local _table = require("k92.utils.table")
+
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
@@ -11,34 +13,35 @@ return {
 	},
 	{
 		"neovim/nvim-lspconfig",
-		opts = {
-			ensure_installed = { "stylua" },
-			servers = {
-				lua_ls = {
-					settings = {
-						Lua = {
-							workspace = {
-								checkThirdParty = false,
-							},
-							completion = {
-								callSnippet = "Replace",
-							},
-							doc = {
-								privateName = { "^_" },
-							},
-							hint = {
-								enable = true,
-								setType = false,
-								paramType = true,
-								paramName = "Disable",
-								semicolon = "Disable",
-								arrayIndex = "Disable",
-							},
+		opts = function(_, opts)
+			opts.ensure_installed = opts.ensure_installed or {}
+			_table.add_unique_items(opts.ensure_installed, { "stylua" })
+
+			opts.servers = opts.servers or {}
+			opts.servers.lua_ls = {
+				settings = {
+					Lua = {
+						workspace = {
+							checkThirdParty = false,
+						},
+						completion = {
+							callSnippet = "Replace",
+						},
+						doc = {
+							privateName = { "^_" },
+						},
+						hint = {
+							enable = true,
+							setType = false,
+							paramType = true,
+							paramName = "Disable",
+							semicolon = "Disable",
+							arrayIndex = "Disable",
 						},
 					},
 				},
-			},
-		},
+			}
+		end,
 	},
 	{
 		"stevearc/conform.nvim",

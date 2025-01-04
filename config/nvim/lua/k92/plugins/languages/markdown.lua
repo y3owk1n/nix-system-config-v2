@@ -1,11 +1,15 @@
-vim.filetype.add({
-	extension = { mdx = "markdown.mdx" },
-})
+local _table = require("k92.utils.table")
 
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
 		opts = { ensure_installed = { "markdown", "markdown_inline" } },
+		config = function()
+			vim.filetype.add({
+				extension = { mdx = "markdown.mdx" },
+			})
+			vim.treesitter.language.register("markdown", "markdown.mdx")
+		end,
 	},
 	{
 		"stevearc/conform.nvim",
@@ -37,12 +41,13 @@ return {
 	},
 	{
 		"neovim/nvim-lspconfig",
-		opts = {
-			ensure_installed = { "markdownlint-cli2", "markdown-toc" },
-			servers = {
-				marksman = {},
-			},
-		},
+		opts = function(_, opts)
+			opts.ensure_installed = opts.ensure_installed or {}
+			_table.add_unique_items(opts.ensure_installed, { "markdownlint-cli2", "markdown-toc" })
+
+			opts.servers = opts.servers or {}
+			opts.servers.marksman = {}
+		end,
 	},
 
 	{
@@ -58,7 +63,7 @@ return {
 				icons = {},
 			},
 		},
-		ft = { "markdown", "norg", "rmd", "org" },
+		ft = { "markdown", "markdown.mdx", "norg", "rmd", "org" },
 		config = function(_, opts)
 			require("render-markdown").setup(opts)
 			Snacks.toggle({

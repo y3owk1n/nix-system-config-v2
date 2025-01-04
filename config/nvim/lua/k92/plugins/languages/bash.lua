@@ -3,24 +3,23 @@ local _table = require("k92.utils.table")
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
-		opts = { ensure_installed = { "dockerfile" } },
+		opts = { ensure_installed = { "bash" } },
 	},
 	{
 		"neovim/nvim-lspconfig",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "hadolint" })
+			_table.add_unique_items(opts.ensure_installed, { "shellcheck", "shfmt" })
 
 			opts.servers = opts.servers or {}
-			opts.servers.dockerls = {}
-			opts.servers.docker_compose_language_service = {}
+			opts.servers.bashls = {}
 		end,
 	},
 	{
-		"mfussenegger/nvim-lint",
+		"stevearc/conform.nvim",
 		opts = {
-			linters_by_ft = {
-				dockerfile = { "hadolint" },
+			formatters_by_ft = {
+				sh = { "shfmt" },
 			},
 		},
 	},
