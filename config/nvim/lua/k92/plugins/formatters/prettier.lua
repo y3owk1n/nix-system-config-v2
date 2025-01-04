@@ -1,3 +1,5 @@
+local _table = require("k92.utils.table")
+
 ---@alias ConformCtx {buf: number, filename: string, dirname: string}
 local M = {}
 
@@ -49,9 +51,10 @@ end
 return {
 	{
 		"neovim/nvim-lspconfig",
-		opts = {
-			ensure_installed = { "prettier" },
-		},
+		opts = function(_, opts)
+			opts.ensure_installed = opts.ensure_installed or {}
+			_table.add_unique_items(opts.ensure_installed, { "prettier" })
+		end,
 	},
 	{
 		"stevearc/conform.nvim",

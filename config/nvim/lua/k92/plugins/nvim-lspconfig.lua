@@ -1,3 +1,5 @@
+local _table = require("k92.utils.table")
+
 ---@type LazySpec
 return {
 	{
@@ -167,9 +169,10 @@ return {
 			)
 
 			local servers = opts.servers or {}
+			local _ensure_installed = opts.ensure_installed or {}
 
 			local ensure_installed = vim.tbl_keys(servers or {})
-			vim.list_extend(ensure_installed, opts.ensure_installed or {})
+			_table.add_unique_items(ensure_installed, _ensure_installed or {})
 
 			local _, mason_tool_installer = pcall(require, "mason-tool-installer")
 

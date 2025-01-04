@@ -1,3 +1,5 @@
+local _table = require("k92.utils.table")
+
 -- https://biomejs.dev/internals/language-support/
 local supported = {
 	"astro",
@@ -19,12 +21,13 @@ local supported = {
 return {
 	{
 		"neovim/nvim-lspconfig",
-		opts = {
-			ensure_installed = { "biome" },
-			servers = {
-				biome = {},
-			},
-		},
+		opts = function(_, opts)
+			opts.ensure_installed = opts.ensure_installed or {}
+			_table.add_unique_items(opts.ensure_installed, { "biome" })
+
+			opts.servers = opts.servers or {}
+			opts.servers.biome = {}
+		end,
 	},
 
 	{

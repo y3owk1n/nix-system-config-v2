@@ -27,7 +27,6 @@ return {
 			highlight = { enable = true },
 			indent = { enable = true },
 			ensure_installed = {
-				"bash",
 				"html",
 				"regex",
 				"toml",
@@ -50,14 +49,6 @@ return {
 		---@param opts TSConfig
 		config = function(_, opts)
 			require("nvim-treesitter.configs").setup(opts)
-
-			-- MDX
-			vim.filetype.add({
-				extension = {
-					mdx = "mdx",
-				},
-			})
-			vim.treesitter.language.register("markdown", "mdx")
 		end,
 	},
 	{

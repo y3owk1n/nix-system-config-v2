@@ -7,10 +7,9 @@ return {
 	},
 	{
 		"neovim/nvim-lspconfig",
-		opts = {
-			servers = {
-				prismals = {},
-			},
-		},
+		opts = function(_, opts)
+			opts.servers = opts.servers or {}
+			opts.servers.prismals = {}
+		end,
 	},
 }

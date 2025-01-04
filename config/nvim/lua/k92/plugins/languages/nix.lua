@@ -5,11 +5,10 @@ return {
 	},
 	{
 		"neovim/nvim-lspconfig",
-		opts = {
-			servers = {
-				nil_ls = {},
-			},
-		},
+		opts = function(_, opts)
+			opts.servers = opts.servers or {}
+			opts.servers.nil_ls = {}
+		end,
 	},
 	{
 		"stevearc/conform.nvim",

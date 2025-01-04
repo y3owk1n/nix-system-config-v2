@@ -1,3 +1,5 @@
+local _table = require("k92.utils.table")
+
 ---@type string
 local xdg_config = vim.env.XDG_CONFIG_HOME or vim.env.HOME .. "/.config"
 
@@ -9,12 +11,13 @@ end
 return {
 	{
 		"neovim/nvim-lspconfig",
-		opts = {
-			ensure_installed = { "shellcheck" },
-			servers = {
-				bashls = {},
-			},
-		},
+		opts = function(_, opts)
+			opts.ensure_installed = opts.ensure_installed or {}
+			_table.add_unique_items(opts.ensure_installed, { "shellcheck" })
+
+			opts.servers = opts.servers or {}
+			opts.servers.bashls = {}
+		end,
 	},
 	{
 		"nvim-treesitter/nvim-treesitter",
