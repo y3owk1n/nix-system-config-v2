@@ -78,23 +78,6 @@ vim.api.nvim_create_autocmd("BufEnter", {
 	command = "set fo-=c fo-=r fo-=o",
 })
 
--- close mini.files with <q> or <esc>
-vim.api.nvim_create_autocmd("FileType", {
-	group = augroup("close_with_q_mini_files"),
-	pattern = {
-		"MiniFiles",
-	},
-	callback = function(event)
-		vim.bo[event.buf].buflisted = false
-		vim.keymap.set("n", "q", function()
-			require("mini.files").close()
-		end, { buffer = event.buf, silent = true })
-		vim.keymap.set("n", "<esc>", function()
-			require("mini.files").close()
-		end, { buffer = event.buf, silent = true })
-	end,
-})
-
 -- Turn off paste mode when leaving insert
 vim.api.nvim_create_autocmd("InsertLeave", {
 	group = augroup("paste_mode_off_leaving_insert"),
