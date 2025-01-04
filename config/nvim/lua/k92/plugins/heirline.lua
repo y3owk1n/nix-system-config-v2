@@ -358,7 +358,7 @@ return {
 
 		local Git = {
 			condition = function()
-				return vim.b.minigit_summary and vim.b.minidiff_summary
+				return vim.b.minigit_summary and vim.b.minigit_summary.head_name and vim.b.minidiff_summary
 			end,
 
 			init = function(self)
