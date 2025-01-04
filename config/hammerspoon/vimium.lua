@@ -52,7 +52,7 @@ local config = {
 	scrollStepFullPage = 1e6, -- make it a super big number and not worry
 	smoothScroll = true,
 	smoothScrollFrameRate = 120,
-	depth = 20, -- depth for traversing children when creating marks
+	depth = 100, -- depth for traversing children when creating marks
 	axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea", "AXSearchField" },
 	axJumpableRoles = {
 		"AXLink",
@@ -259,16 +259,9 @@ function state.elements.getFocusedElement(element, depth)
 		log("Focused element unfocused.")
 	end
 
-	local children = element:attributeValue("AXChildren")
-	if children then
-		local chunk_size = 10
-		for i = 1, #children, chunk_size do
-			local end_idx = math.min(i + chunk_size - 1, #children)
-			for j = i, end_idx do
-				state.elements.getFocusedElement(children[j], (depth or 0) + 1)
-			end
-		end
-	end
+	marks.getChildrens(element, function(_element)
+		state.elements.getFocusedElement(_element, (depth or 0) + 1)
+	end)
 end
 
 --- @return boolean, boolean # found status, completed status
@@ -818,30 +811,25 @@ function marks.isElementImage(element)
 	return role == "AXImage" and url ~= nil
 end
 
-function marks.getAllDescendants(element)
-	if not element then
-		return {}
-	end
+function marks.getChildrens(mainElement, cb)
+	local children = mainElement:attributeValue("AXChildren")
+	local visibleRows = mainElement:attributeValue("AXVisibleRows")
 
-	local toProcess, results = { element }, {}
-	local index = 1
-
-	while index <= #toProcess do
-		local currentIndex = toProcess[index]
-		local children = currentIndex:attributeValue("AXChildren")
-
-		if children then
-			for _, child in ipairs(children) do
-				table.insert(toProcess, child)
+	local function getDescendants(elements)
+		local chunk_size = 10
+		for i = 1, #elements, chunk_size do
+			local end_idx = math.min(i + chunk_size - 1, #elements)
+			for j = i, end_idx do
+				cb(elements[j])
 			end
-		else
-			table.insert(results, currentIndex)
 		end
-
-		index = index + 1
 	end
 
-	return results
+	if visibleRows then
+		getDescendants(visibleRows)
+	elseif children then
+		getDescendants(children)
+	end
 end
 
 function marks.findClickableElements(element, withUrls, depth)
@@ -858,16 +846,9 @@ function marks.findClickableElements(element, withUrls, depth)
 		marks.add(element)
 	end
 
-	local children = element:attributeValue("AXChildren")
-	if children then
-		local chunk_size = 10
-		for i = 1, #children, chunk_size do
-			local end_idx = math.min(i + chunk_size - 1, #children)
-			for j = i, end_idx do
-				marks.findClickableElements(children[j], withUrls, (depth or 0) + 1)
-			end
-		end
-	end
+	marks.getChildrens(element, function(_element)
+		marks.findClickableElements(_element, withUrls, (depth or 0) + 1)
+	end)
 end
 
 function marks.findScrollableElements(element, depth)
@@ -884,16 +865,9 @@ function marks.findScrollableElements(element, depth)
 		marks.add(element)
 	end
 
-	local children = element:attributeValue("AXChildren")
-	if children then
-		local chunk_size = 10
-		for i = 1, #children, chunk_size do
-			local end_idx = math.min(i + chunk_size - 1, #children)
-			for j = i, end_idx do
-				marks.findScrollableElements(children[j], (depth or 0) + 1)
-			end
-		end
-	end
+	marks.getChildrens(element, function(_element)
+		marks.findScrollableElements(_element, (depth or 0) + 1)
+	end)
 end
 
 function marks.findUrlElements(element, depth)
@@ -910,16 +884,9 @@ function marks.findUrlElements(element, depth)
 		marks.add(element)
 	end
 
-	local children = element:attributeValue("AXChildren")
-	if children then
-		local chunk_size = 10
-		for i = 1, #children, chunk_size do
-			local end_idx = math.min(i + chunk_size - 1, #children)
-			for j = i, end_idx do
-				marks.findUrlElements(children[j], (depth or 0) + 1)
-			end
-		end
-	end
+	marks.getChildrens(element, function(_element)
+		marks.findUrlElements(_element, (depth or 0) + 1)
+	end)
 end
 
 function marks.findInputElements(element, depth)
@@ -936,16 +903,9 @@ function marks.findInputElements(element, depth)
 		marks.add(element)
 	end
 
-	local children = element:attributeValue("AXChildren")
-	if children then
-		local chunk_size = 10
-		for i = 1, #children, chunk_size do
-			local end_idx = math.min(i + chunk_size - 1, #children)
-			for j = i, end_idx do
-				marks.findInputElements(children[j], (depth or 0) + 1)
-			end
-		end
-	end
+	marks.getChildrens(element, function(_element)
+		marks.findInputElements(_element, (depth or 0) + 1)
+	end)
 end
 
 function marks.findImageElements(element, depth)
@@ -963,16 +923,9 @@ function marks.findImageElements(element, depth)
 		marks.add(element)
 	end
 
-	local children = element:attributeValue("AXChildren")
-	if children then
-		local chunk_size = 10
-		for i = 1, #children, chunk_size do
-			local end_idx = math.min(i + chunk_size - 1, #children)
-			for j = i, end_idx do
-				marks.findImageElements(children[j], (depth or 0) + 1)
-			end
-		end
-	end
+	marks.getChildrens(element, function(_element)
+		marks.findImageElements(_element, (depth or 0) + 1)
+	end)
 end
 
 --- @param withUrls boolean # If true, includes URLs when finding clickable elements.
