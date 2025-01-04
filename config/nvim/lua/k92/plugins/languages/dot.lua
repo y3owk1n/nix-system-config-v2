@@ -24,7 +24,7 @@ return {
 		opts = function(_, opts)
 			local function add(lang)
 				if type(opts.ensure_installed) == "table" then
-					table.insert(opts.ensure_installed, lang)
+					_table.add_unique_items(opts.ensure_installed, lang)
 				end
 			end
 
