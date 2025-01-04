@@ -65,6 +65,7 @@ local config = {
 		"AXRadioButton",
 		"AXDisclosureTriangle",
 		"AXMenuButton",
+		"AXMenuBarItem", -- To support top menu bar
 		"AXRow", -- To support Mail.app without using "AXStaticText"
 		-- "AXColorWell", -- Macos Color Picker
 		-- "AXCell", -- This can help with showing marks on Calendar.app
@@ -196,6 +197,11 @@ function state.elements.axWindow()
 	return cached.axWindow
 end
 
+function state.elements.axMenuBar()
+	cached.axMenuBar = cached.axMenuBar or state.elements.axApp():attributeValue("AXMenuBar")
+	return cached.axMenuBar
+end
+
 function state.elements.axFocusedElement()
 	cached.axFocusedElement = cached.axFocusedElement or state.elements.axApp():attributeValue("AXFocusedUIElement")
 	return cached.axFocusedElement
@@ -216,6 +222,26 @@ end
 function state.elements.axWebArea()
 	cached.axWebArea = cached.axWebArea or state.elements.findAXRole(state.elements.axScrollArea(), "AXWebArea")
 	return cached.axWebArea
+end
+
+function state.elements.fullArea()
+	if cached.fullArea then
+		return cached.fullArea
+	end
+
+	local winFrame = state.elements.axWindow():attributeValue("AXFrame")
+	local menuBarFrame = state.elements.axMenuBar():attributeValue("AXFrame")
+
+	cached.fullArea = {
+		x = 0,
+		y = 0,
+		w = menuBarFrame.w,
+		h = winFrame.h + winFrame.y + menuBarFrame.h,
+	}
+
+	log("fullArea: " .. hs.inspect(cached.fullArea))
+
+	return cached.fullArea
 end
 
 function state.elements.visibleArea()
@@ -248,15 +274,18 @@ function state.elements.getFocusedElement(element, depth)
 		return
 	end
 
+	local elementApp = element:attributeValue("AXRole")
 	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not marks.isElementPartiallyVisible(element) then
-		return
-	end
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not marks.isElementPartiallyVisible(element) then
+			return
+		end
 
-	if element:attributeValue("AXFocused") then
-		log("Focused element found: " .. hs.inspect(element))
-		element:setAttributeValue("AXFocused", false)
-		log("Focused element unfocused.")
+		if element:attributeValue("AXFocused") then
+			log("Focused element found: " .. hs.inspect(element))
+			element:setAttributeValue("AXFocused", false)
+			log("Focused element unfocused.")
+		end
 	end
 
 	marks.getChildrens(element, function(_element)
@@ -270,18 +299,22 @@ function state.elements.getNextPrevElement(element, depth, direction)
 		return false, true
 	end
 
+	local elementApp = element:attributeValue("AXRole")
 	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not marks.isElementPartiallyVisible(element) then
-		return false, true
-	end
 
-	local role = element:attributeValue("AXRole")
-	local title = element:attributeValue("AXTitle")
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not marks.isElementPartiallyVisible(element) then
+			return false, true
+		end
 
-	if role == "AXLink" or role == "AXButton" or role == "AXMenuItem" then
-		if title and title:lower():find(direction) then
-			element:performAction("AXPress")
-			return true, true
+		local role = element:attributeValue("AXRole")
+		local title = element:attributeValue("AXTitle")
+
+		if role == "AXLink" or role == "AXButton" or role == "AXMenuItem" then
+			if title and title:lower():find(direction) then
+				element:performAction("AXPress")
+				return true, true
+			end
 		end
 	end
 
@@ -575,7 +608,7 @@ end
 
 function marks.draw()
 	if not marks.canvas then
-		marks.canvas = hs.canvas.new(state.elements.visibleArea())
+		marks.canvas = hs.canvas.new(state.elements.fullArea())
 	end
 
 	local elementsToDraw = {}
@@ -636,10 +669,9 @@ function marks.prepareElementForDrawing(markIndex)
 		containerWidth,
 		containerHeight
 	)
-	local visibleArea = state.elements.visibleArea()
 
-	local rx = bgRect.x - visibleArea.x
-	local ry = bgRect.y - visibleArea.y
+	local rx = bgRect.x
+	local ry = bgRect.y
 	local rw = bgRect.w
 	local rh = bgRect.h
 
@@ -744,8 +776,8 @@ function marks.isElementPartiallyVisible(element)
 		return false
 	end
 
-	local visibleArea = state.elements.visibleArea()
-	local vx, vy, vw, vh = visibleArea.x, visibleArea.y, visibleArea.w, visibleArea.h
+	local fullArea = state.elements.fullArea()
+	local vx, vy, vw, vh = fullArea.x, fullArea.y, fullArea.w, fullArea.h
 	local fx, fy, fw, fh = frame.x, frame.y, frame.w, frame.h
 
 	return fx < vx + vw and fx + fw > vx and fy < vy + vh and fy + fh > vy
@@ -837,13 +869,17 @@ function marks.findClickableElements(element, withUrls, depth)
 		return
 	end
 
+	local elementApp = element:attributeValue("AXRole")
 	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not marks.isElementPartiallyVisible(element) then
-		return
-	end
 
-	if marks.isElementActionable(element) and (not withUrls or element:attributeValue("AXURL")) then
-		marks.add(element)
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not marks.isElementPartiallyVisible(element) then
+			return
+		end
+
+		if marks.isElementActionable(element) and (not withUrls or element:attributeValue("AXURL")) then
+			marks.add(element)
+		end
 	end
 
 	marks.getChildrens(element, function(_element)
@@ -856,13 +892,17 @@ function marks.findScrollableElements(element, depth)
 		return
 	end
 
+	local elementApp = element:attributeValue("AXRole")
 	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not marks.isElementPartiallyVisible(element) then
-		return
-	end
 
-	if marks.isElementScrollable(element) then
-		marks.add(element)
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not marks.isElementPartiallyVisible(element) then
+			return
+		end
+
+		if marks.isElementScrollable(element) then
+			marks.add(element)
+		end
 	end
 
 	marks.getChildrens(element, function(_element)
@@ -875,13 +915,16 @@ function marks.findUrlElements(element, depth)
 		return
 	end
 
+	local elementApp = element:attributeValue("AXRole")
 	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not marks.isElementPartiallyVisible(element) then
-		return
-	end
 
-	if element:attributeValue("AXURL") then
-		marks.add(element)
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not marks.isElementPartiallyVisible(element) then
+			return
+		end
+		if element:attributeValue("AXURL") then
+			marks.add(element)
+		end
 	end
 
 	marks.getChildrens(element, function(_element)
@@ -894,13 +937,16 @@ function marks.findInputElements(element, depth)
 		return
 	end
 
+	local elementApp = element:attributeValue("AXRole")
 	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not marks.isElementPartiallyVisible(element) then
-		return
-	end
 
-	if marks.isElementInput(element) then
-		marks.add(element)
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not marks.isElementPartiallyVisible(element) then
+			return
+		end
+		if marks.isElementInput(element) then
+			marks.add(element)
+		end
 	end
 
 	marks.getChildrens(element, function(_element)
@@ -913,14 +959,17 @@ function marks.findImageElements(element, depth)
 		return
 	end
 
+	local elementApp = element:attributeValue("AXRole")
 	local elementFrame = element:attributeValue("AXFrame")
-	if not elementFrame or not marks.isElementPartiallyVisible(element) then
-		return
-	end
 
-	if marks.isElementImage(element) then
-		log("found AXImage: " .. hs.inspect(element))
-		marks.add(element)
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not marks.isElementPartiallyVisible(element) then
+			return
+		end
+		if marks.isElementImage(element) then
+			log("found AXImage: " .. hs.inspect(element))
+			marks.add(element)
+		end
 	end
 
 	marks.getChildrens(element, function(_element)
@@ -931,7 +980,7 @@ end
 --- @param withUrls boolean # If true, includes URLs when finding clickable elements.
 --- @param type "link"|"scroll"|"url"|"input"|"image" # The type of elements to find ("link", "scroll", "url", "input").
 function marks.show(withUrls, type)
-	local startElement = state.elements.axWindow()
+	local startElement = state.elements.axApp()
 	if not startElement then
 		return
 	end
