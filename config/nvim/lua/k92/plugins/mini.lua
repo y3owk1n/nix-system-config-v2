@@ -162,6 +162,21 @@ return {
 					Snacks.rename.on_rename_file(event.data.from, event.data.to)
 				end,
 			})
+
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = {
+					"MiniFiles",
+				},
+				callback = function(event)
+					vim.bo[event.buf].buflisted = false
+					vim.keymap.set("n", "q", function()
+						MiniFiles.close()
+					end, { buffer = event.buf, silent = true })
+					vim.keymap.set("n", "<esc>", function()
+						MiniFiles.close()
+					end, { buffer = event.buf, silent = true })
+				end,
+			})
 		end,
 	},
 	{
