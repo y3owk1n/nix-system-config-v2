@@ -50,7 +50,15 @@ return {
 			opts.servers.marksman = {}
 		end,
 	},
-
+	{
+		"mfussenegger/nvim-lint",
+		opts = {
+			linters_by_ft = {
+				markdown = { "markdownlint-cli2" },
+				["markdown.mdx"] = { "markdownlint-cli2" },
+			},
+		},
+	},
 	{
 		"MeanderingProgrammer/render-markdown.nvim",
 		opts = {
