@@ -2,6 +2,11 @@
 return {
 	"rebelot/heirline.nvim",
 	event = "VeryLazy",
+	dependencies = {
+		"catppuccin/nvim",
+		"cbochs/grapple.nvim",
+		"lewis6991/gitsigns.nvim",
+	},
 	opts = function(_, opts)
 		local conditions = require("heirline.conditions")
 		local utils = require("heirline.utils")
