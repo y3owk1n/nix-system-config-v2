@@ -357,18 +357,13 @@ return {
 		}
 
 		local Git = {
-			condition = function()
-				return vim.b.minigit_summary and vim.b.minigit_summary.head_name and vim.b.minidiff_summary
-			end,
-
+			condition = conditions.is_git_repo,
 			init = function(self)
-				self.status_dict = vim.b.minidiff_summary
-				self.head = vim.b.minigit_summary.head_name
-				self.has_changes = self.status_dict.add ~= 0
-					or self.status_dict.delete ~= 0
-					or self.status_dict.change ~= 0
+				self.status_dict = vim.b.gitsigns_status_dict
+				self.has_changes = self.status_dict.added ~= 0
+					or self.status_dict.removed ~= 0
+					or self.status_dict.changed ~= 0
 			end,
-
 			{
 				provider = Space.provider,
 			},
@@ -378,28 +373,28 @@ return {
 			},
 			{ -- git branch name
 				provider = function(self)
-					return " " .. self.head
+					return " " .. self.status_dict.head
 				end,
 				hl = { bold = true, bg = "surface0", fg = "rosewater" },
 			},
 			-- You could handle delimiters, icons and counts similar to Diagnostics
 			{
 				provider = function(self)
-					local count = self.status_dict.add or 0
+					local count = self.status_dict.added or 0
 					return count > 0 and ("  " .. count)
 				end,
 				hl = { fg = "green", bg = "surface0" },
 			},
 			{
 				provider = function(self)
-					local count = self.status_dict.delete or 0
+					local count = self.status_dict.removed or 0
 					return count > 0 and ("  " .. count)
 				end,
 				hl = { fg = "red", bg = "surface0" },
 			},
 			{
 				provider = function(self)
-					local count = self.status_dict.change or 0
+					local count = self.status_dict.changed or 0
 					return count > 0 and ("  " .. count)
 				end,
 				hl = { fg = "yellow", bg = "surface0" },

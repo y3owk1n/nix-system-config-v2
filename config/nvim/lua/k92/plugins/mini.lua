@@ -17,22 +17,6 @@ return {
 		},
 	},
 	{
-		"echasnovski/mini.diff",
-		version = false,
-		event = "VeryLazy",
-		opts = {
-			view = {
-				style = "sign",
-				signs = {
-					add = "▎",
-					change = "▎",
-					delete = "",
-				},
-			},
-		},
-	},
-
-	{
 		"echasnovski/mini.files",
 		event = "VeryLazy",
 		opts = {
@@ -178,13 +162,6 @@ return {
 				end,
 			})
 		end,
-	},
-	{
-		"echasnovski/mini-git",
-		event = "VeryLazy",
-		version = false,
-		main = "mini.git",
-		opts = {},
 	},
 	{
 		"echasnovski/mini.icons",
