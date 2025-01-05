@@ -845,7 +845,9 @@ end
 
 function marks.getChildrens(mainElement, cb)
 	local children = mainElement:attributeValue("AXChildren")
+	local childrenOrder = mainElement:attributeValue("AXChildrenInNavigationOrder")
 	local visibleRows = mainElement:attributeValue("AXVisibleRows")
+	local visibleChildren = mainElement:attributeValue("AXVisibleChildren")
 
 	local function getDescendants(elements)
 		local chunk_size = 10
@@ -859,6 +861,10 @@ function marks.getChildrens(mainElement, cb)
 
 	if visibleRows then
 		getDescendants(visibleRows)
+	elseif visibleChildren then
+		getDescendants(visibleChildren)
+	elseif childrenOrder then
+		getDescendants(children)
 	elseif children then
 		getDescendants(children)
 	end
