@@ -613,9 +613,13 @@ function marks.draw()
 
 	local elementsToDraw = {}
 	for i, _ in ipairs(state.marks) do
-		local element = marks.prepareElementForDrawing(i)
-		if element then
-			table.move(element, 1, #element, #elementsToDraw + 1, elementsToDraw)
+		local markText = string.upper(state.allCombinations[i])
+
+		if #state.linkCapture == 0 or markText:sub(1, #state.linkCapture) == state.linkCapture then
+			local element = marks.prepareElementForDrawing(i)
+			if element then
+				table.move(element, 1, #element, #elementsToDraw + 1, elementsToDraw)
+			end
 		end
 	end
 
@@ -1515,10 +1519,43 @@ local function vimLoop(char, modifiers)
 	log("vimLoop " .. char .. ", modifiers " .. hs.inspect(modifiers))
 
 	if state.elements.mode == modes.LINKS then
-		state.linkCapture = state.linkCapture .. char:lower()
-		if #state.linkCapture == 2 then
-			marks.click(state.linkCapture)
-			utils.setMode(modes.NORMAL)
+		if char == "backspace" then
+			-- Remove the last character from the filter
+			if #state.linkCapture > 0 then
+				state.linkCapture = state.linkCapture:sub(1, -2)
+				marks.draw()
+			end
+			return
+		end
+
+		state.linkCapture = state.linkCapture .. char:upper()
+		marks.draw()
+
+		local matchFound = false
+		for i, _ in ipairs(state.marks) do
+			local markText = string.upper(state.allCombinations[i])
+			if markText == state.linkCapture then
+				marks.click(markText:lower())
+				utils.setMode(modes.NORMAL)
+				matchFound = true
+				break
+			end
+		end
+
+		if #state.linkCapture > 0 and not matchFound then
+			local hasPartialMatches = false
+			for i, _ in ipairs(state.marks) do
+				local markText = string.upper(state.allCombinations[i])
+				if markText:sub(1, #state.linkCapture) == state.linkCapture then
+					hasPartialMatches = true
+					break
+				end
+			end
+
+			if not hasPartialMatches then
+				state.linkCapture = ""
+				marks.draw()
+			end
 		end
 		return
 	end
@@ -1561,6 +1598,14 @@ local function eventHandler(event)
 	local flags = event:getFlags()
 	local keyCode = event:getKeyCode()
 	local modifiers = { ctrl = flags.ctrl }
+
+	-- Handle backspace in LINKS mode
+	if state.elements.mode == modes.LINKS and keyCode == hs.keycodes.map["delete"] then
+		timer.doAfter(0, function()
+			vimLoop("backspace", modifiers)
+		end)
+		return true
+	end
 
 	for key, modifier in pairs(flags) do
 		if modifier and key ~= "shift" and key ~= "ctrl" then
