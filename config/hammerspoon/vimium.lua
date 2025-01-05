@@ -849,6 +849,13 @@ function marks.getChildrens(mainElement, cb)
 	local visibleRows = mainElement:attributeValue("AXVisibleRows")
 	local visibleChildren = mainElement:attributeValue("AXVisibleChildren")
 
+	local role = mainElement:attributeValue("AXRole")
+	local main = mainElement:attributeValue("AXMain")
+
+	if role == "AXWindow" and main == false then
+		return
+	end
+
 	local function getDescendants(elements)
 		local chunk_size = 10
 		for i = 1, #elements, chunk_size do
