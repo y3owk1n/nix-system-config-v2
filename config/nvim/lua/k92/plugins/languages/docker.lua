@@ -8,20 +8,9 @@ return {
 	{
 		"neovim/nvim-lspconfig",
 		opts = function(_, opts)
-			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "hadolint" })
-
 			opts.servers = opts.servers or {}
 			opts.servers.dockerls = {}
 			opts.servers.docker_compose_language_service = {}
 		end,
-	},
-	{
-		"mfussenegger/nvim-lint",
-		opts = {
-			linters_by_ft = {
-				dockerfile = { "hadolint" },
-			},
-		},
 	},
 }

@@ -3,12 +3,12 @@
 echo "App bindings processing started."
 
 get_space_ids() {
-  # Query the spaces and extract both ManagedSpaceID and uuid
-  # Clean up the UUIDs by removing semicolons
-  defaults read com.apple.spaces | \
-    grep -E 'ManagedSpaceID|uuid' | \
-    awk -F' = ' '{gsub("\"", "", $2); gsub(";", "", $2); print $2}' | \
-    paste - -  # Pairs ManagedSpaceID with uuid
+	# Query the spaces and extract both ManagedSpaceID and uuid
+	# Clean up the UUIDs by removing semicolons
+	defaults read com.apple.spaces |
+		grep -E 'ManagedSpaceID|uuid' |
+		awk -F' = ' '{gsub("\"", "", $2); gsub(";", "", $2); print $2}' |
+		paste - - # Pairs ManagedSpaceID with uuid
 }
 
 # Get and store space IDs
@@ -27,21 +27,21 @@ deduped_space_ids=$(echo "$space_ids" | sort | uniq)
 
 # Store the space mappings into a space_map associative array
 declare -A space_map
-declare -A seen_spaces  # To track and deduplicate spaces by ManagedSpaceID
+declare -A seen_spaces # To track and deduplicate spaces by ManagedSpaceID
 
 # Initialize counter for space numbers
 current_space=1
 
 # Populating space_map from deduplicated space IDs
 while IFS=$'\t' read -r space_id uuid; do
-  # Check if this space ID is already seen
-  if [ -z "${seen_spaces[$space_id]}" ]; then
-    seen_spaces["$space_id"]=1
-    space_map["$current_space"]="$uuid"  # Map space number to UUID
-    # echo "Mapping Space $current_space -> UUID $uuid (Space ID: $space_id)"
-    ((current_space++))
-  fi
-done <<< "$deduped_space_ids"
+	# Check if this space ID is already seen
+	if [ -z "${seen_spaces[$space_id]}" ]; then
+		seen_spaces["$space_id"]=1
+		space_map["$current_space"]="$uuid" # Map space number to UUID
+		# echo "Mapping Space $current_space -> UUID $uuid (Space ID: $space_id)"
+		((current_space++))
+	fi
+done <<<"$deduped_space_ids"
 
 # Debug: Verify the space_map is correctly populated
 # echo -e "\nSpaces and their UUIDs (Deduplicated):"
@@ -50,11 +50,11 @@ done <<< "$deduped_space_ids"
 # done
 
 update_app_bindings() {
-  local app_id="$1"
-  local uuid="$2"
-  # Check if the app-bindings key exists
+	local app_id="$1"
+	local uuid="$2"
+	# Check if the app-bindings key exists
 
-  defaults write com.apple.spaces "app-bindings" -dict-add "$app_id" "$uuid"
+	defaults write com.apple.spaces "app-bindings" -dict-add "$app_id" "$uuid"
 }
 
 declare -A app_bindings
@@ -84,17 +84,17 @@ for app_id in "${!app_bindings[@]}"; do
 	space_number="${app_bindings[$app_id]}"
 	# echo "Desired Space Number: $space_number"
 
-  # Ensure space_number is valid before accessing space_map
-  if [[ -z "$space_number" ]]; then
-	  echo "Error: No space number found for app $app_id"
-	  continue
-  fi
+	# Ensure space_number is valid before accessing space_map
+	if [[ -z "$space_number" ]]; then
+		echo "Error: No space number found for app $app_id"
+		continue
+	fi
 
-  # Get the corresponding UUID for the space_number
-  space_uuid="${space_map[$space_number]:-}"
-  # echo "Retrieved UUID for Space $space_number: $space_uuid"
+	# Get the corresponding UUID for the space_number
+	space_uuid="${space_map[$space_number]:-}"
+	# echo "Retrieved UUID for Space $space_number: $space_uuid"
 
-  # Update app binding if space_uuid exists
+	# Update app binding if space_uuid exists
 	echo "Mapping $app_id to UUID $space_uuid (Space $space_number)"
 	# Uncomment the following line to actually update the bindings
 	update_app_bindings "$app_id" "$space_uuid"
