@@ -198,12 +198,13 @@ function state.elements.axWindow()
 end
 
 function state.elements.axMenuBar()
-	cached.axMenuBar = cached.axMenuBar or state.elements.axApp():attributeValue("AXMenuBar")
+	cached.axMenuBar = cached.axMenuBar or utils.getAttribute(state.elements.axApp(), "AXMenuBar")
 	return cached.axMenuBar
 end
 
 function state.elements.axFocusedElement()
-	cached.axFocusedElement = cached.axFocusedElement or state.elements.axApp():attributeValue("AXFocusedUIElement")
+	cached.axFocusedElement = cached.axFocusedElement
+		or utils.getAttribute(state.elements.axApp(), "AXFocusedUIElement")
 	return cached.axFocusedElement
 end
 
@@ -217,8 +218,8 @@ function state.elements.fullArea()
 		return cached.fullArea
 	end
 
-	local winFrame = state.elements.axWindow():attributeValue("AXFrame")
-	local menuBarFrame = state.elements.axMenuBar():attributeValue("AXFrame")
+	local winFrame = utils.getAttribute(state.elements.axWindow(), "AXFrame") or {}
+	local menuBarFrame = utils.getAttribute(state.elements.axMenuBar(), "AXFrame") or {}
 
 	cached.fullArea = {
 		x = 0,
@@ -237,7 +238,7 @@ function state.elements.visibleArea()
 		return cached.visibleArea
 	end
 
-	local winFrame = state.elements.axWindow():attributeValue("AXFrame")
+	local winFrame = utils.getAttribute(state.elements.axWindow(), "AXFrame") or {}
 
 	local visibleX = math.max(winFrame.x)
 	local visibleY = math.max(winFrame.y)
@@ -281,7 +282,7 @@ function utils.isSpotlightActive()
 	if not appElement then
 		return false
 	end
-	local windows = appElement:attributeValue("AXWindows")
+	local windows = utils.getAttribute(appElement, "AXWindows") or {}
 	return #windows > 0
 end
 
@@ -331,7 +332,11 @@ function utils.setMode(mode, char)
 end
 
 function utils.isElementPartiallyVisible(element)
-	local frame = element and not element:attributeValue("AXHidden") and element:attributeValue("AXFrame")
+	local axHidden = utils.getAttribute(element, "AXHidden")
+	local axFrame = utils.getAttribute(element, "AXFrame")
+
+	local frame = element and not axHidden and axFrame
+
 	if not frame or frame.w <= 0 or frame.h <= 0 then
 		return false
 	end
@@ -348,14 +353,17 @@ function utils.getFocusedElement(element, depth)
 		return
 	end
 
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
+	local elementApp = utils.getAttribute(element, "AXRole")
+	local elementFrame = utils.getAttribute(element, "AXFrame")
+
 	if elementApp ~= "AXApplication" then
 		if not elementFrame or not utils.isElementPartiallyVisible(element) then
 			return
 		end
 
-		if element:attributeValue("AXFocused") then
+		local axFocused = utils.getAttribute(element, "AXFocused")
+
+		if axFocused then
 			log("Focused element found: " .. hs.inspect(element))
 			element:setAttributeValue("AXFocused", false)
 			log("Focused element unfocused.")
@@ -373,16 +381,16 @@ function utils.getNextPrevElement(element, depth, direction)
 		return false, true
 	end
 
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
+	local elementApp = utils.getAttribute(element, "AXRole")
+	local elementFrame = utils.getAttribute(element, "AXFrame")
 
 	if elementApp ~= "AXApplication" then
 		if not elementFrame or not utils.isElementPartiallyVisible(element) then
 			return false, true
 		end
 
-		local role = element:attributeValue("AXRole")
-		local title = element:attributeValue("AXTitle")
+		local role = utils.getAttribute(element, "AXRole")
+		local title = utils.getAttribute(element, "AXTitle")
 
 		if role == "AXLink" or role == "AXButton" or role == "AXMenuItem" then
 			if title and title:lower():find(direction) then
@@ -392,7 +400,7 @@ function utils.getNextPrevElement(element, depth, direction)
 		end
 	end
 
-	local children = element:attributeValue("AXChildren")
+	local children = utils.getAttribute(element, "AXChildren")
 	if children then
 		local chunk_size = 10
 		for i = 1, #children, chunk_size do
@@ -410,16 +418,16 @@ function utils.getNextPrevElement(element, depth, direction)
 end
 
 function utils.getElementPositionAndSize(element)
-	local frame = element:attributeValue("AXFrame")
+	local frame = utils.getAttribute(element, "AXFrame")
 	if frame then
 		return { x = frame.x, y = frame.y }, { w = frame.w, h = frame.h }
 	end
 
 	local successPos, position = pcall(function()
-		return element:attributeValue("AXPosition")
+		return utils.getAttribute(element, "AXPosition")
 	end)
 	local successSize, size = pcall(function()
-		return element:attributeValue("AXSize")
+		return utils.getAttribute(element, "AXSize")
 	end)
 
 	if successPos and successSize and position and size then
@@ -430,11 +438,15 @@ function utils.getElementPositionAndSize(element)
 end
 
 function utils.findAXRole(rootElement, role)
-	if rootElement:attributeValue("AXRole") == role then
+	local axRole = utils.getAttribute(rootElement, "AXRole")
+
+	if axRole == role then
 		return rootElement
 	end
 
-	for _, child in ipairs(rootElement:attributeValue("AXChildren") or {}) do
+	local axChildren = utils.getAttribute(rootElement, "AXChildren") or {}
+
+	for _, child in ipairs(axChildren) do
 		local result = utils.findAXRole(child, role)
 		if result then
 			return result
@@ -444,7 +456,7 @@ end
 
 function utils.isEditableControlInFocus()
 	if state.elements.axFocusedElement() then
-		return tblContains(config.axEditableRoles, state.elements.axFocusedElement():attributeValue("AXRole"))
+		return tblContains(config.axEditableRoles, utils.getAttribute(state.elements.axFocusedElement(), "AXRole"))
 	else
 		return false
 	end
@@ -472,7 +484,7 @@ function utils.isElementActionable(element)
 		return false
 	end
 
-	local role = element:attributeValue("AXRole")
+	local role = utils.getAttribute(element, "AXRole")
 	if not role then
 		return false
 	end
@@ -487,7 +499,7 @@ function utils.isElementScrollable(element)
 		return false
 	end
 
-	local role = element:attributeValue("AXRole")
+	local role = utils.getAttribute(element, "AXRole")
 	if not role then
 		return false
 	end
@@ -502,7 +514,7 @@ function utils.isElementInput(element)
 		return false
 	end
 
-	local role = element:attributeValue("AXRole")
+	local role = utils.getAttribute(element, "AXRole")
 	if not role then
 		return false
 	end
@@ -517,8 +529,8 @@ function utils.isElementImage(element)
 		return false
 	end
 
-	local role = element:attributeValue("AXRole")
-	local url = element:attributeValue("AXURL")
+	local role = utils.getAttribute(element, "AXRole")
+	local url = utils.getAttribute(element, "AXURL")
 
 	if not role then
 		return false
@@ -556,15 +568,17 @@ function utils.findClickableElements(element, withUrls, depth, cb)
 		return
 	end
 
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
+	local elementApp = utils.getAttribute(element, "AXRole")
+	local elementFrame = utils.getAttribute(element, "AXFrame")
 
 	if elementApp ~= "AXApplication" then
 		if not elementFrame or not utils.isElementPartiallyVisible(element) then
 			return
 		end
 
-		if utils.isElementActionable(element) and (not withUrls or element:attributeValue("AXURL")) then
+		local elementUrl = utils.getAttribute(element, "AXURL")
+
+		if utils.isElementActionable(element) and (not withUrls or elementUrl) then
 			cb(element)
 		end
 	end
@@ -581,8 +595,8 @@ function utils.findScrollableElements(element, depth, cb)
 		return
 	end
 
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
+	local elementApp = utils.getAttribute(element, "AXRole")
+	local elementFrame = utils.getAttribute(element, "AXFrame")
 
 	if elementApp ~= "AXApplication" then
 		if not elementFrame or not utils.isElementPartiallyVisible(element) then
@@ -606,14 +620,17 @@ function utils.findUrlElements(element, depth, cb)
 		return
 	end
 
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
+	local elementApp = utils.getAttribute(element, "AXRole")
+	local elementFrame = utils.getAttribute(element, "AXFrame")
 
 	if elementApp ~= "AXApplication" then
 		if not elementFrame or not utils.isElementPartiallyVisible(element) then
 			return
 		end
-		if element:attributeValue("AXURL") then
+
+		local elementUrl = utils.getAttribute(element, "AXURL")
+
+		if elementUrl then
 			cb(element)
 		end
 	end
@@ -630,8 +647,8 @@ function utils.findInputElements(element, depth, cb)
 		return
 	end
 
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
+	local elementApp = utils.getAttribute(element, "AXRole")
+	local elementFrame = utils.getAttribute(element, "AXFrame")
 
 	if elementApp ~= "AXApplication" then
 		if not elementFrame or not utils.isElementPartiallyVisible(element) then
@@ -654,8 +671,8 @@ function utils.findImageElements(element, depth, cb)
 		return
 	end
 
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
+	local elementApp = utils.getAttribute(element, "AXRole")
+	local elementFrame = utils.getAttribute(element, "AXFrame")
 
 	if elementApp ~= "AXApplication" then
 		if not elementFrame or not utils.isElementPartiallyVisible(element) then
@@ -1110,7 +1127,7 @@ end
 function commands.cmdCopyPageUrlToClipboard()
 	if utils.isInBrowser() then
 		local element = state.elements.axWebArea()
-		local url = element and element:attributeValue("AXURL")
+		local url = element and utils.getAttribute(element, "AXURL")
 		if url then
 			actions.setClipboardContents(url.url)
 		end
@@ -1248,7 +1265,7 @@ function commands.cmdGotoLinkNewTab(char)
 	if utils.isInBrowser() then
 		utils.setMode(modes.LINKS, char)
 		marks.onClickCallback = function(mark)
-			local axURL = mark.element:attributeValue("AXURL")
+			local axURL = utils.getAttribute(mark.element, "AXURL")
 			if axURL then
 				actions.openUrlInNewTab(axURL.url)
 			end
@@ -1348,12 +1365,12 @@ function commands.cmdDownloadImage(char)
 			end
 
 			-- Check if the element is an image
-			if element:attributeValue("AXRole") == "AXImage" then
-				local imageDescription = element:attributeValue("AXDescription") or "unknown"
+			if utils.getAttribute(element, "AXRole") == "AXImage" then
+				local imageDescription = utils.getAttribute(element, "AXDescription") or "unknown"
 				log("Image detected: " .. hs.inspect(imageDescription))
 
 				-- Try downloading the image
-				local downloadURLAttr = element:attributeValue("AXURL")
+				local downloadURLAttr = utils.getAttribute(element, "AXURL")
 
 				if downloadURLAttr then
 					log("AXURL attribute value: " .. hs.inspect(downloadURLAttr))
@@ -1450,7 +1467,7 @@ end
 function commands.cmdMoveMouseToLink(char)
 	utils.setMode(modes.LINKS, char)
 	marks.onClickCallback = function(mark)
-		local frame = mark.element:attributeValue("AXFrame")
+		local frame = utils.getAttribute(mark.element, "AXFrame") or {}
 		mouse.absolutePosition({ x = frame.x + frame.w / 2, y = frame.y + frame.h / 2 })
 	end
 	timer.doAfter(0, function()
@@ -1470,7 +1487,7 @@ function commands.cmdCopyLinkUrlToClipboard(char)
 	if utils.isInBrowser() then
 		utils.setMode(modes.LINKS, char)
 		marks.onClickCallback = function(mark)
-			local axURL = mark.element:attributeValue("AXURL")
+			local axURL = utils.getAttribute(mark.element, "AXURL") or {}
 			actions.setClipboardContents(axURL.url)
 		end
 		timer.doAfter(0, function()
