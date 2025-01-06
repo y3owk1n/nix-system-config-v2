@@ -7,9 +7,7 @@ return {
 	},
 	opts = {
 		events = { "BufWritePost", "BufReadPost", "InsertLeave" },
-		linters_by_ft = {
-			fish = { "fish" },
-		},
+		linters_by_ft = {},
 		---@type table<string,table>
 		linters = {},
 	},
