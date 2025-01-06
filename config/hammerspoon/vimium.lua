@@ -66,12 +66,12 @@ local config = {
 		"AXDisclosureTriangle",
 		"AXMenuButton",
 		"AXMenuBarItem", -- To support top menu bar
+		"AXMenuItem",
 		"AXRow", -- To support Mail.app without using "AXStaticText"
 		-- "AXColorWell", -- Macos Color Picker
 		-- "AXCell", -- This can help with showing marks on Calendar.app
 		-- "AXGroup", -- This can help with lots of MacOS apps, but creates lot of noise!
 		-- "AXStaticText",
-		-- "AXMenuItem",
 		-- "AXMenu",
 		-- "AXToolbar",
 		-- "AXToolbarButton",
