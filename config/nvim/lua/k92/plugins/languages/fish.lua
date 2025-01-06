@@ -1,16 +1,7 @@
-local _table = require("k92.utils.table")
-
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
 		opts = { ensure_installed = { "fish" } },
-	},
-	{
-		"neovim/nvim-lspconfig",
-		opts = function(_, opts)
-			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "shellcheck", "shfmt" })
-		end,
 	},
 	{
 		"stevearc/conform.nvim",
