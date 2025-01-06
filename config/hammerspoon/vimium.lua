@@ -210,7 +210,7 @@ end
 function state.elements.axScrollArea()
 	if not cached.axScrollArea then
 		for _, role in ipairs(config.axScrollableRoles) do
-			cached.axScrollArea = state.elements.findAXRole(state.elements.axWindow(), role)
+			cached.axScrollArea = utils.findAXRole(state.elements.axWindow(), role)
 			if cached.axScrollArea then
 				break
 			end
@@ -220,7 +220,7 @@ function state.elements.axScrollArea()
 end
 
 function state.elements.axWebArea()
-	cached.axWebArea = cached.axWebArea or state.elements.findAXRole(state.elements.axScrollArea(), "AXWebArea")
+	cached.axWebArea = cached.axWebArea or utils.findAXRole(state.elements.axScrollArea(), "AXWebArea")
 	return cached.axWebArea
 end
 
@@ -267,130 +267,6 @@ function state.elements.visibleArea()
 	log("visibleArea: " .. hs.inspect(cached.visibleArea))
 
 	return cached.visibleArea
-end
-
-function state.elements.getFocusedElement(element, depth)
-	if not element or (depth and depth > config.depth) then
-		return
-	end
-
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
-	if elementApp ~= "AXApplication" then
-		if not elementFrame or not marks.isElementPartiallyVisible(element) then
-			return
-		end
-
-		if element:attributeValue("AXFocused") then
-			log("Focused element found: " .. hs.inspect(element))
-			element:setAttributeValue("AXFocused", false)
-			log("Focused element unfocused.")
-		end
-	end
-
-	marks.getChildrens(element, function(_element)
-		state.elements.getFocusedElement(_element, (depth or 0) + 1)
-	end)
-end
-
---- @return boolean, boolean # found status, completed status
-function state.elements.getNextPrevElement(element, depth, direction)
-	if not element or (depth and depth > config.depth) then
-		return false, true
-	end
-
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
-
-	if elementApp ~= "AXApplication" then
-		if not elementFrame or not marks.isElementPartiallyVisible(element) then
-			return false, true
-		end
-
-		local role = element:attributeValue("AXRole")
-		local title = element:attributeValue("AXTitle")
-
-		if role == "AXLink" or role == "AXButton" or role == "AXMenuItem" then
-			if title and title:lower():find(direction) then
-				element:performAction("AXPress")
-				return true, true
-			end
-		end
-	end
-
-	local children = element:attributeValue("AXChildren")
-	if children then
-		local chunk_size = 10
-		for i = 1, #children, chunk_size do
-			local end_idx = math.min(i + chunk_size - 1, #children)
-			for j = i, end_idx do
-				local found = state.elements.getNextPrevElement(children[j], (depth or 0) + 1, direction)
-				if found then
-					return true, true -- Element found in children, traversal complete
-				end
-			end
-		end
-	end
-
-	return false, true -- No element found, but traversal completed for this branch
-end
-
-function state.elements.getElementPositionAndSize(element)
-	local frame = element:attributeValue("AXFrame")
-	if frame then
-		return { x = frame.x, y = frame.y }, { w = frame.w, h = frame.h }
-	end
-
-	local successPos, position = pcall(function()
-		return element:attributeValue("AXPosition")
-	end)
-	local successSize, size = pcall(function()
-		return element:attributeValue("AXSize")
-	end)
-
-	if successPos and successSize and position and size then
-		return position, size
-	end
-
-	return nil, nil
-end
-
-function state.elements.findAXRole(rootElement, role)
-	if rootElement:attributeValue("AXRole") == role then
-		return rootElement
-	end
-
-	for _, child in ipairs(rootElement:attributeValue("AXChildren") or {}) do
-		local result = state.elements.findAXRole(child, role)
-		if result then
-			return result
-		end
-	end
-end
-
-function state.elements.isEditableControlInFocus()
-	if state.elements.axFocusedElement() then
-		return tblContains(config.axEditableRoles, state.elements.axFocusedElement():attributeValue("AXRole"))
-	else
-		return false
-	end
-end
-
-function state.elements.getAttribute(element, attributeName)
-	if not element then
-		return nil
-	end
-	return element:attributeValue(attributeName)
-end
-
-function state.elements.getDescendants(elements, cb)
-	local chunk_size = 10
-	for i = 1, #elements, chunk_size do
-		local end_idx = math.min(i + chunk_size - 1, #elements)
-		for j = i, end_idx do
-			cb(elements[j])
-		end
-	end
 end
 
 --------------------------------------------------------------------------------
@@ -464,6 +340,350 @@ function utils.setMode(mode, char)
 	end
 
 	menuBar.item:setTitle(char or defaultModeChars[mode] or "?")
+end
+
+function utils.isElementPartiallyVisible(element)
+	local frame = element and not element:attributeValue("AXHidden") and element:attributeValue("AXFrame")
+	if not frame or frame.w <= 0 or frame.h <= 0 then
+		return false
+	end
+
+	local fullArea = state.elements.fullArea()
+	local vx, vy, vw, vh = fullArea.x, fullArea.y, fullArea.w, fullArea.h
+	local fx, fy, fw, fh = frame.x, frame.y, frame.w, frame.h
+
+	return fx < vx + vw and fx + fw > vx and fy < vy + vh and fy + fh > vy
+end
+
+function utils.getFocusedElement(element, depth)
+	if not element or (depth and depth > config.depth) then
+		return
+	end
+
+	local elementApp = element:attributeValue("AXRole")
+	local elementFrame = element:attributeValue("AXFrame")
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not utils.isElementPartiallyVisible(element) then
+			return
+		end
+
+		if element:attributeValue("AXFocused") then
+			log("Focused element found: " .. hs.inspect(element))
+			element:setAttributeValue("AXFocused", false)
+			log("Focused element unfocused.")
+		end
+	end
+
+	utils.getChildrens(element, function(_element)
+		utils.getFocusedElement(_element, (depth or 0) + 1)
+	end)
+end
+
+--- @return boolean, boolean # found status, completed status
+function utils.getNextPrevElement(element, depth, direction)
+	if not element or (depth and depth > config.depth) then
+		return false, true
+	end
+
+	local elementApp = element:attributeValue("AXRole")
+	local elementFrame = element:attributeValue("AXFrame")
+
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not utils.isElementPartiallyVisible(element) then
+			return false, true
+		end
+
+		local role = element:attributeValue("AXRole")
+		local title = element:attributeValue("AXTitle")
+
+		if role == "AXLink" or role == "AXButton" or role == "AXMenuItem" then
+			if title and title:lower():find(direction) then
+				element:performAction("AXPress")
+				return true, true
+			end
+		end
+	end
+
+	local children = element:attributeValue("AXChildren")
+	if children then
+		local chunk_size = 10
+		for i = 1, #children, chunk_size do
+			local end_idx = math.min(i + chunk_size - 1, #children)
+			for j = i, end_idx do
+				local found = utils.getNextPrevElement(children[j], (depth or 0) + 1, direction)
+				if found then
+					return true, true -- Element found in children, traversal complete
+				end
+			end
+		end
+	end
+
+	return false, true -- No element found, but traversal completed for this branch
+end
+
+function utils.getElementPositionAndSize(element)
+	local frame = element:attributeValue("AXFrame")
+	if frame then
+		return { x = frame.x, y = frame.y }, { w = frame.w, h = frame.h }
+	end
+
+	local successPos, position = pcall(function()
+		return element:attributeValue("AXPosition")
+	end)
+	local successSize, size = pcall(function()
+		return element:attributeValue("AXSize")
+	end)
+
+	if successPos and successSize and position and size then
+		return position, size
+	end
+
+	return nil, nil
+end
+
+function utils.findAXRole(rootElement, role)
+	if rootElement:attributeValue("AXRole") == role then
+		return rootElement
+	end
+
+	for _, child in ipairs(rootElement:attributeValue("AXChildren") or {}) do
+		local result = utils.findAXRole(child, role)
+		if result then
+			return result
+		end
+	end
+end
+
+function utils.isEditableControlInFocus()
+	if state.elements.axFocusedElement() then
+		return tblContains(config.axEditableRoles, state.elements.axFocusedElement():attributeValue("AXRole"))
+	else
+		return false
+	end
+end
+
+function utils.getAttribute(element, attributeName)
+	if not element then
+		return nil
+	end
+	return element:attributeValue(attributeName)
+end
+
+function utils.getDescendants(elements, cb)
+	local chunk_size = 10
+	for i = 1, #elements, chunk_size do
+		local end_idx = math.min(i + chunk_size - 1, #elements)
+		for j = i, end_idx do
+			cb(elements[j])
+		end
+	end
+end
+
+function utils.isElementActionable(element)
+	if not element then
+		return false
+	end
+
+	local role = element:attributeValue("AXRole")
+	if not role then
+		return false
+	end
+
+	local axJumpableRoles = config.axJumpableRoles
+
+	return tblContains(axJumpableRoles, role)
+end
+
+function utils.isElementScrollable(element)
+	if not element then
+		return false
+	end
+
+	local role = element:attributeValue("AXRole")
+	if not role then
+		return false
+	end
+
+	local axScrollableRoles = config.axScrollableRoles
+
+	return tblContains(axScrollableRoles, role)
+end
+
+function utils.isElementInput(element)
+	if not element then
+		return false
+	end
+
+	local role = element:attributeValue("AXRole")
+	if not role then
+		return false
+	end
+
+	local axEditableRoles = config.axEditableRoles
+
+	return tblContains(axEditableRoles, role)
+end
+
+function utils.isElementImage(element)
+	if not element then
+		return false
+	end
+
+	local role = element:attributeValue("AXRole")
+	local url = element:attributeValue("AXURL")
+
+	if not role then
+		return false
+	end
+
+	return role == "AXImage" and url ~= nil
+end
+
+function utils.getChildrens(mainElement, cb)
+	local role = utils.getAttribute(mainElement, "AXRole")
+	local main = utils.getAttribute(mainElement, "AXMain")
+
+	if role == "AXWindow" and main == false then
+		return
+	end
+
+	local sourceTypes = {
+		"AXVisibleRows",
+		"AXVisibleChildren",
+		"AXChildrenInNavigationOrder",
+		"AXChildren",
+	}
+
+	for _, sourceType in ipairs(sourceTypes) do
+		local elements = utils.getAttribute(mainElement, sourceType)
+		if elements and #elements > 0 then
+			utils.getDescendants(elements, cb)
+			return
+		end
+	end
+end
+
+function utils.findClickableElements(element, withUrls, depth, cb)
+	if not element or (depth and depth > config.depth) then
+		return
+	end
+
+	local elementApp = element:attributeValue("AXRole")
+	local elementFrame = element:attributeValue("AXFrame")
+
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not utils.isElementPartiallyVisible(element) then
+			return
+		end
+
+		if utils.isElementActionable(element) and (not withUrls or element:attributeValue("AXURL")) then
+			cb(element)
+		end
+	end
+
+	utils.getChildrens(element, function(_element)
+		utils.findClickableElements(_element, withUrls, (depth or 0) + 1, function(_element2)
+			cb(_element2)
+		end)
+	end)
+end
+
+function utils.findScrollableElements(element, depth, cb)
+	if not element or (depth and depth > config.depth) then
+		return
+	end
+
+	local elementApp = element:attributeValue("AXRole")
+	local elementFrame = element:attributeValue("AXFrame")
+
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not utils.isElementPartiallyVisible(element) then
+			return
+		end
+
+		if utils.isElementScrollable(element) then
+			cb(element)
+		end
+	end
+
+	utils.getChildrens(element, function(_element)
+		utils.findScrollableElements(_element, (depth or 0) + 1, function(_element2)
+			cb(_element2)
+		end)
+	end)
+end
+
+function utils.findUrlElements(element, depth, cb)
+	if not element or (depth and depth > config.depth) then
+		return
+	end
+
+	local elementApp = element:attributeValue("AXRole")
+	local elementFrame = element:attributeValue("AXFrame")
+
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not utils.isElementPartiallyVisible(element) then
+			return
+		end
+		if element:attributeValue("AXURL") then
+			cb(element)
+		end
+	end
+
+	utils.getChildrens(element, function(_element)
+		utils.findUrlElements(_element, (depth or 0) + 1, function(_element2)
+			cb(_element2)
+		end)
+	end)
+end
+
+function utils.findInputElements(element, depth, cb)
+	if not element or (depth and depth > config.depth) then
+		return
+	end
+
+	local elementApp = element:attributeValue("AXRole")
+	local elementFrame = element:attributeValue("AXFrame")
+
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not utils.isElementPartiallyVisible(element) then
+			return
+		end
+		if utils.isElementInput(element) then
+			cb(element)
+		end
+	end
+
+	utils.getChildrens(element, function(_element)
+		utils.findInputElements(_element, (depth or 0) + 1, function(_element2)
+			cb(_element2)
+		end)
+	end)
+end
+
+function utils.findImageElements(element, depth, cb)
+	if not element or (depth and depth > config.depth) then
+		return
+	end
+
+	local elementApp = element:attributeValue("AXRole")
+	local elementFrame = element:attributeValue("AXFrame")
+
+	if elementApp ~= "AXApplication" then
+		if not elementFrame or not utils.isElementPartiallyVisible(element) then
+			return
+		end
+		if utils.isElementImage(element) then
+			log("found AXImage: " .. hs.inspect(element))
+			cb(element)
+		end
+	end
+
+	utils.getChildrens(element, function(_element)
+		utils.findImageElements(_element, (depth or 0) + 1, function(_element2)
+			cb(_element2)
+		end)
+	end)
 end
 
 --------------------------------------------------------------------------------
@@ -583,7 +803,7 @@ function actions.forceUnfocus()
 		return
 	end
 
-	state.elements.getFocusedElement(startElement, 0)
+	utils.getFocusedElement(startElement, 0)
 	hs.alert.show("Force unfocused!")
 end
 
@@ -656,7 +876,7 @@ function marks.prepareElementForDrawing(markIndex)
 		return nil
 	end
 
-	local position, size = state.elements.getElementPositionAndSize(mark.element)
+	local position, size = utils.getElementPositionAndSize(mark.element)
 	if not position or not size then
 		return nil
 	end
@@ -791,216 +1011,6 @@ function marks.add(element)
 	insert(state.marks, { element = element })
 end
 
-function marks.isElementPartiallyVisible(element)
-	local frame = element and not element:attributeValue("AXHidden") and element:attributeValue("AXFrame")
-	if not frame or frame.w <= 0 or frame.h <= 0 then
-		return false
-	end
-
-	local fullArea = state.elements.fullArea()
-	local vx, vy, vw, vh = fullArea.x, fullArea.y, fullArea.w, fullArea.h
-	local fx, fy, fw, fh = frame.x, frame.y, frame.w, frame.h
-
-	return fx < vx + vw and fx + fw > vx and fy < vy + vh and fy + fh > vy
-end
-
-function marks.isElementActionable(element)
-	if not element then
-		return false
-	end
-
-	local role = element:attributeValue("AXRole")
-	if not role then
-		return false
-	end
-
-	local axJumpableRoles = config.axJumpableRoles
-
-	return tblContains(axJumpableRoles, role)
-end
-
-function marks.isElementScrollable(element)
-	if not element then
-		return false
-	end
-
-	local role = element:attributeValue("AXRole")
-	if not role then
-		return false
-	end
-
-	local axScrollableRoles = config.axScrollableRoles
-
-	return tblContains(axScrollableRoles, role)
-end
-
-function marks.isElementInput(element)
-	if not element then
-		return false
-	end
-
-	local role = element:attributeValue("AXRole")
-	if not role then
-		return false
-	end
-
-	local axEditableRoles = config.axEditableRoles
-
-	return tblContains(axEditableRoles, role)
-end
-
-function marks.isElementImage(element)
-	if not element then
-		return false
-	end
-
-	local role = element:attributeValue("AXRole")
-	local url = element:attributeValue("AXURL")
-
-	if not role then
-		return false
-	end
-
-	return role == "AXImage" and url ~= nil
-end
-
-function marks.getChildrens(mainElement, cb)
-	local role = state.elements.getAttribute(mainElement, "AXRole")
-	local main = state.elements.getAttribute(mainElement, "AXMain")
-
-	if role == "AXWindow" and main == false then
-		return
-	end
-
-	local sourceTypes = {
-		"AXVisibleRows",
-		"AXVisibleChildren",
-		"AXChildrenInNavigationOrder",
-		"AXChildren",
-	}
-
-	for _, sourceType in ipairs(sourceTypes) do
-		local elements = state.elements.getAttribute(mainElement, sourceType)
-		if elements and #elements > 0 then
-			state.elements.getDescendants(elements, cb)
-			return
-		end
-	end
-end
-
-function marks.findClickableElements(element, withUrls, depth)
-	if not element or (depth and depth > config.depth) then
-		return
-	end
-
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
-
-	if elementApp ~= "AXApplication" then
-		if not elementFrame or not marks.isElementPartiallyVisible(element) then
-			return
-		end
-
-		if marks.isElementActionable(element) and (not withUrls or element:attributeValue("AXURL")) then
-			marks.add(element)
-		end
-	end
-
-	marks.getChildrens(element, function(_element)
-		marks.findClickableElements(_element, withUrls, (depth or 0) + 1)
-	end)
-end
-
-function marks.findScrollableElements(element, depth)
-	if not element or (depth and depth > config.depth) then
-		return
-	end
-
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
-
-	if elementApp ~= "AXApplication" then
-		if not elementFrame or not marks.isElementPartiallyVisible(element) then
-			return
-		end
-
-		if marks.isElementScrollable(element) then
-			marks.add(element)
-		end
-	end
-
-	marks.getChildrens(element, function(_element)
-		marks.findScrollableElements(_element, (depth or 0) + 1)
-	end)
-end
-
-function marks.findUrlElements(element, depth)
-	if not element or (depth and depth > config.depth) then
-		return
-	end
-
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
-
-	if elementApp ~= "AXApplication" then
-		if not elementFrame or not marks.isElementPartiallyVisible(element) then
-			return
-		end
-		if element:attributeValue("AXURL") then
-			marks.add(element)
-		end
-	end
-
-	marks.getChildrens(element, function(_element)
-		marks.findUrlElements(_element, (depth or 0) + 1)
-	end)
-end
-
-function marks.findInputElements(element, depth)
-	if not element or (depth and depth > config.depth) then
-		return
-	end
-
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
-
-	if elementApp ~= "AXApplication" then
-		if not elementFrame or not marks.isElementPartiallyVisible(element) then
-			return
-		end
-		if marks.isElementInput(element) then
-			marks.add(element)
-		end
-	end
-
-	marks.getChildrens(element, function(_element)
-		marks.findInputElements(_element, (depth or 0) + 1)
-	end)
-end
-
-function marks.findImageElements(element, depth)
-	if not element or (depth and depth > config.depth) then
-		return
-	end
-
-	local elementApp = element:attributeValue("AXRole")
-	local elementFrame = element:attributeValue("AXFrame")
-
-	if elementApp ~= "AXApplication" then
-		if not elementFrame or not marks.isElementPartiallyVisible(element) then
-			return
-		end
-		if marks.isElementImage(element) then
-			log("found AXImage: " .. hs.inspect(element))
-			marks.add(element)
-		end
-	end
-
-	marks.getChildrens(element, function(_element)
-		marks.findImageElements(_element, (depth or 0) + 1)
-	end)
-end
-
 --- @param withUrls boolean # If true, includes URLs when finding clickable elements.
 --- @param type "link"|"scroll"|"url"|"input"|"image" # The type of elements to find ("link", "scroll", "url", "input").
 function marks.show(withUrls, type)
@@ -1014,19 +1024,28 @@ function marks.show(withUrls, type)
 	marks.clear()
 
 	if type == "link" then
-		marks.findClickableElements(startElement, withUrls, 0)
+		utils.findClickableElements(startElement, withUrls, 0, function(element)
+			marks.add(element)
+		end)
 	end
 
 	if type == "scroll" then
-		marks.findScrollableElements(startElement, 0)
+		utils.findScrollableElements(startElement, 0, function(element)
+			marks.add(element)
+		end)
 	end
 
 	if type == "url" then
-		marks.findUrlElements(startElement, 0)
+		utils.findUrlElements(startElement, 0, function(element)
+			marks.add(element)
+		end)
 	end
 
 	if type == "input" then
-		marks.findInputElements(startElement, 0)
+		utils.findInputElements(startElement, 0, function(element)
+			marks.add(element)
+		end)
+
 		if #state.marks == 1 then
 			marks.onClickCallback(state.marks[1])
 			utils.setMode(modes.NORMAL)
@@ -1035,7 +1054,9 @@ function marks.show(withUrls, type)
 	end
 
 	if type == "image" then
-		marks.findImageElements(startElement, 0)
+		utils.findImageElements(startElement, 0, function(element)
+			marks.add(element)
+		end)
 	end
 
 	if #state.marks > 0 then
@@ -1133,7 +1154,7 @@ function commands.cmdGotoLink(char)
 			log("Success AXPress")
 		else
 			-- Try different methods to get position
-			local position, size = state.elements.getElementPositionAndSize(element)
+			local position, size = utils.getElementPositionAndSize(element)
 
 			if position and size then
 				local clickX = position.x + (size.w / 2)
@@ -1207,7 +1228,7 @@ function commands.cmdRightClick(char)
 			mark.element:performAction("AXShowMenu")
 			log("Success AXShowMenu")
 		else
-			local position, size = state.elements.getElementPositionAndSize(element)
+			local position, size = utils.getElementPositionAndSize(element)
 
 			if position and size then
 				local clickX = position.x + (size.w / 2)
@@ -1271,7 +1292,7 @@ function commands.cmdGotoInput(char)
 			log("Success AXPress")
 		else
 			-- Try different methods to get position
-			local position, size = state.elements.getElementPositionAndSize(element)
+			local position, size = utils.getElementPositionAndSize(element)
 
 			if position and size then
 				local clickX = position.x + (size.w / 2)
@@ -1480,7 +1501,7 @@ function commands.cmdNextPage()
 				return
 			end
 
-			local success, status = state.elements.getNextPrevElement(startElement, 0, "next")
+			local success, status = utils.getNextPrevElement(startElement, 0, "next")
 
 			if not success and status then
 				hs.alert.show("No Next button found")
@@ -1502,7 +1523,7 @@ function commands.cmdPrevPage()
 				return
 			end
 
-			local success, status = state.elements.getNextPrevElement(startElement, 0, "prev")
+			local success, status = utils.getNextPrevElement(startElement, 0, "prev")
 
 			if not success and status then
 				hs.alert.show("No Previous button found")
@@ -1642,7 +1663,7 @@ local function eventHandler(event)
 		return false
 	end
 
-	if state.elements.mode == modes.INSERT or state.elements.isEditableControlInFocus() then
+	if state.elements.mode == modes.INSERT or utils.isEditableControlInFocus() then
 		return false
 	end
 
