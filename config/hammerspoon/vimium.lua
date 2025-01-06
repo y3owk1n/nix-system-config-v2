@@ -207,20 +207,8 @@ function state.elements.axFocusedElement()
 	return cached.axFocusedElement
 end
 
-function state.elements.axScrollArea()
-	if not cached.axScrollArea then
-		for _, role in ipairs(config.axScrollableRoles) do
-			cached.axScrollArea = utils.findAXRole(state.elements.axWindow(), role)
-			if cached.axScrollArea then
-				break
-			end
-		end
-	end
-	return cached.axScrollArea
-end
-
 function state.elements.axWebArea()
-	cached.axWebArea = cached.axWebArea or utils.findAXRole(state.elements.axScrollArea(), "AXWebArea")
+	cached.axWebArea = cached.axWebArea or utils.findAXRole(state.elements.axWindow(), "AXWebArea")
 	return cached.axWebArea
 end
 
