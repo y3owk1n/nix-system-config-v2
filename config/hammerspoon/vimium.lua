@@ -376,6 +376,23 @@ function state.elements.isEditableControlInFocus()
 	end
 end
 
+function state.elements.getAttribute(element, attributeName)
+	if not element then
+		return nil
+	end
+	return element:attributeValue(attributeName)
+end
+
+function state.elements.getDescendants(elements, cb)
+	local chunk_size = 10
+	for i = 1, #elements, chunk_size do
+		local end_idx = math.min(i + chunk_size - 1, #elements)
+		for j = i, end_idx do
+			cb(elements[j])
+		end
+	end
+end
+
 --------------------------------------------------------------------------------
 -- Helper Functions
 --------------------------------------------------------------------------------
@@ -848,36 +865,26 @@ function marks.isElementImage(element)
 end
 
 function marks.getChildrens(mainElement, cb)
-	local children = mainElement:attributeValue("AXChildren")
-	local childrenOrder = mainElement:attributeValue("AXChildrenInNavigationOrder")
-	local visibleRows = mainElement:attributeValue("AXVisibleRows")
-	local visibleChildren = mainElement:attributeValue("AXVisibleChildren")
-
-	local role = mainElement:attributeValue("AXRole")
-	local main = mainElement:attributeValue("AXMain")
+	local role = state.elements.getAttribute(mainElement, "AXRole")
+	local main = state.elements.getAttribute(mainElement, "AXMain")
 
 	if role == "AXWindow" and main == false then
 		return
 	end
 
-	local function getDescendants(elements)
-		local chunk_size = 10
-		for i = 1, #elements, chunk_size do
-			local end_idx = math.min(i + chunk_size - 1, #elements)
-			for j = i, end_idx do
-				cb(elements[j])
-			end
-		end
-	end
+	local sourceTypes = {
+		"AXVisibleRows",
+		"AXVisibleChildren",
+		"AXChildrenInNavigationOrder",
+		"AXChildren",
+	}
 
-	if visibleRows then
-		getDescendants(visibleRows)
-	elseif visibleChildren then
-		getDescendants(visibleChildren)
-	elseif childrenOrder then
-		getDescendants(children)
-	elseif children then
-		getDescendants(children)
+	for _, sourceType in ipairs(sourceTypes) do
+		local elements = state.elements.getAttribute(mainElement, sourceType)
+		if elements and #elements > 0 then
+			state.elements.getDescendants(elements, cb)
+			return
+		end
 	end
 end
 
