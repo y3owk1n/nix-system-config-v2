@@ -53,8 +53,6 @@ vim.opt.incsearch = true -- follow the searches
 -- Keep signcolumn on by default
 vim.opt.signcolumn = "yes"
 
-vim.opt.statuscolumn = [[%!v:lua.require'snacks.statuscolumn'.get()]]
-
 -- Decrease mapped sequence wait time
 -- Displays which-key popup sooner
 vim.opt.timeoutlen = 300

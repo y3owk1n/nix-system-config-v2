@@ -34,6 +34,9 @@ return {
 				},
 			},
 			quickfile = { enabled = true, exclude = { "latex" } },
+			statuscolumn = {
+				enabled = true,
+			},
 			dashboard = {
 				enabled = true,
 				preset = {
