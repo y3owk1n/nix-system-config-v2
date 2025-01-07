@@ -85,6 +85,8 @@ vim.opt.virtualedit = "block" -- Allow going past the end of line in visual bloc
 
 vim.opt.sessionoptions = { "buffers", "curdir", "tabpages", "winsize", "help", "globals", "skiprtp", "folds" }
 
+vim.o.laststatus = 3 -- Show global statusline (single statusline at bottom)
+
 -- words
 vim.opt.path:append("**")
 vim.opt.iskeyword:append("-") -- consider string-string as whole words
