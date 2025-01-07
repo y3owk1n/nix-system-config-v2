@@ -74,16 +74,8 @@ return {
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
 					local has_support_document_highlight
 
-					-- TODO: Can remove this on 0.11
-					-- 0.11 -> client:supports_method
-					-- 0.10 -> client.supports_method
-					if vim.fn.has("nvim-0.11") == 1 then
-						has_support_document_highlight = client
-							and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight)
-					else
-						has_support_document_highlight = client
-							and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight)
-					end
+					has_support_document_highlight = client
+						and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight)
 
 					if has_support_document_highlight then
 						local highlight_augroup = vim.api.nvim_create_augroup("k92-lsp-highlight", { clear = false })
@@ -150,7 +142,7 @@ return {
 					end, p)
 
 					local spinner = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
-					vim.notify(table.concat(msg, "\n"), "info", {
+					vim.notify(table.concat(msg, "\n"), vim.diagnostic.severity.INFO, {
 						id = "lsp_progress",
 						title = client.name,
 						opts = function(notif)
@@ -193,15 +185,6 @@ return {
 					severity_sort = true,
 				},
 			})
-
-			-- TODO: Can remove this on 0.11
-			-- Make border rounded for hover & signatureHelp
-			if vim.fn.has("nvim-0.10") == 1 then
-				vim.lsp.handlers["textDocument/hover"] =
-					vim.lsp.with(vim.lsp.handlers.hover, { border = opts.border or "rounded" })
-				vim.lsp.handlers["textDocument/signatureHelp"] =
-					vim.lsp.with(vim.lsp.handlers.signature_help, { border = opts.border or "rounded" })
-			end
 
 			local capabilities = vim.tbl_deep_extend(
 				"force",

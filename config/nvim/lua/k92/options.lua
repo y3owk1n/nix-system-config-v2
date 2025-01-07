@@ -3,6 +3,10 @@ vim.opt.termguicolors = true
 -- Security
 vim.opt.modelines = 0
 
+vim.o.smoothscroll = true
+
+vim.o.display = "lastline"
+
 -- Line numbers
 vim.opt.number = true
 vim.opt.relativenumber = true
