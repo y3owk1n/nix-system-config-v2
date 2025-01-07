@@ -1,3 +1,12 @@
+local filetypes = {
+	"javascript",
+	"javascriptreact",
+	"javascript.jsx",
+	"typescript",
+	"typescriptreact",
+	"typescript.tsx",
+}
+
 ---@type LazySpec
 return {
 	{
@@ -16,14 +25,7 @@ return {
 		opts = function(_, opts)
 			opts.servers = opts.servers or {}
 			opts.servers.vtsls = {
-				filetypes = {
-					"javascript",
-					"javascriptreact",
-					"javascript.jsx",
-					"typescript",
-					"typescriptreact",
-					"typescript.tsx",
-				},
+				filetypes = filetypes,
 				settings = {
 					complete_function_calls = true,
 					vtsls = {
@@ -74,7 +76,7 @@ return {
 	},
 	{
 		"dmmulroy/ts-error-translator.nvim",
-		event = { "BufReadPre", "BufNewFile" },
+		ft = filetypes,
 		opts = {},
 	},
 }
