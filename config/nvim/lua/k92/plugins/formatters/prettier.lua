@@ -48,6 +48,7 @@ function M.has_parser(ctx)
 	return ok and parser and parser ~= vim.NIL
 end
 
+---@type LazySpec
 return {
 	{
 		"neovim/nvim-lspconfig",

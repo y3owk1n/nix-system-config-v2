@@ -1,5 +1,4 @@
-local _table = require("k92.utils.table")
-
+---@type LazySpec
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",

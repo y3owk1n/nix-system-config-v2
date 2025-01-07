@@ -18,6 +18,7 @@ local supported = {
 	-- "yaml",
 }
 
+---@type LazySpec
 return {
 	{
 		"neovim/nvim-lspconfig",
