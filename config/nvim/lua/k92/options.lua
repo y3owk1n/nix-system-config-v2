@@ -1,5 +1,8 @@
 vim.opt.termguicolors = true
 
+-- Security
+vim.opt.modelines = 0
+
 -- Line numbers
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -115,6 +118,22 @@ vim.opt.viewoptions:remove("curdir") -- disable saving current directory with vi
 vim.opt.backspace:append({ "nostop" }) -- don't stop backspace at insert
 
 vim.opt.whichwrap:append("<,>,[,],h,l")
+
+vim.opt.wildmenu = true
+vim.opt.wildignorecase = true
+
+-- ignore files vim doesnt use
+vim.opt.wildignore:append(".git,.hg,.svn")
+vim.opt.wildignore:append(".aux,*.out,*.toc")
+vim.opt.wildignore:append(".o,*.obj,*.exe,*.dll,*.manifest,*.rbc,*.class")
+vim.opt.wildignore:append(".ai,*.bmp,*.gif,*.ico,*.jpg,*.jpeg,*.png,*.psd,*.webp")
+vim.opt.wildignore:append(".avi,*.divx,*.mp4,*.webm,*.mov,*.m2ts,*.mkv,*.vob,*.mpg,*.mpeg")
+vim.opt.wildignore:append(".mp3,*.oga,*.ogg,*.wav,*.flac")
+vim.opt.wildignore:append(".eot,*.otf,*.ttf,*.woff")
+vim.opt.wildignore:append(".doc,*.pdf,*.cbr,*.cbz")
+vim.opt.wildignore:append(".zip,*.tar.gz,*.tar.bz2,*.rar,*.tar.xz,*.kgb")
+vim.opt.wildignore:append(".swp,.lock,.DS_Store,._*")
+vim.opt.wildignore:append(".,..")
 
 vim.cmd("filetype plugin indent on") -- Enable all filetype plugins
 
