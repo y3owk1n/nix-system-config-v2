@@ -432,24 +432,6 @@ return {
 			hl = { fg = "blue", bold = true },
 		}
 
-		local MacroRec = {
-			condition = function()
-				return vim.fn.reg_recording() ~= "" and vim.o.cmdheight == 0
-			end,
-			provider = " ",
-			hl = { fg = "peach", bold = true },
-			utils.surround({ "[", "]" }, nil, {
-				provider = function()
-					return vim.fn.reg_recording()
-				end,
-				hl = { fg = "teal", bold = true },
-			}),
-			update = {
-				"RecordingEnter",
-				"RecordingLeave",
-			},
-		}
-
 		local DefaultStatusline = {
 			ViMode,
 			Git,
@@ -458,7 +440,6 @@ return {
 			FileNameBlock,
 			Diagnostics,
 			Align,
-			MacroRec,
 			LSPActive,
 			Space,
 			FileTypeBlock,
