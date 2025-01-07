@@ -71,22 +71,13 @@
         }
       ];
       extraConfig = ''
-        # unbind o
-        #
-        # unbind %
-        # bind \\ split-window -h -c "#{pane_current_path}"
-        #
-        # unbind '"'
-        # bind - split-window -v -c "#{pane_current_path}"
-        #
-        # unbind r
-        # bind R source-file ~/.config/tmux/tmux.conf \; display-message "Config reloaded..."
-
         bind -r j resize-pane -D 5
         bind -r k resize-pane -U 5
         bind -r l resize-pane -R 5
         bind -r h resize-pane -L 5
         bind -r m resize-pane -Z
+
+        bind-key -r b run-shell "bash ~/nix-system-config-v2/scripts/tmux-sessionizer.sh"
 
         bind-key -T copy-mode-vi 'v' send -X begin-selection # start selecting text with "v"
         bind-key -T copy-mode-vi 'y' send -X copy-selection # copy text with "y"
@@ -111,7 +102,7 @@
         set -gF  status-right "#{@catppuccin_status_directory}"
         set -agF status-right "#{@catppuccin_status_user}"
         set -agF status-right "#{@catppuccin_status_host}"
-      '';
+        			'';
     };
   };
 }
