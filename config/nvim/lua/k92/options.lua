@@ -83,8 +83,6 @@ vim.opt.synmaxcol = 300 -- Don't syntax highlight long lines
 
 vim.opt.virtualedit = "block" -- Allow going past the end of line in visual block mode
 
-vim.opt.cmdheight = 0
-
 vim.opt.sessionoptions = { "buffers", "curdir", "tabpages", "winsize", "help", "globals", "skiprtp", "folds" }
 
 -- words
@@ -109,10 +107,6 @@ vim.cmd([[let &t_Ce = "\e[4:0m]"]])
 vim.opt.formatoptions:append({ "r" })
 
 vim.opt.spelllang:append("cjk") -- disable spellchecking for asian characters (VIM algorithm does not support it)
-vim.opt.shortmess:append("c") -- don't show redundant messages from ins-completion-menu
-vim.opt.shortmess:append("A") -- Ignore swap file messages
-vim.opt.shortmess:append("WcC") -- Reduce command line messages
-vim.opt.shortmess:append({ s = true, I = true }) -- disable search count wrap and startup messages
 
 vim.opt.viewoptions:remove("curdir") -- disable saving current directory with views
 
