@@ -67,12 +67,6 @@ return {
 			},
 
 			completion = {
-				list = {
-					selection = {
-						preselect = true,
-						auto_insert = true,
-					},
-				},
 				menu = {
 					draw = {
 						treesitter = { "lsp" },
@@ -88,9 +82,12 @@ return {
 				},
 			},
 
-			signature = { enabled = true, window = {
-				border = "rounded",
-			} },
+			signature = {
+				enabled = true,
+				window = {
+					border = "rounded",
+				},
+			},
 		},
 		-- allows extending the providers array elsewhere in your config
 		-- without having to redefine it
