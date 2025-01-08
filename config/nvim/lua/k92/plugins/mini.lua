@@ -2,14 +2,14 @@
 return {
 	{
 		"echasnovski/mini.ai",
-		event = { "BufReadPre", "BufNewFile" },
+		event = { "VeryLazy" },
 		opts = {
 			n_lines = 500,
 		},
 	},
 	{
 		"echasnovski/mini.comment",
-		event = { "BufReadPre", "BufNewFile" },
+		event = { "VeryLazy" },
 		dependencies = { "JoosepAlviste/nvim-ts-context-commentstring", opts = { enable_autocmd = false } },
 		opts = {
 			custom_commentstring = function()
@@ -185,7 +185,7 @@ return {
 	},
 	{
 		"echasnovski/mini.pairs",
-		event = { "InsertEnter" },
+		event = { "VeryLazy" },
 		opts = {
 			modes = { insert = true, command = true, terminal = false },
 			-- skip autopair when next character is one of these
@@ -201,7 +201,7 @@ return {
 	},
 	{
 		"echasnovski/mini.surround",
-		event = { "BufReadPre", "BufNewFile" },
+		event = { "VeryLazy" },
 		opts = {
 			mappings = {
 				add = "gsa", -- Add surrounding in Normal and Visual modes

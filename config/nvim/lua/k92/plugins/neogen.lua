@@ -1,7 +1,7 @@
 ---@type LazySpec
 return {
 	"danymat/neogen",
-	event = { "BufReadPre", "BufNewFile" },
+	event = { "VeryLazy" },
 	cmd = "Neogen",
 	keys = {
 		{

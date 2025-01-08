@@ -1,7 +1,7 @@
 ---@type LazySpec
 return {
 	"folke/persistence.nvim",
-	event = "BufReadPre",
+	event = "VeryLazy",
 	---@type Persistence.Config
 	opts = {},
 	keys = {
