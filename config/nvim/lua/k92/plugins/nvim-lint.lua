@@ -1,7 +1,7 @@
 ---@type LazySpec
 return {
 	"mfussenegger/nvim-lint",
-	event = { "BufWritePost", "BufReadPost", "InsertLeave" },
+	event = { "VeryLazy" },
 	dependencies = {
 		"williamboman/mason.nvim",
 	},

@@ -2,7 +2,7 @@
 return {
 	{
 		"tzachar/highlight-undo.nvim",
-		event = { "BufReadPre" },
+		event = { "VeryLazy" },
 		opts = {
 			keymaps = {
 				undo = {

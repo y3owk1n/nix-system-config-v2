@@ -2,7 +2,7 @@
 return {
 	{
 		"folke/flash.nvim",
-		event = { "BufReadPre", "BufNewFile" },
+		event = { "VeryLazy" },
 		---@type Flash.Config
 		---@diagnostic disable-next-line: missing-fields
 		opts = {},

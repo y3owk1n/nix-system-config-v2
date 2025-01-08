@@ -7,7 +7,7 @@ end
 return {
 	{
 		"saghen/blink.cmp",
-		event = "InsertEnter",
+		event = { "VeryLazy" },
 		dependencies = "rafamadriz/friendly-snippets",
 		version = "*",
 		---@module 'blink.cmp'
