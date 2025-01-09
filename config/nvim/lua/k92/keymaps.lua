@@ -75,9 +75,11 @@ vim.keymap.set("n", "Q", "<nop>", { desc = "No op" })
 -- Mason
 vim.keymap.set("n", "<leader>m", "<cmd>Mason<cr>", { desc = "Mason" })
 
--- Delete default neovim lsp bindings
-vim.keymap.del("n", "gra")
-vim.keymap.del("n", "gri")
-vim.keymap.del("n", "grn")
-vim.keymap.del("n", "grr")
-vim.keymap.del("x", "gra")
+if vim.fn.has("nvim-0.11") == 1 then
+	-- Delete default neovim lsp bindings
+	vim.keymap.del("n", "gra")
+	vim.keymap.del("n", "gri")
+	vim.keymap.del("n", "grn")
+	vim.keymap.del("n", "grr")
+	vim.keymap.del("x", "gra")
+end
