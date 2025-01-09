@@ -67,6 +67,11 @@ return {
 			},
 
 			completion = {
+				list = {
+					selection = {
+						preselect = false,
+					},
+				},
 				menu = {
 					draw = {
 						treesitter = { "lsp" },
