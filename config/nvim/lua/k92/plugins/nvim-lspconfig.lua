@@ -198,7 +198,7 @@ return {
 			-- Make border rounded for hover & signatureHelp
 			if vim.fn.has("nvim-0.10") == 1 then
 				vim.lsp.handlers["textDocument/hover"] =
-					vim.lsp.with(vim.lsp.handlers.hover, { border = opts.border or "rounded" })
+					vim.lsp.with(vim.lsp.handlers.hover, { border = opts.border or "rounded", silent = true })
 				vim.lsp.handlers["textDocument/signatureHelp"] =
 					vim.lsp.with(vim.lsp.handlers.signature_help, { border = opts.border or "rounded" })
 			end
