@@ -15,7 +15,7 @@ return {
 		opts = {
 			keymap = {
 				preset = "default",
-				["<CR>"] = { "accept", "fallback" },
+				["<CR>"] = { "select_and_accept", "fallback" },
 				["<Esc>"] = {
 					function(cmp)
 						if cmp.is_visible() then
