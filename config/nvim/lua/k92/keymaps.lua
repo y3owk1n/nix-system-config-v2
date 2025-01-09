@@ -23,14 +23,22 @@ vim.keymap.set("n", "]q", vim.cmd.cnext, { desc = "Next Quickfix" })
 local diagnostic_goto = function(next, severity)
 	severity = severity and vim.diagnostic.severity[severity] or nil
 
-	local count
-	if next then
-		count = 1
+	-- TODO: Update this when update to 0.11
+	if vim.fn.has("nvim-0.11") == 1 then
+		local count
+		if next then
+			count = 1
+		else
+			count = -1
+		end
+		return function()
+			vim.diagnostic.jump({ severity = severity, count = count, float = true })
+		end
 	else
-		count = -1
-	end
-	return function()
-		vim.diagnostic.jump({ severity = severity, count = count, float = true })
+		local go = next and vim.diagnostic.goto_next or vim.diagnostic.goto_prev
+		return function()
+			go({ severity = severity })
+		end
 	end
 end
 vim.keymap.set("n", "<leader>cd", vim.diagnostic.open_float, { desc = "Line Diagnostics" })
@@ -67,9 +75,11 @@ vim.keymap.set("n", "Q", "<nop>", { desc = "No op" })
 -- Mason
 vim.keymap.set("n", "<leader>m", "<cmd>Mason<cr>", { desc = "Mason" })
 
--- Delete default neovim lsp bindings
-vim.keymap.del("n", "gra")
-vim.keymap.del("n", "gri")
-vim.keymap.del("n", "grn")
-vim.keymap.del("n", "grr")
-vim.keymap.del("x", "gra")
+if vim.fn.has("nvim-0.11") == 1 then
+	-- Delete default neovim lsp bindings
+	vim.keymap.del("n", "gra")
+	vim.keymap.del("n", "gri")
+	vim.keymap.del("n", "grn")
+	vim.keymap.del("n", "grr")
+	vim.keymap.del("x", "gra")
+end
