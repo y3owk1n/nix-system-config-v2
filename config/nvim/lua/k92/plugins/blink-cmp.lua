@@ -1,8 +1,3 @@
-local function has_words_before()
-	local line, col = (unpack or table.unpack)(vim.api.nvim_win_get_cursor(0))
-	return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
-end
-
 ---@type LazySpec
 return {
 	{
@@ -16,38 +11,8 @@ return {
 			keymap = {
 				preset = "default",
 				["<CR>"] = { "select_and_accept", "fallback" },
-				["<Esc>"] = {
-					function(cmp)
-						if cmp.is_visible() then
-							if cmp.snippet_active() then
-								return cmp.hide()
-							end
-						end
-					end,
-					"fallback",
-				},
-				["<Tab>"] = {
-					function(cmp)
-						if cmp.is_visible() then
-							return cmp.select_next()
-						elseif cmp.snippet_active() then
-							return cmp.snippet_forward()
-						elseif has_words_before() then
-							return cmp.show()
-						end
-					end,
-					"fallback",
-				},
-				["<S-Tab>"] = {
-					function(cmp)
-						if cmp.is_visible() then
-							return cmp.select_prev()
-						elseif cmp.snippet_active() then
-							return cmp.snippet_backward()
-						end
-					end,
-					"fallback",
-				},
+				["<C-d>"] = { "scroll_documentation_down", "fallback" },
+				["<C-u>"] = { "scroll_documentation_up", "fallback" },
 			},
 
 			appearance = {
