@@ -47,7 +47,15 @@ return {
 		"folke/snacks.nvim",
 		---@type snacks.Config
 		opts = {
-			picker = { enabled = true },
+			---@class snacks.picker.Config
+			picker = {
+				enabled = true,
+				win = {
+					preview = {
+						minimal = true,
+					},
+				},
+			},
 		},
 		keys = {
 			{
@@ -151,6 +159,14 @@ return {
 				end,
 				desc = "LSP Symbols",
 			},
+			-- git
+			{
+				"<leader>gs",
+				function()
+					Snacks.picker.git_status()
+				end,
+				desc = "Git Status",
+			},
 		},
 	},
 	--- indent
@@ -249,6 +265,7 @@ return {
 	--- git
 	{
 		"folke/snacks.nvim",
+		---@type snacks.Config
 		opts = {},
 		keys = {
 			{
@@ -353,6 +370,31 @@ return {
 ]],
 				},
 			},
+		},
+	},
+	-- trouble integration
+	{
+		"folke/trouble.nvim",
+		optional = true,
+		specs = {
+			"folke/snacks.nvim",
+			opts = function(_, opts)
+				return vim.tbl_deep_extend("force", opts or {}, {
+					picker = {
+						actions = require("trouble.sources.snacks").actions,
+						win = {
+							input = {
+								keys = {
+									["<c-t>"] = {
+										"trouble_open",
+										mode = { "n", "i" },
+									},
+								},
+							},
+						},
+					},
+				})
+			end,
 		},
 	},
 	-- todo comments
