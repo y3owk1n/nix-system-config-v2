@@ -1,5 +1,6 @@
 ---@type LazySpec
 return {
+	--- general snacks
 	{
 		"folke/snacks.nvim",
 		priority = 1000,
@@ -7,6 +8,156 @@ return {
 		---@type snacks.Config
 		opts = {
 			bigfile = { enabled = true },
+			quickfile = { enabled = true, exclude = { "latex" } },
+			statuscolumn = {
+				enabled = true,
+			},
+		},
+		init = function()
+			vim.api.nvim_create_autocmd("User", {
+				pattern = "VeryLazy",
+				callback = function()
+					-- Setup some globals for debugging (lazy-loaded)
+					_G.dd = function(...)
+						Snacks.debug.inspect(...)
+					end
+					_G.bt = function()
+						Snacks.debug.backtrace()
+					end
+					vim.print = _G.dd -- Override print to use snacks for `:=` command
+
+					-- Create some toggle mappings
+					Snacks.toggle.option("spell", { name = "Spelling" }):map("<leader>us")
+					Snacks.toggle.option("wrap", { name = "Wrap" }):map("<leader>uw")
+					Snacks.toggle.diagnostics():map("<leader>ud")
+					Snacks.toggle.line_number():map("<leader>ul")
+					Snacks.toggle
+						.option("conceallevel", {
+							off = 0,
+							on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2,
+						})
+						:map("<leader>uc")
+					Snacks.toggle.inlay_hints():map("<leader>uh")
+				end,
+			})
+		end,
+	},
+	--- picker
+	{
+		"folke/snacks.nvim",
+		---@type snacks.Config
+		opts = {
+			picker = { enabled = true },
+		},
+		keys = {
+			{
+				"<leader><space>",
+				function()
+					Snacks.picker.files()
+				end,
+				desc = "Find Files",
+			},
+			{
+				"<leader>sh",
+				function()
+					Snacks.picker.help()
+				end,
+				desc = "Help Pages",
+			},
+			{
+				"<leader>sk",
+				function()
+					Snacks.picker.keymaps()
+				end,
+				desc = "Keymaps",
+			},
+			{
+				"<leader>sf",
+				function()
+					Snacks.picker.files()
+				end,
+				desc = "Find Files",
+			},
+			{
+				"<leader>sw",
+				function()
+					Snacks.picker.grep_word()
+				end,
+				desc = "Visual selection or word",
+				mode = { "n", "x" },
+			},
+			{
+				"<leader>sg",
+				function()
+					Snacks.picker.grep()
+				end,
+				desc = "Grep",
+			},
+			{
+				"<leader>sd",
+				function()
+					Snacks.picker.diagnostics()
+				end,
+				desc = "Diagnostics",
+			},
+			{
+				"<leader>sR",
+				function()
+					Snacks.picker.resume()
+				end,
+				desc = "Resume",
+			},
+			{
+				"<leader>sb",
+				function()
+					Snacks.picker.grep_buffers()
+				end,
+				desc = "Grep Open Buffers",
+			},
+			-- LSP
+			{
+				"gd",
+				function()
+					Snacks.picker.lsp_definitions()
+				end,
+				desc = "Goto Definition",
+			},
+			{
+				"gr",
+				function()
+					Snacks.picker.lsp_references()
+				end,
+				nowait = true,
+				desc = "References",
+			},
+			{
+				"gi",
+				function()
+					Snacks.picker.lsp_implementations()
+				end,
+				desc = "Goto Implementation",
+			},
+			{
+				"gy",
+				function()
+					Snacks.picker.lsp_type_definitions()
+				end,
+				desc = "Goto T[y]pe Definition",
+			},
+			{
+				"<leader>ss",
+				function()
+					Snacks.picker.lsp_symbols()
+				end,
+				desc = "LSP Symbols",
+			},
+		},
+	},
+	--- indent
+	{
+		"folke/snacks.nvim",
+		---@type snacks.Config
+		opts = {
 			indent = {
 				enabled = true,
 				scope = {
@@ -17,10 +168,13 @@ return {
 					only_current = true,
 				},
 			},
-			notifier = {
-				enabled = true,
-				timeout = 3000,
-			},
+		},
+	},
+	--- zen mode
+	{
+		"folke/snacks.nvim",
+		---@type snacks.Config
+		opts = {
 			zen = {
 				toggles = {
 					dim = false,
@@ -33,10 +187,113 @@ return {
 					statusline = true, -- can only be shown when using the global statusline
 				},
 			},
-			quickfile = { enabled = true, exclude = { "latex" } },
-			statuscolumn = {
-				enabled = true,
+		},
+		keys = {
+			{
+				"<leader>z",
+				function()
+					Snacks.zen()
+				end,
+				desc = "Toggle Zen Mode",
 			},
+		},
+	},
+	--- notifier
+	{
+		"folke/snacks.nvim",
+		---@type snacks.Config
+		opts = {
+			notifier = {
+				enabled = true,
+				timeout = 3000,
+			},
+		},
+		keys = {
+			{
+				"<leader>n",
+				function()
+					Snacks.notifier.show_history()
+				end,
+				desc = "Notification History",
+			},
+			{
+				"<leader>un",
+				function()
+					Snacks.notifier.hide()
+				end,
+				desc = "Dismiss All Notifications",
+			},
+		},
+	},
+	--- rename file
+	{
+		"folke/snacks.nvim",
+		opts = function()
+			vim.api.nvim_create_autocmd("User", {
+				pattern = "MiniFilesActionRename",
+				callback = function(event)
+					Snacks.rename.on_rename_file(event.data.from, event.data.to)
+				end,
+			})
+		end,
+		keys = {
+			{
+				"<leader>cR",
+				function()
+					Snacks.rename.rename_file()
+				end,
+				desc = "Rename File",
+			},
+		},
+	},
+	--- git
+	{
+		"folke/snacks.nvim",
+		opts = {},
+		keys = {
+			{
+				"<leader>gB",
+				function()
+					Snacks.gitbrowse()
+				end,
+				desc = "Git Browse",
+				mode = { "n", "v" },
+			},
+			{
+				"<leader>gb",
+				function()
+					Snacks.git.blame_line()
+				end,
+				desc = "Git Blame Line",
+			},
+			{
+				"<leader>gf",
+				function()
+					Snacks.lazygit.log_file()
+				end,
+				desc = "Lazygit Current File History",
+			},
+			{
+				"<leader>gg",
+				function()
+					Snacks.lazygit()
+				end,
+				desc = "Lazygit",
+			},
+			{
+				"<leader>gl",
+				function()
+					Snacks.lazygit.log()
+				end,
+				desc = "Lazygit Log (cwd)",
+			},
+		},
+	},
+	--- dashboard
+	{
+		"folke/snacks.nvim",
+		---@type snacks.Config
+		opts = {
 			dashboard = {
 				enabled = true,
 				preset = {
@@ -97,100 +354,27 @@ return {
 				},
 			},
 		},
+	},
+	-- todo comments
+	{
+		"folke/todo-comments.nvim",
+		optional = true,
 		keys = {
 			{
-				"<leader>z",
+				"<leader>st",
 				function()
-					Snacks.zen()
+					Snacks.picker.todo_comments()
 				end,
-				desc = "Toggle Zen Mode",
+				desc = "Todo",
 			},
 			{
-				"<leader>n",
+				"<leader>sT",
 				function()
-					Snacks.notifier.show_history()
+					Snacks.picker.todo_comments({ keywords = { "TODO", "FIX", "FIXME" } })
 				end,
-				desc = "Notification History",
-			},
-			{
-				"<leader>cR",
-				function()
-					Snacks.rename.rename_file()
-				end,
-				desc = "Rename File",
-			},
-			{
-				"<leader>gB",
-				function()
-					Snacks.gitbrowse()
-				end,
-				desc = "Git Browse",
-				mode = { "n", "v" },
-			},
-			{
-				"<leader>gb",
-				function()
-					Snacks.git.blame_line()
-				end,
-				desc = "Git Blame Line",
-			},
-			{
-				"<leader>gf",
-				function()
-					Snacks.lazygit.log_file()
-				end,
-				desc = "Lazygit Current File History",
-			},
-			{
-				"<leader>gg",
-				function()
-					Snacks.lazygit()
-				end,
-				desc = "Lazygit",
-			},
-			{
-				"<leader>gl",
-				function()
-					Snacks.lazygit.log()
-				end,
-				desc = "Lazygit Log (cwd)",
-			},
-			{
-				"<leader>un",
-				function()
-					Snacks.notifier.hide()
-				end,
-				desc = "Dismiss All Notifications",
+				desc = "Todo/Fix/Fixme",
 			},
 		},
-		init = function()
-			vim.api.nvim_create_autocmd("User", {
-				pattern = "VeryLazy",
-				callback = function()
-					-- Setup some globals for debugging (lazy-loaded)
-					_G.dd = function(...)
-						Snacks.debug.inspect(...)
-					end
-					_G.bt = function()
-						Snacks.debug.backtrace()
-					end
-					vim.print = _G.dd -- Override print to use snacks for `:=` command
-
-					-- Create some toggle mappings
-					Snacks.toggle.option("spell", { name = "Spelling" }):map("<leader>us")
-					Snacks.toggle.option("wrap", { name = "Wrap" }):map("<leader>uw")
-					Snacks.toggle.diagnostics():map("<leader>ud")
-					Snacks.toggle.line_number():map("<leader>ul")
-					Snacks.toggle
-						.option("conceallevel", {
-							off = 0,
-							on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2,
-						})
-						:map("<leader>uc")
-					Snacks.toggle.inlay_hints():map("<leader>uh")
-				end,
-			})
-		end,
 	},
 	{
 		"catppuccin/nvim",
