@@ -54,6 +54,8 @@ return {
 
 					map("<leader>cl", "<cmd>LspInfo<cr>", "Lsp Info")
 
+					map("<leader>ca", vim.lsp.buf.code_action, "Code Actions")
+
 					map("K", function()
 						vim.lsp.buf.hover({ border = opts.border or "rounded" })
 					end, "Hover")

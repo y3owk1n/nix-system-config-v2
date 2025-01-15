@@ -26,7 +26,7 @@ return {
 			"<cmd>Trouble todo toggle filter = {tag = {TODO,FIX,FIXME}}<cr>",
 			desc = "Todo/Fix/Fixme (Trouble)",
 		},
-		{ "<leader>st", "<cmd>TodoFzfLua<cr>", desc = "Todo" },
-		{ "<leader>sT", "<cmd>TodoFzfLua keywords=TODO,FIX,FIXME<cr>", desc = "Todo/Fix/Fixme" },
+		-- { "<leader>st", "<cmd>TodoFzfLua<cr>", desc = "Todo" },
+		-- { "<leader>sT", "<cmd>TodoFzfLua keywords=TODO,FIX,FIXME<cr>", desc = "Todo/Fix/Fixme" },
 	},
 }
