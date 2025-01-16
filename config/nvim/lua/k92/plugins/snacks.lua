@@ -50,9 +50,9 @@ return {
 			---@class snacks.picker.Config
 			picker = {
 				enabled = true,
-				win = {
-					preview = {
-						minimal = true,
+				formatters = {
+					file = {
+						filename_first = true,
 					},
 				},
 			},
