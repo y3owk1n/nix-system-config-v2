@@ -159,14 +159,6 @@ return {
 				end,
 				desc = "LSP Symbols",
 			},
-			-- git
-			{
-				"<leader>gs",
-				function()
-					Snacks.picker.git_status()
-				end,
-				desc = "Git Status",
-			},
 		},
 	},
 	--- indent
@@ -303,6 +295,39 @@ return {
 					Snacks.lazygit.log()
 				end,
 				desc = "Lazygit Log (cwd)",
+			},
+			{
+				"<leader>gs",
+				function()
+					Snacks.picker.git_status()
+				end,
+				desc = "Git Status",
+			},
+		},
+	},
+	--- words
+	{
+		"folke/snacks.nvim",
+		---@type snacks.Config
+		opts = {
+			words = { enabled = true },
+		},
+		keys = {
+			{
+				"]]",
+				function()
+					Snacks.words.jump(vim.v.count1)
+				end,
+				desc = "Next Reference",
+				mode = { "n", "t" },
+			},
+			{
+				"[[",
+				function()
+					Snacks.words.jump(-vim.v.count1)
+				end,
+				desc = "Prev Reference",
+				mode = { "n", "t" },
 			},
 		},
 	},
