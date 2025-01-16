@@ -55,6 +55,7 @@ return {
 					{ "<leader>dp", group = "profiler" },
 					{ "<leader>h", group = "grapple" },
 					{ "<leader>g", group = "git" },
+					{ "<leader>f", group = "files" },
 					{ "<leader>q", group = "quit/session" },
 					{ "<leader>s", group = "search" },
 					{
