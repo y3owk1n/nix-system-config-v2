@@ -258,7 +258,15 @@ return {
 	{
 		"folke/snacks.nvim",
 		---@type snacks.Config
-		opts = {},
+		opts = {
+			picker = {
+				previewers = {
+					git = {
+						native = true,
+					},
+				},
+			},
+		},
 		keys = {
 			{
 				"<leader>gB",
