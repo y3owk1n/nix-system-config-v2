@@ -72,7 +72,7 @@ app_bindings=(
 	["com.apple.ical"]="5"
 	["com.adobe.Photoshop"]="6"
 	["com.adobe.illustrator"]="6"
-	["com.apple.ScreenSharing"]="6"
+	["com.apple.screensharing"]="6"
 	["com.apple.Music"]="7"
 )
 
