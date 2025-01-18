@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  username,
   hostname,
   ...
 }:
@@ -101,6 +100,11 @@ in
         ShowPathbar = true;
         ShowStatusBar = true;
         _FXShowPosixPathInTitle = true;
+        ShowExternalHardDrivesOnDesktop = false;
+        ShowHardDrivesOnDesktop = false;
+        ShowMountedServersOnDesktop = false;
+        ShowRemovableMediaOnDesktop = false;
+        _FXSortFoldersFirst = true;
       };
 
       # customize trackpad
@@ -248,23 +252,14 @@ in
         "com.apple.dock" = {
           # mouse in top left corner will (13) start lock screen
           # set it here, nix-darwin does not support modifier
-          wvous-tl-corner = 13;
+          wvous-tl-corner = 13; # lock screen
           wvous-tl-modifier = 131072; # shift key
-        };
-        "com.apple.finder" = {
-          ShowExternalHardDrivesOnDesktop = true;
-          ShowHardDrivesOnDesktop = true;
-          ShowMountedServersOnDesktop = true;
-          ShowRemovableMediaOnDesktop = true;
-          _FXSortFoldersFirst = true;
+          wvous-br-corner = 1;
         };
         "com.apple.desktopservices" = {
           # Avoid creating .DS_Store files on network or USB volumes
           DSDontWriteNetworkStores = true;
           DSDontWriteUSBStores = true;
-        };
-        "com.apple.spaces" = {
-          "spans-displays" = 0; # Display have seperate spaces
         };
         "com.apple.Safari" = {
           AllowJavaScriptFromAppleEvents = 0;
@@ -1086,19 +1081,6 @@ in
             }
           ];
         };
-        # "com.superultra.Homerow" = {
-        #   "NSStatusItem Visible Item-0" = 0;
-        #   "enable-hyper-key" = 0;
-        #   "is-auto-click-enabled" = 0;
-        #   "label-characters" = "aoeuidhtns";
-        #   "launch-at-login" = 1;
-        #   "non-search-shortcut" = "\\U2303\\U2325\\U21e7\\U2318U";
-        #   "scroll-keys" = "hjkl";
-        #   "scroll-shortcut" = "\\U2303\\U2325\\U21e7\\U2318E";
-        #   "search-shortcut" = "";
-        #   "show-menubar-icon" = 0;
-        #   "theme-id" = "dark";
-        # };
       };
 
     };
