@@ -19,5 +19,13 @@ return {
 			mode = { "n", "x" },
 			desc = "Put Text Before Cursor",
 		},
+		{
+			"<leader>sp",
+			function()
+				vim.cmd([[YankyRingHistory]])
+			end,
+			mode = { "n", "x" },
+			desc = "Yank History",
+		},
 	},
 }
