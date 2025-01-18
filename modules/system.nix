@@ -472,12 +472,13 @@ in
                 type = "standard";
               };
             };
+            # contextual menu
             "159" = {
               enabled = 0;
               value = {
                 parameters = [
-                  65535
-                  36
+                  110
+                  45
                   262144
                 ];
                 type = "standard";
@@ -518,13 +519,14 @@ in
                 type = "standard";
               };
             };
+            # quick note
             "190" = {
-              enabled = 0;
+              enabled = 1;
               value = {
                 parameters = [
-                  113
-                  12
-                  8388608
+                  110
+                  45
+                  1966080
                 ];
                 type = "standard";
               };
@@ -860,7 +862,7 @@ in
                 type = "standard";
               };
             };
-            # Switch next input (ctrl + enter)
+            # Switch previous input (ctrl + enter)
             "60" = {
               enabled = 1;
               value = {
@@ -872,13 +874,14 @@ in
                 type = "standard";
               };
             };
+            # Switch next input (ctrl + enter)
             "61" = {
               enabled = 0;
               value = {
                 parameters = [
-                  32
-                  49
-                  786432
+                  65535
+                  36
+                  262144
                 ];
                 type = "standard";
               };
