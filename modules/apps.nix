@@ -1,4 +1,4 @@
-{ pkgs, username, ... }:
+{ pkgs, ... }:
 {
 
   ##########################################################################
@@ -85,14 +85,9 @@
       "hammerspoon" # mainly used for safari vim mode
 
       "ghostty"
-      # "alacritty"
 
       # --- docker desktop alternative ---
       "orbstack"
-
-      # --- browser ---
-      # "brave-browser"
-      # "zen-browser"
     ];
   };
 }
