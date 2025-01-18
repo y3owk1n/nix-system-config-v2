@@ -469,11 +469,11 @@ in
             };
             # contextual menu
             "159" = {
-              enabled = 0;
+              enabled = 1;
               value = {
                 parameters = [
-                  110
-                  45
+                  65535
+                  36
                   262144
                 ];
                 type = "standard";
@@ -857,31 +857,31 @@ in
                 type = "standard";
               };
             };
-            # Switch previous input (ctrl + enter)
+            # Switch previous input (ctrl + space)
             "60" = {
               enabled = 1;
               value = {
                 parameters = [
-                  65535
-                  36
+                  32
+                  49
                   262144
                 ];
                 type = "standard";
               };
             };
-            # Switch next input (ctrl + enter)
+            # Switch next input (ctrl + space)
             "61" = {
               enabled = 0;
               value = {
                 parameters = [
-                  65535
-                  36
+                  32
+                  49
                   262144
                 ];
                 type = "standard";
               };
             };
-            # Disable Spotlight search (cmd + enter)
+            # Spotlight search (hyper + enter)
             "64" = {
               enabled = 1;
               value = {
