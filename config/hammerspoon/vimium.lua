@@ -106,6 +106,10 @@ local config = {
 		"Microsoft Edge",
 		"Brave Browser",
 	},
+	launchers = {
+		"Spotlight",
+		"Raycast",
+	},
 }
 
 --------------------------------------------------------------------------------
@@ -276,14 +280,20 @@ function utils.isExcludedApp()
 	return tblContains(config.excludedApps, appName)
 end
 
-function utils.isSpotlightActive()
-	local app = hs.application.get("Spotlight")
-	local appElement = hs.axuielement.applicationElement(app)
-	if not appElement then
-		return false
+function utils.isLauncherActive()
+	for _, launcher in ipairs(config.launchers) do
+		local app = hs.application.get(launcher)
+		if app then
+			local appElement = hs.axuielement.applicationElement(app)
+			if appElement then
+				local windows = utils.getAttribute(appElement, "AXWindows") or {}
+				if #windows > 0 then
+					return true, launcher
+				end
+			end
+		end
 	end
-	local windows = utils.getAttribute(appElement, "AXWindows") or {}
-	return #windows > 0
+	return false
 end
 
 function utils.generateCombinations()
@@ -1646,7 +1656,7 @@ local function eventHandler(event)
 		end
 	end
 
-	if utils.isSpotlightActive() then
+	if utils.isLauncherActive() then
 		return false
 	end
 
