@@ -316,6 +316,9 @@ end
 function utils.setMode(mode, char)
 	local defaultModeChars = {
 		[modes.DISABLED] = "X",
+		[modes.INSERT] = "I",
+		[modes.LINKS] = "L",
+		[modes.MULTI] = "M",
 		[modes.NORMAL] = "V",
 	}
 
@@ -819,6 +822,7 @@ function actions.forceUnfocus()
 	end
 
 	utils.getFocusedElement(startElement, 0)
+
 	hs.alert.show("Force unfocused!")
 end
 
@@ -1585,7 +1589,7 @@ local function vimLoop(char, modifiers)
 			end
 		end
 
-		if #state.linkCapture > 0 and not matchFound then
+		if state.linkCapture and #state.linkCapture > 0 and not matchFound then
 			local hasPartialMatches = false
 			for i, _ in ipairs(state.marks) do
 				local markText = string.upper(state.allCombinations[i])
@@ -1604,14 +1608,17 @@ local function vimLoop(char, modifiers)
 	end
 
 	local keyCombo = ""
+
 	if modifiers and modifiers.ctrl then
 		keyCombo = "C-"
 	end
+
 	keyCombo = keyCombo .. char
 
 	if state.elements.mode == modes.MULTI then
 		keyCombo = state.elements.multi .. keyCombo
 	end
+
 	local foundMapping = config.mapping[keyCombo]
 
 	if foundMapping then
@@ -1638,6 +1645,10 @@ local function eventHandler(event)
 		return false
 	end
 
+	if utils.isLauncherActive() then
+		return false
+	end
+
 	local flags = event:getFlags()
 	local keyCode = event:getKeyCode()
 	local modifiers = { ctrl = flags.ctrl }
@@ -1654,10 +1665,6 @@ local function eventHandler(event)
 		if modifier and key ~= "shift" and key ~= "ctrl" then
 			return false
 		end
-	end
-
-	if utils.isLauncherActive() then
-		return false
 	end
 
 	if keyCode == hs.keycodes.map["escape"] then
@@ -1724,7 +1731,6 @@ local function onWindowFocused()
 	else
 		utils.setMode(modes.DISABLED)
 	end
-	commands.cmdMoveMouseToCenter()
 end
 
 local function onWindowUnfocused()
