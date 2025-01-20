@@ -1724,6 +1724,7 @@ local function onWindowFocused()
 	else
 		utils.setMode(modes.DISABLED)
 	end
+	commands.cmdMoveMouseToCenter()
 end
 
 local function onWindowUnfocused()
