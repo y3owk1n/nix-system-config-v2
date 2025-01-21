@@ -319,7 +319,7 @@ function utils.setMode(mode, char)
 		[modes.INSERT] = "I",
 		[modes.LINKS] = "L",
 		[modes.MULTI] = "M",
-		[modes.NORMAL] = "V",
+		[modes.NORMAL] = "N",
 	}
 
 	local previousMode = state.elements.mode
