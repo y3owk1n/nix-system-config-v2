@@ -95,6 +95,7 @@ local config = {
 	excludedApps = {
 		"Terminal",
 		"Alacritty",
+		"alacritty", -- when loading headless alacritty from path, its in lowercase...
 		"Ghostty",
 		"Screen Sharing",
 	},
