@@ -6,8 +6,9 @@ TERM = "xterm-256color"
 
 [window]
 decorations = "buttonless"
-dynamic_title = true
-startup_mode = "Maximized"
+dynamic_title = false
+title = "Alacritty"
+# startup_mode = "Maximized"
 
 option_as_alt = "Both"
 

@@ -24,7 +24,7 @@
     brave
 
     # --- terminal ---
-    # alacritty
+    # alacritty # used for quick editing only (specifically neovim embed for text inputs)
 
     # --- rust ---
     cargo
