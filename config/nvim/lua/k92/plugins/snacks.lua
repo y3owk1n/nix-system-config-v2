@@ -61,9 +61,9 @@ return {
 			{
 				"<leader><space>",
 				function()
-					Snacks.picker.files()
+					Snacks.picker("smart")
 				end,
-				desc = "Find Files",
+				desc = "Smart Picker",
 			},
 			{
 				"<leader>sh",
