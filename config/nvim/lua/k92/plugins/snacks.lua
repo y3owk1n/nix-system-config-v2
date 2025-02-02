@@ -66,6 +66,17 @@ return {
 				desc = "Smart Picker",
 			},
 			{
+				"<leader>e",
+				function()
+					Snacks.picker.explorer({
+						layout = {
+							cycle = false,
+						},
+					})
+				end,
+				desc = "Explorer",
+			},
+			{
 				"<leader>sh",
 				function()
 					Snacks.picker.help()
