@@ -77,6 +77,13 @@ return {
 				desc = "Explorer",
 			},
 			{
+				"<leader>su",
+				function()
+					Snacks.picker.undo()
+				end,
+				desc = "Undo",
+			},
+			{
 				"<leader>sh",
 				function()
 					Snacks.picker.help()
