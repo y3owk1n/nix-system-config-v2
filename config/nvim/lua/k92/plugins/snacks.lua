@@ -55,6 +55,12 @@ return {
 						filename_first = true,
 					},
 				},
+				layout = {
+					cycle = false,
+				},
+				matcher = {
+					frecency = true,
+				},
 			},
 		},
 		keys = {
@@ -68,11 +74,7 @@ return {
 			{
 				"<leader>e",
 				function()
-					Snacks.picker.explorer({
-						layout = {
-							cycle = false,
-						},
-					})
+					Snacks.picker.explorer()
 				end,
 				desc = "Explorer",
 			},
