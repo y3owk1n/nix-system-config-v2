@@ -61,7 +61,7 @@ return {
 			{
 				"<leader><space>",
 				function()
-					Snacks.picker("smart")
+					Snacks.picker.smart()
 				end,
 				desc = "Smart Picker",
 			},
