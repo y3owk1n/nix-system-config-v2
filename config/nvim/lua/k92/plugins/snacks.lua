@@ -42,6 +42,30 @@ return {
 			})
 		end,
 	},
+	--- explorer
+	{
+		"folke/snacks.nvim",
+		---@type snacks.Config
+		opts = {
+			---@class snacks.explorer.Config
+			explorer = {},
+			---@class snacks.picker.Config
+			picker = {
+				sources = {
+					explorer = {},
+				},
+			},
+		},
+		keys = {
+			{
+				"<leader>e",
+				function()
+					Snacks.explorer.open()
+				end,
+				desc = "Explorer",
+			},
+		},
+	},
 	--- picker
 	{
 		"folke/snacks.nvim",
@@ -70,13 +94,6 @@ return {
 					Snacks.picker.smart()
 				end,
 				desc = "Smart Picker",
-			},
-			{
-				"<leader>e",
-				function()
-					Snacks.picker.explorer()
-				end,
-				desc = "Explorer",
 			},
 			{
 				"<leader>su",
