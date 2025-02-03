@@ -48,9 +48,7 @@ return {
 		---@type snacks.Config
 		opts = {
 			---@class snacks.explorer.Config
-			explorer = {
-				replace_netrw = true,
-			},
+			explorer = {},
 			---@class snacks.picker.Config
 			picker = {
 				sources = {
