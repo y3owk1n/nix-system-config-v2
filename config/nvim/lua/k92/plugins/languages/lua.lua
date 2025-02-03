@@ -65,8 +65,5 @@ return {
 				{ path = "~/.hammerspoon/Spoons/EmmyLua.spoon/annotations", mods = { "hs" } },
 			},
 		},
-		specs = {
-			{ "Bilal2453/luvit-meta", lazy = true },
-		},
 	},
 }
