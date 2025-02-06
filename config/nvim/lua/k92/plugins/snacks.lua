@@ -90,10 +90,9 @@ return {
 		keys = {
 			{
 				"<leader><space>",
-				function()
-					Snacks.picker.smart()
-				end,
-				desc = "Smart Picker",
+				"<leader>sf",
+				remap = true,
+				desc = "Find Files",
 			},
 			{
 				"<leader>su",
@@ -119,7 +118,14 @@ return {
 			{
 				"<leader>sf",
 				function()
-					Snacks.picker.files()
+					Snacks.picker.files({
+						format = "file", -- use `file` format for all sources
+						matcher = {
+							cwd_bonus = true, -- boost cwd matches
+							frecency = true, -- use frecency boosting
+							sort_empty = true, -- sort even when the filter is empty
+						},
+					})
 				end,
 				desc = "Find Files",
 			},
