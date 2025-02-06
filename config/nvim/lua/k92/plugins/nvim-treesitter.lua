@@ -30,6 +30,7 @@ return {
 				"html",
 				"regex",
 				"toml",
+				"query",
 				"vim",
 				"vimdoc",
 				"xml",
