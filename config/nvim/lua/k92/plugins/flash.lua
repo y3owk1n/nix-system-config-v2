@@ -19,6 +19,7 @@ return {
 	},
 	{
 		"catppuccin/nvim",
+		optional = true,
 		opts = {
 			integrations = {
 				flash = true,

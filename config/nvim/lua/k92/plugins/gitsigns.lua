@@ -61,6 +61,7 @@ return {
 	},
 	{
 		"catppuccin/nvim",
+		optional = true,
 		opts = {
 			integrations = {
 				gitsigns = true,

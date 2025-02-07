@@ -496,6 +496,7 @@ return {
 	},
 	{
 		"catppuccin/nvim",
+		optional = true,
 		opts = {
 			integrations = {
 				snacks = true,

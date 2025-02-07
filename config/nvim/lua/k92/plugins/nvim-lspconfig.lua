@@ -263,6 +263,7 @@ return {
 	},
 	{
 		"catppuccin/nvim",
+		optional = true,
 		opts = {
 			integrations = {
 				fidget = true,
