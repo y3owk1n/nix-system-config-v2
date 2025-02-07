@@ -73,6 +73,7 @@ app_bindings=(
 	["com.adobe.Photoshop"]="6"
 	["com.adobe.illustrator"]="6"
 	["com.apple.screensharing"]="6"
+	["com.carriez.rustdesk"]="6"
 	["com.apple.Music"]="7"
 )
 
