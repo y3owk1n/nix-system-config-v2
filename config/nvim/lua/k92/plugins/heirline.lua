@@ -3,7 +3,6 @@ return {
 	"rebelot/heirline.nvim",
 	event = "VeryLazy",
 	dependencies = {
-		"catppuccin/nvim",
 		"cbochs/grapple.nvim",
 		"lewis6991/gitsigns.nvim",
 	},
@@ -11,7 +10,41 @@ return {
 		local conditions = require("heirline.conditions")
 		local utils = require("heirline.utils")
 
-		local C = require("catppuccin.palettes").get_palette()
+		local C = {}
+
+		local ok, catppuccin = pcall(require, "catppuccin.palettes")
+		if ok then
+			C = catppuccin.get_palette("mocha")
+		else
+			C = {
+				base = "#1e1e2e",
+				mantle = "#181825",
+				crust = "#11111b",
+				text = "#cdd6f4",
+				subtext0 = "#a6adc8",
+				subtext1 = "#bac2de",
+				overlay0 = "#7f849c",
+				overlay1 = "#9399b2",
+				overlay2 = "#a6adc8",
+				surface0 = "#313244",
+				surface1 = "#45475a",
+				surface2 = "#585b70",
+				blue = "#89b4fa",
+				lavender = "#b4befe",
+				sapphire = "#74c7ec",
+				sky = "#89dceb",
+				teal = "#94e2d5",
+				green = "#a6e3a1",
+				yellow = "#f9e2af",
+				peach = "#fab387",
+				maroon = "#eba0ac",
+				red = "#f38ba8",
+				mauve = "#cba6f7",
+				pink = "#f5c2e7",
+				flamingo = "#f2cdcd",
+				rosewater = "#f5e0dc",
+			}
+		end
 
 		local Align = { provider = "%=" }
 		local Space = { provider = " " }
