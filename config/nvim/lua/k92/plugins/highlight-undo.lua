@@ -26,6 +26,7 @@ return {
 	},
 	{
 		"catppuccin/nvim",
+		optional = true,
 		opts = function(_, opts)
 			local colors = require("catppuccin.palettes").get_palette()
 
