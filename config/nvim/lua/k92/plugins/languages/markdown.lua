@@ -94,6 +94,7 @@ return {
 	},
 	{
 		"catppuccin/nvim",
+		optional = true,
 		opts = {
 			integrations = {
 				markdown = true,
