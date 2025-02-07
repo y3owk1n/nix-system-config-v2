@@ -2,18 +2,14 @@
 return {
 	"rebelot/heirline.nvim",
 	event = "VeryLazy",
-	dependencies = {
-		"cbochs/grapple.nvim",
-		"lewis6991/gitsigns.nvim",
-	},
 	opts = function(_, opts)
 		local conditions = require("heirline.conditions")
 		local utils = require("heirline.utils")
 
 		local C = {}
 
-		local ok, catppuccin = pcall(require, "catppuccin.palettes")
-		if ok then
+		local catppuccin_exists, catppuccin = pcall(require, "catppuccin.palettes")
+		if catppuccin_exists then
 			C = catppuccin.get_palette("mocha")
 		else
 			C = {
@@ -45,6 +41,8 @@ return {
 				rosewater = "#f5e0dc",
 			}
 		end
+
+		local grapple_exists, grapple = pcall(require, "grapple")
 
 		local Align = { provider = "%=" }
 		local Space = { provider = " " }
@@ -358,41 +356,45 @@ return {
 			},
 		}
 
-		local Grapple = {
-			conditions = function()
-				return require("grapple").tags() ~= 0
-			end,
-			init = function(self)
-				self.current = require("grapple").find({ buffer = 0 })
-				self.tags = require("grapple").tags()
-			end,
+		local Grapple = {}
 
-			hl = { fg = "teal", bold = true },
-
-			{
-				provider = Space.provider,
-			},
-			{
-				provider = function(self)
-					local output = {}
-
-					if #self.tags == 0 then
-						return nil
-					end
-
-					for i, tag in ipairs(self.tags) do
-						if self.current and self.current.path == tag.path then
-							table.insert(output, string.format("[" .. i .. "]"))
-						else
-							table.insert(output, string.format(i))
-						end
-					end
-
-					local statusline = table.concat(output, " ")
-					return string.format("󱡁 %s", statusline)
+		if grapple_exists then
+			Grapple = {
+				conditions = function()
+					return grapple.tags() ~= 0
 				end,
-			},
-		}
+				init = function(self)
+					self.current = grapple.find({ buffer = 0 })
+					self.tags = grapple.tags()
+				end,
+
+				hl = { fg = "teal", bold = true },
+
+				{
+					provider = Space.provider,
+				},
+				{
+					provider = function(self)
+						local output = {}
+
+						if #self.tags == 0 then
+							return nil
+						end
+
+						for i, tag in ipairs(self.tags) do
+							if self.current and self.current.path == tag.path then
+								table.insert(output, string.format("[" .. i .. "]"))
+							else
+								table.insert(output, string.format(i))
+							end
+						end
+
+						local statusline = table.concat(output, " ")
+						return string.format("󱡁 %s", statusline)
+					end,
+				},
+			}
+		end
 
 		local Git = {
 			condition = conditions.is_git_repo,
