@@ -98,6 +98,7 @@ local config = {
 		"alacritty", -- when loading headless alacritty from path, its in lowercase...
 		"Ghostty",
 		"Screen Sharing",
+		"RustDesk",
 	},
 	-- Browser names to be considered
 	browsers = {

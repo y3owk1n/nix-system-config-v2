@@ -86,6 +86,8 @@
 
       "ghostty"
 
+      "rustdesk"
+
       # --- docker desktop alternative ---
       "orbstack"
     ];
