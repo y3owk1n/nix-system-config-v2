@@ -15,6 +15,9 @@ return {
 			input = {
 				enabled = true,
 			},
+			image = {
+				enabled = true,
+			},
 		},
 		init = function()
 			vim.api.nvim_create_autocmd("User", {
