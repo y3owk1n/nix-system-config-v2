@@ -10,7 +10,7 @@
       keyMode = "vi";
       mouse = true;
       sensibleOnTop = false;
-      terminal = "screen-256color";
+      terminal = "xterm-256color";
       plugins = with pkgs; [
         {
           plugin = tmuxPlugins.vim-tmux-navigator.overrideAttrs (_: {
@@ -82,9 +82,11 @@
         bind-key -T copy-mode-vi 'v' send -X begin-selection # start selecting text with "v"
         bind-key -T copy-mode-vi 'y' send -X copy-selection # copy text with "y"
 
+        set -g allow-passthrough on
+
         set-option -g default-shell "${pkgs.fish}/bin/fish"
         set-option -g default-command "${pkgs.fish}/bin/fish"
-        set -ag terminal-overrides ",xterm-256color:RGB"
+        set-option -ga terminal-overrides ',*:Tc'
         set -g focus-events on
         set -g repeat-time 1000
         set -g detach-on-destroy off
@@ -102,7 +104,7 @@
         set -gF  status-right "#{@catppuccin_status_directory}"
         set -agF status-right "#{@catppuccin_status_user}"
         set -agF status-right "#{@catppuccin_status_host}"
-        			'';
+      '';
     };
   };
 }
