@@ -10,6 +10,7 @@
     ast-grep
     mkcert
     rip2
+    imagemagick
 
     # --- misc ---
     # sqlite
