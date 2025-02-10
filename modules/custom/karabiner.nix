@@ -10,25 +10,39 @@ let
   };
 
   application_path = "/Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager";
+  plist_path = "/Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/Info.plist";
 in
 {
   system.activationScripts.postUserActivation.text = ''
     	echo "Checking if Karabiner-VirtualHIDDevice-Manager exists..."
 
-    	if [ -f /Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager ]; then
-    		echo "Karabiner-VirtualHIDDevice-Manager exists. Activating..."
-    		sudo ${application_path} activate
+    	if [ -f "${application_path}" ]; then
+    		echo "Karabiner-VirtualHIDDevice-Manager exists. Checking version..."
+
+    		# Get installed version
+    		installed_version=$(/usr/bin/defaults read "${plist_path}" CFBundleVersion)
+    		echo "Installed version: $installed_version"
+
+    		if [ "$installed_version" = "${version}" ]; then
+    			echo "Karabiner is up-to-date (version ${version}). Activating..."
+    			sudo "${application_path}" activate
+    		else
+    			echo "Karabiner version mismatch (expected ${version}, found $installed_version). Reinstalling..."
+    			if sudo /usr/sbin/installer -pkg "${karabiner_driver_kit}" -target /; then
+    				echo "Installation completed successfully. Activating..."
+    				sudo "${application_path}" deactivate
+    				sudo "${application_path}" activate
+    			else
+    				echo "Installation failed."
+    			fi
+    		fi
     	else
     		echo "Karabiner-VirtualHIDDevice-Manager not found. Installing..."
 
-    		# Install the package using the installer command
-    		echo "Running installer for Karabiner-VirtualHIDDevice..."
-    		sudo /usr/sbin/installer -pkg ${karabiner_driver_kit} -target /
-
-    		# Check installation result
-    		if /usr/sbin/installer -pkg ${karabiner_driver_kit} -target /; then
+    		# Install the package
+    		if sudo /usr/sbin/installer -pkg "${karabiner_driver_kit}" -target /; then
     			echo "Installation completed successfully. Activating..."
-    			sudo ${application_path} activate
+    			sudo "${application_path}" activate
     		else
     			echo "Installation failed."
     		fi
