@@ -1,10 +1,9 @@
 (defcfg
-    process-unmapped-keys true
+    process-unmapped-keys yes
     log-layer-changes no
-    macos-dev-names-include (
-        "Magic Keyboard with Touch ID"
-        "Apple Internal Keyboard / Trackpad"
-  )
+    macos-dev-names-exclude (
+		"Voyager"
+	)
 )
 
 (defsrc
@@ -40,7 +39,7 @@
     @grl 1    2    3    4    5    6    7    8    9    0    \    =    bspc
     tab  '    ,    .    p    y    f    g    c    r    l    /    XX    XX
     esc a    o    e    u    i    d    h    t    n    l    -    ret
-    XX ;    q    j    k    x    b    m    w    v    z   + 
+    XX ;    q    j    k    x    b    m    w    v    z   +
     XX XX  XX          spc            XX XX
 )
 
@@ -138,8 +137,8 @@
     hyper_spc (tap-hold $tt $ht spc (multi lalt lctl lmet lsft))
 
     met_a (tap-hold-release $tt $ht a (one-shot $ot lmet))
-    alt_o (tap-hold-release $tt $ht o (one-shot $ot lalt)) 
-    ctl_e (tap-hold-release $tt $ht e (one-shot $ot lctl)) 
+    alt_o (tap-hold-release $tt $ht o (one-shot $ot lalt))
+    ctl_e (tap-hold-release $tt $ht e (one-shot $ot lctl))
     sft_u (tap-hold-release $tt $ht u (one-shot $ot lsft))
 
     sft_h (tap-hold-release $tt $ht h (one-shot $ot rsft))

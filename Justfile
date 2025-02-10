@@ -49,5 +49,6 @@ nvim-reset:
     bash ./scripts/nvim-reset.sh
 
 start-kanata:
-    sudo kanata -n -c ~/.config/kanata/config.kbd
+	sudo '/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon' &
+	sudo kanata -n -c ~/.config/kanata/config.kbd
 
