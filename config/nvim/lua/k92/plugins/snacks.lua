@@ -12,6 +12,9 @@ return {
 			statuscolumn = {
 				enabled = true,
 			},
+			input = {
+				enabled = true,
+			},
 		},
 		init = function()
 			vim.api.nvim_create_autocmd("User", {
@@ -227,6 +230,7 @@ return {
 		---@type snacks.Config
 		opts = {
 			zen = {
+				enabled = true,
 				toggles = {
 					dim = false,
 					git_signs = true,
