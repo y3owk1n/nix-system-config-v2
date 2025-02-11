@@ -3,6 +3,7 @@
     log-layer-changes no
     macos-dev-names-exclude (
 		"Voyager"
+		"MX Master 3"
 	)
 )
 
