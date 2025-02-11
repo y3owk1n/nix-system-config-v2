@@ -51,6 +51,12 @@
               rev = "cff343cf9e81983d3da0c8562b01616f12e8d548";
               sha256 = "sha256-FcSjYyWjXM1B+WmiK2bqUNJYtH7sJBUsY2IjSur5TjY=";
             };
+            # NOTE: temporary workaround that causes the rebuild to fail
+            preFixup = ''
+              # Remove dangling symlinks that point to missing test targets.
+              rm -f $out/share/tmux-plugins/resurrect/run_tests
+              rm -rf $out/share/tmux-plugins/resurrect/tests
+            '';
           });
           extraConfig = ''
             set -g @resurrect-capture-pane-contents 'on'
