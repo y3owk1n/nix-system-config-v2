@@ -20,7 +20,8 @@ rebuild:
 
 
 update:
-    nix flake update
+	sudo determinate-nixd upgrade
+	nix flake update
 
 history:
     nix profile history --profile /nix/var/nix/profiles/system
