@@ -62,6 +62,7 @@
             ./modules/system.nix
             ./modules/apps.nix
             ./modules/host-users.nix
+            ./modules/yabai.nix
             ./modules/custom/karabiner.nix
             ./modules/custom/move_apps_to_spaces.nix
             ./modules/custom/aerospace.nix

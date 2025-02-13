@@ -234,13 +234,13 @@ in
             "ms-MY"
             "zh-Hant-MY"
           ];
-          NSUserKeyEquivalents = {
-            Bottom = "^$j";
-            Fill = "^$m";
-            Left = "^$h";
-            Right = "^$l";
-            Top = "^$k";
-          };
+          # NSUserKeyEquivalents = {
+          #   Bottom = "^$j";
+          #   Fill = "^$m";
+          #   Left = "^$h";
+          #   Right = "^$l";
+          #   Top = "^$k";
+          # };
         };
         NSGlobalDomain = {
           # Add a context menu item for showing the Web Inspector in web views
