@@ -115,6 +115,13 @@ return {
 				desc = "Help Pages",
 			},
 			{
+				"<leader>sH",
+				function()
+					Snacks.picker.highlights()
+				end,
+				desc = "Highlights",
+			},
+			{
 				"<leader>sk",
 				function()
 					Snacks.picker.keymaps()
