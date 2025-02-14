@@ -74,7 +74,7 @@ app_bindings=(
 	["com.adobe.illustrator"]="6"
 	["com.apple.screensharing"]="6"
 	["com.carriez.rustdesk"]="6"
-	["com.apple.Music"]="7"
+	["com.apple.music"]="7"
 )
 
 defaults delete com.apple.spaces "app-bindings" 2>/dev/null || true
