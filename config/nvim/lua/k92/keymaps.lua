@@ -10,17 +10,6 @@ vim.keymap.set({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", ex
 vim.keymap.set("v", "<", "<gv")
 vim.keymap.set("v", ">", ">gv")
 
--- Better Undo/Redo with highlight
-vim.keymap.set("n", "u", function()
-	local highlight_undo = require("k92.utils.highlight-undo")
-	highlight_undo.undo()
-end, { noremap = true, silent = true })
-
-vim.keymap.set("n", "U", function()
-	local highlight_undo = require("k92.utils.highlight-undo")
-	highlight_undo.redo()
-end, { noremap = true, silent = true })
-
 -- Launch lazy window
 vim.keymap.set("n", "<leader>l", "<cmd>Lazy<cr>", { desc = "Lazy" })
 
