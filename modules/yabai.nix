@@ -41,7 +41,7 @@
 
       extraConfig = ''
         # apps to not manage (ignore)
-        yabai -m rule --add app="^(Finder|System Settings|Archive Utility|Microsoft Excel|Creative Cloud|Logi Options|Raycast|Karabiner-Elements|Karabiner-EventViewer|Stats|FaceTime|Loom)$" manage=off
+        yabai -m rule --add app="^(Finder|System Settings|Archive Utility|Creative Cloud|Logi Options|FaceTime)$" manage=off
       '';
     };
   };
