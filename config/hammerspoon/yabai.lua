@@ -2,7 +2,7 @@ local HYPER = { "cmd", "ctrl", "alt", "shift" }
 
 -- Define a helper function to run yabai commands
 local function runYabai(cmd)
-	os.execute("/run/current-system/sw/bin/yabai -m " .. cmd)
+	hs.execute("/run/current-system/sw/bin/yabai -m " .. cmd, true)
 end
 
 -- Keybindings for window focus
