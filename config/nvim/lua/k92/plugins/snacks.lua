@@ -101,6 +101,13 @@ return {
 				desc = "Find Files",
 			},
 			{
+				"<leader>sa",
+				function()
+					Snacks.picker.autocmds()
+				end,
+				desc = "Autocmds",
+			},
+			{
 				"<leader>su",
 				function()
 					Snacks.picker.undo()
@@ -206,7 +213,7 @@ return {
 				function()
 					Snacks.picker.lsp_type_definitions()
 				end,
-				desc = "Goto T[y]pe Definition",
+				desc = "Goto Type Definition",
 			},
 			{
 				"<leader>ss",
@@ -214,6 +221,22 @@ return {
 					Snacks.picker.lsp_symbols()
 				end,
 				desc = "LSP Symbols",
+			},
+			{
+				"<leader>sl",
+				function()
+					Snacks.picker.lsp_config({
+						attached = true,
+					})
+				end,
+				desc = "Attached LSP",
+			},
+			{
+				"<leader>sL",
+				function()
+					Snacks.picker.lsp_config()
+				end,
+				desc = "All LSP",
 			},
 		},
 	},
