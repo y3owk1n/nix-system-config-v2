@@ -150,11 +150,11 @@ local function dragAndMoveWindowToSpace(win, spaceId)
 	local MOUSE_OFFSET_Y = 12
 	local SWITCH_DELAY = 0.2
 	local RELEASE_DELAY = 0.5
+	local YABAI_SETTLE_DELAY = 0.3
 
 	-- Get window frame and calculate positions
 	local frame = win:frame()
 	local clickPos = hs.geometry.point(frame.x + MOUSE_OFFSET_X, frame.y + MOUSE_OFFSET_Y)
-	local centerPos = hs.geometry.point(frame.x + frame.w / 2, frame.y + frame.h / 2)
 
 	-- Move mouse to click position
 	hs.mouse.absolutePosition(clickPos)
@@ -168,9 +168,16 @@ local function dragAndMoveWindowToSpace(win, spaceId)
 	-- Release mouse and restore position
 	hs.timer.doAfter(RELEASE_DELAY, function()
 		hs.eventtap.event.newMouseEvent(hs.eventtap.event.types.leftMouseUp, clickPos):post()
-		hs.mouse.absolutePosition(centerPos)
-		win:raise()
-		win:focus()
+		hs.timer.doAfter(YABAI_SETTLE_DELAY, function()
+			local newWin = hs.window.focusedWindow()
+			if newWin then
+				local newFrame = newWin:frame()
+				local newCenter = hs.geometry.point(newFrame.x + newFrame.w / 2, newFrame.y + newFrame.h / 2)
+				hs.mouse.absolutePosition(newCenter)
+				newWin:raise()
+				newWin:focus()
+			end
+		end)
 	end)
 end
 
