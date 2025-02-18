@@ -59,12 +59,15 @@
         ctrl + shift - k : yabai -m window --swap north
         ctrl + shift - l : yabai -m window --swap east
 
+        # rotate layout clockwise
+        cmd + shift + alt + ctrl - r : yabai -m space --rotate 270
+
         # toggle window fullscreen zoom
         cmd + shift + alt + ctrl - m : yabai -m window --toggle zoom-fullscreen
 
         # float / unfloat window and center on screen
         cmd + shift + alt + ctrl - t : yabai -m window --toggle float;\
-                  yabai -m window --grid 4:4:1:1:2:2
+        			yabai -m window --grid 4:4:1:1:2:2
 
         # balance size of windows
         cmd + shift + alt + ctrl - 0 : yabai -m space --balance
