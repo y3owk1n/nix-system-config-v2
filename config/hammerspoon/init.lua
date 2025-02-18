@@ -2,7 +2,7 @@
 
 -- require("launcher")
 require("window")
-require("yabai")
+-- require("yabai")
 -- require("neovim")
 
 local menubarSpace = require("menubar-space") -- show the current active space in number
