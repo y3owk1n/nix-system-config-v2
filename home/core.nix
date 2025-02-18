@@ -11,6 +11,7 @@
     mkcert
     rip2
     imagemagick
+    ghostscript
 
     # --- misc ---
     # sqlite
