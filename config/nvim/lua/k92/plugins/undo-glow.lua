@@ -22,8 +22,8 @@ return {
 
 			undo_glow.setup(opts)
 
-			vim.keymap.set("n", "u", undo_glow.undo, { desc = "Undo with glow" })
-			vim.keymap.set("n", "U", undo_glow.redo, { desc = "Redo with glow" })
+			vim.keymap.set("n", "u", undo_glow.undo, { desc = "Undo with glow", noremap = true, silent = true })
+			vim.keymap.set("n", "U", undo_glow.redo, { desc = "Redo with glow", noremap = true, silent = true })
 		end,
 	},
 }
