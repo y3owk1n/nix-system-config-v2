@@ -536,7 +536,10 @@ return {
 		optional = true,
 		opts = {
 			integrations = {
-				snacks = true,
+				snacks = {
+					enabled = true,
+					indent_scope_color = "flamingo",
+				},
 			},
 		},
 	},
