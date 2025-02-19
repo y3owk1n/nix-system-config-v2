@@ -11,8 +11,8 @@ return {
 
 			if has_catppuccin then
 				local colors = catppuccin.get_palette()
-				opts.undo_hl_color = { bg = colors.red, fg = colors.base }
-				opts.redo_hl_color = { bg = colors.flamingo, fg = colors.base }
+				opts.undo_hl_color = { bg = colors.maroon }
+				opts.redo_hl_color = { bg = colors.teal }
 			end
 		end,
 		---@param _ any
@@ -22,8 +22,22 @@ return {
 
 			undo_glow.setup(opts)
 
-			vim.keymap.set("n", "u", undo_glow.undo, { desc = "Undo with glow", noremap = true, silent = true })
-			vim.keymap.set("n", "U", undo_glow.redo, { desc = "Redo with glow", noremap = true, silent = true })
+			vim.keymap.set("n", "U", "<C-r>", { noremap = true, silent = true })
+
+			vim.api.nvim_create_autocmd({ "BufReadPost", "TextChanged" }, {
+				pattern = "*",
+				callback = function()
+					if vim.bo.buftype ~= "" then
+						return
+					end
+
+					vim.schedule(function()
+						require("undo-glow").attach_and_run({
+							hlgroup = "UgUndo",
+						})
+					end)
+				end,
+			})
 		end,
 	},
 }
