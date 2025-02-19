@@ -42,6 +42,7 @@
     # --- nvim ---
     lua51Packages.lua
     luajitPackages.luarocks
+    panvimdoc
 
     # --- nix ---
     nixfmt-rfc-style
