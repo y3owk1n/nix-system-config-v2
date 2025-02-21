@@ -3,22 +3,22 @@ return {
 	"gbprod/yanky.nvim",
 	event = { "VeryLazy" },
 	opts = {
-		highlight = { timer = 150 },
+		highlight = { timer = 150, on_yank = false, on_put = false },
 	},
 	keys = {
 		{ "y", "<Plug>(YankyYank)", mode = { "n", "x" }, desc = "Yank Text" },
-		{
-			"p",
-			"<Plug>(YankyPutAfter)",
-			mode = { "n", "x" },
-			desc = "Put Text After Cursor",
-		},
-		{
-			"P",
-			"<Plug>(YankyPutBefore)",
-			mode = { "n", "x" },
-			desc = "Put Text Before Cursor",
-		},
+		-- {
+		-- 	"p",
+		-- 	"<Plug>(YankyPutAfter)",
+		-- 	mode = { "n", "x" },
+		-- 	desc = "Put Text After Cursor",
+		-- },
+		-- {
+		-- 	"P",
+		-- 	"<Plug>(YankyPutBefore)",
+		-- 	mode = { "n", "x" },
+		-- 	desc = "Put Text Before Cursor",
+		-- },
 		{
 			"<leader>sp",
 			function()
