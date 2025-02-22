@@ -57,16 +57,10 @@ return {
 	{
 		"y3owk1n/tailwind-autosort.nvim",
 		-- dir = "~/Dev/tailwind-autosort.nvim", -- Your path
-		ft = {
-			"css",
-			"sass",
-			"scss",
-			"javascript",
-			"javascriptreact",
-			"typescript",
-			"typescriptreact",
-		},
+		version = "*",
+		event = "VeryLazy",
 		dependencies = { "nvim-treesitter/nvim-treesitter" },
+		---@type TailwindAutoSort.Config
 		opts = {},
 	},
 }
