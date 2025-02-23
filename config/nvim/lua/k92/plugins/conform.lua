@@ -7,7 +7,7 @@ return {
 		dependencies = { "mason.nvim" },
 		keys = {
 			{
-				"<leader>f",
+				"<leader>cf",
 				function()
 					require("conform").format({
 						async = true,
