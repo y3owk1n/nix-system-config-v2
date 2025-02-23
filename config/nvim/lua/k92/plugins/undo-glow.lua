@@ -3,10 +3,13 @@ return {
 	{
 		"y3owk1n/undo-glow.nvim",
 		-- dir = "~/Dev/undo-glow.nvim", -- Your path
-		version = "*",
 		event = { "VeryLazy" },
 		---@type UndoGlow.Config
 		opts = {
+			animation = {
+				enabled = true,
+				duration = 500,
+			},
 			highlights = {
 				undo = {
 					hl_color = { bg = "#48384B" },
