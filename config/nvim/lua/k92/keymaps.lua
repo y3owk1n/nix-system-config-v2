@@ -13,6 +13,17 @@ vim.keymap.set("v", ">", ">gv")
 -- Launch lazy window
 vim.keymap.set("n", "<leader>l", "<cmd>Lazy<cr>", { desc = "Lazy" })
 
+-- Better yank with cursor remain
+vim.keymap.set({ "n", "x" }, "y", function()
+	local pos = vim.fn.getpos(".")
+
+	vim.schedule(function()
+		vim.fn.setpos(".", pos)
+	end)
+
+	return "y"
+end, { expr = true, noremap = true, desc = "Yank and remain cursor" })
+
 -- Location & Quickfix
 vim.keymap.set("n", "<leader>xl", "<cmd>lopen<cr>", { desc = "Location List" })
 vim.keymap.set("n", "<leader>xq", "<cmd>copen<cr>", { desc = "Quickfix List" })
@@ -59,8 +70,8 @@ vim.keymap.set("n", "<C-a>", "gg<S-v>G", { desc = "Select all" })
 --- Center page during actions
 vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half page down and center" })
 vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half page up and center" })
-vim.keymap.set("n", "n", "'Nn'[v:searchforward].'zvzz'", { expr = true, desc = "Search next and center" })
-vim.keymap.set("n", "N", "'nN'[v:searchforward].'zz'", { expr = true, desc = "Search next and center" })
+-- vim.keymap.set("n", "n", "'Nn'[v:searchforward].'zvzz'", { expr = true, desc = "Search next and center" })
+-- vim.keymap.set("n", "N", "'nN'[v:searchforward].'zz'", { expr = true, desc = "Search next and center" })
 
 --- Do things without affecting the registers
 vim.keymap.set("n", "x", '"_x', { desc = "Delete a character without copying it" })
