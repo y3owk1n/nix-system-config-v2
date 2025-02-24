@@ -60,12 +60,8 @@ return {
 		-- version = "*",
 		event = "VeryLazy",
 		dependencies = { "nvim-treesitter/nvim-treesitter" },
+		---@module "tailwind-autosort"
 		---@type TailwindAutoSort.Config
 		opts = {},
-		---@param _ any
-		---@param opts TailwindAutoSort.Config
-		config = function(_, opts)
-			require("tailwind-autosort").setup(opts)
-		end,
 	},
 }
