@@ -57,10 +57,15 @@ return {
 	{
 		"y3owk1n/tailwind-autosort.nvim",
 		-- dir = "~/Dev/tailwind-autosort.nvim", -- Your path
-		version = "*",
+		-- version = "*",
 		event = "VeryLazy",
 		dependencies = { "nvim-treesitter/nvim-treesitter" },
 		---@type TailwindAutoSort.Config
 		opts = {},
+		---@param _ any
+		---@param opts TailwindAutoSort.Config
+		config = function(_, opts)
+			require("tailwind-autosort").setup(opts)
+		end,
 	},
 }
