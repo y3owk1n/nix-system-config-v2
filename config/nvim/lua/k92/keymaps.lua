@@ -15,11 +15,7 @@ vim.keymap.set("n", "<leader>l", "<cmd>Lazy<cr>", { desc = "Lazy" })
 
 -- Better yank with cursor remain
 vim.keymap.set({ "n", "x" }, "y", function()
-	local pos = vim.fn.getpos(".")
-
-	vim.schedule(function()
-		vim.fn.setpos(".", pos)
-	end)
+	require("k92.utils.preserve-cursor").preserve_cursor()
 
 	return "y"
 end, { expr = true, noremap = true, desc = "Yank and remain cursor" })

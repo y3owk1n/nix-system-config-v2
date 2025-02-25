@@ -99,10 +99,8 @@ return {
 			{
 				"gc",
 				function()
-					local pos = vim.fn.getpos(".")
-					vim.schedule(function()
-						vim.fn.setpos(".", pos)
-					end)
+					require("k92.utils.preserve-cursor").preserve_cursor()
+
 					return require("undo-glow").comment()
 				end,
 				mode = { "n", "x" },
