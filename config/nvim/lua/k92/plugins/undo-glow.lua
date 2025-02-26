@@ -9,27 +9,30 @@ return {
 		opts = {
 			animation = {
 				enabled = true,
-				duration = 500,
+				duration = 300,
 			},
 			highlights = {
 				undo = {
-					hl_color = { bg = "#48384B" },
+					hl_color = { bg = "#BF3A3A" },
 				},
 				redo = {
-					hl_color = { bg = "#3B474A" },
+					hl_color = { bg = "#3EAD62" },
 				},
 				yank = {
-					hl_color = { bg = "#5A513C" },
+					hl_color = { bg = "#D7D65D" },
+				},
+				paste = {
+					hl_color = { bg = "#6BB1C9" },
 				},
 				search = {
-					hl_color = { bg = "#6D4B5E" },
+					hl_color = { bg = "#8A77C5" },
 				},
 				comment = {
-					hl_color = { bg = "#6D5640" },
+					hl_color = { bg = "#D08A5A" },
 				},
-				-- search_prev = {
-				-- 	hl_color = { bg = "#3E4C63" },
-				-- },
+				cursor = {
+					hl_color = { bg = "#C7709B" },
+				},
 			},
 		},
 		keys = {
@@ -131,7 +134,20 @@ return {
 		init = function()
 			vim.api.nvim_create_autocmd("TextYankPost", {
 				desc = "Highlight when yanking (copying) text",
-				callback = require("undo-glow").yank,
+				callback = function()
+					vim.schedule(function()
+						require("undo-glow").yank()
+					end)
+				end,
+			})
+
+			vim.api.nvim_create_autocmd("CursorMoved", {
+				desc = "Highlight when cursor moved significantly",
+				callback = function()
+					vim.schedule(function()
+						require("undo-glow").cursor_moved()
+					end)
+				end,
 			})
 		end,
 	},
