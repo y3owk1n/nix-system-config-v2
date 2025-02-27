@@ -4,6 +4,8 @@ return {
 		"folke/trouble.nvim",
 		event = "VeryLazy",
 		cmd = { "Trouble" },
+		---@type trouble.Config
+		---@diagnostic disable-next-line: missing-fields
 		opts = {
 			focus = true,
 		},

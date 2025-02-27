@@ -3,20 +3,34 @@ return {
 	{
 		"lewis6991/gitsigns.nvim",
 		event = "VeryLazy",
+		---@module 'gitsigns'
+		---@type Gitsigns.Config?
+		---@diagnostic disable-next-line: missing-fields
 		opts = {
 			signs = {
+				---@diagnostic disable-next-line: missing-fields
 				add = { text = "▎" },
+				---@diagnostic disable-next-line: missing-fields
 				change = { text = "▎" },
+				---@diagnostic disable-next-line: missing-fields
 				delete = { text = "" },
+				---@diagnostic disable-next-line: missing-fields
 				topdelete = { text = "" },
+				---@diagnostic disable-next-line: missing-fields
 				changedelete = { text = "▎" },
+				---@diagnostic disable-next-line: missing-fields
 				untracked = { text = "▎" },
 			},
 			signs_staged = {
+				---@diagnostic disable-next-line: missing-fields
 				add = { text = "▎" },
+				---@diagnostic disable-next-line: missing-fields
 				change = { text = "▎" },
+				---@diagnostic disable-next-line: missing-fields
 				delete = { text = "" },
+				---@diagnostic disable-next-line: missing-fields
 				topdelete = { text = "" },
+				---@diagnostic disable-next-line: missing-fields
 				changedelete = { text = "▎" },
 			},
 			attach_to_untracked = true,

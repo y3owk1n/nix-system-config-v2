@@ -4,6 +4,8 @@ return {
 	cmd = { "TodoTrouble", "TodoFzfLua" },
 	event = { "VeryLazy" },
 	dependencies = { "nvim-lua/plenary.nvim" },
+	---@type TodoOptions
+	---@diagnostic disable-next-line: missing-fields
 	opts = { signs = false },
 	keys = {
 		{
