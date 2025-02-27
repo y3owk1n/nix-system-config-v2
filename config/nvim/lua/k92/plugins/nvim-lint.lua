@@ -5,10 +5,11 @@ return {
 	dependencies = {
 		"williamboman/mason.nvim",
 	},
+	---@type neogen.Configuration
+	---@diagnostic disable-next-line: missing-fields
 	opts = {
 		events = { "BufWritePost", "BufReadPost", "InsertLeave" },
 		linters_by_ft = {},
-		---@type table<string,table>
 		linters = {},
 	},
 	config = function(_, opts)

@@ -4,7 +4,6 @@ return {
 		"y3owk1n/undo-glow.nvim",
 		-- dir = "~/Dev/undo-glow.nvim", -- Your path
 		event = { "VeryLazy" },
-		---@module 'undo-glow'
 		---@type UndoGlow.Config
 		opts = {
 			animation = {

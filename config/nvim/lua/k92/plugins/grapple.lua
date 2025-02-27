@@ -3,6 +3,8 @@ return {
 	{
 		"cbochs/grapple.nvim",
 		event = "VeryLazy",
+		---@module "grapple"
+		---@type grapple.options
 		opts = {
 			statusline = {
 				icon = "󱡁",
