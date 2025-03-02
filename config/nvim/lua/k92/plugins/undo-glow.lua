@@ -9,30 +9,32 @@ return {
 			animation = {
 				enabled = true,
 				duration = 300,
+				animation_type = "zoom",
 			},
 			highlights = {
 				undo = {
-					hl_color = { bg = "#48384b" }, -- Dark muted red
+					hl_color = { bg = "#693232" }, -- muted red
 				},
 				redo = {
-					hl_color = { bg = "#384b3f" }, -- Dark muted green
+					hl_color = { bg = "#2F4640" }, -- muted green
 				},
 				yank = {
-					hl_color = { bg = "#4b4838" }, -- Dark muted yellow
+					hl_color = { bg = "#7A683A" }, -- muted yellow
 				},
 				paste = {
-					hl_color = { bg = "#38464b" }, -- Dark muted cyan
+					hl_color = { bg = "#325B5B" }, -- muted cyan
 				},
 				search = {
-					hl_color = { bg = "#40384b" }, -- Dark muted purple
+					hl_color = { bg = "#5C475C" }, -- muted purple
 				},
 				comment = {
-					hl_color = { bg = "#4b3f38" }, -- Dark muted orange
+					hl_color = { bg = "#7A5A3D" }, -- muted orange
 				},
 				cursor = {
-					hl_color = { bg = "#4b3843" }, -- Dark muted pink
+					hl_color = { bg = "#793D54" }, -- muted magenta
 				},
 			},
+			priority = 2048 * 3,
 		},
 		keys = {
 			{
@@ -74,7 +76,11 @@ return {
 			{
 				"n",
 				function()
-					require("undo-glow").search_next()
+					require("undo-glow").search_next({
+						animation = {
+							animation_type = "strobe",
+						},
+					})
 				end,
 				mode = "n",
 				desc = "Search next with highlight",
@@ -83,7 +89,11 @@ return {
 			{
 				"N",
 				function()
-					require("undo-glow").search_prev()
+					require("undo-glow").search_prev({
+						animation = {
+							animation_type = "strobe",
+						},
+					})
 				end,
 				mode = "n",
 				desc = "Search prev with highlight",
@@ -92,7 +102,11 @@ return {
 			{
 				"*",
 				function()
-					require("undo-glow").search_star()
+					require("undo-glow").search_star({
+						animation = {
+							animation_type = "strobe",
+						},
+					})
 				end,
 				mode = "n",
 				desc = "Search star with highlight",
@@ -144,7 +158,11 @@ return {
 				desc = "Highlight when cursor moved significantly",
 				callback = function()
 					vim.schedule(function()
-						require("undo-glow").cursor_moved()
+						require("undo-glow").cursor_moved({
+							animation = {
+								animation_type = "slide",
+							},
+						})
 					end)
 				end,
 			})
