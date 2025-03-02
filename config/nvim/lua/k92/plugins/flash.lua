@@ -28,9 +28,6 @@ return {
 	},
 	{
 		"folke/snacks.nvim",
-		dependencies = {
-			"folke/flash.nvim",
-		},
 		optional = true,
 		opts = {
 			picker = {
