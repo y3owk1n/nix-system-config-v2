@@ -7,8 +7,8 @@ vim.keymap.set({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", 
 vim.keymap.set({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", expr = true, silent = true })
 
 -- Better indentation
-vim.keymap.set("v", "<", "<gv")
-vim.keymap.set("v", ">", ">gv")
+vim.keymap.set("v", "<", "<gv", { desc = "Dedent" })
+vim.keymap.set("v", ">", ">gv", { desc = "Indent" })
 
 -- Launch lazy window
 vim.keymap.set("n", "<leader>l", "<cmd>Lazy<cr>", { desc = "Lazy" })
@@ -64,8 +64,8 @@ vim.keymap.set("n", "\\", "<C-W>v", { desc = "Split Window Right", remap = true 
 vim.keymap.set("n", "<C-a>", "gg<S-v>G", { desc = "Select all" })
 
 --- Center page during actions
-vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half page down and center" })
-vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half page up and center" })
+-- vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half page down and center" })
+-- vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half page up and center" })
 -- vim.keymap.set("n", "n", "'Nn'[v:searchforward].'zvzz'", { expr = true, desc = "Search next and center" })
 -- vim.keymap.set("n", "N", "'nN'[v:searchforward].'zz'", { expr = true, desc = "Search next and center" })
 
@@ -77,7 +77,7 @@ vim.keymap.set("v", "J", ":m '>+1<cr> | :normal gv=gv<cr>", { desc = "Move line 
 vim.keymap.set("v", "K", ":m '<-2<cr> | :normal gv=gv<cr>", { desc = "Move line down" })
 
 -- No op
-vim.keymap.set("n", "Q", "<nop>", { desc = "No op" })
+vim.keymap.set({ "n", "x" }, "Q", "<nop>", { desc = "No op" })
 
 -- Mason
 vim.keymap.set("n", "<leader>m", "<cmd>Mason<cr>", { desc = "Mason" })
