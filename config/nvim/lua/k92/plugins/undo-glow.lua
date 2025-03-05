@@ -10,6 +10,7 @@ return {
 				enabled = true,
 				duration = 300,
 				animation_type = "zoom",
+				window_scoped = true,
 			},
 			highlights = {
 				undo = {
