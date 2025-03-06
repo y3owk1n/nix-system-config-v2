@@ -3,13 +3,13 @@
   ...
 }:
 {
-  programs = {
-    neovim = {
-      enable = true;
-      defaultEditor = true;
-      vimAlias = true;
-    };
-  };
+  # programs = {
+  #   neovim = {
+  #     enable = true;
+  #     defaultEditor = true;
+  #     vimAlias = true;
+  #   };
+  # };
 
   xdg.configFile.nvim = {
     enable = true;
