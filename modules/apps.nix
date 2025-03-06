@@ -73,6 +73,7 @@
     brews = [
       "kanata"
       "y3owk1n/tap/cpenv"
+      "y3owk1n/tap/nvs"
     ];
 
     # `brew install --cask`

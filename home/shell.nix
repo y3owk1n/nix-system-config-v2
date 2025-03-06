@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 {
   programs.fish = {
     enable = true;
@@ -24,12 +24,12 @@
       tailscale = "/Applications/Tailscale.app/Contents/MacOS/Tailscale";
       cat = "bat";
       n = "nvim";
-      nim = "nvim";
-      vim = "nvim";
-      nvm = "nvim";
-      vi = "nvim";
-      nvi = "nvim";
-      nivm = "nvim";
+      # nim = "nvim";
+      # vim = "nvim";
+      # nvm = "nvim";
+      # vi = "nvim";
+      # nvi = "nvim";
+      # nivm = "nvim";
     };
     plugins = [
       {
@@ -108,6 +108,10 @@
       };
     };
   };
+
+  home.sessionPath = [
+    "$HOME/.nvs/bin"
+  ];
 
   home.sessionVariables = {
     SHELL = "${pkgs.fish}/bin/fish";
