@@ -20,7 +20,6 @@ rebuild:
 
 
 update:
-	brew update
 	sudo determinate-nixd upgrade
 	nix flake update
 
