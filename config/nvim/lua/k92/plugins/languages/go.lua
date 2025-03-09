@@ -18,7 +18,7 @@ return {
 		"neovim/nvim-lspconfig",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "goimports", "gofumpt" })
+			_table.add_unique_items(opts.ensure_installed, { "goimports", "gofumpt", "golangci-lint" })
 
 			opts.servers = opts.servers or {}
 			opts.servers.gopls = {
@@ -90,6 +90,15 @@ return {
 		opts = {
 			formatters_by_ft = {
 				go = { "goimports", "gofumpt" },
+			},
+		},
+	},
+
+	{
+		"mfussenegger/nvim-lint",
+		opts = {
+			linters_by_ft = {
+				go = { "golangcilint" },
 			},
 		},
 	},
