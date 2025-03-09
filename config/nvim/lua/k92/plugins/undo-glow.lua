@@ -153,6 +153,7 @@ return {
 				end,
 			})
 
+			-- This only handles neovim instance and do not highlight when switching panes in tmux
 			vim.api.nvim_create_autocmd("CursorMoved", {
 				desc = "Highlight when cursor moved significantly",
 				callback = function()
@@ -161,6 +162,30 @@ return {
 							animation_type = "slide",
 						},
 					})
+				end,
+			})
+
+			-- This will handle highlights when focus gained, including switching panes in tmux
+			vim.api.nvim_create_autocmd("FocusGained", {
+				desc = "Highlight when focus gained",
+				callback = function()
+					---@type UndoGlow.CommandOpts
+					local opts = {
+						animation = {
+							animation_type = "slide",
+						},
+					}
+
+					opts = require("undo-glow.utils").merge_command_opts("UgCursor", opts)
+					local current_row = vim.api.nvim_win_get_cursor(0)[1]
+					local cur_line = vim.api.nvim_get_current_line()
+					require("undo-glow").highlight_region(vim.tbl_extend("force", opts, {
+						s_row = current_row - 1,
+						s_col = 0,
+						e_row = current_row - 1,
+						e_col = #cur_line,
+						force_edge = opts.force_edge == nil and true or opts.force_edge,
+					}))
 				end,
 			})
 
