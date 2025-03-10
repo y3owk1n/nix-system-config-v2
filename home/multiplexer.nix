@@ -18,8 +18,8 @@
             src = pkgs.fetchFromGitHub {
               owner = "christoomey";
               repo = "vim-tmux-navigator";
-              rev = "d847ea942a5bb4d4fab6efebc9f30d787fd96e65";
-              hash = "sha256-EkuAlK7RSmyrRk3RKhyuhqKtrrEVJkkuOIPmzLHw2/0=";
+              rev = "791dacfcfc8ccb7f6eb1c853050883b03e5a22fe";
+              hash = "sha256-8KAKHK5pOB9yguhpt0WdtIPezHwl0yMUK205JkpbPOg=";
             };
           });
         }
@@ -28,8 +28,8 @@
             src = pkgs.fetchFromGitHub {
               owner = "catppuccin";
               repo = "tmux";
-              rev = "320e184a31d0825cb4f4af550492cbdff2fc3ffc";
-              sha256 = "sha256-gMBpINeHS+5TCsbJBHhXKEF+fG58FmJrIJoQWYdQqc0=";
+              rev = "073ee54992c59fedcc29c1525a26f95691f0ae1f";
+              sha256 = "sha256-rd3f6Q8xQJg9llwpUeDoRuuCwP3BhqwyIjlSg13c9YU=";
             };
           });
           extraConfig = ''
