@@ -110,7 +110,7 @@
   };
 
   home.sessionPath = [
-    "$HOME/.nvs/bin"
+    "$HOME/.local/bin"
   ];
 
   home.sessionVariables = {
