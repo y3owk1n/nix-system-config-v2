@@ -6,7 +6,7 @@ return {
 		---@type GrugFarOptions
 		---@diagnostic disable-next-line: missing-fields
 		opts = { headerMaxWidth = 80 },
-		cmd = "GrugFar",
+		cmd = { "GrugFar", "GrugFarWithin" },
 		keys = {
 			{
 				"<leader>sr",
@@ -20,8 +20,19 @@ return {
 						},
 					})
 				end,
-				mode = { "n", "v" },
+				mode = { "n" },
 				desc = "Search and Replace",
+			},
+			{
+				"<leader>sr",
+				function()
+					local grug = require("grug-far")
+					grug.open({
+						visualSelectionUsage = "operate-within-range",
+					})
+				end,
+				mode = { "x" },
+				desc = "Search and Replace Within",
 			},
 		},
 	},
