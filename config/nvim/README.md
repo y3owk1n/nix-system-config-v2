@@ -1,3 +1,3 @@
 # Mirror from my nix config system repo
 
-Neovim Test Sync 6
+Neovim Test Sync 7
