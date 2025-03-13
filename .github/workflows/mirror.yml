@@ -3,9 +3,9 @@ name: Mirror Subdirectory
 on:
     push:
         branches:
-            - main # Trigger on push to your main branch
+            - main
         paths:
-            - "config/nvim/**" # Trigger only if changes occur in this folder
+            - "config/nvim/**"
 
 permissions:
     contents: write
@@ -35,14 +35,9 @@ jobs:
 
               run: |
                   MIRROR_URL="https://x-access-token:${PAT}@github.com/y3owk1n/nvim.git"
-                  echo "Using mirror URL: $MIRROR_URL"
 
                   git remote remove nvim-config || true
                   git remote add nvim-config "$MIRROR_URL"
-
-                  unset GITHUB_TOKEN
-
-                  git config --global --unset credential.helper || true
 
                   git remote -v  # For debugging: check the remote URL
 
