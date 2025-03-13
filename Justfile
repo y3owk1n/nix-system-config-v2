@@ -53,3 +53,7 @@ start-kanata:
 	sudo '/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon' &
 	sudo kanata -n -c ~/.config/kanata/config.kbd
 
+mirror-nvim:
+	git subtree split --prefix=config/nvim -b nvim-config
+	git remote add nvim-config https://github.com/y3owk1n/nvim.git
+	git push nvim-config nvim-config:main

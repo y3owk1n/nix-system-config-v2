@@ -1,0 +1,37 @@
+name: Mirror Subdirectory
+
+on:
+    push:
+        branches:
+            - main # Trigger on push to your main branch
+        paths:
+            - "config/nvim/**" # Trigger only if changes occur in this folder
+
+jobs:
+    mirror-nvim:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # Get full history for subtree splitting
+
+            - name: Set up Git Config
+              run: |
+                  git config --global user.name "${{ github.actor }}"
+                  git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
+            - name: Create Subtree Branch
+              run: |
+                  git subtree split --prefix=config/nvim -b nvim-config
+
+            - name: Add Remote and Push Subtree
+              env:
+                  # MIRROR_REPO should be set to your HTTPS URL with token, e.g.:
+                  # https://x-access-token:${{ secrets.PERSONAL_TOKEN }}@github.com/your-username/nvim-config.git
+                  MIRROR_REPO: ${{ secrets.MIRROR_NVIM_REPO }}
+              run: |
+                  # Add the remote (ignoring error if already added)
+                  git remote add mirror "$MIRROR_REPO" || true
+                  # Force-push the subtree branch to the remote's main branch
+                  git push mirror nvim-config:main --force
