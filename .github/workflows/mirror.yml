@@ -36,6 +36,8 @@ jobs:
                   git remote remove nvim-config || true
                   git remote add nvim-config "$MIRROR_URL"
 
+                  git config --global url."https://x-access-token:${PAT}@github.com/".insteadOf "https://github.com/"
+
                   unset GITHUB_TOKEN
 
                   git remote -v  # For debugging: check the remote URL
