@@ -1,18 +1,19 @@
 ---@type LazySpec
 return {
-	"christoomey/vim-tmux-navigator",
+	"alexghergh/nvim-tmux-navigation",
 	event = "VeryLazy",
 	cmd = {
-		"TmuxNavigateLeft",
-		"TmuxNavigateDown",
-		"TmuxNavigateUp",
-		"TmuxNavigateRight",
-		"TmuxNavigatePrevious",
+		"NvimTmuxNavigateLeft",
+		"NvimTmuxNavigateDown",
+		"NvimTmuxNavigateUp",
+		"NvimTmuxNavigateRight",
+		"NvimTmuxNavigatePrevious",
 	},
+	opts = {},
 	keys = {
-		{ "<c-h>", "<cmd><C-U>TmuxNavigateLeft<cr>" },
-		{ "<c-j>", "<cmd><C-U>TmuxNavigateDown<cr>" },
-		{ "<c-k>", "<cmd><C-U>TmuxNavigateUp<cr>" },
-		{ "<c-l>", "<cmd><C-U>TmuxNavigateRight<cr>" },
+		{ "<c-h>", "<cmd>NvimTmuxNavigateLeft<cr>" },
+		{ "<c-j>", "<cmd>NvimTmuxNavigateDown<cr>" },
+		{ "<c-k>", "<cmd>NvimTmuxNavigateUp<cr>" },
+		{ "<c-l>", "<cmd>NvimTmuxNavigateRight<cr>" },
 	},
 }
