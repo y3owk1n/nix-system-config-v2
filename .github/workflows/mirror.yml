@@ -35,6 +35,5 @@ jobs:
               run: |
                   MIRROR_URL="https://x-access-token:${PERSONAL_TOKEN}@github.com/y3owk1n/nvim.git"
                   echo "Using mirror URL: $MIRROR_URL"
-                  git remote remove mirror || true
-                  git remote add mirror "$MIRROR_URL"
-                  git push mirror nvim-config:main --force
+                  git remote add nvim-config "$MIRROR_URL"
+                  git push nvim-config nvim-config:main --force
