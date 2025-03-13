@@ -33,7 +33,7 @@ jobs:
                   MIRROR_REPO: https://x-access-token:${{ secrets.PAT }}@github.com/y3owk1n/nvim.git
 
               run: |
-                  MIRROR_URL="https://x-access-token:${PERSONAL_TOKEN}@github.com/y3owk1n/nvim.git"
+                  MIRROR_URL="https://x-access-token:${PAT}@github.com/y3owk1n/nvim.git"
                   echo "Using mirror URL: $MIRROR_URL"
                   git remote add nvim-config "$MIRROR_URL"
                   git push nvim-config nvim-config:main --force
