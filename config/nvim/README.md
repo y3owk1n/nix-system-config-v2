@@ -1,1 +1,1 @@
-# Mirror from my nix config
+# Mirror from my nix config system repo
