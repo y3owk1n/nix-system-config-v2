@@ -27,12 +27,14 @@ jobs:
 
             - name: Add Remote and Push Subtree
               env:
+                  PAT: ${{ secrets.PAT }}
                   # MIRROR_REPO should be set to your HTTPS URL with token, e.g.:
                   # https://x-access-token:${{ secrets.PERSONAL_TOKEN }}@github.com/your-username/nvim-config.git
                   MIRROR_REPO: https://x-access-token:${{ secrets.PAT }}@github.com/y3owk1n/nvim.git
 
               run: |
-                  # Add the remote (ignoring error if already added)
-                  git remote add mirror "$MIRROR_REPO" || true
-                  # Force-push the subtree branch to the remote's main branch
+                  MIRROR_URL="https://x-access-token:${PERSONAL_TOKEN}@github.com/y3owk1n/nvim.git"
+                  echo "Using mirror URL: $MIRROR_URL"
+                  git remote remove mirror || true
+                  git remote add mirror "$MIRROR_URL"
                   git push mirror nvim-config:main --force
