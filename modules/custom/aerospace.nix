@@ -29,7 +29,7 @@ in
 
           on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
 
-          # on-focus-changed = ["move-mouse window-force-center"]
+          on-focus-changed = ["move-mouse window-force-center"]
 
           [gaps]
           inner.horizontal = 8
@@ -48,10 +48,10 @@ in
           cmd-alt-shift-ctrl-k = 'focus up'
           cmd-alt-shift-ctrl-l = 'focus right'
 
-          alt-shift-h = 'move left'
-          alt-shift-j = 'move down'
-          alt-shift-k = 'move up'
-          alt-shift-l = 'move right'
+          ctrl-shift-h = 'move left'
+          ctrl-shift-j = 'move down'
+          ctrl-shift-k = 'move up'
+          ctrl-shift-l = 'move right'
 
           # cmd-alt-shift-ctrl-minus = 'resize smart -50'
           # cmd-alt-shift-ctrl-equal = 'resize smart +50'
@@ -73,24 +73,24 @@ in
           cmd-alt-shift-ctrl-7 = 'workspace 7'
           cmd-alt-shift-ctrl-8 = 'workspace 8'
           cmd-alt-shift-ctrl-9 = 'workspace 9'
-          cmd-alt-shift-ctrl-0 = 'workspace 10'
+          cmd-alt-shift-ctrl-0 = 'balance-sizes'
 
-          alt-shift-1 = ['move-node-to-workspace 1', 'workspace 1']
-          alt-shift-2 = ['move-node-to-workspace 2', 'workspace 2']
-          alt-shift-3 = ['move-node-to-workspace 3', 'workspace 3']
-          alt-shift-4 = ['move-node-to-workspace 4', 'workspace 4']
-          alt-shift-5 = ['move-node-to-workspace 5', 'workspace 5']
-          alt-shift-6 = ['move-node-to-workspace 6', 'workspace 6']
-          alt-shift-7 = ['move-node-to-workspace 7', 'workspace 7']
-          alt-shift-8 = ['move-node-to-workspace 8', 'workspace 8']
-          alt-shift-9 = ['move-node-to-workspace 9', 'workspace 9']
-          alt-shift-0 = ['move-node-to-workspace 10', 'workspace 10']
+          ctrl-shift-1 = ['move-node-to-workspace 1', 'workspace 1']
+          ctrl-shift-2 = ['move-node-to-workspace 2', 'workspace 2']
+          ctrl-shift-3 = ['move-node-to-workspace 3', 'workspace 3']
+          ctrl-shift-4 = ['move-node-to-workspace 4', 'workspace 4']
+          ctrl-shift-5 = ['move-node-to-workspace 5', 'workspace 5']
+          ctrl-shift-6 = ['move-node-to-workspace 6', 'workspace 6']
+          ctrl-shift-7 = ['move-node-to-workspace 7', 'workspace 7']
+          ctrl-shift-8 = ['move-node-to-workspace 8', 'workspace 8']
+          ctrl-shift-9 = ['move-node-to-workspace 9', 'workspace 9']
 
-          cmd-alt-shift-ctrl-c = 'reload-config'
+          cmd-alt-shift-ctrl-r = 'flatten-workspace-tree'
+
+          # cmd-alt-shift-ctrl-c = 'reload-config'
 
           cmd-alt-shift-ctrl-t = 'layout floating tiling' # 'floating toggle' in i3
 
-          # Space 1 = Browser
           [[on-window-detected]]
           if.app-id = 'com.apple.Safari'
           run = 'move-node-to-workspace 1'
@@ -98,15 +98,6 @@ in
           [[on-window-detected]]
           if.app-id = 'com.brave.Browser'
           run = 'move-node-to-workspace 1'
-
-          [[on-window-detected]]
-          if.app-id = 'org.mozilla.com.zen.browser'
-          run = 'move-node-to-workspace 1'
-
-          # Space 2 = Terminal
-          [[on-window-detected]]
-          if.app-id = 'org.alacritty'
-          run = 'move-node-to-workspace 2'
 
           [[on-window-detected]]
           if.app-id = 'com.mitchellh.ghostty'
@@ -117,11 +108,6 @@ in
           run = 'move-node-to-workspace 2'
 
           [[on-window-detected]]
-          if.app-id = 'dev.kdrag0n.MacVirt'
-          run = 'move-node-to-workspace 2'
-
-          # Space 3 = Notes
-          [[on-window-detected]]
           if.app-id = 'com.apple.Notes'
           run = 'move-node-to-workspace 3'
 
@@ -130,11 +116,6 @@ in
           run = 'move-node-to-workspace 3'
 
           [[on-window-detected]]
-          if.app-id = 'md.obsidian'
-          run = 'move-node-to-workspace 3'
-
-          # Space 4 = Socials
-          [[on-window-detected]]
           if.app-id = 'net.whatsapp.WhatsApp'
           run = 'move-node-to-workspace 4'
 
@@ -142,7 +123,6 @@ in
           if.app-id = 'com.apple.MobileSMS'
           run = 'move-node-to-workspace 4'
 
-          # Space 5 = Productivity
           [[on-window-detected]]
           if.app-id = 'com.apple.mail'
           run = 'move-node-to-workspace 5'
@@ -151,7 +131,6 @@ in
           if.app-id = 'com.apple.iCal'
           run = 'move-node-to-workspace 5'
 
-          # Space 6 = Work
           [[on-window-detected]]
           if.app-id = 'com.adobe.Photoshop'
           run = 'move-node-to-workspace 6'
@@ -162,14 +141,16 @@ in
 
           [[on-window-detected]]
           if.app-id = 'com.apple.ScreenSharing'
-          run = 'move-node-to-workspace 6'
-
-          # Space 7 = Music
-          [[on-window-detected]]
-          if.app-id = 'com.apple.Music'
           run = 'move-node-to-workspace 7'
 
-          # Floating
+          [[on-window-detected]]
+          if.app-id = 'com.carriez.rustdesk'
+          run = 'move-node-to-workspace 7'
+
+          [[on-window-detected]]
+          if.app-id = 'com.apple.Music'
+          run = 'move-node-to-workspace 8'
+
           [[on-window-detected]]
           if.app-id = 'com.apple.finder'
           run = 'layout floating'
