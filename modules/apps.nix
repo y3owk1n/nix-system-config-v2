@@ -74,6 +74,7 @@
       "kanata"
       "y3owk1n/tap/cpenv"
       "y3owk1n/tap/nvs"
+      "ast-grep"
     ];
 
     # `brew install --cask`
