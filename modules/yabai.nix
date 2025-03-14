@@ -2,7 +2,7 @@
 {
   services = {
     yabai = {
-      enable = true;
+      enable = false;
       package = (
         pkgs.yabai.overrideAttrs (o: rec {
           version = "7.1.11";
@@ -45,7 +45,7 @@
       '';
     };
     skhd = {
-      enable = true;
+      enable = false;
       package = pkgs.skhd;
       skhdConfig = ''
         cmd + shift + alt + ctrl - h : yabai -m window --focus west

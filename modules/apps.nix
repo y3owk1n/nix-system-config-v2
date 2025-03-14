@@ -30,7 +30,7 @@
 
   # This is a custom module at ./custom/aerospace.nix
   aerospace = {
-    enable = false;
+    enable = true;
   };
 
   # TODO: To make this work, homebrew need to be installed manually, see https://brew.sh
