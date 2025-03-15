@@ -60,7 +60,7 @@ in
     '';
 
     defaults = {
-      universalaccess.reduceMotion = true;
+      # universalaccess.reduceMotion = true;
 
       menuExtraClock = {
         Show24Hour = false;
