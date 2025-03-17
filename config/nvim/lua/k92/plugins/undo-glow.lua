@@ -114,6 +114,19 @@ return {
 				noremap = true,
 			},
 			{
+				"#",
+				function()
+					require("undo-glow").search_hash({
+						animation = {
+							animation_type = "strobe",
+						},
+					})
+				end,
+				mode = "n",
+				desc = "Search hash with highlight",
+				noremap = true,
+			},
+			{
 				"gc",
 				function()
 					require("k92.utils.preserve-cursor").preserve_cursor()
