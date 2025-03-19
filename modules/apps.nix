@@ -54,11 +54,11 @@
     masApps = {
       # --- when want to use safari ---
       # "Wappalyzer" = 1520333300;
-      "AdGuard for Safari" = 1440147259;
+      # "AdGuard for Safari" = 1440147259;
       # "Consent-O-Matic" = 1606897889;
       # "JSON Peep for Safari" = 1458969831;
       # "Vimlike" = 1584519802;
-      "Customize Search Engine" = 6445840140;
+      # "Customize Search Engine" = 6445840140;
 
       # --- misc ---
       "Tailscale" = 1475387142;
@@ -83,12 +83,14 @@
       "imageoptim"
       "whatsapp"
       "zerotier-one"
-      "pronotes"
-      "hammerspoon" # mainly used for safari vim mode
+      # "pronotes"
+      # "hammerspoon" # mainly used for safari vim mode
 
       "ghostty"
 
       "rustdesk"
+
+      "zen-browser"
 
       # --- docker desktop alternative ---
       "orbstack"
