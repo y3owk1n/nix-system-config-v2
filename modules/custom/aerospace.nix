@@ -166,6 +166,11 @@ in
           [[on-window-detected]]
           if.app-id = 'com.logi.optionplus'
           run = 'layout floating'
+
+          [[on-window-detected]]
+          if.app-id = 'app.zen-browser.zen'
+          if.window-title-regex-substring = 'Picture-in-Picture'
+          run = ['layout floating']
         '';
         description = "Config to use for {file} `aerospace.toml`.";
       };
