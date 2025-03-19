@@ -21,6 +21,8 @@
 		"unmapAll",
 		"map <c-d> scrollPageDown",
 		"map <c-u> scrollPageUp",
+		"map <c-j> nextTab",
+		"map <c-k> previousTab",
 		"map j scrollDown",
 		"map k scrollUp",
 		"map h scrollLeft",
