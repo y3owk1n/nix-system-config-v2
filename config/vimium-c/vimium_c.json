@@ -1,11 +1,11 @@
 {
 	"name": "Vimium C",
-	"@time": "12/09/2024, 10:23:21",
-	"time": 1726107801166,
+	"@time": "3/19/2025, 6:42:07 PM",
+	"time": 1742380927573,
 	"environment": {
-		"extension": "2.11.3",
+		"extension": "1.99.997",
 		"platform": "mac",
-		"chromium": 128
+		"firefox": 136
 	},
 	"allBrowserUrls": true,
 	"exclusionRules": [
@@ -43,6 +43,8 @@
 		"map N performBackwardsFind",
 		"map H goBack",
 		"map L goForward",
+		"map J moveTabRight",
+		"map K moveTabLeft",
 		"map ? showHelp",
 		"map yy copyCurrentUrl",
 		""
