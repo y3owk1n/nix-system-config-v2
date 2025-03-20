@@ -7,7 +7,7 @@
 ## Plugins
 
 - iCloud Passwords
-- Pin Unpin Tab
 - React Developer Tools
 - uBlock Origin
 - Vimium C - All by keyboard
+- SheetKeys
