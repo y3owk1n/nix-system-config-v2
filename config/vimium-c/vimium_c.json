@@ -1,7 +1,7 @@
 {
 	"name": "Vimium C",
-	"@time": "3/19/2025, 6:42:07 PM",
-	"time": 1742380927573,
+	"@time": "3/20/2025, 10:24:28 AM",
+	"time": 1742437468568,
 	"environment": {
 		"extension": "1.99.997",
 		"platform": "mac",
@@ -43,10 +43,11 @@
 		"map N performBackwardsFind",
 		"map H goBack",
 		"map L goForward",
-		"map J moveTabRight",
 		"map K moveTabLeft",
+		"map J moveTabRight",
 		"map ? showHelp",
 		"map yy copyCurrentUrl",
+		"map <m-d> togglePinTab",
 		""
 	],
 	"linkHintCharacters": "aoeuidhtns",
