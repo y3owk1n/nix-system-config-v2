@@ -75,6 +75,9 @@
       "y3owk1n/tap/cpenv"
       "y3owk1n/tap/nvs"
       "ast-grep"
+      "ninja"
+      "cmake"
+      "gettext"
     ];
 
     # `brew install --cask`
