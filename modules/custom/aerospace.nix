@@ -100,6 +100,11 @@ in
           run = 'move-node-to-workspace 1'
 
           [[on-window-detected]]
+          if.app-id = 'app.zen-browser.zen'
+          run = 'move-node-to-workspace 1'
+          check-further-callbacks = true
+
+          [[on-window-detected]]
           if.app-id = 'com.mitchellh.ghostty'
           run = 'move-node-to-workspace 2'
 
