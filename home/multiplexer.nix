@@ -28,8 +28,8 @@
             src = pkgs.fetchFromGitHub {
               owner = "catppuccin";
               repo = "tmux";
-              rev = "073ee54992c59fedcc29c1525a26f95691f0ae1f";
-              sha256 = "sha256-rd3f6Q8xQJg9llwpUeDoRuuCwP3BhqwyIjlSg13c9YU=";
+              rev = "b2f219c00609ea1772bcfbdae0697807184743e4";
+              sha256 = "sha256-Is0CQ1ZJMXIwpDjrI5MDNHJtq+R3jlNcd9NXQESUe2w=";
             };
           });
           extraConfig = ''
