@@ -1,4 +1,6 @@
-vim.loader.enable()
+if vim.loader then
+	vim.loader.enable()
+end
 
 -- Set <space> as the leader key
 -- See `:help mapleader`
