@@ -141,3 +141,8 @@ vim.cmd("filetype plugin indent on") -- Enable all filetype plugins
 if vim.fn.exists("syntax_on") ~= 1 then
 	vim.cmd([[syntax enable]])
 end
+
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_ruby_provider = 0
+vim.g.loaded_node_provider = 0
