@@ -1,5 +1,7 @@
 local _table = require("k92.utils.table")
 
+vim.lsp.enable("bash_ls")
+
 ---@type LazySpec
 return {
 	{
@@ -7,13 +9,10 @@ return {
 		opts = { ensure_installed = { "bash" } },
 	},
 	{
-		"neovim/nvim-lspconfig",
+		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "shellcheck", "shfmt" })
-
-			opts.servers = opts.servers or {}
-			opts.servers.bashls = {}
+			_table.add_unique_items(opts.ensure_installed, { "shellcheck", "shfmt", "bash-language-server" })
 		end,
 	},
 	{
