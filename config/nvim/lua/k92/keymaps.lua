@@ -39,42 +39,18 @@ vim.keymap.set({ "n", "x" }, "y", function()
 end, { expr = true, noremap = true, desc = "Yank and remain cursor" })
 
 ------------------------------------------------------------
--- Location & Quickfix Navigation
+-- Location & Quickfix
 ------------------------------------------------------------
 -- Open the location list.
 vim.keymap.set("n", "<leader>xl", "<cmd>lopen<cr>", { desc = "Location List" })
 -- Open the quickfix list.
 vim.keymap.set("n", "<leader>xq", "<cmd>copen<cr>", { desc = "Quickfix List" })
--- Go to the previous quickfix entry.
-vim.keymap.set("n", "[q", vim.cmd.cprev, { desc = "Previous Quickfix" })
--- Go to the next quickfix entry.
-vim.keymap.set("n", "]q", vim.cmd.cnext, { desc = "Next Quickfix" })
 
 ------------------------------------------------------------
--- Diagnostics Navigation
+-- Diagnostics
 ------------------------------------------------------------
--- Helper function to jump to diagnostics based on severity.
-local diagnostic_goto = function(next, severity)
-	severity = severity and vim.diagnostic.severity[severity] or nil
-	local count = next and 1 or -1
-	return function()
-		vim.diagnostic.jump({ severity = severity, count = count, float = true })
-	end
-end
 -- Open a floating window with line diagnostics.
 vim.keymap.set("n", "<leader>cd", vim.diagnostic.open_float, { desc = "Line Diagnostics" })
--- Jump to the next diagnostic.
-vim.keymap.set("n", "]d", diagnostic_goto(true), { desc = "Next Diagnostic" })
--- Jump to the previous diagnostic.
-vim.keymap.set("n", "[d", diagnostic_goto(false), { desc = "Prev Diagnostic" })
--- Jump to the next error.
-vim.keymap.set("n", "]e", diagnostic_goto(true, "ERROR"), { desc = "Next Error" })
--- Jump to the previous error.
-vim.keymap.set("n", "[e", diagnostic_goto(false, "ERROR"), { desc = "Prev Error" })
--- Jump to the next warning.
-vim.keymap.set("n", "]w", diagnostic_goto(true, "WARN"), { desc = "Next Warning" })
--- Jump to the previous warning.
-vim.keymap.set("n", "[w", diagnostic_goto(false, "WARN"), { desc = "Prev Warning" })
 
 ------------------------------------------------------------
 -- Window Splitting
