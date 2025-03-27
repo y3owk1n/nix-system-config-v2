@@ -11,3 +11,4 @@
 - uBlock Origin
 - Vimium C - All by keyboard
 - SheetKeys
+- Dark Reader
