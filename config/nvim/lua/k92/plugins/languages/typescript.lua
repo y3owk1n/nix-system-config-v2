@@ -1,3 +1,7 @@
+local _table = require("k92.utils.table")
+
+vim.lsp.enable("vts_ls")
+
 local filetypes = {
 	"javascript",
 	"javascriptreact",
@@ -21,42 +25,12 @@ return {
 		},
 	},
 	{
-		"neovim/nvim-lspconfig",
+		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
-			opts.servers = opts.servers or {}
-			opts.servers.vtsls = {
-				filetypes = filetypes,
-				settings = {
-					complete_function_calls = true,
-					vtsls = {
-						enableMoveToFileCodeAction = true,
-						autoUseWorkspaceTsdk = true,
-						experimental = {
-							maxInlayHintLength = 30,
-							completion = {
-								enableServerSideFuzzyMatch = true,
-							},
-						},
-					},
-					typescript = {
-						updateImportsOnFileMove = { enabled = "always" },
-						suggest = {
-							completeFunctionCalls = true,
-						},
-						inlayHints = {
-							enumMemberValues = { enabled = true },
-							functionLikeReturnTypes = { enabled = true },
-							parameterNames = { enabled = "literals" },
-							parameterTypes = { enabled = true },
-							propertyDeclarationTypes = { enabled = true },
-							variableTypes = { enabled = false },
-						},
-					},
-				},
-			}
+			opts.ensure_installed = opts.ensure_installed or {}
+			_table.add_unique_items(opts.ensure_installed, { "vtsls" })
 		end,
 	},
-
 	-- Filetype icons
 	{
 		"echasnovski/mini.icons",

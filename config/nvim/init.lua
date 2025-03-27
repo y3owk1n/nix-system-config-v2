@@ -15,6 +15,7 @@ vim.g.have_nerd_font = true
 vim.g.snacks_animate = false
 
 require("k92.health")
+require("k92.lsp")
 require("k92.lazy-bootstrap")
 require("k92.lazy-plugins")
 require("k92.options")

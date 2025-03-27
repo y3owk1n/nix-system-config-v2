@@ -222,22 +222,6 @@ return {
 				end,
 				desc = "LSP Symbols",
 			},
-			{
-				"<leader>sl",
-				function()
-					Snacks.picker.lsp_config({
-						attached = true,
-					})
-				end,
-				desc = "Attached LSP",
-			},
-			{
-				"<leader>sL",
-				function()
-					Snacks.picker.lsp_config()
-				end,
-				desc = "All LSP",
-			},
 		},
 	},
 	--- indent
