@@ -195,7 +195,7 @@ return {
 		build = ":MasonUpdate",
 		opts_extend = { "ensure_installed" },
 		config = true,
-		opts = { ui = { border = "rounded" } },
+		opts = { ui = { border = "rounded", backdrop = 100 } },
 	},
 	{
 
