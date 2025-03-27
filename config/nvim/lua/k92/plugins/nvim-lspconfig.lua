@@ -56,13 +56,9 @@ return {
 
 					map("<leader>ca", vim.lsp.buf.code_action, "Code Actions")
 
-					map("K", function()
-						vim.lsp.buf.hover({ border = opts.border or "rounded" })
-					end, "Hover")
+					map("K", vim.lsp.buf.hover, "Hover")
 
-					map("gK", function()
-						vim.lsp.buf.signature_help({ border = opts.border or "rounded" })
-					end, "Signature help")
+					map("gK", vim.lsp.buf.signature_help, "Signature help")
 
 					for _, additional_keymap in pairs(opts.additional_keymaps) do
 						additional_keymap(map)
