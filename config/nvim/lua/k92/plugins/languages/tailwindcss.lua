@@ -1,6 +1,6 @@
 local _table = require("k92.utils.table")
 
-vim.lsp.enable("tailwindcss_ls")
+vim.lsp.enable("tailwindcss")
 
 ---@type LazySpec
 return {
