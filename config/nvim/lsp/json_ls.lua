@@ -1,8 +1,3 @@
-local schemastore_status_ok, schemastore = pcall(require, "schemastore")
-if not schemastore_status_ok then
-	return
-end
-
 ---@type vim.lsp.Config
 return {
 	cmd = { "vscode-json-language-server", "--stdio" },
@@ -13,9 +8,12 @@ return {
 	root_markers = {
 		".git",
 	},
+	before_init = function(_, config)
+		config.settings.json.schemas = config.settings.json.schemas or {}
+		vim.list_extend(config.settings.json.schemas, require("schemastore").json.schemas())
+	end,
 	settings = {
 		json = {
-			schemas = schemastore.json.schemas(),
 			format = {
 				enable = true,
 			},
