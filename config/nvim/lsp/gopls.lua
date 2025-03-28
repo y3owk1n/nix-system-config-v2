@@ -1,12 +1,29 @@
+local lsp_utils = require("k92.utils.lsp")
+
+local mod_cache = nil
+
 ---@type vim.lsp.Config
 return {
 	cmd = { "gopls" },
 	filetypes = { "go", "gomod", "gowork", "gotmpl" },
-	root_markers = {
-		"go.work",
-		"go.mod",
-		".git",
-	},
+	---@param bufnr integer
+	---@param cb fun(root_dir?:string)
+	root_dir = function(bufnr, cb)
+		local fname = vim.api.nvim_buf_get_name(0)
+
+		if not mod_cache then
+			mod_cache = vim.fn.system("go env GOMODCACHE")
+		end
+		if mod_cache and fname:sub(1, #mod_cache) == mod_cache then
+			local clients = vim.lsp.get_clients({ name = "gopls" })
+
+			if #clients > 0 then
+				Snacks.debug("client > 0")
+				return cb(clients[#clients].config.root_dir)
+			end
+		end
+		return cb(lsp_utils.root_pattern("go.work", "go.mod", ".git")(fname))
+	end,
 	settings = {
 		gopls = {
 			gofumpt = true,
