@@ -102,7 +102,7 @@ return {
 	---@param bufnr integer
 	---@param cb fun(root_dir?:string)
 	root_dir = function(bufnr, cb)
-		local fname = vim.api.nvim_buf_get_name(0)
+		local fname = vim.api.nvim_buf_get_name(bufnr)
 
 		local git_root = lsp_utils.root_pattern(".git")(fname)
 
