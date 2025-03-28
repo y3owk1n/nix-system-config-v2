@@ -99,6 +99,18 @@ return {
 		"package.json",
 		".git",
 	},
+	before_init = function(_, config)
+		if not config.settings then
+			config.settings = {}
+		end
+		if not config.settings.editor then
+			config.settings.editor = {}
+		end
+		if not config.settings.editor.tabSize then
+			-- set tab size for hover
+			config.settings.editor.tabSize = vim.lsp.util.get_effective_tabstop()
+		end
+	end,
 	---@param bufnr integer
 	---@param cb fun(root_dir?:string)
 	root_dir = function(bufnr, cb)
