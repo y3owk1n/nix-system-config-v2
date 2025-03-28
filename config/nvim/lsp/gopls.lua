@@ -18,7 +18,6 @@ return {
 			local clients = vim.lsp.get_clients({ name = "gopls" })
 
 			if #clients > 0 then
-				Snacks.debug("client > 0")
 				return cb(clients[#clients].config.root_dir)
 			end
 		end
