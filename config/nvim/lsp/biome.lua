@@ -20,7 +20,7 @@ return {
 	---@param bufnr integer
 	---@param cb fun(root_dir?:string)
 	root_dir = function(bufnr, cb)
-		local fname = vim.api.nvim_buf_get_name(0)
+		local fname = vim.api.nvim_buf_get_name(bufnr)
 
 		local root_files = { "biome.json", "biome.jsonc" }
 		root_files = lsp_utils.insert_package_json(root_files, "biome", fname)
