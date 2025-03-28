@@ -65,10 +65,15 @@ return {
 			})
 		end, "File References")
 
-		lsp.map(bufnr, "<leader>co", lsp.action["source.organizeImports"], "Organize Imports")
+		lsp.map(bufnr, "<leader>co", function()
+			local fname = vim.api.nvim_buf_get_name(bufnr)
+			lsp.execute({ command = "typescript.organizeImports", arguments = { fname } })
+		end, "Organize Imports")
+
 		lsp.map(bufnr, "<leader>cM", lsp.action["source.addMissingImports.ts"], "Add Missing Imports")
 		lsp.map(bufnr, "<leader>cu", lsp.action["source.removeUnused.ts"], "Remove Unused Imports")
 		lsp.map(bufnr, "<leader>cD", lsp.action["source.fixAll.ts"], "Fix All Diagnostics")
+
 		lsp.map(bufnr, "cV", function()
 			lsp.execute({ command = "typescript.selectTypeScriptVersion" })
 		end, "Select TS workspace version")
