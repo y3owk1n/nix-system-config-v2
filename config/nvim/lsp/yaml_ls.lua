@@ -1,8 +1,3 @@
-local schemastore_status_ok, schemastore = pcall(require, "schemastore")
-if not schemastore_status_ok then
-	return
-end
-
 ---@type vim.lsp.Config
 return {
 	cmd = { "yaml-language-server", "--stdio" },
@@ -18,8 +13,11 @@ return {
 			},
 		},
 	},
+	before_init = function(_, config)
+		config.settings.yaml.schemas = config.settings.yaml.schemas or {}
+		vim.list_extend(config.settings.yaml.schemas, require("schemastore").yaml.schemas())
+	end,
 	settings = {
-		schemas = schemastore.yaml.schemas(),
 		-- https://github.com/redhat-developer/vscode-redhat-telemetry#how-to-disable-telemetry-reporting
 		redhat = { telemetry = { enabled = false } },
 		yaml = {
