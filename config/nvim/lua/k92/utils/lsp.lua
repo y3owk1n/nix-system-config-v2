@@ -132,4 +132,13 @@ function M.run_async_job(cmd, on_done, on_error)
 	end
 end
 
+function M.map(bufnr, keys, func, desc, mode)
+	mode = mode or "n"
+	vim.keymap.set(mode, keys, func, {
+		buffer = bufnr,
+		silent = true,
+		desc = "LSP: " .. desc,
+	})
+end
+
 return M

@@ -26,20 +26,13 @@ vim.diagnostic.config({
 vim.api.nvim_create_autocmd("LspAttach", {
 	group = vim.api.nvim_create_augroup("k92-lsp-attach", { clear = true }),
 	callback = function(event)
-		local map = function(keys, func, desc, mode)
-			mode = mode or "n"
-			vim.keymap.set(mode, keys, func, {
-				buffer = event.buf,
-				silent = true,
-				desc = "LSP: " .. desc,
-			})
-		end
+		local map = require("k92.utils.lsp").map
 
-		map("<leader>cl", "<cmd>checkhealth vim.lsp<cr>", "Lsp Info")
+		map(event.buf, "<leader>cl", "<cmd>checkhealth vim.lsp<cr>", "Lsp Info")
 
-		map("<leader>ca", vim.lsp.buf.code_action, "Code Actions")
+		map(event.buf, "<leader>ca", vim.lsp.buf.code_action, "Code Actions")
 
-		map("gK", vim.lsp.buf.signature_help, "Signature help")
+		map(event.buf, "gK", vim.lsp.buf.signature_help, "Signature help")
 	end,
 })
 
