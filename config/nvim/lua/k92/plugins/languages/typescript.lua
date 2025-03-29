@@ -1,14 +1,5 @@
 local _table = require("k92.utils.table")
 
-
-local filetypes = {
-	"javascript",
-	"javascriptreact",
-	"javascript.jsx",
-	"typescript",
-	"typescriptreact",
-	"typescript.tsx",
-}
 vim.lsp.enable("vtsls")
 
 ---@type LazySpec
@@ -50,7 +41,19 @@ return {
 	},
 	{
 		"dmmulroy/ts-error-translator.nvim",
-		ft = filetypes,
+		init = function()
+			local augroup = require("k92.utils.autocmds").augroup
+
+			vim.api.nvim_create_autocmd("LspAttach", {
+				group = augroup("lsp_ts-error-translator_attach"),
+				callback = function(args)
+					local client = vim.lsp.get_client_by_id(args.data.client_id)
+					if client and client.name == "vtsls" then
+						require("lazy").load({ plugins = { "ts-error-translator.nvim" } })
+					end
+				end,
+			})
+		end,
 		opts = {},
 	},
 }
