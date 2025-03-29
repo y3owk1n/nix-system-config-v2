@@ -1,6 +1,6 @@
 local _table = require("k92.utils.table")
 
-vim.lsp.enable("json_ls")
+vim.lsp.enable("jsonls")
 
 ---@type LazySpec
 return {

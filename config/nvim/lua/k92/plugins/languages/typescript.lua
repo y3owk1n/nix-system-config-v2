@@ -1,6 +1,5 @@
 local _table = require("k92.utils.table")
 
-vim.lsp.enable("vts_ls")
 
 local filetypes = {
 	"javascript",
@@ -10,6 +9,7 @@ local filetypes = {
 	"typescriptreact",
 	"typescript.tsx",
 }
+vim.lsp.enable("vtsls")
 
 ---@type LazySpec
 return {

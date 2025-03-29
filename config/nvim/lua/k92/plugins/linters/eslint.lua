@@ -1,6 +1,6 @@
 local _table = require("k92.utils.table")
 
-vim.lsp.enable("eslint_ls")
+vim.lsp.enable("eslint")
 
 ---@type LazySpec
 return {

@@ -5,7 +5,7 @@ local function fix_all(opts)
 
 	opts.bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
 
-	local clients = vim.lsp.get_clients({ bufnr = opts.bufnr, name = "eslint_ls" })
+	local clients = vim.lsp.get_clients({ bufnr = opts.bufnr, name = "eslint" })
 	local eslint_lsp_client = clients[1]
 
 	if eslint_lsp_client == nil then
