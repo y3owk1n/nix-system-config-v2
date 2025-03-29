@@ -2,7 +2,6 @@
 return {
 	{
 		"MagicDuck/grug-far.nvim",
-		event = "VeryLazy",
 		---@type GrugFarOptions
 		---@diagnostic disable-next-line: missing-fields
 		opts = { headerMaxWidth = 80 },
