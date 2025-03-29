@@ -1,3 +1,5 @@
+local augroup = require("k92.utils.autocmds").augroup
+
 vim.diagnostic.config({
 	underline = true,
 	update_in_insert = false,
@@ -24,7 +26,7 @@ vim.diagnostic.config({
 })
 
 vim.api.nvim_create_autocmd("LspAttach", {
-	group = vim.api.nvim_create_augroup("k92-lsp-attach", { clear = true }),
+	group = augroup("lsp_attach"),
 	callback = function(event)
 		local map = require("k92.utils.lsp").map
 
@@ -39,6 +41,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 ---@type table<number, {token:lsp.ProgressToken, msg:string, done:boolean}[]>
 local progress = vim.defaulttable()
 vim.api.nvim_create_autocmd("LspProgress", {
+	group = augroup("lsp_progress"),
 	---@param ev {data: {client_id: integer, params: lsp.ProgressParams}}
 	callback = function(ev)
 		local client = vim.lsp.get_client_by_id(ev.data.client_id)

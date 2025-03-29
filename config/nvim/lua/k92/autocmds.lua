@@ -1,10 +1,4 @@
-------------------------------------------------------------
--- Utility Functions
-------------------------------------------------------------
--- Creates a new autocommand group with the prefix "k92_"
-local function augroup(name)
-	return vim.api.nvim_create_augroup("k92_" .. name, { clear = true })
-end
+local augroup = require("k92.utils.autocmds").augroup
 
 ------------------------------------------------------------
 -- Yank Highlight (Optional)
