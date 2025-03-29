@@ -20,7 +20,10 @@ return {
 			},
 		},
 		init = function()
+			local augroup = require("k92.utils.autocmds").augroup
+
 			vim.api.nvim_create_autocmd("User", {
+				group = augroup("snacks_init"),
 				pattern = "VeryLazy",
 				callback = function()
 					-- Setup some globals for debugging (lazy-loaded)
@@ -301,7 +304,10 @@ return {
 	{
 		"folke/snacks.nvim",
 		opts = function()
+			local augroup = require("k92.utils.autocmds").augroup
+
 			vim.api.nvim_create_autocmd("User", {
+				group = augroup("snacks_rename"),
 				pattern = "MiniFilesActionRename",
 				callback = function(event)
 					Snacks.rename.on_rename_file(event.data.from, event.data.to)
