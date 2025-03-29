@@ -1,6 +1,6 @@
 local _table = require("k92.utils.table")
 
-vim.lsp.enable("yaml_ls")
+vim.lsp.enable("yamlls")
 
 ---@type LazySpec
 return {

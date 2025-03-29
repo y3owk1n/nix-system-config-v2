@@ -1,8 +1,8 @@
 local _table = require("k92.utils.table")
 
 vim.lsp.enable({
-	"docker_ls",
-	"docker_compose_ls",
+	"dockerls",
+	"docker_compose_language_service",
 })
 
 ---@type LazySpec

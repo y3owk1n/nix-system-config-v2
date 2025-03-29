@@ -1,6 +1,6 @@
 local _table = require("k92.utils.table")
 
-vim.lsp.enable("prisma_ls")
+vim.lsp.enable("prismals")
 
 ---@type LazySpec
 return {
