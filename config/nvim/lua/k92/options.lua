@@ -131,7 +131,7 @@ vim.opt.wildignore:append({ -- Ignore certain file patterns in file navigation.
 ------------------------------------------------------------
 -- Security
 ------------------------------------------------------------
-vim.opt.modelines = 0 -- Disable modelines for security reasons.
+-- vim.opt.modelines = 0 -- Disable modelines for security reasons.
 
 ------------------------------------------------------------
 -- Syntax & Filetype Settings
