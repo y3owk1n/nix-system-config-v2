@@ -19,14 +19,6 @@
     just
     btop
 
-    # --- apps ---
-    keka
-    appcleaner
-    brave
-
-    # --- terminal ---
-    # alacritty # used for quick editing only (specifically neovim embed for text inputs)
-
     # --- rust ---
     cargo
 

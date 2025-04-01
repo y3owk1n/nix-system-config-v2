@@ -86,13 +86,18 @@
       "imageoptim"
       "whatsapp"
       "zerotier-one"
-      # "pronotes"
       # "hammerspoon" # mainly used for safari vim mode
+
+      "keka"
+      "appcleaner"
 
       "ghostty"
 
+      "blender"
+
       "rustdesk"
 
+      "brave-browser"
       "zen-browser"
 
       # --- docker desktop alternative ---
