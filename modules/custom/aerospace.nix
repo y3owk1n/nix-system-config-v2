@@ -28,8 +28,9 @@ in
           enable-normalization-opposite-orientation-for-nested-containers = true
 
           on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
-
           on-focus-changed = ["move-mouse window-force-center"]
+
+          accordion-padding = 30
 
           [gaps]
           inner.horizontal = 8
@@ -53,16 +54,11 @@ in
           ctrl-shift-k = 'move up'
           ctrl-shift-l = 'move right'
 
-          # cmd-alt-shift-ctrl-minus = 'resize smart -50'
-          # cmd-alt-shift-ctrl-equal = 'resize smart +50'
+          cmd-alt-shift-ctrl-t = 'layout tiles horizontal vertical'
+          cmd-alt-shift-ctrl-a = 'layout accordion horizontal vertical'
+          cmd-alt-shift-ctrl-f = 'layout floating tiling'
 
           cmd-alt-shift-ctrl-m = 'fullscreen'
-
-          # alt-backslash = 'layout tiles horizontal vertical'
-          # alt-minus = 'layout accordion horizontal vertical'
-
-          cmd-alt-shift-ctrl-backslash = 'join-with down'
-          cmd-alt-shift-ctrl-minus = 'join-with right'
 
           cmd-alt-shift-ctrl-1 = 'workspace 1'
           cmd-alt-shift-ctrl-2 = 'workspace 2'
@@ -73,7 +69,7 @@ in
           cmd-alt-shift-ctrl-7 = 'workspace 7'
           cmd-alt-shift-ctrl-8 = 'workspace 8'
           cmd-alt-shift-ctrl-9 = 'workspace 9'
-          cmd-alt-shift-ctrl-0 = 'balance-sizes'
+          cmd-alt-shift-ctrl-0 = 'flatten-workspace-tree'
 
           ctrl-shift-1 = ['move-node-to-workspace 1', 'workspace 1']
           ctrl-shift-2 = ['move-node-to-workspace 2', 'workspace 2']
@@ -85,11 +81,21 @@ in
           ctrl-shift-8 = ['move-node-to-workspace 8', 'workspace 8']
           ctrl-shift-9 = ['move-node-to-workspace 9', 'workspace 9']
 
-          cmd-alt-shift-ctrl-r = 'flatten-workspace-tree'
+          cmd-alt-shift-ctrl-semicolon = 'mode join'
+          cmd-alt-shift-ctrl-r = 'mode resize'
 
-          # cmd-alt-shift-ctrl-c = 'reload-config'
+          [mode.resize.binding]
+          esc = 'mode main'
+          minus = 'resize smart -50'
+          shift-equal = 'resize smart +50'
+          0 = ['balance-sizes', 'mode main']
 
-          cmd-alt-shift-ctrl-t = 'layout floating tiling' # 'floating toggle' in i3
+          [mode.join.binding]
+          esc = 'mode main'
+          h = ['join-with left', 'mode main']
+          j = ['join-with down', 'mode main']
+          k = ['join-with up', 'mode main']
+          l = ['join-with right', 'mode main']
 
           [[on-window-detected]]
           if.app-id = 'com.apple.Safari'
@@ -142,6 +148,10 @@ in
 
           [[on-window-detected]]
           if.app-id = 'com.adobe.illustrator'
+          run = 'move-node-to-workspace 6'
+
+          [[on-window-detected]]
+          if.app-id = 'org.blenderfoundation.blender'
           run = 'move-node-to-workspace 6'
 
           [[on-window-detected]]
