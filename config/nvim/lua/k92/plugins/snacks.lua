@@ -17,6 +17,9 @@ return {
 			},
 			image = {
 				enabled = true,
+				doc = {
+					inline = false,
+				},
 			},
 		},
 		init = function()
