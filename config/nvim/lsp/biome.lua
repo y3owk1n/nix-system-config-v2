@@ -22,8 +22,19 @@ return {
 	root_dir = function(bufnr, cb)
 		local fname = vim.api.nvim_buf_get_name(bufnr)
 
-		local root_files = { "biome.json", "biome.jsonc" }
-		root_files = lsp_utils.insert_package_json(root_files, "biome", fname)
-		return cb(vim.fs.dirname(vim.fs.find(root_files, { path = fname, upward = true })[1]))
+		local git_root = lsp_utils.root_pattern(".git")(fname)
+
+		if git_root then
+			local package_data = lsp_utils.decode_json_file(git_root .. "/package.json")
+			if
+				package_data
+				and (
+					lsp_utils.has_nested_key(package_data, "dependencies", "@biomejs/biome")
+					or lsp_utils.has_nested_key(package_data, "devDependencies", "@biomejs/biome")
+				)
+			then
+				return cb(git_root)
+			end
+		end
 	end,
 }
