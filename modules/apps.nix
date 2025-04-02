@@ -1,4 +1,15 @@
-{ pkgs, ... }:
+{ pkgs, hostname, ... }:
+let
+  brewApps =
+    if hostname == "Kyles-MacBook-Air" then
+      [
+        "blender"
+      ]
+    else if hostname == "Kyles-iMac" then
+      [ "zerotier-one" ]
+    else
+      [ ];
+in
 {
 
   ##########################################################################
@@ -81,19 +92,16 @@
     ];
 
     # `brew install --cask`
-    casks = [
+    casks = brewApps ++ [
       "onyx"
       "imageoptim"
       "whatsapp"
-      "zerotier-one"
       # "hammerspoon" # mainly used for safari vim mode
 
       "keka"
       "appcleaner"
 
       "ghostty"
-
-      "blender"
 
       "rustdesk"
 
