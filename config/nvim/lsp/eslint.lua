@@ -68,12 +68,21 @@ return {
 	root_dir = function(bufnr, cb)
 		local fname = vim.api.nvim_buf_get_name(bufnr)
 
-		root_file = lsp_utils.insert_package_json(root_file, "eslintConfig", fname)
+		local git_root = lsp_utils.root_pattern(".git")(fname)
 
-		local root_string = lsp_utils.root_pattern(unpack(root_file))(fname)
+		local package_root = lsp_utils.root_pattern("package.json")(fname)
 
-		if root_string then
-			return cb(root_string)
+		if package_root and git_root then
+			local package_data = lsp_utils.decode_json_file(package_root .. "/package.json")
+			if
+				package_data
+				and (
+					lsp_utils.has_nested_key(package_data, "dependencies", "eslint")
+					or lsp_utils.has_nested_key(package_data, "devDependencies", "eslint")
+				)
+			then
+				return cb(git_root)
+			end
 		end
 	end,
 	-- Refer to https://github.com/Microsoft/vscode-eslint#settings-options for documentation.
