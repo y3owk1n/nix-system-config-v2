@@ -9,10 +9,22 @@ return {
 		---@type blink.cmp.Config
 		opts = {
 			keymap = {
-				preset = "default",
+				preset = "none",
 				["<CR>"] = { "select_and_accept", "fallback" },
-				["<C-n>"] = { "show", "select_next", "fallback" },
-				["<C-p>"] = { "show", "select_prev", "fallback" },
+				["<C-n>"] = {
+					"snippet_forward",
+					"show",
+					"select_next",
+					"fallback",
+				},
+				["<C-p>"] = {
+					"snippet_backward",
+					"show",
+					"select_prev",
+					"fallback",
+				},
+				["<C-u>"] = { "scroll_documentation_up", "fallback" },
+				["<C-d>"] = { "scroll_documentation_down", "fallback" },
 			},
 
 			appearance = {
