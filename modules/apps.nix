@@ -65,7 +65,6 @@ in
     masApps = { };
 
     taps = [
-      "homebrew/services"
       "y3owk1n/tap"
     ];
 
