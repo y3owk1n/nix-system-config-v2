@@ -87,18 +87,6 @@ return {
 			},
 		},
 	},
-	root_markers = {
-		"tailwind.config.js",
-		"tailwind.config.cjs",
-		"tailwind.config.mjs",
-		"tailwind.config.ts",
-		"postcss.config.js",
-		"postcss.config.cjs",
-		"postcss.config.mjs",
-		"postcss.config.ts",
-		"package.json",
-		".git",
-	},
 	before_init = function(_, config)
 		if not config.settings then
 			config.settings = {}
@@ -116,11 +104,11 @@ return {
 	root_dir = function(bufnr, cb)
 		local fname = vim.api.nvim_buf_get_name(bufnr)
 
-		local git_root = lsp_utils.root_pattern(".git")(fname)
+		local workspace_root = lsp_utils.root_pattern("pnpm-workspace.yaml")(fname)
 
 		local package_root = lsp_utils.root_pattern("package.json")(fname)
 
-		if package_root and git_root then
+		if package_root then
 			local package_data = lsp_utils.decode_json_file(package_root .. "/package.json")
 			if
 				package_data
@@ -129,7 +117,10 @@ return {
 					or lsp_utils.has_nested_key(package_data, "devDependencies", "tailwindcss")
 				)
 			then
-				return cb(git_root)
+				if workspace_root then
+					return cb(workspace_root)
+				end
+				return cb(package_root)
 			end
 		end
 	end,
