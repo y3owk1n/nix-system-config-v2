@@ -1,5 +1,7 @@
 local lsp_utils = require("k92.utils.lsp")
 
+local root_files = { "biome.json", "biome.jsonc" }
+
 ---@type vim.lsp.Config
 return {
 	cmd = { "biome", "lsp-proxy" },
@@ -22,19 +24,10 @@ return {
 	root_dir = function(bufnr, cb)
 		local fname = vim.api.nvim_buf_get_name(bufnr)
 
-		local git_root = lsp_utils.root_pattern(".git")(fname)
+		local root_string = lsp_utils.root_pattern(unpack(root_files))(fname)
 
-		if git_root then
-			local package_data = lsp_utils.decode_json_file(git_root .. "/package.json")
-			if
-				package_data
-				and (
-					lsp_utils.has_nested_key(package_data, "dependencies", "@biomejs/biome")
-					or lsp_utils.has_nested_key(package_data, "devDependencies", "@biomejs/biome")
-				)
-			then
-				return cb(git_root)
-			end
+		if root_string then
+			return cb(root_string)
 		end
 	end,
 }
