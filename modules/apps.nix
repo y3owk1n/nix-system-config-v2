@@ -62,15 +62,7 @@ in
     # You need to install all these Apps manually first so that your apple account have records for them.
     # otherwise Apple Store will refuse to install them.
     # For details, see https://github.com/mas-cli/mas
-    masApps = {
-      # --- when want to use safari ---
-      # "Wappalyzer" = 1520333300;
-      # "AdGuard for Safari" = 1440147259;
-      # "Consent-O-Matic" = 1606897889;
-      # "JSON Peep for Safari" = 1458969831;
-      # "Vimlike" = 1584519802;
-      # "Customize Search Engine" = 6445840140;
-    };
+    masApps = { };
 
     taps = [
       "homebrew/services"
@@ -90,25 +82,25 @@ in
 
     # `brew install --cask`
     casks = brewApps ++ [
+      # --- Networking ---
+      "tailscale"
+      # --- terminal ---
+      "ghostty"
+      # --- screen sharing ---
+      "rustdesk"
+      # --- browsers ---
+      "brave-browser"
+      "zen-browser"
+      # --- docker desktop alternative ---
+      "orbstack"
+      # --- misc ---
       "onyx"
       "imageoptim"
       "whatsapp"
       # "hammerspoon" # mainly used for safari vim mode
-
       "keka"
       "appcleaner"
-
       "adobe-creative-cloud"
-      "tailscale"
-      "ghostty"
-
-      "rustdesk"
-
-      "brave-browser"
-      "zen-browser"
-
-      # --- docker desktop alternative ---
-      "orbstack"
     ];
   };
 }
