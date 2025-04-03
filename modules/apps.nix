@@ -98,6 +98,7 @@ in
       "keka"
       "appcleaner"
 
+      "adobe-creative-cloud"
       "tailscale"
       "ghostty"
 
