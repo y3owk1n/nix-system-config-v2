@@ -42,4 +42,20 @@ return {
 			},
 		},
 	},
+	{
+		"saghen/blink.cmp",
+		dependencies = { "lazydev.nvim" },
+		opts = {
+			sources = {
+				default = { "lazydev" },
+				providers = {
+					lazydev = {
+						name = "LazyDev",
+						module = "lazydev.integrations.blink",
+						score_offset = 100, -- show at a higher priority than lsp
+					},
+				},
+			},
+		},
+	},
 }
