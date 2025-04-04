@@ -5,7 +5,7 @@ return {
 	cmd = "Neogen",
 	keys = {
 		{
-			"<leader>cga",
+			"<leader>cn",
 			function()
 				require("neogen").generate()
 			end,
