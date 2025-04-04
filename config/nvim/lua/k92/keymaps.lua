@@ -77,6 +77,17 @@ vim.keymap.set("v", "J", ":m '>+1<cr> | :normal gv=gv<cr>", { desc = "Move line 
 vim.keymap.set("v", "K", ":m '<-2<cr> | :normal gv=gv<cr>", { desc = "Move line up" })
 
 ------------------------------------------------------------
+-- Shortcut for quick code actions
+------------------------------------------------------------
+-- Move selected lines down and reselect the block.
+vim.keymap.set("n", "<leader>cgl", function()
+	require("k92.utils.text-gen").set_log_statement()
+end, { desc = "Log statement" })
+vim.keymap.set("x", "<leader>cgl", function()
+	require("k92.utils.text-gen").set_log_statement()
+end, { desc = "Log statement" })
+
+------------------------------------------------------------
 -- Disable Unwanted Commands
 ------------------------------------------------------------
 -- Map Q to no operation to avoid accidental use.
