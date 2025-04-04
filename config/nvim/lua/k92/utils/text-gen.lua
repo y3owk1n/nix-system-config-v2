@@ -14,6 +14,7 @@ local function insert_line_after_cursor(text)
 
 	-- Insert the indented text as a new line after the current line
 	vim.api.nvim_buf_set_lines(bufnr, current_line, current_line, false, { indented_text })
+	vim.api.nvim_win_set_cursor(0, { current_line + 1, #indented_text })
 end
 
 --- Gets the token based on visual mode or current word
@@ -78,18 +79,18 @@ end
 ---@param token string
 ---@return string
 local function js_log(token)
-	return 'console.log(">>>>>>>>>> ' .. token .. ': ", ' .. token .. ")"
+	return string.format('console.log(">>>>>> %s:", %s)', token, token)
 end
 
 --- Generates a lua log statement
 ---@param token string
 ---@return string
 local function lua_log(token)
-	if vim.fn.exists("*Snacks#debug") then
-		return "Snacks.debug(" .. token .. ")"
-	end
-
-	return "vim.notify(" .. token .. ")"
+	return string.format(
+		'vim.notify(string.format(">>>>>> %%s: %%s", "%s", tostring(%s)), vim.log.levels.DEBUG)',
+		token,
+		token
+	)
 end
 
 --- Processes the current filetype and generates a log statement
@@ -117,6 +118,9 @@ function M.set_log_statement()
 		vim.notify("No token available", vim.log.levels.ERROR)
 		return
 	end
+
+	-- Clean up multi-line selections
+	token = token:gsub("\n%s*", " ") -- Collapse multi-line selections
 
 	local log_statement = process_filetype(filetype, token)
 
