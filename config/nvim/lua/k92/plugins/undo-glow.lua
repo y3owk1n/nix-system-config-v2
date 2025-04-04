@@ -9,7 +9,7 @@ return {
 			animation = {
 				enabled = true,
 				duration = 300,
-				animation_type = "zoom",
+				animation_type = "fade",
 				window_scoped = true,
 			},
 			highlights = {
