@@ -55,6 +55,7 @@ return {
 					{ "<leader>f", group = "files" },
 					{ "<leader>q", group = "quit/session" },
 					{ "<leader>s", group = "search" },
+					{ "<leader>i", group = "info" },
 					{
 						"<leader>u",
 						group = "ui",

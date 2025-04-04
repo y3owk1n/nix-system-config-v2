@@ -26,7 +26,7 @@ vim.keymap.set("v", ">", ">gv", { desc = "Indent" })
 -- Plugin Launcher
 ------------------------------------------------------------
 -- Launch the Lazy window for managing plugins.
-vim.keymap.set("n", "<leader>l", "<cmd>Lazy<cr>", { desc = "Lazy" })
+vim.keymap.set("n", "<leader>iz", "<cmd>Lazy<cr>", { desc = "Lazy" })
 
 ------------------------------------------------------------
 -- Yank Behavior: Preserve Cursor Position
@@ -81,12 +81,6 @@ vim.keymap.set("v", "K", ":m '<-2<cr> | :normal gv=gv<cr>", { desc = "Move line 
 ------------------------------------------------------------
 -- Map Q to no operation to avoid accidental use.
 vim.keymap.set({ "n", "x" }, "Q", "<nop>", { desc = "No op" })
-
-------------------------------------------------------------
--- Mason Plugin Launcher
-------------------------------------------------------------
--- Launch Mason for managing LSP servers and related tools.
-vim.keymap.set("n", "<leader>m", "<cmd>Mason<cr>", { desc = "Mason" })
 
 ------------------------------------------------------------
 -- Remove Default Neovim LSP Bindings

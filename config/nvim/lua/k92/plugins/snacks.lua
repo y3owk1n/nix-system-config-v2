@@ -433,7 +433,7 @@ return {
 						},
 						{
 							icon = "󰒲 ",
-							key = "l",
+							key = "z",
 							desc = "Lazy",
 							action = ":Lazy",
 							enabled = package.loaded.lazy,
