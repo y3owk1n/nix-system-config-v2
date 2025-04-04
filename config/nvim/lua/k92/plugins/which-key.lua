@@ -66,7 +66,6 @@ return {
 						group = "diagnostics/quickfix",
 						icon = { icon = "󱖫 ", color = "green" },
 					},
-					{ "<leader>cg", group = "generate" },
 					{ "[", group = "prev" },
 					{ "]", group = "next" },
 					{ "g", group = "goto" },
