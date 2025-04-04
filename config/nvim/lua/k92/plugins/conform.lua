@@ -17,6 +17,12 @@ return {
 				mode = "",
 				desc = "Format buffer",
 			},
+			{
+				"<leader>ic",
+				":ConformInfo<CR>",
+				mode = "",
+				desc = "Conform Info",
+			},
 		},
 		---@type conform.setupOpts
 		opts = {

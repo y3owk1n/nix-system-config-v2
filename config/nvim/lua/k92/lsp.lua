@@ -30,7 +30,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 	callback = function(event)
 		local map = require("k92.utils.lsp").map
 
-		map(event.buf, "<leader>cl", "<cmd>checkhealth vim.lsp<cr>", "Lsp Info")
+		map(event.buf, "<leader>il", "<cmd>checkhealth vim.lsp<cr>", "Lsp Info")
 
 		map(event.buf, "<leader>ca", vim.lsp.buf.code_action, "Code Actions")
 
