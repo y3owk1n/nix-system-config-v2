@@ -50,6 +50,9 @@ nvim-reset:
     bash ./scripts/nvim-reset.sh
 
 start-kanata:
+	tmux new-window -n "kanata" "just kanata"
+
+kanata:
 	sudo '/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon' &
 	sudo kanata -n -c ~/.config/kanata/config.kbd
 
