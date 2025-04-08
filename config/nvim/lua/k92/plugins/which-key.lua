@@ -51,6 +51,7 @@ return {
 				{
 					mode = { "n", "v" },
 					{ "<leader>c", group = "code" },
+					{ "<leader>cg", group = "generate" },
 					{ "<leader>g", group = "git" },
 					{ "<leader>f", group = "files" },
 					{ "<leader>q", group = "quit/session" },
