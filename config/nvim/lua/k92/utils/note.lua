@@ -14,7 +14,7 @@ local M = {}
 
 ---@type k92.utils.note.config
 local config = {
-	root_dir = "~/notes/",
+	root_dir = "~/Library/Mobile Documents/com~apple~CloudDocs/Cloud Notes/",
 	notes_dir_name = "notes",
 	todo_dir_name = "todo",
 }
@@ -38,6 +38,15 @@ end
 local function format_note_name(name)
 	local formatted = name:lower():gsub(" ", "-"):gsub("%.md$", "")
 	return formatted
+end
+
+--- Deformat the note name to a normal sentence.
+--- Replaces hyphens and underscores with spaces, and capitalizes the first letter of each word.
+--- @param name string the raw note name
+--- @return string deformatted_note_name the deformatted note name
+local function deformat_note_name(name)
+	local deformatted = name:gsub("[-_]", " "):gsub("^%l", string.upper)
+	return deformatted
 end
 
 --- Generate a unique file path for the note.
@@ -184,7 +193,6 @@ local function get_picker_dirs(opts)
 end
 
 ---@param str string
----@return boolean
 local function is_path_like(str)
 	-- Check for slashes or drive letters
 	if str:find("[/\\]") or str:match("^%a:[/\\]") then
@@ -208,27 +216,26 @@ end
 function M.create_note_file(opts)
 	opts = merge_default_create_file_opts(opts)
 
-	local base_path = vim.fn.expand(config.root_dir) .. config.notes_dir_name .. "/"
+	local base_path = get_notes_dir()
 	ensure_directory(base_path)
 
 	-- show an input prompt to the user for a note name
 	vim.ui.input({
 		prompt = "Note name/path: ",
 		default = "",
-	}, function(name)
-		if not name or name == "" then
+	}, function(name_or_path)
+		if not name_or_path or name_or_path == "" then
 			return
 		end
 
-		-- Check if the name is a path-like string
-		-- if is_path_like(name) then
-		-- 	vim.notify("Invalid note name: Path-like string detected", vim.log.levels.ERROR)
-		-- 	return
-		-- end
-
-		local formatted_name = format_note_name(name)
+		local formatted_name = format_note_name(name_or_path)
 		local note_path = get_unique_note_path(base_path, formatted_name)
-		write_note_file(note_path, name)
+
+		if is_path_like(name_or_path) then
+			local filename = vim.fn.fnamemodify(name_or_path, ":t")
+			name_or_path = deformat_note_name(filename)
+		end
+		write_note_file(note_path, name_or_path)
 
 		if opts.open then
 			open_note(note_path, opts)
@@ -242,7 +249,7 @@ end
 function M.todo_today(opts)
 	opts = merge_default_create_file_opts(opts)
 
-	local todo_dir = vim.fn.expand(config.root_dir) .. config.todo_dir_name .. "/"
+	local todo_dir = get_todo_dir()
 	ensure_directory(todo_dir)
 
 	-- Generate today's timestamp using the format "YYYY-MM-DD"
