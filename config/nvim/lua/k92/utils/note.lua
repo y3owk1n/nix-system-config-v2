@@ -6,6 +6,8 @@ local M = {}
 ---@field dir_names? k92.utils.note.config.dir_names
 ---@field templates? k92.utils.note.config.templates
 
+---@alias k92.utils.note.config.dir_name_key "notes" | "todo" | "journal"
+
 ---@class k92.utils.note.config.dir_names
 ---@field notes? string @default "notes"
 ---@field todo? string @default "todo"
@@ -169,16 +171,22 @@ end
 
 -- DIRECTORY FUNCTIONS --
 
+---@param subdir_name k92.utils.note.config.dir_name_key
+---@return string
+local function get_subdir(subdir_name)
+	return vim.fn.expand(config.root_dir) .. config.dir_names[subdir_name] .. "/"
+end
+
 local function get_notes_dir()
-	return vim.fn.expand(config.root_dir) .. config.dir_names.notes .. "/"
+	return get_subdir("notes")
 end
 
 local function get_todo_dir()
-	return vim.fn.expand(config.root_dir) .. config.dir_names.todo .. "/"
+	return get_subdir("todo")
 end
 
 local function get_journal_dir()
-	return vim.fn.expand(config.root_dir) .. config.dir_names.journal .. "/"
+	return get_subdir("journal")
 end
 
 ---@param opts k92.utils.note.pick
@@ -200,6 +208,9 @@ end
 
 -- TODO FUNCTIONS --
 
+---@param todo_dir string
+---@param today string|osdate
+---@return string|nil path
 local function get_previous_todo_file_from_today(todo_dir, today)
 	local find_cmd = string.format([[find %s -type f -name "*.md"]], vim.fn.shellescape(todo_dir))
 	local results = vim.fn.systemlist(find_cmd)
@@ -228,6 +239,9 @@ local function get_previous_todo_file_from_today(todo_dir, today)
 	return candidates[1].path
 end
 
+---@param todo_dir string
+---@param today string|osdate
+---@return string[]|nil, string|nil
 local function rollover_previous_todo_to_today(todo_dir, today)
 	local previous_todo_file = get_previous_todo_file_from_today(todo_dir, today)
 	if not previous_todo_file then
@@ -238,9 +252,21 @@ local function rollover_previous_todo_to_today(todo_dir, today)
 	local unchecked_tasks = {}
 	local new_lines = {}
 
+	-- Find the tasks section
+	local in_tasks = false
 	for _, line in ipairs(lines) do
-		if line:match("^%- %[%s*%]") then
-			table.insert(unchecked_tasks, line)
+		if line:match("^##%s+Tasks") then
+			in_tasks = true
+			table.insert(new_lines, line)
+		elseif in_tasks and line:match("^##") then
+			in_tasks = false
+			table.insert(new_lines, line)
+		elseif in_tasks then
+			if line:match("^%- %[%s*%]") then
+				table.insert(unchecked_tasks, line)
+			else
+				table.insert(new_lines, line)
+			end
 		else
 			table.insert(new_lines, line)
 		end
@@ -302,7 +328,7 @@ function M.todo_today(opts)
 		write_note_file(todo_path, "Todo for " .. today, config.templates.todo)
 
 		local unchecked_tasks, source_path = rollover_previous_todo_to_today(todo_dir, today)
-		if unchecked_tasks then
+		if unchecked_tasks and source_path then
 			local today_lines = vim.fn.readfile(todo_path)
 			if #today_lines > 0 and today_lines[#today_lines] ~= "" then
 				table.insert(today_lines, "")
