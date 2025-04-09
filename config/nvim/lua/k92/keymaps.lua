@@ -77,6 +77,37 @@ vim.keymap.set("v", "J", ":m '>+1<cr> | :normal gv=gv<cr>", { desc = "Move line 
 vim.keymap.set("v", "K", ":m '<-2<cr> | :normal gv=gv<cr>", { desc = "Move line up" })
 
 ------------------------------------------------------------
+-- Custom Notes
+------------------------------------------------------------
+vim.keymap.set("n", "<leader>nc", function()
+	require("k92.utils.note").create_note_file()
+end, { desc = "Create note" })
+
+vim.keymap.set("n", "<leader>nt", function()
+	require("k92.utils.note").todo_today()
+end, { desc = "Todo today" })
+
+vim.keymap.set("n", "<leader>ni", function()
+	require("k92.utils.note").inbox()
+end, { desc = "Inbox" })
+
+vim.keymap.set("n", "<leader>snn", function()
+	require("k92.utils.note").pick({ type = "notes" })
+end, { desc = "[Notes] Search notes" })
+
+vim.keymap.set("n", "<leader>snN", function()
+	require("k92.utils.note").pick({ type = "notes", grep = true })
+end, { desc = "[Notes] Search notes grep" })
+
+vim.keymap.set("n", "<leader>snt", function()
+	require("k92.utils.note").pick({ type = "todos" })
+end, { desc = "[Notes] Search todos" })
+
+vim.keymap.set("n", "<leader>snT", function()
+	require("k92.utils.note").pick({ type = "todos", grep = true })
+end, { desc = "[Notes] Search todos grep" })
+
+------------------------------------------------------------
 -- Disable Unwanted Commands
 ------------------------------------------------------------
 -- Map Q to no operation to avoid accidental use.
