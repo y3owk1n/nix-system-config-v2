@@ -50,7 +50,7 @@ return {
 			{
 				"<leader>np",
 				function()
-					require("dotmd").todo_navigate("previous")
+					require("dotmd").navigate("previous")
 				end,
 				mode = "n",
 				desc = "[DotMd] Navigate to previous todo",
@@ -59,7 +59,7 @@ return {
 			{
 				"<leader>nn",
 				function()
-					require("dotmd").todo_navigate("next")
+					require("dotmd").navigate("next")
 				end,
 				mode = "n",
 				desc = "[DotMd] Navigate to next todo",
