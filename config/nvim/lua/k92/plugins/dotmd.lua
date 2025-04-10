@@ -6,7 +6,8 @@ return {
 		event = { "VeryLazy" },
 		---@type DotMd.Config
 		opts = {
-			root_dir = "~/Library/Mobile Documents/com~apple~CloudDocs/Cloud Notes/",
+			root_dir = "~/Library/Mobile Documents/com~apple~CloudDocs/Cloud Notes",
+			-- root_dir = "~/dotmd",
 			default_split = "vertical",
 		},
 		keys = {
