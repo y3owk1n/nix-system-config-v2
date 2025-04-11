@@ -3,6 +3,14 @@ return {
 	{
 		"y3owk1n/dotmd.nvim",
 		-- dir = "~/Dev/dotmd.nvim", -- Your path
+		cmd = {
+			"DotMdCreateNote",
+			"DotMdCreateTodoToday",
+			"DotMdCreateJournal",
+			"DotMdInbox",
+			"DotMdNavigate",
+			"DotMdPick",
+		},
 		event = { "VeryLazy" },
 		---@type DotMd.Config
 		opts = {
