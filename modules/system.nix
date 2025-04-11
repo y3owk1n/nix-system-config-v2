@@ -516,7 +516,7 @@ in
             };
             # quick note
             "190" = {
-              enabled = 1;
+              enabled = 0;
               value = {
                 parameters = [
                   110
