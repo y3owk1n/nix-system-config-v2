@@ -57,8 +57,6 @@ return {
 					{ "<leader>q", group = "quit/session" },
 					{ "<leader>s", group = "search" },
 					{ "<leader>i", group = "info" },
-					{ "<leader>n", group = "dotmd" },
-					{ "<leader>sn", group = "dotmd" },
 					{
 						"<leader>u",
 						group = "ui",
