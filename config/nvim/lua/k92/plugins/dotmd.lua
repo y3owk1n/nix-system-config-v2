@@ -11,7 +11,6 @@ return {
 			"DotMdNavigate",
 			"DotMdPick",
 		},
-		event = { "VeryLazy" },
 		---@type DotMd.Config
 		opts = {
 			root_dir = "~/Library/Mobile Documents/com~apple~CloudDocs/Cloud Notes",
@@ -19,6 +18,12 @@ return {
 			default_split = "vertical",
 		},
 		keys = {
+			{
+				"<leader>n",
+				"",
+				mode = "n",
+				desc = "+dotmd",
+			},
 			{
 				"<leader>nc",
 				function()
@@ -72,6 +77,12 @@ return {
 				mode = "n",
 				desc = "[DotMd] Navigate to next todo",
 				noremap = true,
+			},
+			{
+				"<leader>sn",
+				"",
+				mode = "n",
+				desc = "+dotmd",
 			},
 			{
 				"<leader>snn",
