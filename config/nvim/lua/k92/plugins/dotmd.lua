@@ -168,7 +168,7 @@ return {
 				"<leader>snj",
 				function()
 					require("dotmd").pick({
-						type = "journal",
+						type = "journals",
 					})
 				end,
 				mode = "n",
@@ -179,7 +179,7 @@ return {
 				"<leader>snJ",
 				function()
 					require("dotmd").pick({
-						type = "journal",
+						type = "journals",
 						grep = true,
 					})
 				end,
