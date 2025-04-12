@@ -1,6 +1,7 @@
 theme = catppuccin-macchiato
 
 font-family = JetBrainsMonoL Nerd Font Mono
+font-size = 16
 font-thicken = true
 font-feature = -calt
 font-feature = -liga
