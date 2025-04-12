@@ -10,11 +10,14 @@ return {
 			"DotMdInbox",
 			"DotMdNavigate",
 			"DotMdPick",
+			"DotMdOpen",
 		},
+		event = "VeryLazy",
 		---@type DotMd.Config
 		opts = {
 			root_dir = "~/Library/Mobile Documents/com~apple~CloudDocs/Cloud Notes",
 			-- root_dir = "~/dotmd",
+			picker = "snacks",
 			default_split = "vertical",
 		},
 		keys = {
@@ -79,10 +82,41 @@ return {
 				noremap = true,
 			},
 			{
+				"<leader>no",
+				function()
+					require("dotmd").open({
+						pluralise_query = true,
+					})
+				end,
+				mode = "n",
+				desc = "[DotMd] Open",
+				noremap = true,
+			},
+			{
 				"<leader>sn",
 				"",
 				mode = "n",
 				desc = "+dotmd",
+			},
+			{
+				"<leader>sna",
+				function()
+					require("dotmd").pick()
+				end,
+				mode = "n",
+				desc = "[DotMd] Search everything",
+				noremap = true,
+			},
+			{
+				"<leader>snA",
+				function()
+					require("dotmd").pick({
+						grep = true,
+					})
+				end,
+				mode = "n",
+				desc = "[DotMd] Search everything grep",
+				noremap = true,
 			},
 			{
 				"<leader>snn",
