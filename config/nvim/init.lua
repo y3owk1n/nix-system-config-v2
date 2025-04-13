@@ -20,7 +20,7 @@ vim.g.snacks_animate = false
 --   - undo-glow
 --   - supermaven-nvim
 --   - vim-tmux-navigator
-vim.g.enable_minimal_config = false
+vim.g.strip_personal_plugins = false
 
 require("k92.health")
 require("k92.lsp")
