@@ -26,8 +26,16 @@ return {
 			opts.ensure_installed = opts.ensure_installed or {}
 			_table.add_unique_items(
 				opts.ensure_installed,
-				{ "dockerfile-language-server", "docker-compose-language-service" }
+				{ "dockerfile-language-server", "docker-compose-language-service", "hadolint" }
 			)
 		end,
+	},
+	{
+		"mfussenegger/nvim-lint",
+		opts = {
+			linters_by_ft = {
+				dockerfile = { "hadolint" },
+			},
+		},
 	},
 }
