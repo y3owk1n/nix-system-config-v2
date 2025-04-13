@@ -71,6 +71,9 @@ return {
 				sign = false,
 				icons = {},
 			},
+			checkbox = {
+				enabled = false,
+			},
 		},
 		ft = { "markdown", "markdown.mdx", "norg", "rmd", "org" },
 		config = function(_, opts)
