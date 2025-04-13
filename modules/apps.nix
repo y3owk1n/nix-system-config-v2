@@ -42,6 +42,15 @@ in
   # This is a custom module at ./custom/aerospace.nix
   aerospace = {
     enable = true;
+    package = (
+      pkgs.aerospace.overrideAttrs (o: rec {
+        version = "0.18.0-Beta";
+        src = pkgs.fetchzip {
+          url = "https://github.com/nikitabobko/AeroSpace/releases/download/v${version}/AeroSpace-v${version}.zip";
+          sha256 = "sha256-S4q6XNoBiAZOZS7cNK4LPTzTZpciNoGAKh1Q5Gzt//o=";
+        };
+      })
+    );
   };
 
   # TODO: To make this work, homebrew need to be installed manually, see https://brew.sh
