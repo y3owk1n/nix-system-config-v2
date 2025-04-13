@@ -9,7 +9,6 @@ else
 	selected=$(
 		(
 			echo ~/nix-system-config-v2
-			echo ~/Library/Mobile Documents/com~apple~CloudDocs/Cloud Notes
 			find ~/Dev -mindepth 1 -maxdepth 1 -type d
 		) | fzf
 	)
