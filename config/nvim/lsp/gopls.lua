@@ -1,5 +1,3 @@
-local lsp_utils = require("k92.utils.lsp")
-
 local mod_cache = nil
 
 ---@param fname string
