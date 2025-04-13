@@ -17,8 +17,11 @@ return {
 		opts = {
 			root_dir = "~/Library/Mobile Documents/com~apple~CloudDocs/Cloud Notes",
 			-- root_dir = "~/dotmd",
-			picker = "snacks",
 			default_split = "vertical",
+			rollover_todo = {
+				enabled = true,
+			},
+			picker = "snacks",
 		},
 		keys = {
 			{
