@@ -27,7 +27,6 @@ return {
 			{
 				"<leader>n",
 				"",
-				mode = "n",
 				desc = "+dotmd",
 			},
 			{
@@ -35,54 +34,42 @@ return {
 				function()
 					require("dotmd").create_note()
 				end,
-				mode = "n",
 				desc = "[DotMd] Create new note",
-				noremap = true,
 			},
 			{
 				"<leader>nt",
 				function()
 					require("dotmd").create_todo_today()
 				end,
-				mode = "n",
 				desc = "[DotMd] Create todo for today",
-				noremap = true,
 			},
 			{
 				"<leader>ni",
 				function()
 					require("dotmd").inbox()
 				end,
-				mode = "n",
 				desc = "[DotMd] Inbox",
-				noremap = true,
 			},
 			{
 				"<leader>nj",
 				function()
 					require("dotmd").create_journal()
 				end,
-				mode = "n",
 				desc = "[DotMd] Create journal",
-				noremap = true,
 			},
 			{
 				"<leader>np",
 				function()
 					require("dotmd").navigate("previous")
 				end,
-				mode = "n",
 				desc = "[DotMd] Navigate to previous todo",
-				noremap = true,
 			},
 			{
 				"<leader>nn",
 				function()
 					require("dotmd").navigate("next")
 				end,
-				mode = "n",
 				desc = "[DotMd] Navigate to next todo",
-				noremap = true,
 			},
 			{
 				"<leader>no",
@@ -91,14 +78,11 @@ return {
 						pluralise_query = true,
 					})
 				end,
-				mode = "n",
 				desc = "[DotMd] Open",
-				noremap = true,
 			},
 			{
 				"<leader>sn",
 				"",
-				mode = "n",
 				desc = "+dotmd",
 			},
 			{
@@ -106,9 +90,7 @@ return {
 				function()
 					require("dotmd").pick()
 				end,
-				mode = "n",
 				desc = "[DotMd] Search everything",
-				noremap = true,
 			},
 			{
 				"<leader>snA",
@@ -117,9 +99,7 @@ return {
 						grep = true,
 					})
 				end,
-				mode = "n",
 				desc = "[DotMd] Search everything grep",
-				noremap = true,
 			},
 			{
 				"<leader>snn",
@@ -128,9 +108,7 @@ return {
 						type = "notes",
 					})
 				end,
-				mode = "n",
 				desc = "[DotMd] Search notes",
-				noremap = true,
 			},
 			{
 				"<leader>snN",
@@ -140,9 +118,7 @@ return {
 						grep = true,
 					})
 				end,
-				mode = "n",
 				desc = "[DotMd] Search notes grep",
-				noremap = true,
 			},
 			{
 				"<leader>snt",
@@ -151,9 +127,7 @@ return {
 						type = "todos",
 					})
 				end,
-				mode = "n",
 				desc = "[DotMd] Search todos",
-				noremap = true,
 			},
 			{
 				"<leader>snT",
@@ -163,9 +137,7 @@ return {
 						grep = true,
 					})
 				end,
-				mode = "n",
 				desc = "[DotMd] Search todos grep",
-				noremap = true,
 			},
 			{
 				"<leader>snj",
@@ -174,9 +146,7 @@ return {
 						type = "journals",
 					})
 				end,
-				mode = "n",
 				desc = "[DotMd] Search journal",
-				noremap = true,
 			},
 			{
 				"<leader>snJ",
@@ -186,9 +156,7 @@ return {
 						grep = true,
 					})
 				end,
-				mode = "n",
 				desc = "[DotMd] Search journal grep",
-				noremap = true,
 			},
 		},
 	},
