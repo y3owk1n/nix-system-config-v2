@@ -1,7 +1,7 @@
 return {
 	{
 		"supermaven-inc/supermaven-nvim",
-		enabled = not vim.g.enable_minimal_config,
+		enabled = not vim.g.strip_personal_plugins,
 		event = "VeryLazy",
 		opts = {
 			keymaps = {
