@@ -14,6 +14,14 @@ vim.g.have_nerd_font = true
 -- Disable snacks animation
 vim.g.snacks_animate = false
 
+-- Add a toggle for minimal config to be used elsewhere
+-- This will disable the following plugins:
+--   - dotmd
+--   - undo-glow
+--   - supermaven-nvim
+--   - vim-tmux-navigator
+vim.g.enable_minimal_config = false
+
 require("k92.health")
 require("k92.lsp")
 require("k92.lazy-bootstrap")
