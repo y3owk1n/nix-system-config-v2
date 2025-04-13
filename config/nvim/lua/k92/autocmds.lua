@@ -4,13 +4,15 @@ local augroup = require("k92.utils.autocmds").augroup
 -- Yank Highlight (Optional)
 ------------------------------------------------------------
 -- Currently highlight with `undo-glow.nvim`.
--- vim.api.nvim_create_autocmd("TextYankPost", {
--- 	desc = "Highlight when yanking (copying) text",
--- 	group = augroup("highlight_yank"),
--- 	callback = function()
--- 		(vim.hl or vim.highlight).on_yank()
--- 	end,
--- })
+if vim.g.enable_minimal_config then
+	vim.api.nvim_create_autocmd("TextYankPost", {
+		desc = "Highlight when yanking (copying) text",
+		group = augroup("highlight_yank"),
+		callback = function()
+			(vim.hl or vim.highlight).on_yank()
+		end,
+	})
+end
 
 ------------------------------------------------------------
 -- Close Certain Filetypes with <q>

@@ -3,6 +3,7 @@ return {
 	{
 		"y3owk1n/dotmd.nvim",
 		-- dir = "~/Dev/dotmd.nvim", -- Your path
+		enabled = not vim.g.enable_minimal_config,
 		cmd = {
 			"DotMdCreateNote",
 			"DotMdCreateTodoToday",
