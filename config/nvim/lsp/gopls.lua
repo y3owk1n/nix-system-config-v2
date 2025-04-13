@@ -2,6 +2,18 @@ local lsp_utils = require("k92.utils.lsp")
 
 local mod_cache = nil
 
+---@param fname string
+---@return string?
+local function get_root(fname)
+	if mod_cache and fname:sub(1, #mod_cache) == mod_cache then
+		local clients = vim.lsp.get_clients({ name = "gopls" })
+		if #clients > 0 then
+			return clients[#clients].config.root_dir
+		end
+	end
+	return vim.fs.root(fname, { "go.work", "go.mod", ".git" })
+end
+
 ---@type vim.lsp.Config
 return {
 	cmd = { "gopls" },
@@ -12,22 +24,22 @@ return {
 		local fname = vim.api.nvim_buf_get_name(bufnr)
 
 		if not mod_cache then
-			lsp_utils.run_async_job({ "go", "env", "GOMODCACHE" }, function(result)
-				if result and result[1] then
-					mod_cache = vim.trim(result[1])
-				else
-					mod_cache = vim.fn.system("go env GOMODCACHE")
-				end
-			end)
+			cb(get_root(fname))
+			return
 		end
-		if mod_cache and fname:sub(1, #mod_cache) == mod_cache then
-			local clients = vim.lsp.get_clients({ name = "gopls" })
 
-			if #clients > 0 then
-				return cb(clients[#clients].config.root_dir)
+		local cmd = { "go", "env", "GOMODCACHE" }
+
+		vim.system(cmd, { text = true }, function(output)
+			if output.code == 0 then
+				if output.stdout then
+					mod_cache = vim.trim(output.stdout)
+				end
+				cb(get_root(fname))
+			else
+				vim.notify(("[gopls] cmd failed with code %d: %s\n%s"):format(output.code, cmd, output.stderr))
 			end
-		end
-		return cb(lsp_utils.root_pattern("go.work", "go.mod", ".git")(fname))
+		end)
 	end,
 	settings = {
 		gopls = {

@@ -1,5 +1,7 @@
 local augroup = require("k92.utils.autocmds").augroup
 
+vim.lsp.config("*", { capabilities = vim.lsp.protocol.make_client_capabilities() })
+
 vim.diagnostic.config({
 	underline = true,
 	update_in_insert = false,
