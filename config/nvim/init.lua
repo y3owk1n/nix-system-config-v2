@@ -19,8 +19,19 @@ vim.g.snacks_animate = false
 --   - dotmd
 --   - undo-glow
 --   - supermaven-nvim
---   - vim-tmux-navigator
 vim.g.strip_personal_plugins = false
+
+-- Check if the executables are available
+-- This is used to enable/disable certain plugins / features
+vim.g.has_node = vim.fn.executable("node") == 1
+vim.g.has_go = vim.fn.executable("go") == 1
+vim.g.has_bash = vim.fn.executable("bash") == 1
+vim.g.has_docker = vim.fn.executable("docker") == 1
+vim.g.has_fish = vim.fn.executable("fish") == 1
+vim.g.has_git = vim.fn.executable("git") == 1
+vim.g.has_just = vim.fn.executable("just") == 1
+vim.g.has_nix = vim.fn.executable("nix") == 1
+vim.g.has_tmux = vim.fn.executable("tmux") == 1
 
 require("k92.health")
 require("k92.lsp")

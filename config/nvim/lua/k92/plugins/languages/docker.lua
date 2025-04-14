@@ -1,5 +1,9 @@
 local _table = require("k92.utils.table")
 
+if not vim.g.has_docker then
+	return {}
+end
+
 vim.lsp.enable({
 	"dockerls",
 	"docker_compose_language_service",

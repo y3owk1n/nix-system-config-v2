@@ -4,6 +4,7 @@ local augroup = require("k92.utils.autocmds").augroup
 -- Yank Highlight (Optional)
 ------------------------------------------------------------
 -- Currently highlight with `undo-glow.nvim`.
+-- Only enable it when personal plugins are stripped.
 if vim.g.strip_personal_plugins then
 	vim.api.nvim_create_autocmd("TextYankPost", {
 		desc = "Highlight when yanking (copying) text",

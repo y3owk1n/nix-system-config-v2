@@ -1,3 +1,7 @@
+if not vim.g.has_fish then
+	return {}
+end
+
 ---@type LazySpec
 return {
 	{

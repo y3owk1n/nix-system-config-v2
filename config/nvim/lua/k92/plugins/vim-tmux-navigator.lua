@@ -1,7 +1,7 @@
 ---@type LazySpec
 return {
 	"alexghergh/nvim-tmux-navigation",
-	enabled = not vim.g.strip_personal_plugins,
+	enabled = vim.g.has_tmux,
 	event = "VeryLazy",
 	cmd = {
 		"NvimTmuxNavigateLeft",

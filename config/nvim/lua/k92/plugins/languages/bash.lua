@@ -1,5 +1,9 @@
 local _table = require("k92.utils.table")
 
+if not vim.g.has_bash then
+	return {}
+end
+
 vim.lsp.enable("bashls")
 
 ---@type LazySpec

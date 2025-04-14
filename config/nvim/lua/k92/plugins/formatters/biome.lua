@@ -1,5 +1,9 @@
 local _table = require("k92.utils.table")
 
+if not vim.g.has_node then
+	return {}
+end
+
 vim.lsp.enable("biome")
 
 -- https://biomejs.dev/internals/language-support/
