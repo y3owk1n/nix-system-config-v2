@@ -1,11 +1,11 @@
 {
 	"name": "Vimium C",
-	"@time": "3/20/2025, 10:24:28 AM",
-	"time": 1742437468568,
+	"@time": "4/14/2025, 12:08:33 PM",
+	"time": 1744603713330,
 	"environment": {
 		"extension": "1.99.997",
 		"platform": "mac",
-		"firefox": 136
+		"firefox": 137
 	},
 	"allBrowserUrls": true,
 	"exclusionRules": [
@@ -48,6 +48,10 @@
 		"map ? showHelp",
 		"map yy copyCurrentUrl",
 		"map <m-d> togglePinTab",
+		"map gk firstTab",
+		"map gj lastTab",
+		"map gt firstTab",
+		"map g` visitPreviousTab",
 		""
 	],
 	"linkHintCharacters": "aoeuidhtns",
