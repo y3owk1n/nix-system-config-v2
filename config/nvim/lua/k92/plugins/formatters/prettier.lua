@@ -1,5 +1,9 @@
 local _table = require("k92.utils.table")
 
+if not vim.g.has_node then
+	return {}
+end
+
 ---@alias ConformCtx {buf: number, filename: string, dirname: string}
 local M = {}
 

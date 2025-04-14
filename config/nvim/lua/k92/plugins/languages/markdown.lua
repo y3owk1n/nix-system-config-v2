@@ -47,7 +47,11 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "marksman", "markdownlint-cli2", "markdown-toc" })
+			_table.add_unique_items(opts.ensure_installed, { "marksman" })
+
+			if vim.g.has_node then
+				_table.add_unique_items(opts.ensure_installed, { "markdownlint-cli2", "markdown-toc" })
+			end
 		end,
 	},
 	{
