@@ -1,10 +1,7 @@
 ---@type LazySpec
 return {
 	"mfussenegger/nvim-lint",
-	event = { "VeryLazy" },
-	dependencies = {
-		"williamboman/mason.nvim",
-	},
+	event = { "BufWritePost", "BufReadPost", "InsertLeave" },
 	---@type neogen.Configuration
 	---@diagnostic disable-next-line: missing-fields
 	opts = {

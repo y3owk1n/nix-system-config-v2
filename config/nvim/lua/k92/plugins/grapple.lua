@@ -2,7 +2,6 @@
 return {
 	{
 		"cbochs/grapple.nvim",
-		event = "VeryLazy",
 		---@module "grapple"
 		---@type grapple.options
 		opts = {
@@ -18,6 +17,7 @@ return {
 		cmd = "Grapple",
 		keys = function()
 			local keys = {
+				{ "<leader>h", "", desc = "+grapple" },
 				{
 					"<leader>ha",
 					"<cmd>Grapple toggle<cr>",
@@ -69,16 +69,6 @@ return {
 						)
 					end
 				end,
-			})
-		end,
-	},
-	{
-		"folke/which-key.nvim",
-		optional = true,
-		opts = function(opts)
-			table.insert(opts.opts.spec[1], {
-				"<leader>h",
-				group = "grapple",
 			})
 		end,
 	},

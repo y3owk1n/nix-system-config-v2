@@ -11,7 +11,13 @@ return {
 	},
 	{
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
-		event = "VeryLazy",
+		cmd = {
+			"MasonToolsInstall",
+			"MasonToolsInstallSync",
+			"MasonToolsUpdate",
+			"MasonToolsUpdateSync",
+			"MasonToolsClean",
+		},
 		opts = {},
 		config = true,
 	},
