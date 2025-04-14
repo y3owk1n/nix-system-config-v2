@@ -2,7 +2,7 @@
 return {
 	{
 		"echasnovski/mini.ai",
-		event = { "VeryLazy" },
+		event = { "BufReadPre", "BufNewFile" },
 		opts = {
 			n_lines = 500,
 		},
@@ -28,7 +28,7 @@ return {
 	},
 	{
 		"echasnovski/mini.pairs",
-		event = { "VeryLazy" },
+		event = { "BufReadPre", "BufNewFile" },
 		opts = {
 			modes = { insert = true, command = true, terminal = false },
 			-- skip autopair when next character is one of these
@@ -44,7 +44,7 @@ return {
 	},
 	{
 		"echasnovski/mini.surround",
-		event = { "VeryLazy" },
+		event = { "BufReadPre", "BufNewFile" },
 		opts = {
 			mappings = {
 				add = "gsa", -- Add surrounding in Normal and Visual modes
