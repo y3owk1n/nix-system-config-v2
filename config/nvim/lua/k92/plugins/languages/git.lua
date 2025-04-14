@@ -1,3 +1,7 @@
+if not vim.g.has_git then
+	return {}
+end
+
 ---@type LazySpec
 return {
 	{
