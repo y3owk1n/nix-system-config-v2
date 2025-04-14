@@ -1,6 +1,8 @@
 local _table = require("k92.utils.table")
 
-vim.lsp.enable("jsonls")
+if vim.g.has_node then
+	vim.lsp.enable("jsonls")
+end
 
 ---@type LazySpec
 return {
@@ -18,7 +20,10 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "json-lsp" })
+
+			if vim.g.has_node then
+				_table.add_unique_items(opts.ensure_installed, { "json-lsp" })
+			end
 		end,
 	},
 }

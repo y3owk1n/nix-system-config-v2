@@ -4,7 +4,9 @@ if not vim.g.has_bash then
 	return {}
 end
 
-vim.lsp.enable("bashls")
+if vim.g.has_node then
+	vim.lsp.enable("bashls")
+end
 
 ---@type LazySpec
 return {
@@ -16,7 +18,11 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "shellcheck", "shfmt", "bash-language-server" })
+			_table.add_unique_items(opts.ensure_installed, { "shellcheck", "shfmt" })
+
+			if vim.g.has_node then
+				_table.add_unique_items(opts.ensure_installed, { "bash-language-server" })
+			end
 		end,
 	},
 	{
