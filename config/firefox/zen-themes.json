@@ -1,0 +1,65 @@
+{
+    "22c9ec3b-7c62-46ae-991f-c8fff5046829": {
+        "id": "22c9ec3b-7c62-46ae-991f-c8fff5046829",
+        "name": "Tab Numbers",
+        "description": "Shows the Number corresponding to each Tab.",
+        "homepage": "https://github.com/philmard/tab-numbers",
+        "style": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/22c9ec3b-7c62-46ae-991f-c8fff5046829/chrome.css",
+        "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/22c9ec3b-7c62-46ae-991f-c8fff5046829/readme.md",
+        "image": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/22c9ec3b-7c62-46ae-991f-c8fff5046829/image.png",
+        "author": "philmard",
+        "version": "1.0.4",
+        "preferences": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/22c9ec3b-7c62-46ae-991f-c8fff5046829/preferences.json",
+        "tags": [
+            "tabs"
+        ],
+        "createdAt": "2024-11-09",
+        "updatedAt": "2025-01-26",
+        "enabled": true
+    },
+    "906c6915-5677-48ff-9bfc-096a02a72379": {
+        "id": "906c6915-5677-48ff-9bfc-096a02a72379",
+        "name": "Floating Status Bar",
+        "description": "Mod for Zen Browser that detaches the status bar from the bottom left corner of the browser window.",
+        "homepage": "https://github.com/AmirhBeigi/zen-floating-statusbar/",
+        "style": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/906c6915-5677-48ff-9bfc-096a02a72379/chrome.css",
+        "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/906c6915-5677-48ff-9bfc-096a02a72379/readme.md",
+        "image": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/906c6915-5677-48ff-9bfc-096a02a72379/image.png",
+        "author": "AmirhBeigi",
+        "version": "1.0.0",
+        "tags": [],
+        "createdAt": "2024-10-06",
+        "updatedAt": "2025-01-26",
+        "enabled": true
+    },
+    "599a1599-e6ab-4749-ab22-de533860de2c": {
+        "id": "599a1599-e6ab-4749-ab22-de533860de2c",
+        "name": "Pimp your PiP",
+        "description": "Collection of tweaks and upgrades to PiP",
+        "homepage": "",
+        "style": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/599a1599-e6ab-4749-ab22-de533860de2c/chrome.css",
+        "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/599a1599-e6ab-4749-ab22-de533860de2c/readme.md",
+        "image": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/599a1599-e6ab-4749-ab22-de533860de2c/image.png",
+        "author": "shldk",
+        "version": "1.0.0",
+        "tags": [],
+        "createdAt": "2025-02-07",
+        "updatedAt": "2025-02-09",
+        "enabled": true
+    },
+    "f7c71d9a-bce2-420f-ae44-a64bd92975ab": {
+        "id": "f7c71d9a-bce2-420f-ae44-a64bd92975ab",
+        "name": "Better Unloaded Tabs",
+        "description": "Makes unloaded tabs easier to notice by making them greyscale and transparent.",
+        "homepage": "https://github.com/Felkazz/zen-browser-better-unloaded-tabs",
+        "style": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/f7c71d9a-bce2-420f-ae44-a64bd92975ab/chrome.css",
+        "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/f7c71d9a-bce2-420f-ae44-a64bd92975ab/readme.md",
+        "image": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/f7c71d9a-bce2-420f-ae44-a64bd92975ab/image.png",
+        "author": "Felkazz",
+        "version": "1.0.1",
+        "tags": [],
+        "createdAt": "2024-10-12",
+        "updatedAt": "2025-01-26",
+        "enabled": true
+    }
+}
