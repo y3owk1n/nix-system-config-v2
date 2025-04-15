@@ -3,6 +3,7 @@ return {
 	{
 		"williamboman/mason.nvim",
 		cmd = "Mason",
+		event = "VeryLazy",
 		keys = { { "<leader>im", "<cmd>Mason<cr>", desc = "Mason" } },
 		build = ":MasonUpdate",
 		opts_extend = { "ensure_installed" },
