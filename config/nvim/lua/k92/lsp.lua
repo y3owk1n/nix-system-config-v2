@@ -41,6 +41,8 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		map(event.buf, "<leader>ls", ":LspStop<cr>", "Stop all LSP")
 		map(event.buf, "<leader>lr", ":LspRestart<cr>", "Restart all LSP")
 		map(event.buf, "<leader>lS", ":LspStart<cr>", "Start all LSP")
+		map(event.buf, "<leader>ll", ":LspLog<cr>", "Log")
+		map(event.buf, "<leader>lx", ":LspClearLog<cr>", "Clear Log")
 	end,
 })
 
@@ -92,7 +94,7 @@ vim.api.nvim_create_autocmd("LspProgress", {
 vim.api.nvim_create_user_command("LspRestart", function()
 	local function restart_clients(clients)
 		vim.notify("Restarting all LSP clients...")
-		vim.lsp.stop_client(clients)
+		vim.lsp.stop_client(clients, true)
 		vim.defer_fn(function()
 			vim.cmd("edit")
 			vim.notify("Restarting LSP clients complete...")
@@ -118,10 +120,49 @@ end, {
 vim.api.nvim_create_user_command("LspStop", function()
 	local clients = vim.lsp.get_clients()
 	vim.notify("Stopping all LSP clients...")
-	vim.lsp.stop_client(clients)
+	vim.lsp.stop_client(clients, true)
 	vim.notify("Restarting LSP clients complete...")
 end, {
 	desc = "Stop Lsp clients.",
+})
+
+vim.api.nvim_create_user_command("LspLog", function()
+	local log_path = vim.lsp.get_log_path()
+	local message = vim.fn.readfile(log_path)
+	if not message or #message == 0 then
+		message = { "**LSP log file is empty or not found**" }
+	end
+
+	Snacks.win({
+		title = "LSP Log",
+		title_pos = "center",
+		text = message,
+		scratch_ft = "float_info",
+		ft = "markdown",
+		fixbuf = true,
+		width = 0.8,
+		height = 0.8,
+		position = "float",
+		border = "rounded",
+		minimal = true,
+		wo = {
+			spell = false,
+			wrap = false,
+			signcolumn = "yes",
+			statuscolumn = " ",
+			conceallevel = 3,
+			concealcursor = "nvic",
+		},
+		bo = {
+			readonly = true,
+			modifiable = false,
+		},
+		keys = {
+			q = "close",
+		},
+	})
+end, {
+	desc = "Opens the Nvim LSP client log.",
 })
 
 vim.api.nvim_create_user_command("LspInfo", function()
@@ -257,6 +298,7 @@ vim.api.nvim_create_user_command("LspInfo", function()
 		title = "LSP Information",
 		title_pos = "center",
 		text = message,
+		scratch_ft = "float_info",
 		ft = "markdown",
 		fixbuf = true,
 		width = 0.8,
@@ -282,4 +324,12 @@ vim.api.nvim_create_user_command("LspInfo", function()
 	})
 end, {
 	desc = "Display detailed information about LSP clients",
+})
+
+vim.api.nvim_create_user_command("LspClearLog", function()
+	local log_path = vim.lsp.get_log_path()
+	vim.fn.writefile({}, log_path)
+	vim.notify("Nvim LSP log file cleared.", vim.log.levels.INFO)
+end, {
+	desc = "Clears the Nvim LSP log file.",
 })

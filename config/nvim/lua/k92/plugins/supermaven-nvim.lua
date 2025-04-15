@@ -7,7 +7,7 @@ return {
 			keymaps = {
 				accept_suggestion = "<C-y>",
 			},
-			ignore_filetypes = { "bigfile", "snacks_input", "snacks_notif" },
+			ignore_filetypes = { "bigfile", "snacks_input", "snacks_notif", "float_info" },
 		},
 	},
 }

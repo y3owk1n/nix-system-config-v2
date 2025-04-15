@@ -102,6 +102,7 @@ return {
 				title = "Lint Information",
 				title_pos = "center",
 				text = message,
+				scratch_ft = "float_info",
 				ft = "markdown",
 				fixbuf = true,
 				width = 0.5,
