@@ -161,42 +161,44 @@ vim.api.nvim_create_user_command("LspInfo", function()
 			-- Formatting support
 			local caps = client.server_capabilities
 
-			local has_formatting = caps.documentFormattingProvider or caps.documentRangeFormattingProvider
-			table.insert(message, "- 🎨 **Formatting:** " .. (has_formatting and "Supported" or "Not supported"))
+			if caps then
+				local has_formatting = caps.documentFormattingProvider or caps.documentRangeFormattingProvider
+				table.insert(message, "- 🎨 **Formatting:** " .. (has_formatting and "Supported" or "Not supported"))
 
-			-- Feature summary
-			local summary = {}
-			if caps.definitionProvider then
-				table.insert(summary, "Definition")
+				-- Feature summary
+				local summary = {}
+				if caps.definitionProvider then
+					table.insert(summary, "Definition")
+				end
+				if caps.referencesProvider then
+					table.insert(summary, "References")
+				end
+				if caps.hoverProvider then
+					table.insert(summary, "Hover")
+				end
+				if caps.renameProvider then
+					table.insert(summary, "Rename")
+				end
+				if caps.completionProvider then
+					table.insert(summary, "Completion")
+				end
+				if caps.codeActionProvider then
+					table.insert(summary, "CodeAction")
+				end
+				if caps.signatureHelpProvider then
+					table.insert(summary, "SignatureHelp")
+				end
+				table.insert(
+					message,
+					"- ✅ **Supported Features:** " .. (#summary > 0 and table.concat(summary, ", ") or "None")
+				)
 			end
-			if caps.referencesProvider then
-				table.insert(summary, "References")
-			end
-			if caps.hoverProvider then
-				table.insert(summary, "Hover")
-			end
-			if caps.renameProvider then
-				table.insert(summary, "Rename")
-			end
-			if caps.completionProvider then
-				table.insert(summary, "Completion")
-			end
-			if caps.codeActionProvider then
-				table.insert(summary, "CodeAction")
-			end
-			if caps.signatureHelpProvider then
-				table.insert(summary, "SignatureHelp")
-			end
-			table.insert(
-				message,
-				"- ✅ **Supported Features:** " .. (#summary > 0 and table.concat(summary, ", ") or "None")
-			)
 
 			-- Initialization options
-			if client.config.initialization_options then
+			if client.config.init_options then
 				table.insert(message, "- ⚙️ **Initialization Options:**")
 				table.insert(message, "```lua")
-				for line in vim.inspect(client.config.initialization_options):gmatch("[^\r\n]+") do
+				for line in vim.inspect(client.config.init_options):gmatch("[^\r\n]+") do
 					table.insert(message, line)
 				end
 				table.insert(message, "```")
@@ -268,6 +270,7 @@ vim.api.nvim_create_user_command("LspInfo", function()
 			signcolumn = "yes",
 			statuscolumn = " ",
 			conceallevel = 3,
+			concealcursor = "nvic",
 		},
 		bo = {
 			readonly = true,

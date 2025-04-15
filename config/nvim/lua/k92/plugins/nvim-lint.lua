@@ -103,6 +103,7 @@ return {
 				title_pos = "center",
 				text = message,
 				ft = "markdown",
+				fixbuf = true,
 				width = 0.5,
 				height = 0.3,
 				position = "float",
@@ -114,6 +115,7 @@ return {
 					signcolumn = "yes",
 					statuscolumn = " ",
 					conceallevel = 3,
+					concealcursor = "nvic",
 				},
 				bo = {
 					readonly = true,
