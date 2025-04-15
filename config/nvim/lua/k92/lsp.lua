@@ -128,10 +128,71 @@ end, {
 
 vim.api.nvim_create_user_command("LspLog", function()
 	local log_path = vim.lsp.get_log_path()
-	local message = vim.fn.readfile(log_path)
-	if not message or #message == 0 then
+	local raw_lines = vim.fn.readfile(log_path)
+	local message = {}
+	local line_highlights = {}
+
+	local icons = {
+		START = " ",
+		WARN = " ",
+		ERROR = " ",
+		INFO = " ",
+	}
+
+	local severity_highlights = {
+		START = "DiagnosticHint",
+		WARN = "DiagnosticWarn",
+		ERROR = "DiagnosticError",
+		INFO = "DiagnosticInfo",
+	}
+
+	if not raw_lines or #raw_lines == 0 then
 		message = { "**LSP log file is empty or not found**" }
+	else
+		for _, line in ipairs(raw_lines) do
+			-- Extract severity, timestamp, and the remaining log content.
+			local severity, timestamp, rest = line:match("%[(.-)%]%[(.-)%]%s*(.+)")
+			if severity and timestamp and rest then
+				-- Trim any extra whitespace.
+				rest = rest:match("^%s*(.-)%s*$")
+				local filename, log_msg = rest:match("^(.-)%s*\t%s*(.+)$")
+
+				-- If filename and log_msg weren't captured, fall back to full message.
+				if not filename or not log_msg then
+					filename = ""
+					log_msg = rest
+				else
+					filename = filename:match("^%s*(.-)%s*$")
+					log_msg = log_msg:match("^%s*(.-)%s*$")
+				end
+
+				local icon = icons[severity] or " "
+				local line_idx = #message + 1
+				local summary = string.format("- %s **%s** (%s):", icon, severity, timestamp)
+
+				table.insert(message, summary)
+				if filename and filename ~= "" then
+					table.insert(message, string.format("    - **File:** `%s`", filename))
+				end
+				table.insert(message, string.format("    - **Message:** %s", log_msg))
+
+				local start_col = summary:find(icon)
+				if start_col then
+					table.insert(line_highlights, {
+						line = line_idx - 1,
+						start_col = start_col - 1,
+						end_col = start_col + #icon + #severity + 4,
+						hl = severity_highlights[severity] or "Normal",
+					})
+				end
+			else
+				-- If the line doesn't match the expected pattern, include it as is.
+				table.insert(message, line)
+			end
+		end
 	end
+
+	local ns = vim.api.nvim_create_namespace("lsp_log")
 
 	Snacks.win({
 		title = "LSP Log",
@@ -160,6 +221,14 @@ vim.api.nvim_create_user_command("LspLog", function()
 		keys = {
 			q = "close",
 		},
+		on_buf = function(self)
+			for _, hl in ipairs(line_highlights) do
+				vim.api.nvim_buf_set_extmark(self.buf, ns, hl.line, hl.start_col, {
+					end_col = hl.end_col,
+					hl_group = hl.hl,
+				})
+			end
+		end,
 	})
 end, {
 	desc = "Opens the Nvim LSP client log.",
