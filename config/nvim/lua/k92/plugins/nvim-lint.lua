@@ -73,12 +73,8 @@ return {
 
 			local message = {}
 
-			table.insert(message, "# 🧹 Lint Information")
+			table.insert(message, "**Filetype:** `" .. filetype .. "`")
 			table.insert(message, "")
-
-			table.insert(message, "- **Filetype:** `" .. filetype .. "`")
-			table.insert(message, "")
-
 			table.insert(message, "---")
 			table.insert(message, "")
 
@@ -102,7 +98,9 @@ return {
 			table.insert(message, "")
 			table.insert(message, "_Press `q` to close this window_")
 
-			require("snacks").win({
+			Snacks.win({
+				title = "Lint Information",
+				title_pos = "center",
 				text = message,
 				ft = "markdown",
 				width = 0.5,
@@ -116,6 +114,10 @@ return {
 					signcolumn = "yes",
 					statuscolumn = " ",
 					conceallevel = 3,
+				},
+				bo = {
+					readonly = true,
+					modifiable = false,
 				},
 				keys = {
 					q = "close",
