@@ -92,9 +92,7 @@ vim.api.nvim_create_autocmd("LspProgress", {
 vim.api.nvim_create_user_command("LspRestart", function()
 	local function restart_clients(clients)
 		vim.notify("Restarting all LSP clients...")
-		for _, client in ipairs(clients) do
-			vim.lsp.stop_client(client.id)
-		end
+		vim.lsp.stop_client(clients)
 		vim.defer_fn(function()
 			vim.cmd("edit")
 			vim.notify("Restarting LSP clients complete...")
@@ -117,40 +115,13 @@ end, {
 	desc = "Start LSP clients.",
 })
 
-vim.api.nvim_create_user_command("LspStop", function(opts)
-	local client_name = opts.args
-
-	if not client_name or client_name == "" then
-		local clients = vim.lsp.get_clients()
-		vim.notify("Stopping all LSP clients...")
-		for _, client in ipairs(clients) do
-			vim.lsp.stop_client(client.id)
-		end
-		return
-	end
-
-	local clients = vim.lsp.get_clients({
-		name = client_name,
-	})
-	if #clients > 0 then
-		vim.notify("Stopping LSP client: " .. client_name)
-		for _, client in ipairs(clients) do
-			vim.lsp.stop_client(client.id)
-		end
-	else
-		vim.notify("No LSP client for: " .. client_name)
-	end
+vim.api.nvim_create_user_command("LspStop", function()
+	local clients = vim.lsp.get_clients()
+	vim.notify("Stopping all LSP clients...")
+	vim.lsp.stop_client(clients)
+	vim.notify("Restarting LSP clients complete...")
 end, {
-	nargs = "?",
-	desc = "Stop LSP client(s). Provide client name or ID to stop specific client.",
-	complete = function()
-		local clients = vim.lsp.get_clients()
-		local completion = {}
-		for _, client in ipairs(clients) do
-			table.insert(completion, client.name)
-		end
-		return completion
-	end,
+	desc = "Stop Lsp clients.",
 })
 
 vim.api.nvim_create_user_command("LspInfo", function()
