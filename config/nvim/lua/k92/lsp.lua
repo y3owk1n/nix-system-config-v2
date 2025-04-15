@@ -241,7 +241,7 @@ vim.api.nvim_create_user_command("LspInfo", function()
 	local message = {}
 
 	if #clients == 0 then
-		table.insert(message, "**No active LSP clients**")
+		table.insert(message, " **No active LSP clients**")
 	else
 		table.insert(message, "**Active LSP Clients: " .. #clients .. "**")
 		table.insert(message, "")
@@ -252,20 +252,20 @@ vim.api.nvim_create_user_command("LspInfo", function()
 			local buffers = vim.lsp.get_buffers_by_client_id(client.id)
 
 			-- Client header
-			table.insert(message, "## " .. i .. ". `" .. client.name .. "` (ID: " .. client.id .. ")")
+			table.insert(message, i .. ". `" .. client.name .. "` (ID: " .. client.id .. ")")
 			table.insert(message, "")
 
 			-- Root directory
-			table.insert(message, "- 📁 **Root Directory:** `" .. (client.config.root_dir or "Not available") .. "`")
+			table.insert(message, " **Root Directory:** `" .. (client.config.root_dir or "Not available") .. "`")
 
 			-- Executable command
 			local cmd_path = client.config.cmd and client.config.cmd[1] or "N/A"
-			table.insert(message, "- 🧪 **Command:** `" .. cmd_path .. "`")
+			table.insert(message, " **Command:** `" .. cmd_path .. "`")
 
 			-- Initialization status
 			table.insert(
 				message,
-				"- 🔄 **Status:** `" .. (client.initialized and "Initialized" or "Not initialized") .. "`"
+				" **Status:** `" .. (client.initialized and "Initialized" or "Not initialized") .. "`"
 			)
 
 			-- Formatting support
@@ -273,7 +273,7 @@ vim.api.nvim_create_user_command("LspInfo", function()
 
 			if caps then
 				local has_formatting = caps.documentFormattingProvider or caps.documentRangeFormattingProvider
-				table.insert(message, "- 🎨 **Formatting:** " .. (has_formatting and "Supported" or "Not supported"))
+				table.insert(message, " **Formatting:** " .. (has_formatting and "Supported" or "Not supported"))
 
 				-- Feature summary
 				local summary = {}
@@ -300,13 +300,13 @@ vim.api.nvim_create_user_command("LspInfo", function()
 				end
 				table.insert(
 					message,
-					"- ✅ **Supported Features:** " .. (#summary > 0 and table.concat(summary, ", ") or "None")
+					" **Supported Features:** " .. (#summary > 0 and table.concat(summary, ", ") or "None")
 				)
 			end
 
 			-- Initialization options
 			if client.config.init_options then
-				table.insert(message, "- ⚙️ **Initialization Options:**")
+				table.insert(message, " **Initialization Options:**")
 				table.insert(message, "```lua")
 				for line in vim.inspect(client.config.init_options):gmatch("[^\r\n]+") do
 					table.insert(message, line)
@@ -316,14 +316,14 @@ vim.api.nvim_create_user_command("LspInfo", function()
 
 			-- Workspace folders
 			if client.workspace_folders then
-				table.insert(message, "- 📂 **Workspace Folders:**")
+				table.insert(message, " **Workspace Folders:**")
 				for _, folder in ipairs(client.workspace_folders) do
 					table.insert(message, "    - `" .. folder.name .. "` → `" .. folder.uri .. "`")
 				end
 			end
 
 			-- Attached buffers
-			table.insert(message, "- 🧷 **Attached Buffers:**")
+			table.insert(message, " **Attached Buffers:**")
 			if #buffers > 0 then
 				for _, bufnr in ipairs(buffers) do
 					if vim.api.nvim_buf_is_valid(bufnr) then
@@ -332,7 +332,7 @@ vim.api.nvim_create_user_command("LspInfo", function()
 					end
 				end
 			else
-				table.insert(message, "    - None")
+				table.insert(message, "     None")
 			end
 
 			-- Diagnostics
@@ -346,10 +346,10 @@ vim.api.nvim_create_user_command("LspInfo", function()
 					end
 				end
 			end
-			table.insert(message, "- 🚨 **Diagnostics:** " .. (has_diagnostics and "Available" or "None"))
+			table.insert(message, " **Diagnostics:** " .. (has_diagnostics and "Available" or "None"))
 
 			-- Capabilities (verbose, last)
-			table.insert(message, "- 📜 **Full Capabilities:**")
+			table.insert(message, " **Full Capabilities:**")
 			table.insert(message, "```lua")
 			for line in vim.inspect(caps):gmatch("[^\r\n]+") do
 				table.insert(message, line)
@@ -364,7 +364,7 @@ vim.api.nvim_create_user_command("LspInfo", function()
 	table.insert(message, "_Press `q` to close this window_")
 
 	Snacks.win({
-		title = "LSP Information",
+		title = " LSP Information",
 		title_pos = "center",
 		text = message,
 		scratch_ft = "float_info",

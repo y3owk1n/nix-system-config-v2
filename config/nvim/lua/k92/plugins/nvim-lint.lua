@@ -79,19 +79,19 @@ return {
 			table.insert(message, "")
 
 			if not lint_ok then
-				table.insert(message, "❌ `nvim-lint` module not found. Please ensure it is installed and configured.")
+				table.insert(message, " `nvim-lint` module not found. Please ensure it is installed and configured.")
 			else
 				local linters = _lint.linters_by_ft[filetype]
 
 				if linters and #linters > 0 then
-					table.insert(message, "- 🔍 **Number of Linters:** `" .. #linters .. "`")
-					table.insert(message, "- 📦 **Available Linters:**")
+					table.insert(message, "-  **Number of Linters:** `" .. #linters .. "`")
+					table.insert(message, "-  **Available Linters:**")
 					table.insert(message, "")
 					for _, linter in ipairs(linters) do
 						table.insert(message, "  - `" .. linter .. "`")
 					end
 				else
-					table.insert(message, "⚠️ No linters configured for this filetype.")
+					table.insert(message, "  No linters configured for this filetype.")
 				end
 			end
 
