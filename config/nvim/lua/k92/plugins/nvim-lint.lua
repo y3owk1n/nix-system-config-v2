@@ -2,12 +2,13 @@
 return {
 	"mfussenegger/nvim-lint",
 	event = { "BufWritePost", "BufReadPost", "InsertLeave" },
-	---@type neogen.Configuration
-	---@diagnostic disable-next-line: missing-fields
 	opts = {
 		events = { "BufWritePost", "BufReadPost", "InsertLeave" },
 		linters_by_ft = {},
 		linters = {},
+	},
+	keys = {
+		{ "<leader>it", ":LintInfo<CR>", desc = "Lint info" },
 	},
 	config = function(_, opts)
 		local M = {}
@@ -25,17 +26,6 @@ return {
 			end
 		end
 		lint.linters_by_ft = opts.linters_by_ft
-
-		function M.debounce(ms, fn)
-			local timer = vim.uv.new_timer()
-			return function(...)
-				local argv = { ... }
-				timer:start(ms, 0, function()
-					timer:stop()
-					vim.schedule_wrap(fn)(unpack(argv))
-				end)
-			end
-		end
 
 		function M.lint()
 			-- Use nvim-lint's logic first:
@@ -74,7 +64,57 @@ return {
 
 		vim.api.nvim_create_autocmd(opts.events, {
 			group = vim.api.nvim_create_augroup("nvim-lint", { clear = true }),
-			callback = M.debounce(100, M.lint),
+			callback = require("k92.utils.debounce").debounce(100, M.lint),
 		})
+
+		vim.api.nvim_create_user_command("LintInfo", function()
+			local filetype = vim.bo.filetype
+			local linters = require("lint").linters_by_ft[filetype]
+
+			local message = {}
+
+			table.insert(message, "# Lint Information")
+			table.insert(message, "")
+
+			table.insert(message, "**Filetype:** `" .. filetype .. "`")
+			table.insert(message, "")
+
+			table.insert(message, "---")
+			table.insert(message, "")
+
+			if linters and #linters > 0 then
+				table.insert(message, "**Number of linters:** " .. #linters)
+				table.insert(message, "")
+				table.insert(message, "**Available linters:**")
+				for _, linter in ipairs(linters) do
+					table.insert(message, "- `" .. linter .. "`")
+				end
+			else
+				table.insert(message, "No linters configured for this filetype!")
+			end
+
+			table.insert(message, "")
+			table.insert(message, "*Press `q` to close the window.*")
+
+			require("snacks").win({
+				text = message,
+				ft = "markdown",
+				width = 0.6,
+				height = 0.4,
+				position = "float",
+				border = "rounded",
+				minimal = true,
+				wo = {
+					spell = false,
+					wrap = false,
+					signcolumn = "yes",
+					statuscolumn = " ",
+					conceallevel = 3,
+				},
+				keys = {
+					q = "close",
+				},
+			})
+		end, {})
 	end,
 }
