@@ -130,13 +130,12 @@ vim.api.nvim_create_user_command("LspInfo", function()
 	})
 	local message = {}
 
-	table.insert(message, "# 🌐 LSP Information")
-	table.insert(message, "")
-
 	if #clients == 0 then
 		table.insert(message, "**No active LSP clients**")
 	else
 		table.insert(message, "**Active LSP Clients: " .. #clients .. "**")
+		table.insert(message, "")
+		table.insert(message, "---")
 		table.insert(message, "")
 
 		for i, client in ipairs(clients) do
@@ -252,9 +251,12 @@ vim.api.nvim_create_user_command("LspInfo", function()
 	table.insert(message, "---")
 	table.insert(message, "_Press `q` to close this window_")
 
-	require("snacks").win({
+	Snacks.win({
+		title = "LSP Information",
+		title_pos = "center",
 		text = message,
 		ft = "markdown",
+		fixbuf = true,
 		width = 0.8,
 		height = 0.8,
 		position = "float",
@@ -266,6 +268,10 @@ vim.api.nvim_create_user_command("LspInfo", function()
 			signcolumn = "yes",
 			statuscolumn = " ",
 			conceallevel = 3,
+		},
+		bo = {
+			readonly = true,
+			modifiable = false,
 		},
 		keys = {
 			q = "close",
