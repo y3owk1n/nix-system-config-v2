@@ -1,7 +1,7 @@
 local _table = require("k92.utils.table")
 
 if vim.g.has_node then
-	vim.lsp.enable("yamls")
+	vim.lsp.enable("yamlls")
 end
 
 ---@type LazySpec
