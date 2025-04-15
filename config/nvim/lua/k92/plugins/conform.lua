@@ -14,13 +14,11 @@ return {
 						lsp_format = "fallback",
 					})
 				end,
-				mode = "",
 				desc = "Format buffer",
 			},
 			{
 				"<leader>ic",
 				":ConformInfo<CR>",
-				mode = "",
 				desc = "Conform Info",
 			},
 		},
