@@ -69,38 +69,44 @@ return {
 
 		vim.api.nvim_create_user_command("LintInfo", function()
 			local filetype = vim.bo.filetype
-			local linters = require("lint").linters_by_ft[filetype]
+			local lint_ok, _lint = pcall(require, "lint")
 
 			local message = {}
 
-			table.insert(message, "# Lint Information")
+			table.insert(message, "# 🧹 Lint Information")
 			table.insert(message, "")
 
-			table.insert(message, "**Filetype:** `" .. filetype .. "`")
+			table.insert(message, "- **Filetype:** `" .. filetype .. "`")
 			table.insert(message, "")
 
 			table.insert(message, "---")
 			table.insert(message, "")
 
-			if linters and #linters > 0 then
-				table.insert(message, "**Number of linters:** " .. #linters)
-				table.insert(message, "")
-				table.insert(message, "**Available linters:**")
-				for _, linter in ipairs(linters) do
-					table.insert(message, "- `" .. linter .. "`")
-				end
+			if not lint_ok then
+				table.insert(message, "❌ `nvim-lint` module not found. Please ensure it is installed and configured.")
 			else
-				table.insert(message, "No linters configured for this filetype!")
+				local linters = _lint.linters_by_ft[filetype]
+
+				if linters and #linters > 0 then
+					table.insert(message, "- 🔍 **Number of Linters:** `" .. #linters .. "`")
+					table.insert(message, "- 📦 **Available Linters:**")
+					table.insert(message, "")
+					for _, linter in ipairs(linters) do
+						table.insert(message, "  - `" .. linter .. "`")
+					end
+				else
+					table.insert(message, "⚠️ No linters configured for this filetype.")
+				end
 			end
 
 			table.insert(message, "")
-			table.insert(message, "*Press `q` to close the window.*")
+			table.insert(message, "_Press `q` to close this window_")
 
 			require("snacks").win({
 				text = message,
 				ft = "markdown",
-				width = 0.6,
-				height = 0.4,
+				width = 0.5,
+				height = 0.3,
 				position = "float",
 				border = "rounded",
 				minimal = true,
@@ -115,6 +121,8 @@ return {
 					q = "close",
 				},
 			})
-		end, {})
+		end, {
+			desc = "Display configured linters for the current filetype",
+		})
 	end,
 }
