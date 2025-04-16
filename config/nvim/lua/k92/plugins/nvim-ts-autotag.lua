@@ -1,7 +1,13 @@
 ---@type LazySpec
 return {
 	"windwp/nvim-ts-autotag",
-	event = { "BufReadPre", "BufNewFile" },
+	ft = {
+		"javascriptreact",
+		"javascript.jsx",
+		"typescriptreact",
+		"typescript.tsx",
+		"html",
+	},
 	---@module 'nvim-ts-autotag'
 	---@type nvim-ts-autotag.Opts
 	opts = {},
