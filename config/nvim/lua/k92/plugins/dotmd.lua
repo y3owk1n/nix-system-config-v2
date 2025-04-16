@@ -13,7 +13,6 @@ return {
 			"DotMdPick",
 			"DotMdOpen",
 		},
-		event = "VeryLazy",
 		---@type DotMd.Config
 		opts = {
 			root_dir = "~/Library/Mobile Documents/com~apple~CloudDocs/Cloud Notes",

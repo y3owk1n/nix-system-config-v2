@@ -2,7 +2,7 @@
 return {
 	{
 		"echasnovski/mini.ai",
-		event = { "VeryLazy" },
+		event = { "BufReadPre", "BufNewFile" },
 		opts = {
 			n_lines = 500,
 		},
