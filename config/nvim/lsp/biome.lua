@@ -19,6 +19,7 @@ return {
 		"typescriptreact",
 		"vue",
 	},
+	workspace_required = true,
 	---@param bufnr integer
 	---@param cb fun(root_dir?:string)
 	root_dir = function(bufnr, cb)

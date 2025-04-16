@@ -10,6 +10,7 @@ return {
 	init_options = {
 		sessionToken = "",
 	},
+	workspace_required = true,
 	capabilities = {
 		workspace = {
 			didChangeWorkspaceFolders = {
