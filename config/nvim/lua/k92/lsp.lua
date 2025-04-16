@@ -364,7 +364,7 @@ vim.api.nvim_create_user_command("LspInfo", function()
 	table.insert(message, "_Press `q` to close this window_")
 
 	Snacks.win({
-		title = " LSP Information",
+		title = "LSP Information",
 		title_pos = "center",
 		text = message,
 		scratch_ft = "float_info",
