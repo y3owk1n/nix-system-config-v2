@@ -4,7 +4,11 @@ return {
 		"folke/flash.nvim",
 		---@type Flash.Config
 		---@diagnostic disable-next-line: missing-fields
-		opts = {},
+		opts = {
+			prompt = {
+				enabled = false,
+			},
+		},
 		keys = {
 			{
 				"s",
