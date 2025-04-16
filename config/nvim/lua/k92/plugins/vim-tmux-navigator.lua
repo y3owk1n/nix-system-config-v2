@@ -2,7 +2,6 @@
 return {
 	"alexghergh/nvim-tmux-navigation",
 	enabled = vim.g.has_tmux,
-	event = "VeryLazy",
 	cmd = {
 		"NvimTmuxNavigateLeft",
 		"NvimTmuxNavigateDown",
