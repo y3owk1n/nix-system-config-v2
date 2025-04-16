@@ -2,7 +2,7 @@
 return {
 	{
 		"echasnovski/mini.ai",
-		event = { "BufReadPre", "BufNewFile" },
+		event = { "VeryLazy" },
 		opts = {
 			n_lines = 500,
 		},
@@ -28,7 +28,7 @@ return {
 	},
 	{
 		"echasnovski/mini.pairs",
-		event = { "BufReadPre", "BufNewFile" },
+		event = { "InsertEnter" },
 		opts = {
 			modes = { insert = true, command = true, terminal = false },
 			-- skip autopair when next character is one of these

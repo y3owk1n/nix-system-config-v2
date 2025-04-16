@@ -1,9 +1,9 @@
 ---@type LazySpec
 return {
 	"mfussenegger/nvim-lint",
-	event = { "BufWritePost", "BufReadPost", "InsertLeave" },
+	event = { "BufReadPost", "InsertLeave" },
 	opts = {
-		events = { "BufWritePost", "BufReadPost", "InsertLeave" },
+		events = { "BufReadPost", "InsertLeave" },
 		linters_by_ft = {},
 		linters = {},
 	},
