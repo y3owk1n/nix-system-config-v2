@@ -2,7 +2,7 @@ return {
 	{
 		"supermaven-inc/supermaven-nvim",
 		enabled = not vim.g.strip_personal_plugins,
-		event = "VeryLazy",
+		event = "InsertEnter",
 		opts = {
 			keymaps = {
 				accept_suggestion = "<C-y>",
