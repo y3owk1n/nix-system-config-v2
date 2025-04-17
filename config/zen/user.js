@@ -16,9 +16,9 @@
 
 /****************************************************************************
  * SECTION: FASTFOX                                                         *
- ****************************************************************************/
+****************************************************************************/
 /** GFX ***/
-user_pref("gfx.canvas.accelerated.cache-items", 8192);
+user_pref("gfx.canvas.accelerated.cache-items", 8192); // DEFAULT FF135+
 user_pref("gfx.canvas.accelerated.cache-size", 512);
 
 /** DISK CACHE ***/
@@ -36,7 +36,7 @@ user_pref("network.predictor.enable-prefetch", false);
 
 /****************************************************************************
  * SECTION: SECUREFOX                                                       *
- ****************************************************************************/
+****************************************************************************/
 /** TRACKING PROTECTION ***/
 user_pref("browser.contentblocking.category", "strict");
 user_pref("browser.download.start_downloads_in_tmp_dir", true);
@@ -76,7 +76,7 @@ user_pref("permissions.manager.defaultsUrl", "");
 
 /****************************************************************************
  * SECTION: PESKYFOX                                                        *
- ****************************************************************************/
+****************************************************************************/
 /** MOZILLA UI ***/
 user_pref("browser.shell.checkDefaultBrowser", false);
 
@@ -107,7 +107,7 @@ user_pref("zen.view.experimental-rounded-view", false);
 
 /****************************************************************************
  * START: MY OVERRIDES                                                      *
- ****************************************************************************/
+****************************************************************************/
 // visit https://github.com/yokoffing/Betterfox/wiki/Common-Overrides
 // visit https://github.com/yokoffing/Betterfox/wiki/Optional-Hardening
 // Enter your personal overrides below this line:
