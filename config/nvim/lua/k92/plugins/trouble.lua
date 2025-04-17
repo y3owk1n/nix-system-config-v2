@@ -2,7 +2,7 @@
 return {
 	{
 		"folke/trouble.nvim",
-		event = "VeryLazy",
+		event = { "BufReadPre", "BufNewFile" },
 		---@type trouble.Config
 		---@diagnostic disable-next-line: missing-fields
 		opts = {

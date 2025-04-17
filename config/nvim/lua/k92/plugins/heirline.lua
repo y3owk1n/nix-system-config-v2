@@ -1,7 +1,7 @@
 ---@type LazySpec
 return {
 	"rebelot/heirline.nvim",
-	event = "VeryLazy",
+	event = { "BufReadPre", "BufNewFile" },
 	opts = function(_, opts)
 		local conditions = require("heirline.conditions")
 		local utils = require("heirline.utils")
