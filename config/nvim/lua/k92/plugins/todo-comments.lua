@@ -2,7 +2,7 @@
 return {
 	{
 		"folke/todo-comments.nvim",
-		event = { "VeryLazy" },
+		event = { "BufReadPre", "BufNewFile" },
 		---@type TodoOptions
 		---@diagnostic disable-next-line: missing-fields
 		opts = { signs = false },
@@ -21,12 +21,6 @@ return {
 				end,
 				desc = "Previous Todo Comment",
 			},
-			{ "<leader>xt", "<cmd>Trouble todo toggle<cr>", desc = "Todo (Trouble)" },
-			{
-				"<leader>xT",
-				"<cmd>Trouble todo toggle filter = {tag = {TODO,FIX,FIXME}}<cr>",
-				desc = "Todo/Fix/Fixme (Trouble)",
-			},
 		},
 	},
 
@@ -37,6 +31,8 @@ return {
 			{
 				"<leader>st",
 				function()
+					require("k92.utils.lazy").plugin_load("todo-comments.nvim")
+
 					Snacks.picker.todo_comments()
 				end,
 				desc = "Todo",
@@ -44,6 +40,8 @@ return {
 			{
 				"<leader>sT",
 				function()
+					require("k92.utils.lazy").plugin_load("todo-comments.nvim")
+
 					Snacks.picker.todo_comments({ keywords = { "TODO", "FIX", "FIXME" } })
 				end,
 				desc = "Todo/Fix/Fixme",

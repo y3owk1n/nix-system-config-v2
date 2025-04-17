@@ -46,17 +46,9 @@ return {
 	{
 		"dmmulroy/ts-error-translator.nvim",
 		init = function()
-			local augroup = require("k92.utils.autocmds").augroup
+			local allowed_clients = { "vtsls" }
 
-			vim.api.nvim_create_autocmd("LspAttach", {
-				group = augroup("lsp_ts-error-translator_attach"),
-				callback = function(args)
-					local client = vim.lsp.get_client_by_id(args.data.client_id)
-					if client and client.name == "vtsls" then
-						require("lazy").load({ plugins = { "ts-error-translator.nvim" } })
-					end
-				end,
-			})
+			require("k92.utils.lazy").lazy_load_lsp_attach(allowed_clients, "ts-error-translator.nvim")
 		end,
 		opts = {},
 	},

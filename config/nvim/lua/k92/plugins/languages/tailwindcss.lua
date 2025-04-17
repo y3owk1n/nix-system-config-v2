@@ -21,17 +21,9 @@ return {
 		-- version = "*",
 		dependencies = { "nvim-treesitter/nvim-treesitter" },
 		init = function()
-			local augroup = require("k92.utils.autocmds").augroup
+			local allowed_clients = { "tailwindcss" }
 
-			vim.api.nvim_create_autocmd("LspAttach", {
-				group = augroup("lsp_tailwind-autosort_attach"),
-				callback = function(args)
-					local client = vim.lsp.get_client_by_id(args.data.client_id)
-					if client and client.name == "tailwindcss" then
-						require("lazy").load({ plugins = { "tailwind-autosort.nvim" } })
-					end
-				end,
-			})
+			require("k92.utils.lazy").lazy_load_lsp_attach(allowed_clients, "tailwind-autosort.nvim")
 		end,
 		---@module "tailwind-autosort"
 		---@type TailwindAutoSort.Config
