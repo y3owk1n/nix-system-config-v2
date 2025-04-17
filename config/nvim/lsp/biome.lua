@@ -28,7 +28,7 @@ return {
 		local root_string = lsp_utils.root_pattern(unpack(root_files))(fname)
 
 		if root_string then
-			return cb(root_string)
+			cb(root_string)
 		end
 	end,
 }
