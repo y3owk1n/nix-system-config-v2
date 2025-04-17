@@ -73,7 +73,7 @@ return {
 		local root_string = lsp_utils.root_pattern(unpack(root_file))(fname)
 
 		if root_string then
-			return cb(root_string)
+			cb(root_string)
 		end
 	end,
 	-- Refer to https://github.com/Microsoft/vscode-eslint#settings-options for documentation.

@@ -118,9 +118,10 @@ return {
 				)
 			then
 				if workspace_root then
-					return cb(workspace_root)
+					cb(workspace_root)
+				else
+					cb(package_root)
 				end
-				return cb(package_root)
 			end
 		end
 	end,
