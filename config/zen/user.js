@@ -144,11 +144,12 @@ user_pref("security.cert_pinning.enforcement_level", 2);
 
 // PREF: set DoH provider
 // user_pref("network.trr.uri", "https://dns.dnswarden.com/00000000000000000000048"); // Hagezi Light + TIF
-user_pref("network.trr.uri", "https://dns.quad9.net/dns-query");
+// user_pref("network.trr.uri", "https://dns.quad9.net/dns-query");
 // user_pref("network.trr.uri", "https://mozilla.cloudflare-dns.com/dns-query");
 
 // PREF: enforce DNS-over-HTTPS (DoH)
-user_pref("network.trr.mode", 3);
+// user_pref("network.trr.mode", 3); // Max Protection - use this if no system configured DoH
+user_pref("network.trr.mode", 5); // Disabled - use this if you have a system configured DoH
 // user_pref("network.dns.skipTRR-when-parental-control-enabled", false);
 
 // PREF: ask where to save every file

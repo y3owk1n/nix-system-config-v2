@@ -155,3 +155,29 @@ https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice/releases/downlo
 sudo launchctl unload /Library/LaunchDaemons/org.nixos.kanata.plist
 sudo launchctl load /Library/LaunchDaemons/org.nixos.kanata.plist
 ```
+
+### Quad9 DNS
+
+#### Macos Issue
+
+To check the dns settings, run the following command
+
+```bash
+scutil --dns
+```
+
+Then verify it from [dnscheck](https://www.dnscheck.tools/)
+
+if for some reason it is not using the dns provided by Quad9, set the dns addresses of quad9 to the wifi/ethernet settings
+
+Then flush the dns cache
+
+```bash
+sudo dscacheutil -flushcache
+sudo killall -HUP mDNSResponder
+```
+
+And then run the test again and it should work now on both
+
+- dnscheck
+- quad9 test page
