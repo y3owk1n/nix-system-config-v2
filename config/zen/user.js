@@ -143,8 +143,8 @@ user_pref("dom.security.https_only_mode_error_page_user_suggestions", true);
 user_pref("security.cert_pinning.enforcement_level", 2);
 
 // PREF: set DoH provider
-user_pref("network.trr.uri", "https://dns.dnswarden.com/00000000000000000000048"); // Hagezi Light + TIF
-// user_pref("network.trr.uri", "https://dns.quad9.net/dns-query");
+// user_pref("network.trr.uri", "https://dns.dnswarden.com/00000000000000000000048"); // Hagezi Light + TIF
+user_pref("network.trr.uri", "https://dns.quad9.net/dns-query");
 // user_pref("network.trr.uri", "https://mozilla.cloudflare-dns.com/dns-query");
 
 // PREF: enforce DNS-over-HTTPS (DoH)
