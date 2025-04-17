@@ -134,4 +134,30 @@ function M.map(bufnr, keys, func, desc, mode)
 	})
 end
 
+---@param config vim.lsp.Config
+---@param bufnr integer
+function M.start_config(config, bufnr)
+	config = vim.deepcopy(config)
+
+	if type(config.root_dir) == "function" then
+		---@param root_dir string
+		config.root_dir(bufnr, function(root_dir)
+			config.root_dir = root_dir
+			vim.schedule(function()
+				vim.lsp.start(config, {
+					bufnr = bufnr,
+					reuse_client = config.reuse_client,
+					_root_markers = config.root_markers,
+				})
+			end)
+		end)
+	else
+		vim.lsp.start(config, {
+			bufnr = bufnr,
+			reuse_client = config.reuse_client,
+			_root_markers = config.root_markers,
+		})
+	end
+end
+
 return M

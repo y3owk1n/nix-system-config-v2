@@ -1,7 +1,5 @@
 local augroup = require("k92.utils.autocmds").augroup
 
-vim.lsp.config("*", { capabilities = vim.lsp.protocol.make_client_capabilities() })
-
 vim.diagnostic.config({
 	underline = true,
 	update_in_insert = false,
@@ -129,7 +127,7 @@ vim.api.nvim_create_user_command("LspRestart", function(info)
 	local detach_clients = {}
 	for _, client in ipairs(clients) do
 		detach_clients[vim.lsp.config[client.name]] = vim.lsp.get_buffers_by_client_id(client.id)
-		client:stop()
+		client:stop(true)
 	end
 
 	local timer = assert(vim.uv.new_timer())
@@ -139,11 +137,8 @@ vim.api.nvim_create_user_command("LspRestart", function(info)
 		vim.schedule_wrap(function()
 			for config, buffers in pairs(detach_clients) do
 				for _, bufnr in ipairs(buffers) do
-					vim.lsp.start(config, {
-						bufnr = bufnr,
-						reuse_client = config.reuse_client,
-						_root_markers = config.root_markers,
-					})
+					require("k92.utils.lsp").start_config(config, bufnr)
+					vim.notify("Restarted " .. config.name)
 				end
 			end
 		end)
@@ -171,11 +166,8 @@ vim.api.nvim_create_user_command("LspStart", function(info)
 	end
 
 	for _, bufnr in ipairs(buffers_to_attach) do
-		vim.lsp.start(config, {
-			bufnr = bufnr,
-			reuse_client = config.reuse_client,
-			_root_markers = config.root_markers,
-		})
+		require("k92.utils.lsp").start_config(config, bufnr)
+		vim.notify("Attached " .. config.name)
 	end
 end, {
 	desc = "Manually launches a language server",
@@ -186,11 +178,6 @@ end, {
 vim.api.nvim_create_user_command("LspStop", function(info)
 	---@type string
 	local args = info.args
-	local force = false
-	args = args:gsub("%+%+force", function()
-		force = true
-		return ""
-	end)
 
 	local clients = {}
 
@@ -210,7 +197,8 @@ vim.api.nvim_create_user_command("LspStop", function(info)
 	end
 
 	for _, client in ipairs(clients) do
-		client:stop(force)
+		client:stop(true)
+		vim.notify("Stopped " .. client.name)
 	end
 end, {
 	desc = "Manually stops the given language client(s)",
@@ -328,8 +316,9 @@ end, {
 
 vim.api.nvim_create_user_command("LspInfo", function()
 	local clients = vim.lsp.get_clients({
-		bufnr = 0,
+		bufnr = vim.api.nvim_get_current_buf(),
 	})
+
 	local message = {}
 
 	if #clients == 0 then
