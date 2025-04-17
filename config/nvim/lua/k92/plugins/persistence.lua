@@ -1,7 +1,7 @@
 ---@type LazySpec
 return {
 	"folke/persistence.nvim",
-	event = "VeryLazy",
+	event = "BufReadPre", -- this will only start session saving when an actual file was opened
 	---@type Persistence.Config
 	opts = {},
 	keys = {
