@@ -14,7 +14,7 @@ return {
 			{
 				"<leader>tc",
 				function()
-					require("time-machine").create_snapshot(0)
+					require("time-machine").actions.create_snapshot(0)
 				end,
 				mode = "n",
 				desc = "Create snapshot",
@@ -22,26 +22,26 @@ return {
 			{
 				"<leader>th",
 				function()
-					require("time-machine").show_history()
+					require("time-machine").actions.show_snapshots()
 				end,
 				mode = "n",
 				desc = "Show history",
 			},
 			{
-				"<leader>tt",
-				function()
-					require("time-machine").tag_snapshot()
-				end,
-				mode = "n",
-				desc = "Tag snapshot",
-			},
-			{
 				"<leader>tx",
 				function()
-					require("time-machine").purge_current()
+					require("time-machine").actions.purge_current()
 				end,
 				mode = "n",
 				desc = "Purge current",
+			},
+			{
+				"<leader>tX",
+				function()
+					require("time-machine").actions.reset_database()
+				end,
+				mode = "n",
+				desc = "Reset database",
 			},
 		},
 	},
