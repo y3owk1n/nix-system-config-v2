@@ -5,10 +5,13 @@ return {
 		-- dir = "~/Dev/time-machine.nvim", -- Your path
 		event = { "VeryLazy" },
 		enabled = not vim.g.strip_personal_plugins,
+		---@type TimeMachine.Config
 		opts = {
+			auto_save = {
+				enabled = false,
+				debounce_ms = 5000,
+			},
 			retention_days = 14,
-			debounce_ms = 1000,
-			auto_save = false,
 		},
 		keys = {
 			{
