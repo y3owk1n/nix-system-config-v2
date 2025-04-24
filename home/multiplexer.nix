@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   programs = {
     tmux = {
@@ -84,7 +84,7 @@
         bind -r h resize-pane -L 5
         bind -r m resize-pane -Z
 
-        bind-key -r b run-shell "bash ~/nix-system-config-v2/scripts/tmux-sessionizer.sh"
+        bind-key b run-shell "tmux popup -E -w 90% -h 80% -T 'TMS' tms"
 
         bind-key C-n switch-client -T dotmd
         bind-key -T dotmd t run-shell "tmux popup -E -w 90% -h 80% -T 'Dotmd Todo' 'sh -c \"cd ~/Library/Mobile\\ Documents/com~apple~CloudDocs/Cloud\\ Notes && nvim +\\\"DotMdCreateTodoToday split=none\\\"\"'"

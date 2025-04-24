@@ -20,7 +20,7 @@
       gg = "lazygit";
     };
     shellAliases = {
-      tms = "bash ~/nix-system-config-v2/scripts/tmux-sessionizer.sh";
+      # tms = "bash ~/nix-system-config-v2/scripts/tmux-sessionizer.sh";
       cat = "bat";
       n = "nvim";
       # nim = "nvim";
