@@ -7,25 +7,13 @@ return {
 		enabled = not vim.g.strip_personal_plugins,
 		---@type TimeMachine.Config
 		opts = {
-			auto_save = {
-				enabled = false,
-				debounce_ms = 5000,
-			},
-			retention_days = 14,
+			diff_tool = "difft",
 		},
 		keys = {
 			{
-				"<leader>tc",
-				function()
-					require("time-machine").actions.create_snapshot(0)
-				end,
-				mode = "n",
-				desc = "Create snapshot",
-			},
-			{
 				"<leader>th",
 				function()
-					require("time-machine").actions.show_snapshots()
+					require("time-machine").actions.toggle_tree()
 				end,
 				mode = "n",
 				desc = "Show history",
@@ -41,10 +29,10 @@ return {
 			{
 				"<leader>tX",
 				function()
-					require("time-machine").actions.reset_database()
+					require("time-machine").actions.purge_all()
 				end,
 				mode = "n",
-				desc = "Reset database",
+				desc = "Purge all",
 			},
 		},
 	},
