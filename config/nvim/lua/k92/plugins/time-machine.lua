@@ -11,12 +11,17 @@ return {
 		},
 		keys = {
 			{
-				"<leader>th",
+				"<leader>t",
+				"",
+				desc = "Time Machine",
+			},
+			{
+				"<leader>tt",
 				function()
-					require("time-machine").actions.toggle_tree()
+					require("time-machine").actions.toggle()
 				end,
 				mode = "n",
-				desc = "Show history",
+				desc = "[Time Machine] Toggle Tree",
 			},
 			{
 				"<leader>tx",
@@ -24,7 +29,7 @@ return {
 					require("time-machine").actions.purge_current()
 				end,
 				mode = "n",
-				desc = "Purge current",
+				desc = "[Time Machine] Purge current",
 			},
 			{
 				"<leader>tX",
@@ -32,7 +37,7 @@ return {
 					require("time-machine").actions.purge_all()
 				end,
 				mode = "n",
-				desc = "Purge all",
+				desc = "[Time Machine] Purge all",
 			},
 		},
 	},
