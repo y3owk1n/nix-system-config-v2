@@ -3,11 +3,18 @@ return {
 	{
 		"y3owk1n/time-machine.nvim",
 		-- dir = "~/Dev/time-machine.nvim", -- Your path
-		event = { "VeryLazy" },
-		enabled = not vim.g.strip_personal_plugins,
+		cmd = {
+			"TimeMachineToggle",
+			"TimeMachinePurgeBuffer",
+			"TimeMachinePurgeAll",
+		},
+		---@module "time-machine"
 		---@type TimeMachine.Config
 		opts = {
 			diff_tool = "difft",
+			keymaps = {
+				redo = "U",
+			},
 		},
 		keys = {
 			{
@@ -17,26 +24,17 @@ return {
 			},
 			{
 				"<leader>tt",
-				function()
-					require("time-machine").actions.toggle()
-				end,
-				mode = "n",
+				"<cmd>TimeMachineToggle<cr>",
 				desc = "[Time Machine] Toggle Tree",
 			},
 			{
 				"<leader>tx",
-				function()
-					require("time-machine").actions.purge_current()
-				end,
-				mode = "n",
+				"<cmd>TimeMachinePurgeBuffer<cr>",
 				desc = "[Time Machine] Purge current",
 			},
 			{
 				"<leader>tX",
-				function()
-					require("time-machine").actions.purge_all()
-				end,
-				mode = "n",
+				"<cmd>TimeMachinePurgeAll<cr>",
 				desc = "[Time Machine] Purge all",
 			},
 		},
