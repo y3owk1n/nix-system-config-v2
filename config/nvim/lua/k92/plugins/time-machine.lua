@@ -7,6 +7,8 @@ return {
 			"TimeMachineToggle",
 			"TimeMachinePurgeBuffer",
 			"TimeMachinePurgeAll",
+			"TimeMachineLogShow",
+			"TimeMachineLogClear",
 		},
 		---@module "time-machine"
 		---@type TimeMachine.Config
@@ -36,6 +38,11 @@ return {
 				"<leader>tX",
 				"<cmd>TimeMachinePurgeAll<cr>",
 				desc = "[Time Machine] Purge all",
+			},
+			{
+				"<leader>tl",
+				"<cmd>TimeMachineLogShow<cr>",
+				desc = "[Time Machine] Show log",
 			},
 		},
 	},
