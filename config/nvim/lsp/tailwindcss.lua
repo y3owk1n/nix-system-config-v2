@@ -3,6 +3,7 @@ local lsp_utils = require("k92.utils.lsp")
 ---@type vim.lsp.Config
 return {
 	cmd = { "tailwindcss-language-server", "--stdio" },
+	workspace_required = true,
 	-- filetypes copied and adjusted from tailwindcss-intellisense
 	filetypes = {
 		-- html
