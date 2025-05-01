@@ -121,9 +121,11 @@ tmux_new_session() {
 }
 
 tmux_attach_session() {
-	if [[ -z "$TMUX" ]] && [[ -z "$(pgrep tmux)" ]]; then
-		tmux new-session -A -s "$selected_name" -c "$selected_path"
+	if [[ -z "$TMUX" ]]; then
+		# Not in tmux, attach to session
+		tmux attach-session -t "$selected_name"
 	else
+		# Already in tmux, switch client
 		tmux switch-client -t "$selected_name"
 	fi
 }
