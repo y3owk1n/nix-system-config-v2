@@ -93,7 +93,7 @@ setup_fzf_preview() {
 	local preview_cmd='
         dir=$(echo -n {} | cut -d$'\''\t'\'' -f2)
         if [ -d "$dir" ]; then
-            ls -1 "$dir" | head -n 100
+			tree -L 1 -C --dirsfirst "$dir" 2>/dev/null || ls -1 "$dir" | head -n 100
         else
             bat --style=plain --color=always "$dir" 2>/dev/null || cat "$dir" 2>/dev/null
         fi
