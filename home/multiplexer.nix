@@ -1,5 +1,10 @@
 { pkgs, config, ... }:
 {
+  xdg.configFile.sesh = {
+    enable = true;
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/sesh";
+    recursive = true;
+  };
   programs = {
     tmux = {
       enable = true;
@@ -51,7 +56,8 @@
         bind -r h resize-pane -L 5
         bind -r m resize-pane -Z
 
-        bind-key b run-shell "tms"
+        bind-key b run-shell "~/nix-system-config-v2/scripts/sesh.sh"
+        # bind-key b run-shell "tms"
 
         bind-key C-n switch-client -T dotmd
         bind-key -T dotmd t run-shell "tmux popup -E -w 90% -h 80% -T 'Dotmd Todo' 'sh -c \"cd ~/Library/Mobile\\ Documents/com~apple~CloudDocs/Cloud\\ Notes && nvim +\\\"DotMdCreateTodoToday split=none\\\"\"'"
