@@ -58,8 +58,6 @@ return {
 			local highlights = {
 				TimeMachineCurrent = {
 					bg = c_utils.darken(colors.blue, 0.18, colors.base),
-					fg = colors.blue,
-					style = { "bold" },
 				},
 				TimeMachineTimeline = { fg = colors.blue, style = { "bold" } },
 				TimeMachineTimelineAlt = { fg = colors.overlay2 },
