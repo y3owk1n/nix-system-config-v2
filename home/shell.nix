@@ -24,6 +24,7 @@
       cat = "bat";
       n = "nvim";
       s = "~/nix-system-config-v2/scripts/sesh.sh";
+      tx = "tmux kill-server";
       # nim = "nvim";
       # vim = "nvim";
       # nvm = "nvim";
