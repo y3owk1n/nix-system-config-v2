@@ -883,7 +883,7 @@ in
             };
             # Spotlight search (hyper + enter)
             "64" = {
-              enabled = 1;
+              enabled = 0;
               value = {
                 parameters = [
                   65535

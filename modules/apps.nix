@@ -102,6 +102,8 @@ in
       "zen-browser"
       # --- docker desktop alternative ---
       "orbstack"
+      # --- spotlight alternative ---
+      "raycast"
       # --- misc ---
       "onyx"
       "imageoptim"
