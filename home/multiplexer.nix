@@ -56,6 +56,9 @@
         bind -r h resize-pane -L 5
         bind -r m resize-pane -Z
 
+        bind -r x kill-pane # skip "kill-pane 1? (y/n)" prompt
+        bind -N "last-session (via sesh) " L run-shell "sesh last" # overwrite last-session with sesh last
+
         bind-key b run-shell "~/nix-system-config-v2/scripts/sesh.sh"
         # bind-key b run-shell "tms"
 
