@@ -49,12 +49,14 @@
         hl = "#ed8796";
         fg = "#cad3f5";
         header = "#ed8796";
-        info = "#c6a0f6";
+        info = "#8aadf4";
         pointer = "#f4dbd6";
         marker = "#f4dbd6";
         "fg+" = "#cad3f5";
-        prompt = "#c6a0f6";
+        prompt = "#8aadf4";
+        border = "#8aadf4";
         "hl+" = "#ed8796";
+        gutter = "#24273a";
       };
       defaultCommand = "fd --type f --hidden --exclude .git";
       defaultOptions = [
