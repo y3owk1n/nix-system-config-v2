@@ -15,8 +15,8 @@
       keyMode = "vi";
       mouse = true;
       sensibleOnTop = false;
-      terminal = "xterm-ghostty";
-      # terminal = "xterm-256color";
+      # terminal = "xterm-ghostty";
+      terminal = "xterm-256color";
       plugins = with pkgs; [
         {
           plugin = tmuxPlugins.vim-tmux-navigator.overrideAttrs (_: {

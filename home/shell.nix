@@ -118,7 +118,7 @@
     SHELL = "${pkgs.fish}/bin/fish";
     LANG = "en_US.UTF-8";
     LC_ALL = "en_US.UTF-8";
-    # TERM = "xterm-256color";
+    TERM = "xterm-256color";
     KEYTIMEOUT = 1;
     EDITOR = "nvim";
     VISUAL = "nvim";
