@@ -3,13 +3,8 @@
   programs.starship = {
     enable = true;
     enableFishIntegration = true;
-    # enableTransience = true;
+    enableTransience = true;
     settings = {
-      add_newline = false;
-      # Minimal left prompt
-      format = "$directory$character";
-      # Move everything to the right
-      right_format = "$all";
       command_timeout = 1000;
       palette = "catppuccin_macchiato";
       palettes = {
