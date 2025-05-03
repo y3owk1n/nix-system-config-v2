@@ -93,9 +93,6 @@
         email = useremail;
         name = githubuser;
       };
-      ui = {
-        pager = "never";
-      };
     };
   };
 }
