@@ -84,4 +84,15 @@
       };
     };
   };
+
+  # Jujutsu
+  programs.jujutsu = {
+    enable = true;
+    settings = {
+      user = {
+        email = useremail;
+        name = githubuser;
+      };
+    };
+  };
 }
