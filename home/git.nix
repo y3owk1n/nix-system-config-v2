@@ -89,9 +89,18 @@
   programs.jujutsu = {
     enable = true;
     settings = {
+      ui = {
+        "default-command" = [
+          "log"
+          "--no-pager"
+        ];
+      };
       user = {
         email = useremail;
         name = githubuser;
+      };
+      git = {
+        push-bookmark-prefix = "${githubuser}/push-";
       };
     };
   };
