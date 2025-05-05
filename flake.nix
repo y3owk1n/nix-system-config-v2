@@ -67,7 +67,6 @@
             ./modules/custom/tms.nix
             # ./modules/custom/move_apps_to_spaces.nix
             ./modules/custom/aerospace.nix
-            ./modules/custom/starship-jj.nix
             # home manager
             home-manager.darwinModules.home-manager
             {

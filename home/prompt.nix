@@ -1,10 +1,5 @@
-{ config, ... }:
+{ ... }:
 {
-  xdg.configFile.starship-jj = {
-    enable = true;
-    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/starship-jj";
-    recursive = true;
-  };
   programs.starship = {
     enable = true;
     enableFishIntegration = true;
@@ -70,11 +65,34 @@
         untracked = "?$count";
       };
       custom = {
-        jj = {
-          command = "starship-jj --ignore-working-copy starship prompt --starship-config ~/.config/starship-jj/starship-jj.toml";
-          format = "[$symbol](blue bold)$output";
-          symbol = "jj ";
+        jj-custom = {
+          ignore_timeout = true;
+          description = "The current jj status";
           when = "jj root --ignore-working-copy";
+          symbol = "jj ";
+          command = ''
+            jj log --revisions @ --no-graph --ignore-working-copy --color always --limit 1 --template '
+            	separate(
+            		" ",
+            		change_id.shortest(6),
+            		bookmarks.map(|x| if(
+            			x.name().substr(0, 20).starts_with(x.name()),
+            			x.name().substr(0, 20),
+            			x.name().substr(0, 19) ++ "…")
+            		).join(" "),
+            		if(
+            			description.first_line().substr(0, 24).starts_with(description.first_line()),
+            			description.first_line().substr(0, 24),
+            			description.first_line().substr(0, 23) ++ "…"
+            		),
+            		if(conflict, ""),
+            		if(divergent, ""),
+            		if(hidden, ""),
+            		if(immutable, ""),
+            	)
+            '
+          '';
+          format = "[$symbol](blue bold)$output ";
         };
       };
     };
