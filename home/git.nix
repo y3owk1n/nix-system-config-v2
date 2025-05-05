@@ -89,6 +89,10 @@
   programs.jujutsu = {
     enable = true;
     settings = {
+      core = {
+        fsmonitor = "watchman";
+        watchman.register-snapshot-trigger = true;
+      };
       ui = {
         "default-command" = [
           "log"
