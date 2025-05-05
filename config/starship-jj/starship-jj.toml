@@ -45,8 +45,8 @@ color = "Yellow"
 
 [[module]]
 type = "Metrics"
-template = "[{changed} {added}{removed}]"
-color = "Magenta"
+template = "[{changed} {added} {removed}]"
+color = "White"
 
 [module.changed_files]
 prefix = ""
