@@ -5,6 +5,7 @@
     enableFishIntegration = true;
     enableTransience = true;
     settings = {
+      format = "$directory$custom$all";
       command_timeout = 1000;
       palette = "catppuccin_macchiato";
       palettes = {
