@@ -1,5 +1,10 @@
-{ ... }:
+{ config, ... }:
 {
+  xdg.configFile.starship-jj = {
+    enable = true;
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/starship-jj";
+    recursive = true;
+  };
   programs.starship = {
     enable = true;
     enableFishIntegration = true;
@@ -48,6 +53,10 @@
       };
       git_branch = {
         format = "[$symbol$branch(:$remote_branch)]($style) ";
+        only_attached = true;
+      };
+      git_commit = {
+        disabled = true;
       };
       git_status = {
         ahead = "⇡$count";
@@ -59,6 +68,14 @@
         staged = "+$count";
         stashed = "\\$$count";
         untracked = "?$count";
+      };
+      custom = {
+        jj = {
+          command = "starship-jj --ignore-working-copy starship prompt --starship-config ~/.config/starship-jj/starship-jj.toml";
+          format = "[$symbol](blue bold)$output";
+          symbol = "jj ";
+          when = "jj root --ignore-working-copy";
+        };
       };
     };
   };
