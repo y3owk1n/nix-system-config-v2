@@ -1,11 +1,21 @@
-{ ... }:
+{ lib, ... }:
 {
   programs.starship = {
     enable = true;
     enableFishIntegration = true;
     enableTransience = true;
     settings = {
-      format = "$directory$custom$all";
+      format = lib.concatStrings [
+        "$directory"
+        "\${custom.jj-current}"
+        "\${custom.jj-prev}"
+        "$git_branch"
+        "$git_commit"
+        "$git_state"
+        "$git_status"
+        "$git_metrics"
+        "$all"
+      ];
       command_timeout = 1000;
       palette = "catppuccin_macchiato";
       palettes = {
@@ -69,12 +79,12 @@
         disabled = false;
       };
       custom = {
-        jj-custom = {
+        jj-current = {
           ignore_timeout = true;
           description = "The current jj status";
           detect_folders = [ ".jj" ];
           when = "jj root --ignore-working-copy";
-          symbol = "jj ";
+          symbol = "@ ";
           command = ''
             jj log --revisions @ --no-graph --ignore-working-copy --color always --limit 1 --template '
             	separate(
@@ -90,10 +100,40 @@
             			description.first_line().substr(0, 24),
             			description.first_line().substr(0, 23) ++ "…"
             		),
-            		if(conflict, ""),
-            		if(divergent, ""),
-            		if(hidden, ""),
-            		if(immutable, ""),
+            		if(conflict, " "),
+            		if(divergent, " "),
+            		if(hidden, " "),
+            		if(immutable, " "),
+            	)
+            '
+          '';
+          format = "[$symbol](blue bold)$output ";
+        };
+        jj-prev = {
+          ignore_timeout = true;
+          description = "The prev jj status";
+          detect_folders = [ ".jj" ];
+          when = "jj root --ignore-working-copy";
+          symbol = "@- ";
+          command = ''
+            jj log --revisions @- --no-graph --ignore-working-copy --color always --limit 1 --template '
+            	separate(
+            		" ",
+            		change_id.shortest(6),
+            		bookmarks.map(|x| if(
+            			x.name().substr(0, 20).starts_with(x.name()),
+            			x.name().substr(0, 20),
+            			x.name().substr(0, 19) ++ "…")
+            		).join(" "),
+            		if(
+            			description.first_line().substr(0, 24).starts_with(description.first_line()),
+            			description.first_line().substr(0, 24),
+            			description.first_line().substr(0, 23) ++ "…"
+            		),
+            		if(conflict, " "),
+            		if(divergent, " "),
+            		if(hidden, " "),
+            		if(immutable, " "),
             	)
             '
           '';
