@@ -65,6 +65,9 @@
         stashed = "\\$$count";
         untracked = "?$count";
       };
+      git_metrics = {
+        disabled = false;
+      };
       custom = {
         jj-custom = {
           ignore_timeout = true;
