@@ -72,6 +72,7 @@
         jj-custom = {
           ignore_timeout = true;
           description = "The current jj status";
+          detect_folders = [ ".jj" ];
           when = "jj root --ignore-working-copy";
           symbol = "jj ";
           command = ''
