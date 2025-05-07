@@ -64,7 +64,8 @@
             ./modules/host-users.nix
             ./modules/yabai.nix
             ./modules/custom/karabiner.nix
-            ./modules/custom/tms.nix
+            # ./modules/custom/tms.nix
+            ./modules/custom/cmd.nix
             # ./modules/custom/move_apps_to_spaces.nix
             ./modules/custom/aerospace.nix
             # home manager
