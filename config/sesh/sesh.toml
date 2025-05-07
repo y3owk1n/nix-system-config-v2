@@ -1,5 +1,5 @@
 [default_session]
-startup_command = "nvim +\"lua Snacks.picker.files()\""
+startup_command = "nvim ."
 preview_command = "tree -L 1 -C --dirsfirst -a {}"
 
 [[session]]
