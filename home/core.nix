@@ -24,7 +24,8 @@
     cargo
 
     # --- node ---
-    corepack_latest
+    # corepack_latest
+    corepack_22 # pin to 22 instead, latest is fetching rc versions
     fnm
 
     # --- go ---
