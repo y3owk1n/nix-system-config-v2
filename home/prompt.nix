@@ -49,6 +49,9 @@
       git_branch = {
         format = "[$symbol$branch(:$remote_branch)]($style) ";
       };
+      git_metrics = {
+        disabled = false;
+      };
       git_status = {
         ahead = "⇡$count";
         behind = "⇣$count";
