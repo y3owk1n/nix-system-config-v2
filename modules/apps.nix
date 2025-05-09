@@ -99,7 +99,7 @@ in
       "rustdesk"
       # --- browsers ---
       "brave-browser"
-      "zen-browser"
+      "zen"
       # --- docker desktop alternative ---
       "orbstack"
       # --- spotlight alternative ---
