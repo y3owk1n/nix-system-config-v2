@@ -11,7 +11,6 @@
     rip2
     imagemagick
     ghostscript
-    watchman
 
     # --- misc ---
     # sqlite
