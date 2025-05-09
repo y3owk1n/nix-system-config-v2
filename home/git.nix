@@ -84,28 +84,4 @@
       };
     };
   };
-
-  # Jujutsu
-  programs.jujutsu = {
-    enable = true;
-    settings = {
-      core = {
-        fsmonitor = "watchman";
-        watchman.register-snapshot-trigger = true;
-      };
-      ui = {
-        "default-command" = [
-          "log"
-          "--no-pager"
-        ];
-      };
-      user = {
-        email = useremail;
-        name = githubuser;
-      };
-      git = {
-        push-bookmark-prefix = "${githubuser}/push-";
-      };
-    };
-  };
 }
