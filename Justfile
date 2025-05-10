@@ -1,5 +1,4 @@
 # just is a command runner, Justfile is very similar to Makefile, but simpler.
-
 ############################################################################
 #
 #  Darwin related commands
@@ -7,7 +6,7 @@
 ############################################################################
 
 init ARG:
-    bash ./scripts/init.sh {{ARG}}
+    bash ./scripts/init.sh {{ ARG }}
 
 rebuild:
     darwin-rebuild switch --verbose --impure --flake .
@@ -18,10 +17,9 @@ rebuild:
 #
 ############################################################################
 
-
 update:
-	sudo determinate-nixd upgrade
-	nix flake update
+    sudo determinate-nixd upgrade
+    nix flake update
 
 history:
     nix profile history --profile /nix/var/nix/profiles/system
@@ -34,8 +32,8 @@ gc:
     sudo nix store gc --debug
 
 fmt:
-  # format the nix files in this repo
-  nix fmt
+    # format the nix files in this repo
+    nix fmt
 
 clean:
     rm -rf result
@@ -50,13 +48,13 @@ nvim-reset:
     bash ./scripts/nvim-reset.sh
 
 start-kanata:
-	tmux new-window -n "kanata" "just kanata"
+    tmux new-window -n "kanata" "just kanata"
 
 kanata:
-	sudo '/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon' &
-	sudo kanata -n -c ~/.config/kanata/config.kbd
+    sudo '/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon' &
+    sudo kanata -n -c ~/.config/kanata/config.kbd
 
 mirror-nvim:
-	git subtree split --prefix=config/nvim -b nvim-config
-	git remote add nvim-config https://github.com/y3owk1n/nvim.git
-	git push nvim-config nvim-config:main
+    git subtree split --prefix=config/nvim -b nvim-config
+    git remote add nvim-config https://github.com/y3owk1n/nvim.git
+    git push nvim-config nvim-config:main
