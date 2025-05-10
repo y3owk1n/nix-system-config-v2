@@ -1,11 +1,10 @@
 [default_session]
-startup_command = "nvim ."
+startup_command = "ls"
 preview_command = "tree -L 1 -C --dirsfirst -a {}"
 
 [[session]]
 name = "home (~)"
 path = "~"
-startup_command = "ls"
 
 [[session]]
 name = "start kanata"
@@ -15,12 +14,10 @@ startup_command = "just kanata"
 [[session]]
 name = "downloads"
 path = "~/Downloads"
-startup_command = "ls"
 
 [[session]]
 name = "nix config"
 path = "~/nix-system-config-v2"
-startup_command = "ls"
 
 [[session]]
 name = "neovim config"
