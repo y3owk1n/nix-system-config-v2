@@ -181,3 +181,11 @@ And then run the test again and it should work now on both
 
 - dnscheck
 - quad9 test page
+
+### Fish
+
+Set theme for fish
+
+```bash
+fish_config theme save "Catppuccin Macchiato"
+```
