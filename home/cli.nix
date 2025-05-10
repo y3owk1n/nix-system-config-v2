@@ -62,10 +62,7 @@
       defaultOptions = [
         "--style full"
         "--layout reverse"
-        "--height ~40%"
-        "--border"
         "--tmux center"
-        "--preview 'bat --color=always {}'"
       ];
       fileWidgetCommand = "fd --exclude .git --type f"; # for when ctrl-t is pressed
       changeDirWidgetCommand = "fd --type d --hidden --follow --max-depth 3 --exclude .git";
