@@ -1,6 +1,4 @@
 {
-  pkgs,
-  config,
   username,
   ...
 }:
@@ -18,7 +16,6 @@
     ./prompt.nix
     ./shell.nix
     ./terminal.nix
-    ./hammerspoon.nix
   ];
 
   # Home Manager needs a bit of information about you and the

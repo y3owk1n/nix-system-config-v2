@@ -108,7 +108,6 @@ in
       "onyx"
       "imageoptim"
       "whatsapp"
-      # "hammerspoon" # mainly used for safari vim mode
       "keka"
       "appcleaner"
       "adobe-creative-cloud"
