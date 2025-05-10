@@ -60,6 +60,7 @@
       };
       defaultCommand = "fd --type f --hidden --exclude .git";
       defaultOptions = [
+        "--style full"
         "--layout reverse"
         "--height ~40%"
         "--border"
