@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 let
   catppuccin-fish = pkgs.fetchFromGitHub {
     owner = "catppuccin";
@@ -18,63 +18,30 @@ in
     shellInit = ''
       __load-em
       __autols_hook
+      starship_transient_prompt_func
       fnm env --use-on-cd --version-file-strategy=recursive --resolve-engines --shell fish | source
     '';
-    shellAbbrs = {
+    shellAliases = {
+      gg = "lazygit";
       c = "clear";
       x = "exit";
-      fpp = "_fzf_directory_picker --allow-cd --prompt-name Projects ~/Dev/";
-      fpf = "_fzf_file_picker --allow-open-in-editor --prompt-name Files";
-      fpfh = "_fzf_file_picker --allow-open-in-editor --show-hidden-files --prompt-name Files+";
-      fpc = "_fzf_cmd_history --allow-execute";
-      gg = "lazygit";
-    };
-    shellAliases = {
-      # tms = "bash ~/nix-system-config-v2/scripts/tmux-sessionizer.sh";
       cat = "bat";
-      # n = "nvim";
       s = "~/nix-system-config-v2/scripts/sesh.sh";
       tx = "tmux kill-server";
-      # nim = "nvim";
       vim = "nvim";
-      # nvm = "nvim";
-      # vi = "nvim";
-      # nvi = "nvim";
-      # nivm = "nvim";
     };
     plugins = [
       {
-        name = "pisces";
+        name = "pisces"; # auto pair brackets
         src = pkgs.fishPlugins.pisces.src;
       }
       {
-        name = "sponge";
+        name = "sponge"; # clean history from typo
         src = pkgs.fishPlugins.sponge.src;
       }
       {
-        name = "plugin-git";
+        name = "plugin-git"; # amazing git aliases
         src = pkgs.fishPlugins.plugin-git.src;
-      }
-      {
-        name = "colored-man-pages";
-        src = pkgs.fishPlugins.colored-man-pages.src;
-      }
-      {
-        name = "puffer";
-        src = pkgs.fishPlugins.puffer.src;
-      }
-      {
-        name = "fishtape_3";
-        src = pkgs.fishPlugins.fishtape_3.src;
-      }
-      {
-        name = "fish-fzf";
-        src = pkgs.fetchFromGitHub {
-          owner = "y3owk1n";
-          repo = "fish-fzf";
-          rev = "v1.0.3";
-          sha256 = "sha256-PaAvEyG+gz6FCj+JoRSQcXCHp6aBf+oVQfK3lDWG8ug=";
-        };
       }
       {
         name = "fish-x";
@@ -115,6 +82,12 @@ in
               ls
               set -g __autols_last $PWD
           end
+        '';
+      };
+      starship_transient_prompt_func = {
+        description = "Starship transient prompt";
+        body = ''
+          starship module character
         '';
       };
     };
