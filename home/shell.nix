@@ -63,7 +63,7 @@
           owner = "y3owk1n";
           repo = "fish-fzf";
           rev = "v1.0.3";
-          sha256 = "sha256-GVa6sCDeAriNnafOKCoGdlT4rrnkKxA8H9jmT19ulbU=";
+          sha256 = "sha256-PaAvEyG+gz6FCj+JoRSQcXCHp6aBf+oVQfK3lDWG8ug=";
         };
       }
       {
