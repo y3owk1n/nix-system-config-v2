@@ -46,6 +46,7 @@
           username,
           useremail,
           githubuser,
+          githubname,
         }:
         darwin.lib.darwinSystem {
           inherit system;
@@ -55,6 +56,7 @@
               useremail
               hostname
               githubuser
+              githubname
               ;
           };
           modules = [
@@ -77,6 +79,7 @@
                   useremail
                   hostname
                   githubuser
+                  githubname
                   ;
               };
               home-manager.users.${username} = import ./home;
@@ -91,8 +94,9 @@
           system = "aarch64-darwin";
           hostname = "Kyles-MacBook-Air";
           username = "kylewong";
-          useremail = "62775956+y3owk1n@users.noreply.github.com";
+          useremail = "62775956+y3owk1n@users.noreply.github.com"; # only used for git
           githubuser = "y3owk1n";
+          githubname = "Kyle Wong";
         };
         "Kyles-iMac" = mkDarwinConfiguration {
           system = "aarch64-darwin";
@@ -100,6 +104,7 @@
           username = "kylewong";
           useremail = "kylewong@traworld.com";
           githubuser = "mtraworld";
+          githubname = "mtraworld";
         };
       };
 
