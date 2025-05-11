@@ -2,11 +2,7 @@
 {
   home.packages = with pkgs; [
     # --- utils ---
-    fd
-    jq
     tree
-    less
-    ripgrep
     mkcert
     rip2
     imagemagick
@@ -15,7 +11,6 @@
     cmake
     gettext
     ast-grep
-    kanata
 
     # --- misc ---
     stripe-cli
@@ -30,16 +25,23 @@
     corepack_22 # pin to 22 instead, latest is fetching rc versions
     fnm
 
-    # --- go ---
-    go
-    cobra-cli
-
-    # --- nvim ---
-    lua51Packages.lua
-    luajitPackages.luarocks
-    panvimdoc
-
     # --- nix ---
     nixfmt-rfc-style
   ];
+
+  # Apps that only requires single `enable = true`
+  programs = {
+    fd = {
+      enable = true;
+    };
+    jq = {
+      enable = true;
+    };
+    ripgrep = {
+      enable = true;
+    };
+    less = {
+      enable = true;
+    };
+  };
 }

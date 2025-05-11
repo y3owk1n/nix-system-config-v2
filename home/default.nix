@@ -6,16 +6,24 @@
 {
   # import sub modules
   imports = [
-    ./cli.nix
-    ./core.nix
-    ./editor.nix
+    ./apps.nix
+    ./bat.nix
+    ./btop.nix
+    ./editorconfig.nix
+    ./eza.nix
+    ./fish.nix
+    ./fzf.nix
     ./gh.nix
+    ./ghostty.nix
     ./git.nix
-    ./keyboard.nix
-    ./multiplexer.nix
-    ./prompt.nix
-    ./shell.nix
-    ./terminal.nix
+    ./go.nix
+    ./kanata.nix
+    ./lazygit.nix
+    ./nvim.nix
+    ./sesh.nix
+    ./starship.nix
+    ./tmux.nix
+    ./zoxide.nix
   ];
 
   # Home Manager needs a bit of information about you and the
@@ -47,6 +55,8 @@
     # the Home Manager release notes for a list of state version
     # changes in each release.
     stateVersion = "24.05";
+
+    shell.enableFishIntegration = true;
   };
 
   # Let Home Manager install and manage itself.
