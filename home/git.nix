@@ -2,6 +2,7 @@
   lib,
   useremail,
   githubuser,
+  githubname,
   pkgs,
   ...
 }:
@@ -20,7 +21,7 @@
     enable = true;
     lfs.enable = true;
 
-    userName = githubuser;
+    userName = githubname;
     userEmail = useremail;
 
     difftastic = {
