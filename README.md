@@ -148,3 +148,25 @@ Set theme for fish
 ```bash
 fish_config theme save "Catppuccin Macchiato"
 ```
+
+### Git SSH Key
+
+[More Info from github docs](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/checking-for-existing-ssh-keys)
+[Reference for home manager](https://jeppesen.io/git-commit-sign-nix-home-manager-ssh/)
+
+```bash
+# Generate SSH key
+ssh-keygen -t ed25519 -C "email@example.com"
+
+# Add the following to ~/.ssh/config
+Host github.com
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/id_ed25519
+
+# Add to SSH Agent
+ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+
+# Add to Github
+gh ssh-key add ~/.ssh/id_ed25519.pub --type signing --title "personal laptop"
+```

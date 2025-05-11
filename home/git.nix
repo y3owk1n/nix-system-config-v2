@@ -14,6 +14,8 @@
     rm -f ~/.gitconfig
   '';
 
+  home.file.".ssh/allowed_signers".text = "* ${builtins.readFile ~/.ssh/id_ed25519.pub}";
+
   programs.git = {
     enable = true;
     lfs.enable = true;
@@ -25,22 +27,40 @@
       enable = true;
       background = "dark";
       color = "always";
+      enableAsDifftool = true;
     };
 
     extraConfig =
       {
+        color.ui = true;
+        commit.verbose = true;
+        commit.gpgSign = true;
+        gpg.ssh.allowedSignersFile = "~/.ssh/allowed_signers";
         github.user = githubuser;
         init.defaultBranch = "main";
         push.autoSetupRemote = true;
         pull.rebase = true;
-        color.ui = true;
+        rebase.autoStash = true;
+        rebase.missingCommitsCheck = "warn";
         merge.conflictstyle = "diff3";
+        log.abbrevCommit = true;
         http.sslVerify = true;
-        commit.verbose = true;
-        diff.algorithm = "patience";
+        diff.context = 3;
+        diff.renames = "copies";
+        diff.innerHunkContext = 10;
         protocol.version = "2";
         core.commitGraph = true;
+        core.compression = 9;
+        core.whitespace = "error";
+        core.preloadindex = true;
         gc.writeCommitGraph = true;
+        advise.addEmptyPathSpec = false;
+        advise.pushNonFastForward = false;
+        advise.statusHints = false;
+        status.branch = true;
+        status.showStash = true;
+        status.showUntrackedFiles = "all";
+        interactive.singlekey = true;
       }
       // pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
         # these should speed up vim nvim-tree and other things that watch git repos but
@@ -50,38 +70,10 @@
         feature.manyFiles = true;
       };
 
-    # signing = {
-    #   key = "xxx";
-    #   signByDefault = true;
-    # };
-  };
-
-  # Simple terminal UI for git commands
-  programs.lazygit = {
-    enable = true;
-    settings = {
-      os.editPreset = "nvim-remote";
-      gui = {
-        nerdFontsVersion = "3";
-        theme = {
-          activeBorderColor = [
-            "#f5a97f"
-            "bold"
-          ];
-          inactiveBorderColor = [ "#8aadf4" ];
-          optionsTextColor = [ "#8aadf4" ];
-          selectedLineBgColor = [ "#494d64" ];
-          cherryPickedCommitBgColor = [ "#f0c6c6" ];
-          cherryPickedCommitFgColor = [ "#8aadf4" ];
-          unstagedChangesColor = [ "#ed8796" ];
-          defaultFgColor = [ "#cad3f5" ];
-          searchingActiveBorderColor = [
-            "#f5a97f"
-            "bold"
-          ];
-        };
-
-      };
+    signing = {
+      key = "~/.ssh/id_ed25519.pub";
+      format = "ssh";
+      signByDefault = true;
     };
   };
 }
