@@ -43,5 +43,8 @@
     less = {
       enable = true;
     };
+    zoxide = {
+      enable = true;
+    };
   };
 }
