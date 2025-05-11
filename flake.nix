@@ -91,7 +91,7 @@
           system = "aarch64-darwin";
           hostname = "Kyles-MacBook-Air";
           username = "kylewong";
-          useremail = "wongyeowkin@gmail.com";
+          useremail = "62775956+y3owk1n@users.noreply.github.com";
           githubuser = "y3owk1n";
         };
         "Kyles-iMac" = mkDarwinConfiguration {
