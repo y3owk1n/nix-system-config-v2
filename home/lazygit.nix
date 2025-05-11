@@ -31,9 +31,6 @@
         paging = {
           externalDiffCommand = "difft --color=always";
         };
-        commit = {
-          signOff = true;
-        };
       };
     };
   };
