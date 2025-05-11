@@ -26,6 +26,10 @@
           path = "~/Downloads";
         }
         {
+          name = "dot config";
+          path = "~/.config";
+        }
+        {
           name = "nix config";
           path = "~/nix-system-config-v2";
         }
@@ -35,9 +39,9 @@
         }
         {
           name = "sesh config";
-          path = "~/nix-system-config-v2/config/sesh";
-          startup_command = "nvim sesh.toml";
-          preview_command = "bat --color=always ~/nix-system-config-v2/config/sesh/sesh.toml";
+          path = "~/nix-system-config-v2/home";
+          startup_command = "nvim sesh.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/home/sesh.nix";
         }
         {
           name = "ghostty config";
@@ -48,8 +52,8 @@
         {
           name = "tmux config";
           path = "~/nix-system-config-v2/home";
-          startup_command = "nvim multiplexer.nix";
-          preview_command = "bat --color=always ~/nix-system-config-v2/home/multiplexer.nix";
+          startup_command = "nvim tmux.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/home/tmux.nix";
         }
         {
           name = "aerospace config";
