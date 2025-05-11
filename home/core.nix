@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
-    # utils
+    # --- utils ---
     fd
     jq
     tree
@@ -11,9 +11,13 @@
     rip2
     imagemagick
     ghostscript
+    ninja
+    cmake
+    gettext
+    ast-grep
+    kanata
 
     # --- misc ---
-    # sqlite
     stripe-cli
     minio
     just
