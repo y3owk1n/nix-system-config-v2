@@ -86,7 +86,6 @@ in
       "ninja"
       "cmake"
       "gettext"
-      "sesh"
     ];
 
     # `brew install --cask`
