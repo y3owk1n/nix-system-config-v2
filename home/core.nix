@@ -21,7 +21,6 @@
     stripe-cli
     minio
     just
-    btop
 
     # --- rust ---
     cargo
