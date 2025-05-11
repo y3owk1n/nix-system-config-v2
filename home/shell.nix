@@ -27,7 +27,6 @@ in
       c = "clear";
       x = "exit";
       cat = "bat";
-      s = "~/nix-system-config-v2/scripts/sesh.sh";
       tx = "tmux kill-server";
       vim = "nvim";
     };

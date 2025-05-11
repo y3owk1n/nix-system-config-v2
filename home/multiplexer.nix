@@ -1,10 +1,5 @@
-{ pkgs, config, ... }:
+{ pkgs, ... }:
 {
-  xdg.configFile.sesh = {
-    enable = true;
-    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/sesh";
-    recursive = true;
-  };
   programs = {
     tmux = {
       enable = true;
@@ -59,9 +54,6 @@
         bind -r x kill-pane # skip "kill-pane 1? (y/n)" prompt
         bind -N "last-session (via sesh) " L run-shell "sesh last" # overwrite last-session with sesh last
 
-        bind-key b run-shell "~/nix-system-config-v2/scripts/sesh.sh"
-        # bind-key b run-shell "tms"
-
         bind-key C-n switch-client -T dotmd
         bind-key -T dotmd t run-shell "tmux popup -E -w 90% -h 80% -T 'Dotmd Todo' 'sh -c \"cd ~/Library/Mobile\\ Documents/com~apple~CloudDocs/Cloud\\ Notes && nvim +\\\"DotMdCreateTodoToday split=none\\\"\"'"
         bind-key -T dotmd n run-shell "tmux popup -E -w 90% -h 80% -T 'Dotmd Note' 'sh -c \"cd ~/Library/Mobile\\ Documents/com~apple~CloudDocs/Cloud\\ Notes && nvim +\\\"DotMdCreateNote split=none\\\"\"'"
@@ -96,6 +88,71 @@
         set -agF status-right "#{@catppuccin_status_user}"
         set -agF status-right "#{@catppuccin_status_host}"
       '';
+    };
+    sesh = {
+      enable = true;
+      enableAlias = true;
+      enableTmuxIntegration = true;
+      tmuxKey = "b";
+      settings = {
+        default_session = {
+          startup_command = "ls";
+          preview_command = "tree -L 1 -C --dirsfirst -a {}";
+        };
+
+        session = [
+          {
+            name = "home (~)";
+            path = "~";
+          }
+          {
+            name = "start kanata";
+            path = "~/nix-system-config-v2/";
+            startup_command = "just kanata";
+          }
+          {
+            name = "downloads";
+            path = "~/Downloads";
+          }
+          {
+            name = "nix config";
+            path = "~/nix-system-config-v2";
+          }
+          {
+            name = "neovim config";
+            path = "~/nix-system-config-v2/config/nvim";
+          }
+          {
+            name = "sesh config";
+            path = "~/nix-system-config-v2/config/sesh";
+            startup_command = "nvim sesh.toml";
+            preview_command = "bat --color=always ~/nix-system-config-v2/config/sesh/sesh.toml";
+          }
+          {
+            name = "ghostty config";
+            path = "~/nix-system-config-v2/config/ghostty";
+            startup_command = "nvim config";
+            preview_command = "bat --color=always ~/nix-system-config-v2/config/ghostty/config";
+          }
+          {
+            name = "tmux config";
+            path = "~/nix-system-config-v2/home";
+            startup_command = "nvim multiplexer.nix";
+            preview_command = "bat --color=always ~/nix-system-config-v2/home/multiplexer.nix";
+          }
+          {
+            name = "aerospace config";
+            path = "~/nix-system-config-v2/modules/custom";
+            startup_command = "nvim aerospace.nix";
+            preview_command = "bat --color=always ~/nix-system-config-v2/modules/custom/aerospace.nix";
+          }
+          {
+            name = "btop";
+            path = "~";
+            startup_command = "btop";
+          }
+        ];
+      };
     };
   };
 }
