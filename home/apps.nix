@@ -46,5 +46,8 @@
     zoxide = {
       enable = true;
     };
+    btop = {
+      enable = true;
+    };
   };
 }

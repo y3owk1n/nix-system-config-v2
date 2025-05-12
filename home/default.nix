@@ -8,7 +8,6 @@
   imports = [
     ./apps.nix
     ./bat.nix
-    ./btop.nix
     ./editorconfig.nix
     ./eza.nix
     ./fish.nix
@@ -60,4 +59,10 @@
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
+
+  catppuccin = {
+    enable = true;
+    flavor = "macchiato";
+    accent = "blue";
+  };
 }

@@ -26,26 +26,6 @@ in
           };
         });
       }
-      {
-        plugin = tmuxPlugins.catppuccin.overrideAttrs (_: {
-          src = pkgs.fetchFromGitHub {
-            owner = "catppuccin";
-            repo = "tmux";
-            rev = "14a546fb64dc1141e5d02bac2185d8c1fd530d6a";
-            sha256 = "sha256-poG3QCow2j6h/G7BLEA8v3ZJXuk28iPmH1J4t7vT55k=";
-          };
-        });
-        extraConfig = ''
-          set -g @catppuccin_flavor "macchiato"
-          set -g @catppuccin_window_status_style "rounded"
-          set -g @catppuccin_status_background "#{@thm_bg}"
-          set -g @catppuccin_window_number_position "right"
-          set -g @catppuccin_window_text "#W"
-          set -g @catppuccin_window_number "#I"
-          set -g @catppuccin_window_current_text "#W"
-          set -g @catppuccin_window_current_number "#I"
-        '';
-      }
     ];
     extraConfig = ''
       bind -r j resize-pane -D 5
@@ -91,5 +71,20 @@ in
       set -agF status-right "#{@catppuccin_status_user}"
       set -agF status-right "#{@catppuccin_status_host}"
     '';
+  };
+  catppuccin = {
+    tmux = {
+      enable = true;
+      extraConfig = ''
+        set -g @catppuccin_flavor "macchiato"
+        set -g @catppuccin_window_status_style "rounded"
+        set -g @catppuccin_status_background "#{@thm_bg}"
+        set -g @catppuccin_window_number_position "right"
+        set -g @catppuccin_window_text "#W"
+        set -g @catppuccin_window_number "#I"
+        set -g @catppuccin_window_current_text "#W"
+        set -g @catppuccin_window_current_number "#I"
+      '';
+    };
   };
 }
