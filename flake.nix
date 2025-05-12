@@ -24,6 +24,8 @@
     nix-darwin.url = "github:LnL7/nix-darwin";
 
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+
+    catppuccin.url = "github:catppuccin/nix";
   };
 
   # The `outputs` function will return all the build results of the flake.
@@ -38,6 +40,7 @@
       darwin,
       home-manager,
       nix-homebrew,
+      catppuccin,
       ...
     }:
     let
@@ -85,8 +88,15 @@
                   githubname
                   ;
               };
-              home-manager.users.${username} = import ./home;
+              home-manager.users.${username} = {
+                imports = [
+                  ./home
+                  # catppuccin global
+                  catppuccin.homeModules.catppuccin
+                ];
+              };
             }
+            # Homebrew
             nix-homebrew.darwinModules.nix-homebrew
             {
               nix-homebrew = {
