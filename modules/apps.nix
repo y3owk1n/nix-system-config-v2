@@ -73,9 +73,7 @@ in
     # For details, see https://github.com/mas-cli/mas
     masApps = { };
 
-    taps = [
-      "y3owk1n/tap"
-    ];
+    taps = [ ];
 
     # `brew install`
     brews = [

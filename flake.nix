@@ -22,6 +22,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-darwin.url = "github:LnL7/nix-darwin";
+
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
   };
 
   # The `outputs` function will return all the build results of the flake.
@@ -35,6 +37,7 @@
       nixpkgs,
       darwin,
       home-manager,
+      nix-homebrew,
       ...
     }:
     let
@@ -83,6 +86,22 @@
                   ;
               };
               home-manager.users.${username} = import ./home;
+            }
+            nix-homebrew.darwinModules.nix-homebrew
+            {
+              nix-homebrew = {
+                # Install Homebrew under the default prefix
+                enable = true;
+
+                # Apple Silicon Only: Also install Homebrew under the default Intel prefix for Rosetta 2
+                enableRosetta = true;
+
+                # User owning the Homebrew prefix
+                user = username;
+
+                # Automatically migrate existing Homebrew installations
+                autoMigrate = true;
+              };
             }
           ];
         };
