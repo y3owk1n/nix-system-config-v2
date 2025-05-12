@@ -67,7 +67,7 @@
         pull.rebase = true;
         push.autoSetupRemote = true;
         push.default = "current";
-        push.followTags = "current";
+        push.followTags = true;
         rebase.autoStash = true;
         rebase.missingCommitsCheck = "warn";
         rebase.stat = true;
