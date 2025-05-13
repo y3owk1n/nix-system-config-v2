@@ -1,4 +1,9 @@
-{ pkgs, hostname, ... }:
+{
+  config,
+  pkgs,
+  hostname,
+  ...
+}:
 let
   brewApps =
     if hostname == "Kyles-MacBook-Air" then
@@ -73,12 +78,14 @@ in
     # For details, see https://github.com/mas-cli/mas
     masApps = { };
 
-    taps = [ ];
+    # Need to add the configured taps from `nix-homebrew`
+    # https://github.com/zhaofengli/nix-homebrew/issues/5#issuecomment-1878798641
+    taps = builtins.attrNames config.nix-homebrew.taps;
 
     # `brew install`
     brews = [
-      "y3owk1n/tap/cpenv"
-      "y3owk1n/tap/nvs"
+      "y3owk1n/homebrew-tap/cpenv"
+      "y3owk1n/homebrew-tap/nvs"
     ];
 
     # `brew install --cask`
