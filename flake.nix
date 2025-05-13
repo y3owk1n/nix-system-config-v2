@@ -25,6 +25,24 @@
 
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
+    homebrew-core = {
+      url = "github:homebrew/homebrew-core";
+      flake = false;
+    };
+    homebrew-cask = {
+      url = "github:homebrew/homebrew-cask";
+      flake = false;
+    };
+    homebrew-bundle = {
+      url = "github:Homebrew/homebrew-bundle";
+      flake = false;
+    };
+
+    y3owk1n-tap = {
+      url = "github:y3owk1n/homebrew-tap";
+      flake = false;
+    };
+
     catppuccin.url = "github:catppuccin/nix";
   };
 
@@ -41,6 +59,10 @@
       home-manager,
       nix-homebrew,
       catppuccin,
+      homebrew-core,
+      homebrew-cask,
+      homebrew-bundle,
+      y3owk1n-tap,
       ...
     }:
     let
@@ -108,6 +130,19 @@
 
                 # User owning the Homebrew prefix
                 user = username;
+
+                # Optional: Declarative tap management
+                taps = {
+                  "homebrew/homebrew-core" = homebrew-core;
+                  "homebrew/homebrew-cask" = homebrew-cask;
+                  "homebrew/homebrew-bundle" = homebrew-bundle;
+                  "y3owk1n/homebrew-tap" = y3owk1n-tap;
+                };
+
+                # Optional: Enable fully-declarative tap management
+                #
+                # With mutableTaps disabled, taps can no longer be added imperatively with `brew tap`.
+                mutableTaps = false;
               };
             }
           ];
