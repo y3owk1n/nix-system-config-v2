@@ -10,7 +10,6 @@
       __autols_hook
       starship_transient_prompt_func
       fnm env --use-on-cd --version-file-strategy=recursive --resolve-engines --shell fish | source
-      setup_homebrew_completion
     '';
     shellAliases = {
       gg = "lazygit";
@@ -78,18 +77,6 @@
         description = "Starship transient prompt";
         body = ''
           starship module character
-        '';
-      };
-      setup_homebrew_completion = {
-        description = "Setup homebrew completion";
-        body = ''
-          if test -d (brew --prefix)"/share/fish/completions"
-          	set -p fish_complete_path (brew --prefix)/share/fish/completions
-          end
-
-          if test -d (brew --prefix)"/share/fish/vendor_completions.d"
-          	set -p fish_complete_path (brew --prefix)/share/fish/vendor_completions.d
-          end
         '';
       };
     };
