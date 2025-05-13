@@ -163,7 +163,7 @@
           system = "aarch64-darwin";
           hostname = "Kyles-iMac";
           username = "kylewong";
-          useremail = "kylewong@traworld.com";
+          useremail = "140996996+mtraworld@users.noreply.github.com";
           githubuser = "mtraworld";
           githubname = "mtraworld";
         };
