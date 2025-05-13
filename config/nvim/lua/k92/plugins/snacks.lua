@@ -339,6 +339,12 @@ return {
 					},
 				},
 			},
+			lazygit = {
+				configure = false,
+				config = {
+					os = { editPreset = "nvim-remote" },
+				},
+			},
 		},
 		keys = {
 			{
