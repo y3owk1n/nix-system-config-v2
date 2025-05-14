@@ -64,109 +64,24 @@
       y3owk1n-tap,
       ...
     }:
-    let
-      # Define a function to create a configuration for each machine
-      mkDarwinConfiguration =
-        {
-          system,
-          hostname,
-          username,
-          useremail,
-          githubuser,
-          githubname,
-        }:
-        darwin.lib.darwinSystem {
-          inherit system;
-          specialArgs = inputs // {
-            inherit
-              username
-              useremail
-              hostname
-              githubuser
-              githubname
-              ;
-          };
-          modules = [
-            ./modules/nix-core.nix
-            ./modules/system.nix
-            ./modules/apps.nix
-            ./modules/host-users.nix
-            ./modules/yabai.nix
-            ./modules/custom/karabiner.nix
-            ./modules/custom/cmd.nix
-            ./modules/custom/aerospace.nix
-            # home manager
-            home-manager.darwinModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.extraSpecialArgs = inputs // {
-                inherit
-                  username
-                  useremail
-                  hostname
-                  githubuser
-                  githubname
-                  ;
-              };
-              home-manager.users.${username} = {
-                imports = [
-                  ./home
-                  # catppuccin global
-                  catppuccin.homeModules.catppuccin
-                ];
-              };
-            }
-            # Homebrew
-            nix-homebrew.darwinModules.nix-homebrew
-            {
-              nix-homebrew = {
-                # Install Homebrew under the default prefix
-                enable = true;
-
-                # Apple Silicon Only: Also install Homebrew under the default Intel prefix for Rosetta 2
-                enableRosetta = true;
-
-                # User owning the Homebrew prefix
-                user = username;
-
-                # Optional: Declarative tap management
-                taps = {
-                  "homebrew/homebrew-core" = homebrew-core;
-                  "homebrew/homebrew-cask" = homebrew-cask;
-                  "homebrew/homebrew-bundle" = homebrew-bundle;
-                  "y3owk1n/homebrew-tap" = y3owk1n-tap;
-                };
-
-                # Optional: Enable fully-declarative tap management
-                #
-                # With mutableTaps disabled, taps can no longer be added imperatively with `brew tap`.
-                mutableTaps = false;
-              };
-            }
-          ];
-        };
-    in
     {
-      # Define configurations for each machine
-      darwinConfigurations = {
-        "Kyles-MacBook-Air" = mkDarwinConfiguration {
-          system = "aarch64-darwin";
-          hostname = "Kyles-MacBook-Air";
-          username = "kylewong";
-          useremail = "62775956+y3owk1n@users.noreply.github.com"; # only used for git
-          githubuser = "y3owk1n";
-          githubname = "Kyle Wong";
-        };
-        "Kyles-iMac" = mkDarwinConfiguration {
-          system = "aarch64-darwin";
-          hostname = "Kyles-iMac";
-          username = "kylewong";
-          useremail = "140996996+mtraworld@users.noreply.github.com";
-          githubuser = "mtraworld";
-          githubname = "mtraworld";
-        };
-      };
+      darwinConfigurations = (
+        import ./darwin {
+          inherit (nixpkgs) lib;
+          inherit
+            inputs
+            nixpkgs
+            home-manager
+            darwin
+            nix-homebrew
+            catppuccin
+            homebrew-core
+            homebrew-cask
+            homebrew-bundle
+            y3owk1n-tap
+            ;
+        }
+      );
 
       # Keep your formatter configuration
       formatter.aarch64-darwin = nixpkgs.legacyPackages.aarch64-darwin.nixfmt-rfc-style;

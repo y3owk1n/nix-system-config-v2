@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ pkgs, ... }:
 let
   cmd = pkgs.stdenv.mkDerivation {
     pname = "cmd";
