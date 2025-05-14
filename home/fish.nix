@@ -9,7 +9,9 @@
       __load-em
       __autols_hook
       starship_transient_prompt_func
-      fnm env --use-on-cd --version-file-strategy=recursive --resolve-engines --shell fish | source
+      if type -q fnm
+      	fnm env --use-on-cd --version-file-strategy=recursive --resolve-engines --shell fish | source
+      end
     '';
     shellAliases = {
       gg = "lazygit";

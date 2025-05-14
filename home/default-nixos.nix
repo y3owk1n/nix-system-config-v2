@@ -6,7 +6,7 @@
 {
   # import sub modules
   imports = [
-    ./apps.nix
+    ./apps-nixos.nix
     ./bat.nix
     ./editorconfig.nix
     ./eza.nix
