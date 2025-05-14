@@ -60,7 +60,7 @@ in
           };
           home-manager.users.${username} = {
             imports = [
-              ../home
+              ../home/default-nixos.nix
               # catppuccin global
               catppuccin.homeModules.catppuccin
             ];
