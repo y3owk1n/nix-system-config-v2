@@ -67,4 +67,9 @@
       enable = true;
     };
   };
+
+  # Additional setup for neovim formatter bins
+  home.sessionVariables = {
+    BIOME_BINARY = "${pkgs.biome}/bin/biome";
+  };
 }
