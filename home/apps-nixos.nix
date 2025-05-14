@@ -30,20 +30,24 @@
 
     # --- neovim language servers ---
     lua-language-server
+    stylua
     bash-language-server
     biome
     docker-compose-language-service
     docker-language-server
     vscode-langservers-extracted
     gopls
+    gotools
+    gofumpt
+    golangci-lint
     just-lsp
     marksman
+    markdownlint-cli2
     nil
     tailwindcss-language-server
     vtsls
     yaml-language-server
     nodePackages.prettier
-    markdownlint-cli2
     prisma-engines
   ];
 
