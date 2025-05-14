@@ -1,37 +1,9 @@
 {
   config,
   pkgs,
-  hostname,
+  safariKeys,
   ...
 }:
-let
-  safariKeys =
-    if hostname == "Kyles-iMac" then
-      {
-        # work computer
-        "New Toy Garden 2 Window" = "^3";
-        "New Toy Garden Window" = "^2";
-        "New Traworld Window" = "^1";
-      }
-    else
-      {
-        # personal computer
-        "New Traworld Window" = "^4";
-        "New SKBA Window" = "^3";
-        "New MDA Window" = "^2";
-        "New Kyle Window" = "^1";
-      };
-in
-###################################################################################
-#
-#  macOS's System configuration
-#
-#  All the configuration options are documented here:
-#    https://daiderd.com/nix-darwin/manual/index.html#sec-options
-#  Incomplete list of macOS `defaults` commands :
-#    https://github.com/yannbertrand/macos-defaults
-#
-###################################################################################
 {
 
   system = {
@@ -1088,27 +1060,4 @@ in
 
   # Add ability to used TouchID for sudo authentication
   security.pam.services.sudo_local.touchIdAuth = true;
-
-  # Create /etc/zshrc that loads the nix-darwin environment.
-  # this is required if you want to use darwin's default shell - zsh
-  programs.fish.enable = true;
-  # environment.shells = [ pkgs.fish ];
-
-  environment.systemPath = [
-    "/opt/homebrew/bin"
-    "/opt/homebrew/sbin"
-    "/run/current-system/sw/bin"
-  ];
-
-  # Set your time zone.
-  time.timeZone = "Asia/Kuala_Lumpur";
-
-  # Fonts
-  fonts = {
-    packages = with pkgs; [
-      poppins
-      nerd-fonts.symbols-only
-      nerd-fonts.jetbrains-mono
-    ];
-  };
 }
