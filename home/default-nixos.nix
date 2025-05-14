@@ -1,12 +1,7 @@
 {
   username,
-  pkgs,
   ...
 }:
-let
-  homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
-
-in
 
 {
   # import sub modules
@@ -18,10 +13,8 @@ in
     ./fish.nix
     ./fzf.nix
     ./gh.nix
-    ./ghostty.nix
     ./git.nix
     ./go.nix
-    ./kanata.nix
     ./lazygit.nix
     ./nvim.nix
     ./sesh.nix
@@ -33,7 +26,7 @@ in
   # paths it should manage.
   home = {
     username = username;
-    homeDirectory = homeDirectory;
+    homeDirectory = "/home/${username}";
 
     activation = {
       # NOTE: Do not delete this! Uncomment this when you want to use spotlight search
