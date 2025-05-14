@@ -5,11 +5,17 @@
 #
 ############################################################################
 
+[macos]
 init ARG:
     bash ./scripts/init.sh {{ ARG }}
 
+[macos]
 rebuild:
     darwin-rebuild switch --verbose --impure --flake .
+
+[linux]
+rebuild:
+    sudo nixos-rebuild switch --impure --flake .
 
 ############################################################################
 #
@@ -17,6 +23,7 @@ rebuild:
 #
 ############################################################################
 
+[macos]
 update:
     sudo determinate-nixd upgrade
     nix flake update
@@ -47,9 +54,11 @@ clean:
 nvim-reset:
     bash ./scripts/nvim-reset.sh
 
+[macos]
 start-kanata:
     tmux new-window -n "kanata" "just kanata"
 
+[macos]
 kanata:
     sudo '/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon' &
     sudo kanata -n -c ~/.config/kanata/config.kbd

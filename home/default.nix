@@ -1,7 +1,12 @@
 {
   username,
+  pkgs,
   ...
 }:
+let
+  homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
+
+in
 
 {
   # import sub modules
@@ -28,7 +33,7 @@
   # paths it should manage.
   home = {
     username = username;
-    homeDirectory = "/Users/${username}";
+    homeDirectory = homeDirectory;
 
     activation = {
       # NOTE: Do not delete this! Uncomment this when you want to use spotlight search

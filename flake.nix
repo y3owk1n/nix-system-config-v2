@@ -83,6 +83,19 @@
         }
       );
 
+      nixosConfigurations = (
+        import ./nixos {
+          inherit (nixpkgs) lib;
+          inherit
+            inputs
+            nixpkgs
+            home-manager
+            nix-homebrew
+            catppuccin
+            ;
+        }
+      );
+
       # Keep your formatter configuration
       formatter.aarch64-darwin = nixpkgs.legacyPackages.aarch64-darwin.nixfmt-rfc-style;
       formatter.x86_64-darwin = nixpkgs.legacyPackages.x86_64-darwin.nixfmt-rfc-style;

@@ -6,6 +6,13 @@
   pkgs,
   ...
 }:
+let
+  pubkeyPath =
+    if pkgs.stdenv.isDarwin then
+      "${builtins.getEnv "HOME"}/.ssh/id_ed25519.pub"
+    else
+      "/mnt/mac/Users/kylewong/.ssh/id_ed25519.pub";
+in
 {
   # `programs.git` will generate the config file: ~/.config/git/config
   # to make git use this config file, `~/.gitconfig` should not exist!
@@ -15,7 +22,7 @@
     rm -f ~/.gitconfig
   '';
 
-  home.file.".ssh/allowed_signers".text = "* ${builtins.readFile ~/.ssh/id_ed25519.pub}";
+  home.file.".ssh/allowed_signers".text = "* ${builtins.readFile pubkeyPath}";
 
   programs.git = {
     enable = true;
@@ -84,7 +91,7 @@
       };
 
     signing = {
-      key = "~/.ssh/id_ed25519.pub";
+      key = pubkeyPath;
       format = "ssh";
       signByDefault = true;
     };
