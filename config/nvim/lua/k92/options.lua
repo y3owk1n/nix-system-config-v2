@@ -89,6 +89,21 @@ vim.opt.undodir = os.getenv("HOME") .. "/.vim/undodir" -- Set custom undo direct
 ------------------------------------------------------------
 -- Clipboard Configuration
 ------------------------------------------------------------
+if vim.env.IS_ORBSTACK == "1" then
+	vim.g.clipboard = {
+		name = "macOS-clipboard",
+		copy = {
+			["+"] = "mac pbcopy",
+			["*"] = "mac pbcopy",
+		},
+		paste = {
+			["+"] = "mac pbpaste",
+			["*"] = "mac pbpaste",
+		},
+		cache_enabled = 0,
+	}
+end
+
 vim.schedule(function()
 	vim.opt.clipboard = "unnamedplus" -- Sync system clipboard with Neovim.
 end)
