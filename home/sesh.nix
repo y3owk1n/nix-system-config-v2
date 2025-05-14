@@ -57,9 +57,9 @@
         }
         {
           name = "aerospace config";
-          path = "~/nix-system-config-v2/modules/custom";
+          path = "~/nix-system-config-v2/darwin/modules";
           startup_command = "nvim aerospace.nix";
-          preview_command = "bat --color=always ~/nix-system-config-v2/modules/custom/aerospace.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/darwin/modules/aerospace.nix";
         }
         {
           name = "btop";
