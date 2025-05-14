@@ -9,16 +9,12 @@
 let
   systemConfig = system: {
     system = system;
-    pkgs = import nixpkgs {
-      inherit system;
-      config.allowUnfree = true;
-    };
   };
 in
 {
 
   # Work
-  "nixos-vm" =
+  "nixos-vm-work" =
     let
       hostname = "nixos-vm";
       username = "kylewong";
@@ -26,14 +22,13 @@ in
       githubuser = "mtraworld";
       githubname = "mtraworld";
 
-      inherit (systemConfig "aarch64-linux") system pkgs;
+      inherit (systemConfig "aarch64-linux") system;
     in
     nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = inputs // {
         inherit
           system
-          pkgs
           username
           useremail
           hostname
@@ -76,14 +71,13 @@ in
       githubuser = "y3owk1n";
       githubname = "Kyle Wong";
 
-      inherit (systemConfig "aarch64-linux") system pkgs;
+      inherit (systemConfig "aarch64-linux") system;
     in
     nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = inputs // {
         inherit
           system
-          pkgs
           username
           useremail
           hostname
