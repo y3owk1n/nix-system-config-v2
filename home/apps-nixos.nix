@@ -27,6 +27,23 @@
 
     # --- nix ---
     nixfmt-rfc-style
+
+    # --- neovim language servers ---
+    lua-language-server
+    bash-language-server
+    biome
+    docker-compose-language-service
+    docker-language-server
+    vscode-langservers-extracted
+    gopls
+    just-lsp
+    marksman
+    nil
+    tailwindcss-language-server
+    vtsls
+    yaml-language-server
+    nodePackages.prettier
+    markdownlint-cli2
   ];
 
   # Apps that only requires single `enable = true`

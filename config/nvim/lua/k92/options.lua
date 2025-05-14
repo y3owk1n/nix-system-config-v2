@@ -32,14 +32,14 @@ vim.opt.showtabline = 0 -- Never show the tabline.
 ------------------------------------------------------------
 -- General Settings
 ------------------------------------------------------------
-vim.opt.number = true -- Show absolute line numbers.
-vim.opt.relativenumber = true -- Show relative line numbers.
-vim.opt.mouse = "" -- Disable mouse support.
-vim.opt.timeoutlen = 300 -- Set key sequence timeout to 300ms.
-vim.opt.inccommand = "split" -- Show live preview of substitutions in a split.
+vim.opt.number = true                                   -- Show absolute line numbers.
+vim.opt.relativenumber = true                           -- Show relative line numbers.
+vim.opt.mouse = ""                                      -- Disable mouse support.
+vim.opt.timeoutlen = 300                                -- Set key sequence timeout to 300ms.
+vim.opt.inccommand = "split"                            -- Show live preview of substitutions in a split.
 vim.opt.completeopt = { "menu", "menuone", "noselect" } -- Configure completion menu behavior.
-vim.opt.viewoptions:remove("curdir") -- Do not save the current directory with views.
-vim.opt.sessionoptions = { -- Specify what to save in sessions.
+vim.opt.viewoptions:remove("curdir")                    -- Do not save the current directory with views.
+vim.opt.sessionoptions = {                              -- Specify what to save in sessions.
 	"buffers",
 	"curdir",
 	"tabpages",
@@ -53,18 +53,18 @@ vim.opt.sessionoptions = { -- Specify what to save in sessions.
 ------------------------------------------------------------
 -- Text Editing Settings
 ------------------------------------------------------------
-vim.opt.backspace:append({ "nostop" }) -- Allow backspace to delete over everything in insert mode.
+vim.opt.backspace:append({ "nostop" })  -- Allow backspace to delete over everything in insert mode.
 vim.opt.whichwrap:append("<,>,[,],h,l") -- Enable cursor movement to wrap to previous/next line with specific keys.
-vim.opt.formatoptions:append({ "r" }) -- Automatically insert comment leader after hitting <Enter> in comments.
+vim.opt.formatoptions:append({ "r" })   -- Automatically insert comment leader after hitting <Enter> in comments.
 
 ------------------------------------------------------------
 -- Tabs & Indentation
 ------------------------------------------------------------
-vim.opt.tabstop = 4 -- Set tab width to 4 spaces.
-vim.opt.shiftwidth = 4 -- Set indentation width to 4 spaces.
-vim.opt.softtabstop = 4 -- Configure soft tab stop to 4 spaces.
-vim.opt.expandtab = false -- Use literal tab characters, not spaces.
-vim.opt.shiftround = true -- Round indent to multiple of 'shiftwidth'.
+vim.opt.tabstop = 4        -- Set tab width to 4 spaces.
+vim.opt.shiftwidth = 4     -- Set indentation width to 4 spaces.
+vim.opt.softtabstop = 4    -- Configure soft tab stop to 4 spaces.
+vim.opt.expandtab = false  -- Use literal tab characters, not spaces.
+vim.opt.shiftround = true  -- Round indent to multiple of 'shiftwidth'.
 vim.opt.smartindent = true -- Enable smart indentation.
 vim.opt.breakindent = true -- Maintain indent on wrapped lines.
 
@@ -72,18 +72,18 @@ vim.opt.breakindent = true -- Maintain indent on wrapped lines.
 -- Search Settings
 ------------------------------------------------------------
 vim.opt.ignorecase = true -- Ignore case when searching.
-vim.opt.smartcase = true -- Override 'ignorecase' if search contains uppercase.
-vim.opt.infercase = true -- Adjust case for keyword completion.
-vim.opt.hlsearch = false -- Do not highlight search matches.
-vim.opt.incsearch = true -- Highlight matches as you type.
+vim.opt.smartcase = true  -- Override 'ignorecase' if search contains uppercase.
+vim.opt.infercase = true  -- Adjust case for keyword completion.
+vim.opt.hlsearch = false  -- Do not highlight search matches.
+vim.opt.incsearch = true  -- Highlight matches as you type.
 
 ------------------------------------------------------------
 -- File Handling & Sessions
 ------------------------------------------------------------
-vim.opt.swapfile = false -- Disable swap file creation.
-vim.opt.updatetime = 50 -- Reduce delay for CursorHold and swap file write.
-vim.opt.undofile = true -- Enable persistent undo history.
-vim.opt.undolevels = 10000 -- Set a high number of undo levels.
+vim.opt.swapfile = false                               -- Disable swap file creation.
+vim.opt.updatetime = 50                                -- Reduce delay for CursorHold and swap file write.
+vim.opt.undofile = true                                -- Enable persistent undo history.
+vim.opt.undolevels = 10000                             -- Set a high number of undo levels.
 vim.opt.undodir = os.getenv("HOME") .. "/.vim/undodir" -- Set custom undo directory.
 
 ------------------------------------------------------------
@@ -97,24 +97,24 @@ end)
 -- Provider Configuration (Disable unused providers)
 ------------------------------------------------------------
 vim.g.loaded_python3_provider = 0 -- Disable Python3 provider.
-vim.g.loaded_perl_provider = 0 -- Disable Perl provider.
-vim.g.loaded_ruby_provider = 0 -- Disable Ruby provider.
-vim.g.loaded_node_provider = 0 -- Disable Node.js provider.
+vim.g.loaded_perl_provider = 0    -- Disable Perl provider.
+vim.g.loaded_ruby_provider = 0    -- Disable Ruby provider.
+vim.g.loaded_node_provider = 0    -- Disable Node.js provider.
 
 ------------------------------------------------------------
 -- Spelling & Keywords
 ------------------------------------------------------------
 vim.opt.spelllang:append("cjk") -- Improve spellchecking for CJK languages.
-vim.opt.iskeyword:append("-") -- Include '-' as part of a word.
-vim.opt.isfname:append("@-@") -- Allow '@-@' in filenames.
+vim.opt.iskeyword:append("-")   -- Include '-' as part of a word.
+vim.opt.isfname:append("@-@")   -- Allow '@-@' in filenames.
 
 ------------------------------------------------------------
 -- Wildmenu (Command Line Completion)
 ------------------------------------------------------------
-vim.opt.wildmenu = true -- Enable command-line completion menu.
+vim.opt.wildmenu = true       -- Enable command-line completion menu.
 vim.opt.wildignorecase = true -- Make wildmenu file matching case-insensitive.
-vim.opt.path:append("**") -- Enable recursive file searching.
-vim.opt.wildignore:append({ -- Ignore certain file patterns in file navigation.
+vim.opt.path:append("**")     -- Enable recursive file searching.
+vim.opt.wildignore:append({   -- Ignore certain file patterns in file navigation.
 	".git,.hg,.svn",
 	".aux,*.out,*.toc",
 	".o,*.obj,*.exe,*.dll,*.manifest,*.rbc,*.class",
@@ -138,7 +138,7 @@ vim.opt.wildignore:append({ -- Ignore certain file patterns in file navigation.
 ------------------------------------------------------------
 vim.cmd("filetype plugin indent on") -- Enable filetype-specific plugins and indentation.
 if vim.fn.exists("syntax_on") ~= 1 then
-	vim.cmd("syntax enable") -- Enable syntax highlighting if not already enabled.
+	vim.cmd("syntax enable")         -- Enable syntax highlighting if not already enabled.
 end
 
 ------------------------------------------------------------

@@ -3,6 +3,7 @@ return {
 	{
 		"williamboman/mason.nvim",
 		cmd = "Mason",
+		enabled = not vim.g.disable_mason,
 		event = "VeryLazy",
 		keys = { { "<leader>im", "<cmd>Mason<cr>", desc = "Mason" } },
 		build = ":MasonUpdate",
@@ -12,6 +13,7 @@ return {
 	},
 	{
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
+		enabled = not vim.g.disable_mason,
 		cmd = {
 			"MasonToolsInstall",
 			"MasonToolsInstallSync",
