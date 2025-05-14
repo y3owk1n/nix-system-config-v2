@@ -39,7 +39,10 @@ local function is_nixos()
 		return true
 	end
 
-	local os_release = vim.fn.readfile("/etc/os-release")
+	local os_release, err = pcall(vim.fn.readfile, "/etc/os-release")
+	if err then
+		return false
+	end
 	for _, line in ipairs(os_release) do
 		if line:match("^ID=nixos") then
 			return true
