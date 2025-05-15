@@ -7,6 +7,7 @@
 {
   imports = [
     ../shared/core.nix
+    ../../darwin/modules/cmd.nix
   ];
 
   users.users."${username}" = {
