@@ -62,7 +62,7 @@ in
     taps = builtins.attrNames config.nix-homebrew.taps;
 
     brews = [
-      "y3owk1n/homebrew-tap/cpenv"
+      # "y3owk1n/homebrew-tap/cpenv"
       "y3owk1n/homebrew-tap/nvs"
     ];
 

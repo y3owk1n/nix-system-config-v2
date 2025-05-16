@@ -8,26 +8,27 @@
 let
   system = pkgs.system;
 
-  version = "1.15.5";
+  version = "1.15.6";
 
   inherit (lib) mkIf;
   cpenvInfo = {
     "x86_64-linux" = {
       url = "https://github.com/y3owk1n/cpenv/releases/download/v${version}/cpenv-linux-amd64";
       # use `nix hash convert --hash-algo sha256 <checksum>`
-      sha256 = "sha256-aWeGGI4Q8Xa6g8gE+Nvd6dXAwKAJNZSdN6THaoIeMdw=";
+      # even better "awk '{print $1}' <checksum> | xagrs nix hash convert --hash-algo sha256"
+      sha256 = "sha256-irWG6iLNxDAgbe7M21iT7cnXyZZlP82miAURK2kzpUg=";
     };
     "aarch64-linux" = {
       url = "https://github.com/y3owk1n/cpenv/releases/download/v${version}/cpenv-linux-arm64";
-      sha256 = "sha256-YHRNluj1Gh3C5xVHOhO1E4g4QyuL6azn3zo2go2M+vo=";
+      sha256 = "sha256-mHxd8eXFDnES1olcw1D+jKH3TeKtHZUb0r0SHzhZwfw=";
     };
     "x86_64-darwin" = {
       url = "https://github.com/y3owk1n/cpenv/releases/download/v${version}/cpenv-darwin-amd64";
-      sha256 = "sha256-DeXiZjFt7FIgj01NTJytJOh+Wv0+VJd2Bm9hJMgTNuM=";
+      sha256 = "sha256-bb231Ur5ckIniQRupjyObS2SdGdIxOU6slfcrWXlPFc=";
     };
     "aarch64-darwin" = {
       url = "https://github.com/y3owk1n/cpenv/releases/download/v${version}/cpenv-darwin-arm64";
-      sha256 = "sha256-XeZMarfE3eXG5GcxY4SaGqVeX1/9aPRjeF9TpcU+nng=";
+      sha256 = "sha256-mxb5cVZ2/ycAFW/gz+SjX7Ru9FfoguaL08VsXKaX+Ys=";
     };
   };
 
