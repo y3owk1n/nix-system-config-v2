@@ -244,11 +244,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1747414463,
-        "narHash": "sha256-ErmEPu68BrKb5m0/QXEVHTDBu+HYJsypFG3h7NDO2ig=",
+        "lastModified": 1747416377,
+        "narHash": "sha256-xM1Ua1/JBZyH72eTXoy/GVJNaTolirTCona4+r8OpA4=",
         "owner": "y3owk1n",
         "repo": "nixos-gh-actions-ls",
-        "rev": "e2bd7707a4a46f96bbd770f5718bd13dfada700c",
+        "rev": "245a4925f08a7097c5c437a498515cdb509c766b",
         "type": "github"
       },
       "original": {
@@ -267,11 +267,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1747413769,
-        "narHash": "sha256-etaUKrEbenadb8j8vtb3QavoTsWvZRjRy7JLcmypfWQ=",
+        "lastModified": 1747419151,
+        "narHash": "sha256-m1Y/o+5q4s2+pyMq3rBDiE83M/2FBvzvz7j7hGckwSY=",
         "owner": "y3owk1n",
         "repo": "nixos-prismals",
-        "rev": "0633e444a50c17e895ceb53bf033cd05e0b78828",
+        "rev": "53214498d5be98971f05a38a45e764d86e3f3b4f",
         "type": "github"
       },
       "original": {
@@ -466,8 +466,7 @@
         "nix-homebrew": "nix-homebrew",
         "nixos-gh-action-ls": "nixos-gh-action-ls",
         "nixos-prismals": "nixos-prismals",
-        "nixpkgs": "nixpkgs_6",
-        "y3owk1n-tap": "y3owk1n-tap"
+        "nixpkgs": "nixpkgs_6"
       }
     },
     "slimlock": {
@@ -513,22 +512,6 @@
       "original": {
         "owner": "thomashoneyman",
         "repo": "slimlock",
-        "type": "github"
-      }
-    },
-    "y3owk1n-tap": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1747379000,
-        "narHash": "sha256-tuJPtnkYVfIJdnvuRfdw1q1zp7LTmuBZTo0rZCuyD+E=",
-        "owner": "y3owk1n",
-        "repo": "homebrew-tap",
-        "rev": "3d788ae822aa8d293976168566efd3d355dacde5",
-        "type": "github"
-      },
-      "original": {
-        "owner": "y3owk1n",
-        "repo": "homebrew-tap",
         "type": "github"
       }
     }

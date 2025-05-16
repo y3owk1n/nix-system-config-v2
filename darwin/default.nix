@@ -8,7 +8,6 @@
   homebrew-core,
   homebrew-cask,
   homebrew-bundle,
-  y3owk1n-tap,
   ...
 }:
 
@@ -88,7 +87,6 @@ in
               "homebrew/homebrew-core" = homebrew-core;
               "homebrew/homebrew-cask" = homebrew-cask;
               "homebrew/homebrew-bundle" = homebrew-bundle;
-              "y3owk1n/homebrew-tap" = y3owk1n-tap;
             };
 
             # Optional: Enable fully-declarative tap management
@@ -165,7 +163,6 @@ in
               "homebrew/homebrew-core" = homebrew-core;
               "homebrew/homebrew-cask" = homebrew-cask;
               "homebrew/homebrew-bundle" = homebrew-bundle;
-              "y3owk1n/homebrew-tap" = y3owk1n-tap;
             };
 
             # Optional: Enable fully-declarative tap management

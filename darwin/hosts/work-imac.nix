@@ -62,7 +62,7 @@ in
 
     brews = [
       # "y3owk1n/homebrew-tap/cpenv"
-      "y3owk1n/homebrew-tap/nvs"
+      # "y3owk1n/homebrew-tap/nvs"
     ];
 
     casks = [

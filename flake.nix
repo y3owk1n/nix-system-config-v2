@@ -37,11 +37,6 @@
       flake = false;
     };
 
-    y3owk1n-tap = {
-      url = "github:y3owk1n/homebrew-tap";
-      flake = false;
-    };
-
     catppuccin.url = "github:catppuccin/nix";
 
     nixos-prismals.url = "github:y3owk1n/nixos-prismals";
@@ -65,7 +60,6 @@
       homebrew-core,
       homebrew-cask,
       homebrew-bundle,
-      y3owk1n-tap,
       nixos-prismals,
       nixos-gh-action-ls,
       ...
@@ -84,7 +78,6 @@
             homebrew-core
             homebrew-cask
             homebrew-bundle
-            y3owk1n-tap
             ;
         }
       );
