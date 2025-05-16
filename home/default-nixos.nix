@@ -7,19 +7,19 @@
   # import sub modules
   imports = [
     ./apps-nixos.nix
-    ./bat.nix
-    ./editorconfig.nix
-    ./eza.nix
-    ./fish.nix
-    ./fzf.nix
-    ./gh.nix
-    ./git.nix
-    ./go.nix
-    ./lazygit.nix
-    ./nvim.nix
-    ./sesh.nix
-    ./starship.nix
-    ./tmux.nix
+    ./packages/bat.nix
+    ./packages/editorconfig.nix
+    ./packages/eza.nix
+    ./packages/fish.nix
+    ./packages/fzf.nix
+    ./packages/gh.nix
+    ./packages/git.nix
+    ./packages/go.nix
+    ./packages/lazygit.nix
+    ./packages/nvim.nix
+    ./packages/sesh.nix
+    ./packages/starship.nix
+    ./packages/tmux.nix
   ];
 
   # Home Manager needs a bit of information about you and the
