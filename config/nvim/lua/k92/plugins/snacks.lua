@@ -436,6 +436,7 @@ return {
 							key = "m",
 							desc = "Mason",
 							action = ":Mason",
+							enabled = not vim.g.disable_mason,
 						},
 						{
 							icon = "󰒲 ",
