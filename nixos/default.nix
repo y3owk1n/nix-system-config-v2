@@ -3,6 +3,7 @@
   nixpkgs,
   home-manager,
   catppuccin,
+  nixos-prismals,
   ...
 }:
 
@@ -34,6 +35,7 @@ in
           hostname
           githubuser
           githubname
+          nixos-prismals
           ;
       };
       modules = [
@@ -50,6 +52,7 @@ in
               hostname
               githubuser
               githubname
+              nixos-prismals
               ;
           };
           home-manager.users.${username} = {
@@ -83,6 +86,7 @@ in
           hostname
           githubuser
           githubname
+          nixos-prismals
           ;
       };
       modules = [
@@ -99,6 +103,7 @@ in
               hostname
               githubuser
               githubname
+              nixos-prismals
               ;
           };
           home-manager.users.${username} = {
