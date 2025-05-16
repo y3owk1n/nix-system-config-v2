@@ -6,16 +6,16 @@
 ############################################################################
 
 [macos]
-init ARG:
-    bash ./scripts/init.sh {{ ARG }}
+init host:
+    bash ./scripts/init.sh {{ host }}
 
 [macos]
-rebuild:
-    darwin-rebuild switch --verbose --impure --flake .
+rebuild host="":
+    darwin-rebuild switch --verbose --impure --flake .{{ if host != "" { "#" + host } else { "" } }}
 
 [linux]
-rebuild:
-    sudo nixos-rebuild switch --impure --flake .
+rebuild host="":
+    sudo nixos-rebuild switch --impure --flake .{{ if host != "" { "#" + host } else { "" } }}
 
 ############################################################################
 #
@@ -26,6 +26,10 @@ rebuild:
 [macos]
 update:
     sudo determinate-nixd upgrade
+    nix flake update
+
+[linux]
+update:
     nix flake update
 
 history:
