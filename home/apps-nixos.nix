@@ -40,9 +40,12 @@
     biome
     docker-compose-language-service
     docker-language-server
-    vscode-langservers-extracted
+    hadolint
+    shfmt
+    shellcheck
+    vscode-langservers-extracted # includes html, css, json, eslint
     gopls
-    gotools
+    gotools # includes godoc, goimports, callgraph, digraph, stringer or toolstash
     gofumpt
     golangci-lint
     just-lsp
@@ -51,6 +54,7 @@
     nil
     tailwindcss-language-server
     vtsls
+    eslint
     yaml-language-server
     nodePackages.prettier
     prisma-engines
