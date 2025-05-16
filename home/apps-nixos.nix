@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, nixos-prismals, ... }:
 {
   home.packages = with pkgs; [
     # --- utils ---
@@ -49,6 +49,7 @@
     yaml-language-server
     nodePackages.prettier
     prisma-engines
+    nixos-prismals.packages.${pkgs.system}.default
   ];
 
   # Apps that only requires single `enable = true`
