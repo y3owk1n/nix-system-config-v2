@@ -23,6 +23,7 @@
     ./packages/starship.nix
     ./packages/tmux.nix
     ./custom/cpenv.nix
+    ./custom/nvs.nix
   ];
 
   # Home Manager needs a bit of information about you and the
