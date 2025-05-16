@@ -20,6 +20,7 @@
     ./packages/sesh.nix
     ./packages/starship.nix
     ./packages/tmux.nix
+    ./custom/cpenv.nix
   ];
 
   # Home Manager needs a bit of information about you and the
