@@ -15,7 +15,7 @@ return {
 		},
 		---@type DotMd.Config
 		opts = {
-			root_dir = "~/Library/Mobile Documents/com~apple~CloudDocs/Cloud Notes",
+			root_dir = "/Users/kylewong/Library/Mobile Documents/com~apple~CloudDocs/Cloud Notes",
 			-- root_dir = "~/dotmd",
 			default_split = "vertical",
 			rollover_todo = {
