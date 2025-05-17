@@ -90,7 +90,6 @@
   # Additional setup for fish alias
   programs.fish.shellAliases = {
     "tailscale" = "mac tailscale";
-    "minio" = "mac minio";
     "stripe" = "mac stripe";
     "gh" = "mac gh";
   };

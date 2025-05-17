@@ -14,7 +14,6 @@
 
     # --- misc ---
     stripe-cli
-    minio
     just
 
     # --- rust ---
