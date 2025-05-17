@@ -86,6 +86,21 @@ return {
 				templ = "html",
 				htmlangular = "html",
 			},
+			files = {
+				exclude = {
+					"**/.git/**",
+					"**/node_modules/**",
+					"**/.hg/**",
+					"**/.svn/**",
+					"**/build/**",
+					"**/.medusa/**",
+				},
+			},
+			-- NOTE: can temporarily use this for monorepo detection
+			-- https://github.com/tailwindlabs/tailwindcss-intellisense/issues/1323#issuecomment-2873168306
+			-- experimental = {
+			-- 	configFile = "packages/ui/src/globals.css",
+			-- },
 		},
 	},
 	before_init = function(_, config)
