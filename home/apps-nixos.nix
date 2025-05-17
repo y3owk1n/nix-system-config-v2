@@ -18,8 +18,6 @@
     ast-grep
 
     # --- misc ---
-    stripe-cli
-    minio
     just
 
     # --- rust ---
@@ -57,7 +55,6 @@
     eslint
     yaml-language-server
     nodePackages.prettier
-    prisma-engines
     nixos-prismals.packages.${pkgs.system}.default
     nixos-gh-action-ls.packages.${pkgs.system}.default
   ];
@@ -88,8 +85,13 @@
   home.sessionVariables = {
     BIOME_BINARY = "${pkgs.biome}/bin/biome";
     IS_ORBSTACK = 1;
-    PRISMA_QUERY_ENGINE_LIBRARY = "${pkgs.prisma-engines}/lib/libquery_engine.node";
-    PRISMA_QUERY_ENGINE_BINARY = "${pkgs.prisma-engines}/bin/query-engine";
-    PRISMA_SCHEMA_ENGINE_BINARY = "${pkgs.prisma-engines}/bin/schema-engine";
+  };
+
+  # Additional setup for fish alias
+  programs.fish.shellAliases = {
+    "tailscale" = "mac tailscale";
+    "minio" = "mac minio";
+    "stripe" = "mac stripe";
+    "gh" = "mac gh";
   };
 }

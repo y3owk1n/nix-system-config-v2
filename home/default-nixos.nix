@@ -8,11 +8,11 @@
   imports = [
     ./apps-nixos.nix
     ./packages/bat.nix
+    ./packages/direnv.nix
     ./packages/editorconfig.nix
     ./packages/eza.nix
     ./packages/fish.nix
     ./packages/fzf.nix
-    ./packages/gh.nix
     ./packages/git.nix
     ./packages/go.nix
     ./packages/lazygit.nix
