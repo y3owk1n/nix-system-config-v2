@@ -37,7 +37,7 @@
     bash-language-server
     biome
     docker-compose-language-service
-    docker-language-server
+    dockerfile-language-server-nodejs
     hadolint
     shfmt
     shellcheck
