@@ -63,7 +63,7 @@ in
           };
           home-manager.users.${username} = {
             imports = [
-              ../home/default-darwin.nix
+              ../home-manager/default-darwin.nix
               # catppuccin global
               catppuccin.homeModules.catppuccin
             ];
@@ -139,7 +139,7 @@ in
           };
           home-manager.users.${username} = {
             imports = [
-              ../home/default-darwin.nix
+              ../home-manager/default-darwin.nix
               # catppuccin global
               catppuccin.homeModules.catppuccin
             ];
