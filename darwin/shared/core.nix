@@ -17,6 +17,8 @@
     "flakes"
   ];
 
+  nix.channel.enable = false;
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
   nixpkgs.config.allowBroken = true;
