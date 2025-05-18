@@ -1,7 +1,6 @@
 {
   pkgs,
-  nixos-prismals,
-  nixos-gh-action-ls,
+  nixos-npm-ls,
   ...
 }:
 {
@@ -55,8 +54,8 @@
     eslint
     yaml-language-server
     nodePackages.prettier
-    nixos-prismals.packages.${pkgs.system}.default
-    nixos-gh-action-ls.packages.${pkgs.system}.default
+    nixos-npm-ls.packages.${pkgs.system}.prisma-language-server
+    nixos-npm-ls.packages.${pkgs.system}.gh-actions-language-server
   ];
 
   # Apps that only requires single `enable = true`
