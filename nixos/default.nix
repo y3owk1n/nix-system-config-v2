@@ -35,12 +35,12 @@ in
           hostname
           githubuser
           githubname
-          nixos-npm-ls
           ;
       };
       modules = [
         /etc/nixos/configuration.nix
         ./hosts/work-imac.nix
+        ./shared/overlays.nix
         home-manager.nixosModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
@@ -52,7 +52,6 @@ in
               hostname
               githubuser
               githubname
-              nixos-npm-ls
               ;
           };
           home-manager.users.${username} = {
@@ -86,12 +85,12 @@ in
           hostname
           githubuser
           githubname
-          nixos-npm-ls
           ;
       };
       modules = [
         /etc/nixos/configuration.nix
         ./hosts/personal-m3.nix
+        ./shared/overlays.nix
         home-manager.nixosModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
@@ -103,7 +102,6 @@ in
               hostname
               githubuser
               githubname
-              nixos-npm-ls
               ;
           };
           home-manager.users.${username} = {
