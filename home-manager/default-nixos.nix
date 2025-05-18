@@ -14,7 +14,7 @@
     ./packages/fish.nix
     ./packages/fzf.nix
     ./packages/git.nix
-    ./packages/go.nix
+    # ./packages/go.nix
     ./packages/lazygit.nix
     ./packages/nvim.nix
     ./packages/sesh.nix
