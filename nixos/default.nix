@@ -3,8 +3,7 @@
   nixpkgs,
   home-manager,
   catppuccin,
-  nixos-prismals,
-  nixos-gh-action-ls,
+  nixos-npm-ls,
   ...
 }:
 
@@ -36,8 +35,7 @@ in
           hostname
           githubuser
           githubname
-          nixos-prismals
-          nixos-gh-action-ls
+          nixos-npm-ls
           ;
       };
       modules = [
@@ -54,8 +52,7 @@ in
               hostname
               githubuser
               githubname
-              nixos-prismals
-              nixos-gh-action-ls
+              nixos-npm-ls
               ;
           };
           home-manager.users.${username} = {
@@ -89,8 +86,7 @@ in
           hostname
           githubuser
           githubname
-          nixos-prismals
-          nixos-gh-action-ls
+          nixos-npm-ls
           ;
       };
       modules = [
@@ -107,8 +103,7 @@ in
               hostname
               githubuser
               githubname
-              nixos-prismals
-              nixos-gh-action-ls
+              nixos-npm-ls
               ;
           };
           home-manager.users.${username} = {

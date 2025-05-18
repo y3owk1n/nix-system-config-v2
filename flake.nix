@@ -39,9 +39,7 @@
 
     catppuccin.url = "github:catppuccin/nix";
 
-    nixos-prismals.url = "github:y3owk1n/nixos-prismals";
-
-    nixos-gh-action-ls.url = "github:y3owk1n/nixos-gh-actions-ls";
+    nixos-npm-ls.url = "github:y3owk1n/nixos-npm-ls";
   };
 
   # The `outputs` function will return all the build results of the flake.
@@ -60,8 +58,7 @@
       homebrew-core,
       homebrew-cask,
       homebrew-bundle,
-      nixos-prismals,
-      nixos-gh-action-ls,
+      nixos-npm-ls,
       ...
     }:
     {
@@ -91,8 +88,7 @@
             home-manager
             nix-homebrew
             catppuccin
-            nixos-prismals
-            nixos-gh-action-ls
+            nixos-npm-ls
             ;
         }
       );
