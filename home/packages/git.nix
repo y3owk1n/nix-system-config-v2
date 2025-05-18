@@ -1,6 +1,7 @@
 {
   lib,
   useremail,
+  username,
   githubuser,
   githubname,
   pkgs,
@@ -9,9 +10,9 @@
 let
   pubkeyPath =
     if pkgs.stdenv.isDarwin then
-      "${builtins.getEnv "HOME"}/.ssh/id_ed25519.pub"
+      "/Users/${username}/.ssh/id_ed25519.pub"
     else
-      "/mnt/mac/Users/kylewong/.ssh/id_ed25519.pub";
+      "/mnt/mac/Users/${username}/.ssh/id_ed25519.pub";
 in
 {
   # `programs.git` will generate the config file: ~/.config/git/config
@@ -64,7 +65,7 @@ in
         fetch.writeCommitGraph = true;
         gc.writeCommitGraph = true;
         github.user = githubuser;
-        gpg.ssh.allowedSignersFile = "~/.ssh/allowed_signers";
+        gpg.ssh.allowedSignersFile = "/Users/${username}/.ssh/allowed_signers";
         http.sslVerify = true;
         init.defaultBranch = "main";
         interactive.singlekey = true;

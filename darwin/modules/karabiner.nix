@@ -13,7 +13,7 @@ let
   plist_path = "/Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/Info.plist";
 in
 {
-  system.activationScripts.postUserActivation.text = ''
+  system.activationScripts.postActivation.text = ''
     	echo "Checking if Karabiner-VirtualHIDDevice-Manager exists..."
 
     	if [ -f "${application_path}" ]; then
