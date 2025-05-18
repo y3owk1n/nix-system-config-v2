@@ -71,3 +71,19 @@ mirror-nvim:
     git subtree split --prefix=config/nvim -b nvim-config
     git remote add nvim-config https://github.com/y3owk1n/nvim.git
     git push nvim-config nvim-config:main
+
+time := datetime("%Y-%m-%d-%H-%M-%S")
+user := `whoami`
+icloud_drive_path := "/Users/kylewong/Library/Mobile\\ Documents/com~apple~CloudDocs"
+ssh_backup_path := icloud_drive_path + "/ssh/" + user + "/" + time
+
+[macos]
+backup-ssh:
+    mkdir -p {{ ssh_backup_path }}
+    cp ~/.ssh/id_ed25519 {{ ssh_backup_path }}/id_ed25519
+    cp ~/.ssh/id_ed25519.pub {{ ssh_backup_path }}/id_ed25519.pub
+
+[macos]
+restore-ssh:
+    cp {{ ssh_backup_path }}/id_ed25519 ~/.ssh/id_ed25519
+    cp {{ ssh_backup_path }}/id_ed25519.pub ~/.ssh/id_ed25519.pub
