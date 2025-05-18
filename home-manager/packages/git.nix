@@ -8,11 +8,9 @@
   ...
 }:
 let
-  pubkeyPath =
-    if pkgs.stdenv.isDarwin then
-      "/Users/${username}/.ssh/id_ed25519.pub"
-    else
-      "/mnt/mac/Users/${username}/.ssh/id_ed25519.pub";
+  # doesn't matter, the keys should be in the macos host and that's the right path for now
+  # we don't really need this key in orbstack based vm anyways
+  pubkeyPath = "/Users/${username}/.ssh/id_ed25519.pub";
 in
 {
   # `programs.git` will generate the config file: ~/.config/git/config
@@ -23,7 +21,10 @@ in
     rm -f ~/.gitconfig
   '';
 
-  home.file.".ssh/allowed_signers".text = "* ${builtins.readFile pubkeyPath}";
+  # Only do this when we are on the host macOS, because we will use the keys from the host in orbstack vm
+  home.file = pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
+    ".ssh/allowed_signers".text = "* ${builtins.readFile pubkeyPath}";
+  };
 
   programs.git = {
     enable = true;
