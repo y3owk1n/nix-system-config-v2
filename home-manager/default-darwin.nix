@@ -20,6 +20,7 @@
     ./packages/lazygit.nix
     ./packages/nvim.nix
     ./packages/sesh.nix
+    ./packages/ssh.nix
     ./packages/starship.nix
     ./packages/tmux.nix
     ./custom/cpenv.nix
