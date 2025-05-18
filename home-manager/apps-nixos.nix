@@ -10,21 +10,21 @@
     rip2
     imagemagick
     ghostscript
-    ninja
-    cmake
-    gettext
+    # ninja
+    # cmake
+    # gettext
     ast-grep
 
     # --- misc ---
     just
 
     # --- rust ---
-    cargo
+    # cargo
 
     # --- node ---
-    nodejs_22
+    # nodejs_22
     # corepack_latest
-    corepack_22 # pin to 22 instead, latest is fetching rc versions
+    # corepack_22 # pin to 22 instead, latest is fetching rc versions
 
     # --- nix ---
     nixfmt-rfc-style
@@ -53,8 +53,8 @@
     eslint
     yaml-language-server
     nodePackages.prettier
-    prisma-language-server
-    gh-actions-language-server
+    prisma-language-server # from `nixos-npm-ls` flake
+    gh-actions-language-server # from `nixos-npm-ls` flake
   ];
 
   # Apps that only requires single `enable = true`
