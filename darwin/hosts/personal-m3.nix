@@ -23,6 +23,7 @@ in
         safariKeys
         pkgs
         config
+        username
         ;
     })
   ];

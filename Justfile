@@ -11,7 +11,7 @@ init host:
 
 [macos]
 rebuild host="":
-    darwin-rebuild switch --verbose --impure --flake .{{ if host != "" { "#" + host } else { "" } }}
+    sudo darwin-rebuild switch --impure --flake .{{ if host != "" { "#" + host } else { "" } }}
 
 [linux]
 rebuild host="":
