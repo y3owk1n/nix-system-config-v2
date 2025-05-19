@@ -1,6 +1,5 @@
+{ pkgs, ... }:
 let
-  pkgs = import <nixpkgs> { };
-
   version = "5.0.0";
   pkgUrl = "https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice/releases/download/v${version}/Karabiner-DriverKit-VirtualHIDDevice-${version}.pkg";
 
