@@ -3,7 +3,6 @@
   nixpkgs,
   home-manager,
   catppuccin,
-  nixos-npm-ls,
   ...
 }:
 

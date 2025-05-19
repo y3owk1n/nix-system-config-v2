@@ -1,16 +1,14 @@
 {
   lib,
   useremail,
-  username,
   githubuser,
   githubname,
   pkgs,
+  config,
   ...
 }:
 let
-  # doesn't matter, the keys should be in the macos host and that's the right path for now
-  # we don't really need this key in orbstack based vm anyways
-  pubkeyPath = "/Users/${username}/.ssh/id_ed25519.pub";
+  pubkeyPath = "${config.home.homeDirectory}/.ssh/id_ed25519.pub";
 in
 {
   # `programs.git` will generate the config file: ~/.config/git/config
@@ -18,13 +16,10 @@ in
   #
   #    https://git-scm.com/docs/git-config#Documentation/git-config.txt---global
   home.activation.removeExistingGitconfig = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-    rm -f ~/.gitconfig
+    rm -f ${config.home.homeDirectory}/.gitconfig
   '';
 
-  # Only do this when we are on the host macOS, because we will use the keys from the host in orbstack vm
-  home.file = pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
-    ".ssh/allowed_signers".text = "* ${builtins.readFile pubkeyPath}";
-  };
+  home.file.".ssh/allowed_signers".text = "* ${builtins.readFile pubkeyPath}";
 
   programs.git = {
     enable = true;
@@ -66,7 +61,7 @@ in
         fetch.writeCommitGraph = true;
         gc.writeCommitGraph = true;
         github.user = githubuser;
-        gpg.ssh.allowedSignersFile = "/Users/${username}/.ssh/allowed_signers";
+        gpg.ssh.allowedSignersFile = "${config.home.homeDirectory}/.ssh/allowed_signers";
         http.sslVerify = true;
         init.defaultBranch = "main";
         interactive.singlekey = true;
