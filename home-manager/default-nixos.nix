@@ -13,11 +13,13 @@
     ./packages/eza.nix
     ./packages/fish.nix
     ./packages/fzf.nix
+    ./packages/gh.nix
     ./packages/git.nix
     # ./packages/go.nix
     ./packages/lazygit.nix
     ./packages/nvim.nix
     ./packages/sesh.nix
+    ./packages/ssh.nix
     ./packages/starship.nix
     ./packages/tmux.nix
     ./custom/cpenv.nix

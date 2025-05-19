@@ -1,16 +1,21 @@
-{ ... }:
+{ pkgs, ... }:
 {
   programs.ssh = {
     enable = true;
     addKeysToAgent = "yes";
-    includes = [
-      "~/.orbstack/ssh/config" # for orbstack
-    ];
+    includes = (
+      if pkgs.stdenv.isDarwin then
+        [
+          "~/.orbstack/ssh/config" # Orbstack in host macos
+        ]
+      else
+        [ ]
+    );
     extraConfig = ''
       Host github.com
-        AddKeysToAgent yes
-        UseKeychain yes
-        IdentityFile ~/.ssh/id_ed25519
+      	AddKeysToAgent yes
+      	${if pkgs.stdenv.isDarwin then "UseKeychain yes" else ""}
+      	IdentityFile ~/.ssh/id_ed25519
     '';
   };
 }
