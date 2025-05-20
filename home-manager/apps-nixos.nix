@@ -89,6 +89,5 @@
   programs.fish.shellAliases = {
     "tailscale" = "mac tailscale";
     "stripe" = "mac stripe";
-    "docker" = "mac docker";
   };
 }

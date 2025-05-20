@@ -143,6 +143,9 @@ And then run the test again and it should work now on both
 
 ### Fish
 
+> [!note]
+> No longer required, since `catppuccin-nix` flake handles everything for themeing.
+
 Set theme for fish
 
 ```bash
@@ -169,4 +172,14 @@ ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 
 # Add to Github
 gh ssh-key add ~/.ssh/id_ed25519.pub --type signing --title "personal laptop"
+```
+
+### Orbstack related
+
+Using macos host docker in nixos
+
+[Reference](https://github.com/orbstack/orbstack/issues/269#issuecomment-1548858675)
+
+```bash
+mac link docker
 ```
