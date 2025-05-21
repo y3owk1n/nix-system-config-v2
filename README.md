@@ -11,7 +11,7 @@ This is a project to help me to manage my Nix system configuration, mainly with 
 - Editor: [neovim](https://neovim.io/)
 - Multiplexer: [tmux](https://github.com/tmux/tmux/wiki)
 - Prompt: [starship](https://starship.rs/)
-- Browser: ~~[zen browser](https://zen-browser.app/)~~ use Safari
+- Browser: [zen browser](https://zen-browser.app/)
 - Docker: [orbstack](https://orbstack.dev/)
 - Network: [tailscale](https://tailscale.com/)
 - Launcher: [raycast](https://www.raycast.com/)
