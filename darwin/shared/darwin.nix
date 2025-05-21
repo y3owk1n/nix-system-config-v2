@@ -255,7 +255,7 @@
           OpenPrivateWindowWhenNotRestoringSessionAtLaunch = 0;
           PrivateBrowsingRequiresAuthentication = 1;
           PrivateSearchEngineUsesNormalSearchEngineToggle = 1;
-          SearchProviderShortName = "DuckDuckGo";
+          SearchProviderShortName = "Google";
           ShowFavoritesUnderSmartSearchField = 0;
           ShowFullURLInSmartSearchField = 1;
           ShowOverlayStatusBar = 1;

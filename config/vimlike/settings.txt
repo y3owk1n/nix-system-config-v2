@@ -1,0 +1,42 @@
+// Scroll
+settings.map('j', VLCommand.SCROLL_DOWN);
+settings.map('k', VLCommand.SCROLL_UP);
+settings.map('h', VLCommand.SCROLL_LEFT);
+settings.map('l', VLCommand.SCROLL_RIGHT);
+settings.map('ctrl+d', VLCommand.HALF_PAGE_DOWN);
+settings.map('ctrl+u', VLCommand.HALF_PAGE_UP);
+settings.map('g g', VLCommand.SCROLL_TO_TOP);
+settings.map('shift+g', VLCommand.SCROLL_TO_BOTTOM);
+
+// Normal mode
+settings.map('f', VLCommand.ACTIVATE_LINK);
+settings.map('shift+f', VLCommand.ACTIVATE_LINK_WITH_NEW_TAB);
+settings.map('n', VLCommand.NEXT_LINK);
+settings.map('shift+n', VLCommand.PREV_LINK);
+settings.map('tab', VLCommand.NEXT_LINK);
+settings.map('shift+tab', VLCommand.PREV_LINK);
+settings.map('shift+h', VLCommand.GO_BACK);
+settings.map('shift+l', VLCommand.GO_FORWARD);
+settings.map('g i', VLCommand.FOCUS_INPUT);
+settings.map('ctrl+i', VLCommand.INSERT_MODE);
+settings.map('g 1', VLCommand.OPEN_TAB1);
+settings.map('g 2', VLCommand.OPEN_TAB2);
+settings.map('g 3', VLCommand.OPEN_TAB3);
+settings.map('g 4', VLCommand.OPEN_TAB4);
+settings.map('g 5', VLCommand.OPEN_TAB5);
+settings.map('g 6', VLCommand.OPEN_TAB6);
+settings.map('g 7', VLCommand.OPEN_TAB7);
+settings.map('g 8', VLCommand.OPEN_TAB8);
+settings.map('g 9', VLCommand.OPEN_TAB9);
+settings.map('g 0', VLCommand.OPEN_LAST_TAB);
+settings.map('ctrl+u', VLCommand.VIDEO_FULLSCREEN);
+settings.map('ctrl+p', VLCommand.VIDEO_PIP);
+settings.map('alt+shift+a', VLCommand.DARK_MODE);
+settings.map('r', VLCommand.RELOAD);
+settings.map('?', VLCommand.TOGGLE_HELP);
+settings.map('shift+slash', VLCommand.TOGGLE_HELP);
+settings.map('/', VLCommand.SHOW_CONSOLE);
+settings.map('y y', VLCommand.COPY_CURRENT_URL);
+settings.map('y t', VLCommand.DUPLICATE_TAB);
+settings.map('o', VLCommand.SHOW_COMMAND_BAR);
+settings.map('shift+z', VLCommand.RESTORE_TAB);
