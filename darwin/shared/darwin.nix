@@ -235,6 +235,13 @@
           DSDontWriteNetworkStores = true;
           DSDontWriteUSBStores = true;
         };
+        "com.brave.Browser" = {
+          NSUserKeyEquivalents = {
+            "Pin Tab" = "@d";
+            "Select Next Tab" = "^l";
+            "Select Previous Tab" = "^h";
+          };
+        };
         "com.apple.Safari" = {
           AllowJavaScriptFromAppleEvents = 0;
           AlwaysRestoreSessionAtLaunch = 1;
