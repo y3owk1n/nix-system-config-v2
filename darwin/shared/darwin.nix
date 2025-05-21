@@ -291,6 +291,8 @@
             "Show Previous Tab" = "^h";
             "Move Tab to New Window" = "^\\";
             "Merge All Windows" = "^-";
+            "Pin Tab" = "@d";
+            "Unpin Tab" = "@d";
           } // safariKeys;
         };
         "com.apple.AdLib" = {
