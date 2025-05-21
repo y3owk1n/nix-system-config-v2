@@ -11,11 +11,17 @@ This is a project to help me to manage my Nix system configuration, mainly with 
 - Editor: [neovim](https://neovim.io/)
 - Multiplexer: [tmux](https://github.com/tmux/tmux/wiki)
 - Prompt: [starship](https://starship.rs/)
-- Browser: [zen browser](https://zen-browser.app/)
+- Browser: ~~[zen browser](https://zen-browser.app/)~~ use Safari
 - Docker: [orbstack](https://orbstack.dev/)
 - Network: [tailscale](https://tailscale.com/)
 - Launcher: [raycast](https://www.raycast.com/)
 - Window Tiling Manager: [aerospace](https://nikitabobko.github.io/AeroSpace/guide)
+
+## Safari Extensions
+
+- [Web Shield (Beta)](https://github.com/arjpar/WebShield) - like ublock origin
+- [VimLike](https://www.jasminestudios.net/vimlike/) - like vimium
+- [Refined Github](https://github.com/refined-github/refined-github) - better github experience
 
 ## Notes for future me
 
