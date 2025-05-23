@@ -65,7 +65,6 @@ in
     ];
 
     casks = [
-      "zerotier-one"
       "tailscale"
       "ghostty"
       "rustdesk"
