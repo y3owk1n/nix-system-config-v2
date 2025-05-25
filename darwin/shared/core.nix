@@ -53,13 +53,8 @@
   # environment.shells = [ pkgs.fish ];
 
   environment.systemPackages = with pkgs; [
-    ncurses
     coreutils
   ];
-
-  environment.etc.terminfo = {
-    source = "${pkgs.ncurses}/share/terminfo";
-  };
 
   # Add ability to used TouchID for sudo authentication
   security.pam.services.sudo_local = {
