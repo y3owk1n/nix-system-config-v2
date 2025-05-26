@@ -1,11 +1,11 @@
 {
 	"name": "Vimium C",
-	"@time": "4/14/2025, 12:08:33 PM",
-	"time": 1744603713330,
+	"@time": "5/26/2025, 10:50:25 AM",
+	"time": 1748227825063,
 	"environment": {
-		"extension": "1.99.997",
+		"extension": "2.12.2",
 		"platform": "mac",
-		"firefox": 137
+		"chromium": 136
 	},
 	"allBrowserUrls": true,
 	"exclusionRules": [
@@ -47,10 +47,11 @@
 		"map J moveTabRight",
 		"map ? showHelp",
 		"map yy copyCurrentUrl",
+		"map yi LinkHints.activateCopyImage",
 		"map <m-d> togglePinTab",
-		"map gk firstTab",
-		"map gj lastTab",
-		"map gt firstTab",
+		"map g1 firstTab",
+		"map g0 lastTab",
+		"map gr goToRoot",
 		"map g` visitPreviousTab",
 		""
 	],
