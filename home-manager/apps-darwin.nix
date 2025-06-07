@@ -20,9 +20,10 @@
     cargo
 
     # --- node ---
+    nodejs_22
     # corepack_latest
-    corepack_22 # pin to 22 instead, latest is fetching rc versions
-    fnm
+    # corepack_22 # pin to 22 instead, latest is fetching rc versions
+    # fnm
 
     # --- nix ---
     nixfmt-rfc-style

@@ -8,6 +8,7 @@
   imports = [
     ./apps-darwin.nix
     ./packages/bat.nix
+    ./packages/direnv.nix
     ./packages/editorconfig.nix
     ./packages/eza.nix
     ./packages/fish.nix
