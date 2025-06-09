@@ -33,12 +33,7 @@ vim.g.has_just = vim.fn.executable("just") == 1
 vim.g.has_nix = vim.fn.executable("nix") == 1
 vim.g.has_tmux = vim.fn.executable("tmux") == 1
 
-
 local function is_nixos()
-	if vim.env.NIX_PATH or vim.env.NIX_STORE then
-		return true
-	end
-
 	local os_release, err = pcall(vim.fn.readfile, "/etc/os-release")
 	if err then
 		return false
@@ -51,7 +46,6 @@ local function is_nixos()
 
 	return false
 end
-
 
 vim.g.disable_mason = is_nixos()
 
