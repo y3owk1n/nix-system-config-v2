@@ -3,7 +3,6 @@ local lsp_utils = require("k92.utils.lsp")
 ---@type vim.lsp.Config
 return {
 	cmd = { "tailwindcss-language-server", "--stdio" },
-	workspace_required = true,
 	-- filetypes copied and adjusted from tailwindcss-intellisense
 	filetypes = {
 		-- html
@@ -82,9 +81,11 @@ return {
 			},
 			includeLanguages = {
 				eelixir = "html-eex",
+				elixir = "phoenix-heex",
 				eruby = "erb",
-				templ = "html",
+				heex = "phoenix-heex",
 				htmlangular = "html",
+				templ = "html",
 			},
 			files = {
 				exclude = {
@@ -115,6 +116,7 @@ return {
 			config.settings.editor.tabSize = vim.lsp.util.get_effective_tabstop()
 		end
 	end,
+	workspace_required = true,
 	---@param bufnr integer
 	---@param cb fun(root_dir?:string)
 	root_dir = function(bufnr, cb)
