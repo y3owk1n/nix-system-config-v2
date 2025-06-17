@@ -1,64 +1,60 @@
 local lsp_utils = require("k92.utils.lsp")
 
+--- Find Tailwind entry CSS file within a root directory
+---@param root_dir string
+---@return string|nil
+local function find_tailwind_entry_file(root_dir)
+	local uv = vim.loop
+
+	local candidates = {
+		"tailwind.css",
+		"globals.css",
+		"app.css",
+		"src/styles.css",
+		"src/index.css",
+		"styles/globals.css",
+		"packages/ui/src/globals.css",
+		"packages/ui/src/styles/globals.css",
+	}
+
+	for _, relpath in ipairs(candidates) do
+		local fullpath = root_dir .. "/" .. relpath
+		local stat = uv.fs_stat(fullpath)
+		if stat and stat.type == "file" then
+			local fd = uv.fs_open(fullpath, "r", 438) -- 0666
+			if fd then
+				local content = uv.fs_read(fd, stat.size, 0)
+				uv.fs_close(fd)
+
+				if
+					content
+					and (content:find('@import%s+"tailwindcss"', 1, true) or content:find("@tailwind", 1, true))
+				then
+					return fullpath
+				end
+			end
+		end
+	end
+
+	return nil
+end
+
 ---@type vim.lsp.Config
 return {
 	cmd = { "tailwindcss-language-server", "--stdio" },
-	-- filetypes copied and adjusted from tailwindcss-intellisense
 	filetypes = {
-		-- html
-		"aspnetcorerazor",
-		"astro",
-		"astro-markdown",
-		"blade",
-		"clojure",
-		"django-html",
-		"htmldjango",
-		"edge",
-		"eelixir", -- vim ft
-		"elixir",
-		"ejs",
-		"erb",
-		"eruby", -- vim ft
-		"gohtml",
-		"gohtmltmpl",
-		"haml",
-		"handlebars",
-		"hbs",
 		"html",
-		"htmlangular",
-		"html-eex",
-		"heex",
-		"jade",
-		"leaf",
-		"liquid",
 		"markdown",
 		"mdx",
-		"mustache",
-		"njk",
-		"nunjucks",
-		"php",
-		"razor",
-		"slim",
-		"twig",
-		-- css
 		"css",
-		"less",
 		"postcss",
 		"sass",
 		"scss",
-		"stylus",
-		"sugarss",
-		-- js
 		"javascript",
 		"javascriptreact",
-		"reason",
 		"rescript",
 		"typescript",
 		"typescriptreact",
-		-- mixed
-		"vue",
-		"svelte",
-		"templ",
 	},
 	settings = {
 		tailwindCSS = {
@@ -75,17 +71,7 @@ return {
 			classAttributes = {
 				"class",
 				"className",
-				"class:list",
 				"classList",
-				"ngClass",
-			},
-			includeLanguages = {
-				eelixir = "html-eex",
-				elixir = "phoenix-heex",
-				eruby = "erb",
-				heex = "phoenix-heex",
-				htmlangular = "html",
-				templ = "html",
 			},
 			files = {
 				exclude = {
@@ -114,6 +100,16 @@ return {
 		if not config.settings.editor.tabSize then
 			-- set tab size for hover
 			config.settings.editor.tabSize = vim.lsp.util.get_effective_tabstop()
+		end
+
+		local root_dir = config.root_dir
+		if root_dir then
+			local entry_file = find_tailwind_entry_file(root_dir)
+			if entry_file then
+				config.settings.tailwindCSS = config.settings.tailwindCSS or {}
+				config.settings.tailwindCSS.experimental = config.settings.tailwindCSS.experimental or {}
+				config.settings.tailwindCSS.experimental.configFile = entry_file
+			end
 		end
 	end,
 	workspace_required = true,
