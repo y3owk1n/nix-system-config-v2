@@ -385,16 +385,6 @@ vim.api.nvim_create_user_command("LspInfo", function()
 				)
 			end
 
-			-- Initialization options
-			if client.config.init_options then
-				table.insert(message, " **Initialization Options:**")
-				table.insert(message, "```lua")
-				for line in vim.inspect(client.config.init_options):gmatch("[^\r\n]+") do
-					table.insert(message, line)
-				end
-				table.insert(message, "```")
-			end
-
 			-- Workspace folders
 			if client.workspace_folders then
 				table.insert(message, " **Workspace Folders:**")
@@ -428,6 +418,16 @@ vim.api.nvim_create_user_command("LspInfo", function()
 				end
 			end
 			table.insert(message, " **Diagnostics:** " .. (has_diagnostics and "Available" or "None"))
+
+			-- Settings options
+			if client.config.settings then
+				table.insert(message, " **Settings Options:**")
+				table.insert(message, "```lua")
+				for line in vim.inspect(client.config.settings):gmatch("[^\r\n]+") do
+					table.insert(message, line)
+				end
+				table.insert(message, "```")
+			end
 
 			-- Capabilities (verbose, last)
 			table.insert(message, " **Full Capabilities:**")
