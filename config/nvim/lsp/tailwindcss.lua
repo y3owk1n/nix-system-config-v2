@@ -15,6 +15,7 @@ local function find_tailwind_entry_file(root_dir)
 		"styles/globals.css",
 		"packages/ui/src/globals.css",
 		"packages/ui/src/styles/globals.css",
+		"packages/ui/src/styles.css",
 	}
 
 	for _, relpath in ipairs(candidates) do
