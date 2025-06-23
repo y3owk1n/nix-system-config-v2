@@ -69,7 +69,7 @@ in
 
     casks = [
       "blender"
-      "tailscale"
+      "tailscale-app"
       "ghostty"
       "rustdesk"
       "brave-browser"

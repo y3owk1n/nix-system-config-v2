@@ -5,9 +5,17 @@
   ...
 }:
 {
-  networking.hostName = hostname;
-  networking.computerName = hostname;
   system.defaults.smb.NetBIOSName = hostname;
+
+  networking = {
+    hostName = hostname;
+    computerName = hostname;
+    applicationFirewall = {
+      enable = true;
+      blockAllIncoming = true;
+      enableStealthMode = true;
+    };
+  };
 
   nix.settings.trusted-users = [ username ];
 
@@ -31,7 +39,9 @@
   # don't wan't the daemon service to be managed for you.
   # nix.useDaemon = true;
 
-  nix.package = pkgs.nix;
+  # nix.package = pkgs.nixVersions.latest;
+  # nix.package = pkgs.nix;
+  # nix.package = pkgs.nixVersions.nix_2_29; # Explicit version
   # nix.package = pkgs.nixVersions.git;
 
   # do garbage collection weekly to keep disk usage low
