@@ -65,7 +65,7 @@ in
     ];
 
     casks = [
-      "tailscale"
+      "tailscale-app"
       "ghostty"
       "rustdesk"
       "brave-browser"
