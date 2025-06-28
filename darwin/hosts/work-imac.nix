@@ -77,6 +77,7 @@ in
       "whatsapp"
       "keka"
       "appcleaner"
+      "safari-technology-preview"
       "adobe-creative-cloud"
     ];
 
