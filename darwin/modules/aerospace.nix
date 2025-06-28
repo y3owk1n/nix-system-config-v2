@@ -102,6 +102,10 @@ in
           run = 'move-node-to-workspace 1'
 
           [[on-window-detected]]
+          if.app-id = 'com.apple.SafariTechnologyPreview'
+          run = 'move-node-to-workspace 1'
+
+          [[on-window-detected]]
           if.app-id = 'com.brave.Browser'
           run = 'move-node-to-workspace 1'
 
