@@ -81,7 +81,7 @@ in
       "whatsapp"
       "keka"
       "appcleaner"
-      "adobe-creative-cloud"
+      # "adobe-creative-cloud"
     ];
 
     masApps = { };
