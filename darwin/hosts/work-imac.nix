@@ -7,6 +7,7 @@
 let
   safariKeys = {
     "New Traworld Window" = "^1";
+    "New Madani TRX Window" = "^2";
   };
 in
 {
