@@ -254,7 +254,7 @@
           OpenPrivateWindowWhenNotRestoringSessionAtLaunch = 0;
           PrivateBrowsingRequiresAuthentication = 1;
           PrivateSearchEngineUsesNormalSearchEngineToggle = 1;
-          SearchProviderShortName = "Google";
+          SearchProviderShortName = "DuckDuckGo";
           ShowFavoritesUnderSmartSearchField = 0;
           ShowFullURLInSmartSearchField = 1;
           ShowOverlayStatusBar = 0;
@@ -315,7 +315,7 @@
           OpenPrivateWindowWhenNotRestoringSessionAtLaunch = 0;
           PrivateBrowsingRequiresAuthentication = 1;
           PrivateSearchEngineUsesNormalSearchEngineToggle = 1;
-          SearchProviderShortName = "Google";
+          SearchProviderShortName = "DuckDuckGo";
           ShowFavoritesUnderSmartSearchField = 0;
           ShowFullURLInSmartSearchField = 1;
           ShowOverlayStatusBar = 0;
