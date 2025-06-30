@@ -15,7 +15,5 @@ settings.map('shift+h', VLCommand.GO_BACK);
 settings.map('shift+l', VLCommand.GO_FORWARD);
 settings.map('g i', VLCommand.FOCUS_INPUT);
 settings.map('ctrl+i', VLCommand.INSERT_MODE);
-settings.map('?', VLCommand.TOGGLE_HELP);
-settings.map('shift+slash', VLCommand.TOGGLE_HELP);
 settings.map('y y', VLCommand.COPY_CURRENT_URL);
 settings.map('y t', VLCommand.DUPLICATE_TAB);
