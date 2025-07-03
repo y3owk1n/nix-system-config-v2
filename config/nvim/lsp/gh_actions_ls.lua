@@ -14,7 +14,6 @@ return {
 		end
 	end,
 	init_options = {},
-	workspace_required = true,
 	capabilities = {
 		workspace = {
 			didChangeWorkspaceFolders = {

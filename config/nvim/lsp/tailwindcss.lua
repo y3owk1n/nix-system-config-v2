@@ -115,8 +115,8 @@ return {
 	end,
 	workspace_required = true,
 	---@param bufnr integer
-	---@param cb fun(root_dir?:string)
-	root_dir = function(bufnr, cb)
+	---@param on_dir fun(root_dir?:string)
+	root_dir = function(bufnr, on_dir)
 		local fname = vim.api.nvim_buf_get_name(bufnr)
 
 		local workspace_root = lsp_utils.root_pattern("pnpm-workspace.yaml")(fname)
@@ -133,9 +133,9 @@ return {
 				)
 			then
 				if workspace_root then
-					cb(workspace_root)
+					on_dir(workspace_root)
 				else
-					cb(package_root)
+					on_dir(package_root)
 				end
 			end
 		end
