@@ -17,12 +17,12 @@ return {
 	cmd = { "gopls" },
 	filetypes = { "go", "gomod", "gowork", "gotmpl" },
 	---@param bufnr integer
-	---@param cb fun(root_dir?:string)
-	root_dir = function(bufnr, cb)
+	---@param on_dir fun(root_dir?:string)
+	root_dir = function(bufnr, on_dir)
 		local fname = vim.api.nvim_buf_get_name(bufnr)
 
 		if not mod_cache then
-			cb(get_root(fname))
+			on_dir(get_root(fname))
 			return
 		end
 
@@ -33,7 +33,7 @@ return {
 				if output.stdout then
 					mod_cache = vim.trim(output.stdout)
 				end
-				cb(get_root(fname))
+				on_dir(get_root(fname))
 			else
 				vim.schedule(function()
 					vim.notify(("[gopls] cmd failed with code %d: %s\n%s"):format(output.code, cmd, output.stderr))

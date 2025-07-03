@@ -9,6 +9,7 @@ return {
 		"astro",
 		"css",
 		"graphql",
+		"html",
 		"javascript",
 		"javascriptreact",
 		"json",
@@ -21,14 +22,11 @@ return {
 	},
 	workspace_required = true,
 	---@param bufnr integer
-	---@param cb fun(root_dir?:string)
-	root_dir = function(bufnr, cb)
+	---@param on_dir fun(root_dir?:string)
+	root_dir = function(bufnr, on_dir)
 		local fname = vim.api.nvim_buf_get_name(bufnr)
-
-		local root_string = lsp_utils.root_pattern(unpack(root_files))(fname)
-
-		if root_string then
-			cb(root_string)
-		end
+		root_files = lsp_utils.insert_package_json(root_files, "biome", fname)
+		local root_dir = vim.fs.dirname(vim.fs.find(root_files, { path = fname, upward = true })[1])
+		on_dir(root_dir)
 	end,
 }

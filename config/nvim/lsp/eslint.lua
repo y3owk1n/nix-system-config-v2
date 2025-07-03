@@ -1,39 +1,5 @@
 local lsp_utils = require("k92.utils.lsp")
 
-local function fix_all(opts)
-	opts = opts or {}
-
-	opts.bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
-
-	local clients = vim.lsp.get_clients({ bufnr = opts.bufnr, name = "eslint" })
-	local eslint_lsp_client = clients[1]
-
-	if eslint_lsp_client == nil then
-		return
-	end
-
-	local request
-	if opts.sync then
-		request = function(bufnr, method, params)
-			eslint_lsp_client:request_sync(method, params, nil, bufnr)
-		end
-	else
-		request = function(bufnr, method, params)
-			eslint_lsp_client:request(method, params, nil, bufnr)
-		end
-	end
-
-	request(0, "workspace/executeCommand", {
-		command = "eslint.applyAllFixes",
-		arguments = {
-			{
-				uri = vim.uri_from_bufnr(opts.bufnr),
-				version = vim.lsp.util.buf_versions[opts.bufnr],
-			},
-		},
-	})
-end
-
 local root_file = {
 	".eslintrc",
 	".eslintrc.js",
@@ -65,17 +31,15 @@ return {
 	},
 	workspace_required = true,
 	---@param bufnr integer
-	---@param cb fun(root_dir?:string)
-	root_dir = function(bufnr, cb)
+	---@param on_dir fun(root_dir?:string)
+	root_dir = function(bufnr, on_dir)
 		local fname = vim.api.nvim_buf_get_name(bufnr)
 
-		root_file = lsp_utils.insert_package_json(root_file, "eslintConfig", fname)
+		local root_file_patterns = lsp_utils.insert_package_json(root_file, "eslintConfig", fname)
 
-		local root_string = lsp_utils.root_pattern(unpack(root_file))(fname)
+		local root_string = vim.fs.dirname(vim.fs.find(root_file_patterns, { path = fname, upward = true })[1])
 
-		if root_string then
-			cb(root_string)
-		end
+		on_dir(root_string)
 	end,
 	-- Refer to https://github.com/Microsoft/vscode-eslint#settings-options for documentation.
 	settings = {
@@ -113,35 +77,43 @@ return {
 		},
 	},
 	before_init = function(params, config)
-		local new_root_dir = params.rootUri
-		if not new_root_dir or new_root_dir == vim.NIL then
-			return
-		end
 		-- The "workspaceFolder" is a VSCode concept. It limits how far the
 		-- server will traverse the file system when locating the ESLint config
 		-- file (e.g., .eslintrc).
-		config.settings.workspaceFolder = {
-			uri = new_root_dir,
-			name = vim.fn.fnamemodify(new_root_dir, ":t"),
-		}
+		local root_dir = config.root_dir
 
-		-- Support flat config
-		if
-			vim.fn.filereadable(new_root_dir .. "/eslint.config.js") == 1
-			or vim.fn.filereadable(new_root_dir .. "/eslint.config.mjs") == 1
-			or vim.fn.filereadable(new_root_dir .. "/eslint.config.cjs") == 1
-			or vim.fn.filereadable(new_root_dir .. "/eslint.config.ts") == 1
-			or vim.fn.filereadable(new_root_dir .. "/eslint.config.mts") == 1
-			or vim.fn.filereadable(new_root_dir .. "/eslint.config.cts") == 1
-		then
-			config.settings.experimental.useFlatConfig = true
-		end
+		if root_dir then
+			config.settings = config.settings or {}
+			config.settings.workspaceFolder = {
+				uri = root_dir,
+				name = vim.fn.fnamemodify(root_dir, ":t"),
+			}
 
-		-- Support Yarn2 (PnP) projects
-		local pnp_cjs = new_root_dir .. "/.pnp.cjs"
-		local pnp_js = new_root_dir .. "/.pnp.js"
-		if vim.loop.fs_stat(pnp_cjs) or vim.loop.fs_stat(pnp_js) then
-			config.cmd = vim.list_extend({ "yarn", "exec" }, config.cmd)
+			-- Support flat config
+			local flat_config_files = {
+				"eslint.config.js",
+				"eslint.config.mjs",
+				"eslint.config.cjs",
+				"eslint.config.ts",
+				"eslint.config.mts",
+				"eslint.config.cts",
+			}
+
+			for _, file in ipairs(flat_config_files) do
+				if vim.fn.filereadable(root_dir .. "/" .. file) == 1 then
+					config.settings.experimental = config.settings.experimental or {}
+					config.settings.experimental.useFlatConfig = true
+					break
+				end
+			end
+
+			-- Support Yarn2 (PnP) projects
+			local pnp_cjs = root_dir .. "/.pnp.cjs"
+			local pnp_js = root_dir .. "/.pnp.js"
+			if vim.uv.fs_stat(pnp_cjs) or vim.uv.fs_stat(pnp_js) then
+				local cmd = config.cmd
+				config.cmd = vim.list_extend({ "yarn", "exec" }, cmd)
+			end
 		end
 	end,
 	handlers = {
@@ -166,9 +138,17 @@ return {
 			return {}
 		end,
 	},
-	commands = {
-		["EslintFixAll"] = function()
-			fix_all({ sync = true, bufnr = 0 })
-		end,
-	},
+	on_attach = function(client, bufnr)
+		vim.api.nvim_buf_create_user_command(0, "LspEslintFixAll", function()
+			client:request_sync("workspace/executeCommand", {
+				command = "eslint.applyAllFixes",
+				arguments = {
+					{
+						uri = vim.uri_from_bufnr(bufnr),
+						version = vim.lsp.util.buf_versions[bufnr],
+					},
+				},
+			}, nil, bufnr)
+		end, {})
+	end,
 }
