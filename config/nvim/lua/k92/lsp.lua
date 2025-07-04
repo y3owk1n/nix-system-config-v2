@@ -3,9 +3,7 @@ local augroup = require("k92.utils.autocmds").augroup
 vim.diagnostic.config({
 	underline = true,
 	update_in_insert = false,
-	virtual_lines = {
-		current_line = true,
-	},
+	virtual_text = true,
 	severity_sort = true,
 	signs = {
 		text = {
