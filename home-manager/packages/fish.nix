@@ -28,10 +28,6 @@
         src = pkgs.fishPlugins.sponge.src;
       }
       {
-        name = "plugin-git"; # amazing git aliases
-        src = pkgs.fishPlugins.plugin-git.src;
-      }
-      {
         name = "fish-x";
         src = pkgs.fetchFromGitHub {
           owner = "y3owk1n";
