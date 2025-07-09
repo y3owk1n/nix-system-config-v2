@@ -1,11 +1,11 @@
 {
 	"name": "Vimium C",
-	"@time": "5/26/2025, 10:50:25 AM",
-	"time": 1748227825063,
+	"@time": "7/9/2025, 11:56:38 AM",
+	"time": 1752033398882,
 	"environment": {
 		"extension": "2.12.2",
 		"platform": "mac",
-		"chromium": 136
+		"chromium": 138
 	},
 	"allBrowserUrls": true,
 	"exclusionRules": [
@@ -48,6 +48,7 @@
 		"map ? showHelp",
 		"map yy copyCurrentUrl",
 		"map yi LinkHints.activateCopyImage",
+		"map yl LinkHints.activateCopyLinkUrl",
 		"map <m-d> togglePinTab",
 		"map g1 firstTab",
 		"map g0 lastTab",
