@@ -31,14 +31,13 @@ in
       githubuser = "y3owk1n";
       githubname = "Kyle Wong";
 
-      inherit (systemConfig "aarch64-darwin") system pkgs;
+      inherit (systemConfig "aarch64-darwin") system;
     in
     darwin.lib.darwinSystem {
       inherit system;
       specialArgs = inputs // {
         inherit
           system
-          pkgs
           username
           useremail
           hostname
@@ -48,6 +47,7 @@ in
       };
       modules = [
         ./hosts/personal-m3.nix
+        ./shared/overlays.nix
         home-manager.darwinModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
@@ -109,14 +109,13 @@ in
       githubuser = "mtraworld";
       githubname = "mtraworld";
 
-      inherit (systemConfig "aarch64-darwin") system pkgs;
+      inherit (systemConfig "aarch64-darwin") system;
     in
     darwin.lib.darwinSystem {
       inherit system;
       specialArgs = inputs // {
         inherit
           system
-          pkgs
           username
           useremail
           hostname
@@ -126,6 +125,7 @@ in
       };
       modules = [
         ./hosts/work-imac.nix
+        ./shared/overlays.nix
         home-manager.darwinModules.home-manager
         {
           home-manager.useGlobalPkgs = true;

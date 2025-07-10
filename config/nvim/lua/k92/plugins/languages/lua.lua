@@ -18,7 +18,14 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "stylua", "lua-language-server" })
+
+			if vim.fn.executable("stylua") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "stylua" })
+			end
+
+			if vim.fn.executable("lua-language-server") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "lua-language-server" })
+			end
 		end,
 	},
 	{

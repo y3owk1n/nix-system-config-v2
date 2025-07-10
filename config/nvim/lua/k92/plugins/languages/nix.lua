@@ -16,7 +16,10 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "nil" })
+
+			if vim.fn.executable("nil") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "nil" })
+			end
 		end,
 	},
 	{

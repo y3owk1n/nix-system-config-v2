@@ -23,7 +23,22 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "gopls", "goimports", "gofumpt", "golangci-lint" })
+
+			if vim.fn.executable("gopls") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "gopls" })
+			end
+
+			if vim.fn.executable("goimports") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "goimports" })
+			end
+
+			if vim.fn.executable("gofumpt") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "gofumpt" })
+			end
+
+			if vim.fn.executable("golangci-lint") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "golangci-lint" })
+			end
 		end,
 	},
 	{

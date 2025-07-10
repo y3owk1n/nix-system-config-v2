@@ -84,6 +84,7 @@
             homebrew-core
             homebrew-cask
             homebrew-bundle
+            nixos-npm-ls
             ;
         }
       );
