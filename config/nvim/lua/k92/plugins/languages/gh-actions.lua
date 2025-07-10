@@ -12,7 +12,9 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "gh-actions-language-server" })
+			if vim.fn.executable("gh-actions-language-server") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "gh-actions-language-server" })
+			end
 		end,
 	},
 }

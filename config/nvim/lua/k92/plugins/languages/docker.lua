@@ -28,10 +28,18 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(
-				opts.ensure_installed,
-				{ "dockerfile-language-server", "docker-compose-language-service", "hadolint" }
-			)
+
+			if vim.fn.executable("docker-compose-langserver") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "docker-compose-language-service" })
+			end
+
+			if vim.fn.executable("hadolint") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "hadolint" })
+			end
+
+			if vim.fn.executable("docker-langserver") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "dockerfile-language-server" })
+			end
 		end,
 	},
 	{

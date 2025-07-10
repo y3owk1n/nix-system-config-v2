@@ -29,7 +29,7 @@ local supported = {
 --- Checks if a Prettier config file exists for the given context
 ---@param ctx ConformCtx
 function M.has_config(ctx)
-	vim.fn.system({ "prettier", "--find-config-path", ctx.filename })
+	vim.fn.system({ "prettierd", "--find-config-path", ctx.filename })
 	return vim.v.shell_error == 0
 end
 
@@ -44,7 +44,7 @@ function M.has_parser(ctx)
 		return true
 	end
 	-- otherwise, check if a parser can be inferred
-	local ret = vim.fn.system({ "prettier", "--file-info", ctx.filename })
+	local ret = vim.fn.system({ "prettierd", "--file-info", ctx.filename })
 	---@type boolean, string?
 	local ok, parser = pcall(function()
 		return vim.fn.json_decode(ret).inferredParser
@@ -58,7 +58,10 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "prettier" })
+
+			if vim.fn.executable("prettierd") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "prettierd" })
+			end
 		end,
 	},
 	{
@@ -68,11 +71,11 @@ return {
 			opts.formatters_by_ft = opts.formatters_by_ft or {}
 			for _, ft in ipairs(supported) do
 				opts.formatters_by_ft[ft] = opts.formatters_by_ft[ft] or {}
-				table.insert(opts.formatters_by_ft[ft], "prettier")
+				table.insert(opts.formatters_by_ft[ft], "prettierd")
 			end
 
 			opts.formatters = opts.formatters or {}
-			opts.formatters.prettier = {
+			opts.formatters.prettierd = {
 				condition = function(_, ctx)
 					return M.has_parser(ctx) and (M.has_config(ctx))
 				end,

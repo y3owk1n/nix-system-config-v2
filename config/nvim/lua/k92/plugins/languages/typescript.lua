@@ -23,7 +23,10 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "vtsls" })
+
+			if vim.fn.executable("vtsls") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "vtsls" })
+			end
 		end,
 	},
 	-- Filetype icons

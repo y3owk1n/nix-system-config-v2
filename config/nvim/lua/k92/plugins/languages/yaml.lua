@@ -18,7 +18,7 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			if vim.g.has_node then
+			if vim.g.has_node and vim.fn.executable("yaml-language-server") == 0 then
 				_table.add_unique_items(opts.ensure_installed, { "yaml-language-server" })
 			end
 		end,

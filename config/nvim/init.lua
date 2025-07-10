@@ -47,7 +47,11 @@ local function is_nixos()
 	return false
 end
 
-vim.g.disable_mason = is_nixos()
+local function is_nixdarwin()
+	return vim.fn.executable("darwin-rebuild") == 1
+end
+
+vim.g.disable_mason = is_nixos() or is_nixdarwin()
 
 require("k92.health")
 require("k92.lsp")

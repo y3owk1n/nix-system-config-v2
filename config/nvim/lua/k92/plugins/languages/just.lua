@@ -28,7 +28,10 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "just-lsp" })
+
+			if vim.fn.executable("just-lsp") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "just-lsp" })
+			end
 		end,
 	},
 }

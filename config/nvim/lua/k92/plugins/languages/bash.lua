@@ -18,9 +18,16 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = opts.ensure_installed or {}
-			_table.add_unique_items(opts.ensure_installed, { "shellcheck", "shfmt" })
 
-			if vim.g.has_node then
+			if vim.fn.executable("shfmt") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "shfmt" })
+			end
+
+			if vim.fn.executable("shellcheck") == 0 then
+				_table.add_unique_items(opts.ensure_installed, { "shellcheck" })
+			end
+
+			if vim.g.has_node and vim.fn.executable("bash-language-server") == 0 then
 				_table.add_unique_items(opts.ensure_installed, { "bash-language-server" })
 			end
 		end,
