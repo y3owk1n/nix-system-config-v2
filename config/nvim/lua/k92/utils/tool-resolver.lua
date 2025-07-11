@@ -8,6 +8,11 @@ local cache = {}
 -- Set context for tools
 local tools = {}
 
+local fallbacks = {
+	biome = "biome",
+	prettier = "prettierd",
+}
+
 -- Safe path join
 local function join(...)
 	local args = { ... }
@@ -16,7 +21,7 @@ local function join(...)
 		local part = args[i]:gsub("^/+", ""):gsub("/+$", "")
 		result = result .. "/" .. part
 	end
-	return result
+	return vim.fs.normalize(result)
 end
 
 ---@param path string path to check
@@ -30,14 +35,18 @@ end
 ---@return string? path to the tool, or nil if not found
 ---@return string? root path of the tool, or nil if not found
 local function find_nearest_executable(tool, start_path)
-	local dir = vim.fn.fnamemodify(start_path, ":p")
+	local dir = vim.fn.fnamemodify(start_path, ":p"):gsub("/+$", "")
 
 	while dir and dir ~= "/" do
 		local candidate = join(dir, "node_modules", ".bin", tool)
 		if is_executable(candidate) then
 			return candidate, dir
 		end
-		dir = vim.fn.fnamemodify(dir, ":h")
+		local parent = vim.fn.fnamemodify(dir, ":h")
+		if parent == dir then
+			break
+		end -- safety: don't loop forever
+		dir = parent:gsub("/+$", "") -- normalize again
 	end
 
 	return nil, nil
@@ -54,7 +63,6 @@ end
 
 ---@class ToolResolverOpts
 ---@field path? string start search path (default: current buffer)
----@field fallback? string fallback if local binary not found
 
 -- Resolving tools for `node_modules`. Mainly used for tools like `biome` that will break when the lsp version is different
 -- than the project installed version in `node_modules`. The tool will try to resolve the binary from the current buffer to
@@ -71,7 +79,11 @@ function M.get(tool, opts)
 		buf_path = vim.fn.getcwd()
 	end
 
-	local fallback = opts.fallback or tool
+	local fallback = fallbacks[tool]
+
+	if not fallback then
+		fallback = tool
+	end
 
 	-- Try from buffer path
 	local bin, root = find_nearest_executable(tool, buf_path)
@@ -103,8 +115,8 @@ function M.clear_cache()
 end
 
 function M.setup_usercmds()
-	-- Command: :ToolResolver biome
-	vim.api.nvim_create_user_command("ToolResolver", function(opts)
+	-- Command: :ToolResolverGet biome
+	vim.api.nvim_create_user_command("ToolResolverGet", function(opts)
 		local tool = opts.args
 		local path = vim.api.nvim_buf_get_name(0)
 		local resolved = M.get(tool, { path = path })
@@ -122,6 +134,17 @@ function M.setup_usercmds()
 				:totable()
 		end,
 	})
+
+	-- Command: :ToolResolverClearCache
+	vim.api.nvim_create_user_command("ToolResolverClearCache", function()
+		M.clear_cache()
+		vim.notify("Cache cleared")
+	end, {})
+
+	-- Command: :ToolResolverGetCache
+	vim.api.nvim_create_user_command("ToolResolverGetCache", function()
+		vim.notify(vim.inspect(cache))
+	end, {})
 end
 
 function M.setup_autocmds()

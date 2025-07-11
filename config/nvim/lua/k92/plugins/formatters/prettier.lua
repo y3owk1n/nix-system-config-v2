@@ -1,4 +1,5 @@
 local _table = require("k92.utils.table")
+local tr = require("k92.utils.tool-resolver")
 
 if not vim.g.has_node then
 	return {}
@@ -29,7 +30,7 @@ local supported = {
 --- Checks if a Prettier config file exists for the given context
 ---@param ctx ConformCtx
 function M.has_config(ctx)
-	vim.fn.system({ "prettierd", "--find-config-path", ctx.filename })
+	vim.fn.system({ tr.get("prettier"), "--find-config-path", ctx.filename })
 	return vim.v.shell_error == 0
 end
 
@@ -44,13 +45,15 @@ function M.has_parser(ctx)
 		return true
 	end
 	-- otherwise, check if a parser can be inferred
-	local ret = vim.fn.system({ "prettierd", "--file-info", ctx.filename })
+	local ret = vim.fn.system({ tr.get("prettier"), "--file-info", ctx.filename })
 	---@type boolean, string?
 	local ok, parser = pcall(function()
 		return vim.fn.json_decode(ret).inferredParser
 	end)
 	return ok and parser and parser ~= vim.NIL
 end
+
+tr.add_tool("prettier")
 
 ---@type LazySpec
 return {
@@ -71,7 +74,11 @@ return {
 			opts.formatters_by_ft = opts.formatters_by_ft or {}
 			for _, ft in ipairs(supported) do
 				opts.formatters_by_ft[ft] = opts.formatters_by_ft[ft] or {}
-				table.insert(opts.formatters_by_ft[ft], "prettierd")
+				if tr.get("prettier") == "prettierd" then
+					table.insert(opts.formatters_by_ft[ft], "prettierd")
+				else
+					table.insert(opts.formatters_by_ft[ft], "prettier")
+				end
 			end
 
 			opts.formatters = opts.formatters or {}
