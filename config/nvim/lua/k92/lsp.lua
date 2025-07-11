@@ -481,3 +481,6 @@ vim.api.nvim_create_user_command("LspClearLog", function()
 end, {
 	desc = "Clears the Nvim LSP log file.",
 })
+
+require("k92.utils.tool-resolver").setup_autocmds()
+require("k92.utils.tool-resolver").setup_usercmds()

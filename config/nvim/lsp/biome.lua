@@ -2,9 +2,11 @@ local lsp_utils = require("k92.utils.lsp")
 
 local root_files = { "biome.json", "biome.jsonc" }
 
+local tr = require("k92.utils.tool-resolver")
+
 ---@type vim.lsp.Config
 return {
-	cmd = { "biome", "lsp-proxy" },
+	cmd = { tr.get("biome"), "lsp-proxy" },
 	filetypes = {
 		"astro",
 		"css",
