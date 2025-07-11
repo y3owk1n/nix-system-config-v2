@@ -30,8 +30,11 @@ local supported = {
 --- Checks if a Prettier config file exists for the given context
 ---@param ctx ConformCtx
 function M.has_config(ctx)
-	vim.fn.system({ tr.get_bin("prettier"), "--find-config-path", ctx.filename })
-	return vim.v.shell_error == 0
+	local res = vim.fn.system({ tr.get_bin("prettier"), "--find-config-path", ctx.filename })
+
+	res = vim.trim(res)
+
+	return vim.v.shell_error == 0 and vim.fn.filereadable(res) == 1
 end
 
 --- Checks if a parser can be inferred for the given context:
