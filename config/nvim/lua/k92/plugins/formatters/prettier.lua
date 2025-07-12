@@ -56,8 +56,6 @@ function M.has_parser(ctx)
 	return ok and parser and parser ~= vim.NIL
 end
 
-tr.add("prettier")
-
 ---@type LazySpec
 return {
 	{
