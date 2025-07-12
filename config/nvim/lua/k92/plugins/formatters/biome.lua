@@ -1,12 +1,10 @@
 local _table = require("k92.utils.table")
-local tr = require("tool-resolver.tools")
 
 if not vim.g.has_node then
 	return {}
 end
 
 vim.lsp.enable("biome")
-tr.add("biome")
 
 -- https://biomejs.dev/internals/language-support/
 local supported = {
