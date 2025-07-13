@@ -10,9 +10,14 @@ return {
 		},
 		---@type ToolResolver.Config
 		opts = {
-			fallbacks = {
-				biome = "biome",
-				prettier = "prettierd",
+			tools = {
+				biome = {
+					type = "node",
+				},
+				prettier = {
+					type = "node",
+					fallback = "prettierd",
+				},
 			},
 		},
 	},
