@@ -2,7 +2,7 @@ local lsp_utils = require("k92.utils.lsp")
 
 local root_files = { "biome.json", "biome.jsonc" }
 
-local tr = require("tool-resolver.tools")
+local tr = require("tool-resolver")
 
 ---@type vim.lsp.Config
 return {

@@ -1,5 +1,5 @@
 local _table = require("k92.utils.table")
-local tr = require("tool-resolver.tools")
+local tr = require("tool-resolver")
 
 if not vim.g.has_node then
 	return {}
