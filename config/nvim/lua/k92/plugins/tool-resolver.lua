@@ -4,9 +4,8 @@ return {
 		"y3owk1n/tool-resolver.nvim",
 		-- dir = "~/Dev/tool-resolver.nvim", -- Your path
 		cmd = {
-			"ToolResolverGet",
-			"ToolResolverClearCache",
-			"ToolResolverGetCache",
+			"ToolResolverGetTool",
+			"ToolResolverGetTools",
 		},
 		---@type ToolResolver.Config
 		opts = {
