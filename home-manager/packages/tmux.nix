@@ -21,8 +21,8 @@ in
           src = pkgs.fetchFromGitHub {
             owner = "christoomey";
             repo = "vim-tmux-navigator";
-            rev = "33afa80db65113561dc53fa732b7f5e53d5ecfd0";
-            hash = "sha256-h3c5ki8N4kiNzbgjxHwLh625un6GqbLZv/4dPVW3vCI=";
+            rev = "c45243dc1f32ac6bcf6068e5300f3b2b237e576a";
+            hash = "sha256-IEPnr/GdsAnHzdTjFnXCuMyoNLm3/Jz4cBAM0AJBrj8=";
           };
         });
       }
