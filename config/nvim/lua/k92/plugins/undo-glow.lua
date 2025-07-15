@@ -5,6 +5,7 @@ return {
 		-- dir = "~/Dev/undo-glow.nvim", -- Your path
 		event = { "VeryLazy" },
 		enabled = not vim.g.strip_personal_plugins,
+		---@module "undo-glow"
 		---@type UndoGlow.Config
 		opts = {
 			animation = {

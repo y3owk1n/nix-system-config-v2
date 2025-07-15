@@ -2,9 +2,10 @@
 return {
 	{
 		"MagicDuck/grug-far.nvim",
-		---@type GrugFarOptions
+		---@module "grug-far"
+		---@type grug.far.Options
 		---@diagnostic disable-next-line: missing-fields
-		opts = { headerMaxWidth = 80 },
+		opts = {},
 		cmd = { "GrugFar", "GrugFarWithin" },
 		keys = {
 			{
