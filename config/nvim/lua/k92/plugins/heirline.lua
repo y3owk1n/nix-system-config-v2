@@ -42,8 +42,6 @@ return {
 			}
 		end
 
-		local grapple_exists, grapple = pcall(require, "grapple")
-
 		local Align = { provider = "%=" }
 		local Space = { provider = " " }
 
@@ -356,46 +354,6 @@ return {
 			},
 		}
 
-		local Grapple = {}
-
-		if grapple_exists then
-			Grapple = {
-				conditions = function()
-					return grapple.tags() ~= 0
-				end,
-				init = function(self)
-					self.current = grapple.find({ buffer = 0 })
-					self.tags = grapple.tags()
-				end,
-
-				hl = { fg = "teal", bold = true },
-
-				{
-					provider = Space.provider,
-				},
-				{
-					provider = function(self)
-						local output = {}
-
-						if #self.tags == 0 then
-							return nil
-						end
-
-						for i, tag in ipairs(self.tags) do
-							if self.current and self.current.path == tag.path then
-								table.insert(output, string.format("[" .. i .. "]"))
-							else
-								table.insert(output, string.format(i))
-							end
-						end
-
-						local statusline = table.concat(output, " ")
-						return string.format("󱡁 %s", statusline)
-					end,
-				},
-			}
-		end
-
 		local Git = {
 			condition = conditions.is_git_repo,
 			init = function(self)
@@ -470,7 +428,6 @@ return {
 		local DefaultStatusline = {
 			ViMode,
 			Git,
-			Grapple,
 			Align,
 			FileNameBlock,
 			Diagnostics,
