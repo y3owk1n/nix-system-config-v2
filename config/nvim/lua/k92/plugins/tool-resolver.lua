@@ -7,6 +7,7 @@ return {
 			"ToolResolverGetTool",
 			"ToolResolverGetTools",
 		},
+		---@module "tool-resolver"
 		---@type ToolResolver.Config
 		opts = {
 			tools = {
