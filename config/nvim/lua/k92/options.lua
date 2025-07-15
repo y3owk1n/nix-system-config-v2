@@ -28,6 +28,7 @@ vim.opt.splitright = true -- Open vertical splits to the right.
 vim.opt.splitbelow = true -- Open horizontal splits below.
 vim.o.laststatus = 3 -- Use a global statusline.
 vim.opt.showtabline = 0 -- Never show the tabline.
+vim.opt.foldenable = false -- Do not enable folding by default.
 
 ------------------------------------------------------------
 -- General Settings
@@ -67,7 +68,6 @@ vim.opt.expandtab = false -- Use literal tab characters, not spaces.
 vim.opt.shiftround = true -- Round indent to multiple of 'shiftwidth'.
 vim.opt.smartindent = true -- Enable smart indentation.
 vim.opt.breakindent = true -- Maintain indent on wrapped lines.
-vim.opt.foldenable = false -- Do not enable folding by default.
 
 ------------------------------------------------------------
 -- Search Settings
