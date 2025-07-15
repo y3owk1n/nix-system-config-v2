@@ -50,6 +50,7 @@ return {
 						})
 						:map("<leader>uc")
 					Snacks.toggle.inlay_hints():map("<leader>uh")
+					Snacks.toggle.option("foldenable", { name = "Fold" }):map("<leader>uf")
 				end,
 			})
 		end,

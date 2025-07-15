@@ -67,7 +67,7 @@ vim.opt.expandtab = false -- Use literal tab characters, not spaces.
 vim.opt.shiftround = true -- Round indent to multiple of 'shiftwidth'.
 vim.opt.smartindent = true -- Enable smart indentation.
 vim.opt.breakindent = true -- Maintain indent on wrapped lines.
-vim.opt.foldlevelstart = 99 -- Start with all folds open.
+vim.opt.foldenable = false -- Do not enable folding by default.
 
 ------------------------------------------------------------
 -- Search Settings
