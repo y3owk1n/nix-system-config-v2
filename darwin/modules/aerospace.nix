@@ -21,6 +21,9 @@ in
       config = lib.mkOption {
         type = types.lines;
         default = ''
+          start-at-login = false
+          after-login-command = []
+
           default-root-container-layout = 'tiles'
           default-root-container-orientation = 'auto'
 
