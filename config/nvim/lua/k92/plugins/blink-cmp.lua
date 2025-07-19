@@ -12,13 +12,11 @@ return {
 				preset = "none",
 				["<CR>"] = { "select_and_accept", "fallback" },
 				["<C-n>"] = {
-					"snippet_forward",
 					"show",
 					"select_next",
 					"fallback",
 				},
 				["<C-p>"] = {
-					"snippet_backward",
 					"show",
 					"select_prev",
 					"fallback",
