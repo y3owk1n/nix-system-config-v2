@@ -47,12 +47,6 @@ vim.keymap.set("n", "<leader>xl", "<cmd>lopen<cr>", { desc = "Location List" })
 vim.keymap.set("n", "<leader>xq", "<cmd>copen<cr>", { desc = "Quickfix List" })
 
 ------------------------------------------------------------
--- Diagnostics
-------------------------------------------------------------
--- Open a floating window with line diagnostics.
-vim.keymap.set("n", "gdd", vim.diagnostic.open_float, { desc = "Line Diagnostics" })
-
-------------------------------------------------------------
 -- Window Splitting
 ------------------------------------------------------------
 -- Split window horizontally (new window appears below).
