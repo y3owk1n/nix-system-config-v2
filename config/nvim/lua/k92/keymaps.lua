@@ -86,5 +86,5 @@ vim.keymap.set({ "n", "x" }, "Q", "<nop>", { desc = "No op" })
 -- Remove Default Neovim LSP Bindings
 ------------------------------------------------------------
 -- Delete default Neovim LSP bindings that are not needed.
-vim.keymap.del("s", "<C-s>")
-vim.keymap.del("i", "<C-S>")
+vim.keymap.del("s", "<C-s>") -- macos stealed the key, use `grs` instead
+vim.keymap.del("i", "<C-S>") -- macos stealed the key, use `grs` instead
