@@ -50,7 +50,7 @@ vim.keymap.set("n", "<leader>xq", "<cmd>copen<cr>", { desc = "Quickfix List" })
 -- Diagnostics
 ------------------------------------------------------------
 -- Open a floating window with line diagnostics.
-vim.keymap.set("n", "<leader>cd", vim.diagnostic.open_float, { desc = "Line Diagnostics" })
+vim.keymap.set("n", "gdd", vim.diagnostic.open_float, { desc = "Line Diagnostics" })
 
 ------------------------------------------------------------
 -- Window Splitting
@@ -86,11 +86,5 @@ vim.keymap.set({ "n", "x" }, "Q", "<nop>", { desc = "No op" })
 -- Remove Default Neovim LSP Bindings
 ------------------------------------------------------------
 -- Delete default Neovim LSP bindings that are not needed.
-vim.keymap.del("n", "gra")
-vim.keymap.del("n", "gri")
-vim.keymap.del("n", "grn")
-vim.keymap.del("n", "grr")
-vim.keymap.del("x", "gra")
 vim.keymap.del("s", "<C-s>")
-vim.keymap.del("n", "gO")
 vim.keymap.del("i", "<C-S>")

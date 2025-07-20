@@ -194,14 +194,14 @@ return {
 			},
 			-- LSP
 			{
-				"gd",
+				"grd",
 				function()
 					Snacks.picker.lsp_definitions()
 				end,
 				desc = "Goto Definition",
 			},
 			{
-				"gr",
+				"grr",
 				function()
 					Snacks.picker.lsp_references()
 				end,
@@ -209,21 +209,21 @@ return {
 				desc = "References",
 			},
 			{
-				"gi",
+				"gri",
 				function()
 					Snacks.picker.lsp_implementations()
 				end,
 				desc = "Goto Implementation",
 			},
 			{
-				"gy",
+				"grt",
 				function()
 					Snacks.picker.lsp_type_definitions()
 				end,
 				desc = "Goto Type Definition",
 			},
 			{
-				"<leader>ss",
+				"gO",
 				function()
 					Snacks.picker.lsp_symbols()
 				end,
