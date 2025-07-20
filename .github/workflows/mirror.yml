@@ -1,44 +1,44 @@
 name: Mirror Subdirectory
 
 on:
-    push:
-        branches:
-            - main
-        paths:
-            - "config/nvim/**"
+  push:
+    branches:
+      - main
+    paths:
+      - "config/nvim/**"
 
 permissions:
-    contents: write
+  contents: write
 
 jobs:
-    mirror-nvim:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0 # Get full history for subtree splitting
-                  token: ${{ secrets.PAT }}
+  mirror-nvim:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Get full history for subtree splitting
+          token: ${{ secrets.PAT }}
 
-            - name: Set up Git Config
-              run: |
-                  git config --global user.name "${{ github.actor }}"
-                  git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+      - name: Set up Git Config
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
 
-            - name: Create Subtree Branch
-              run: |
-                  git subtree split --prefix=config/nvim -b nvim-config
+      - name: Create Subtree Branch
+        run: |
+          git subtree split --prefix=config/nvim -b nvim-config
 
-            - name: Add Remote and Push Subtree
-              env:
-                  PAT: ${{ secrets.PAT }}
+      - name: Add Remote and Push Subtree
+        env:
+          PAT: ${{ secrets.PAT }}
 
-              run: |
-                  MIRROR_URL="https://x-access-token:${PAT}@github.com/y3owk1n/nvim.git"
+        run: |
+          MIRROR_URL="https://x-access-token:${PAT}@github.com/y3owk1n/nvim.git"
 
-                  git remote remove nvim-config || true
-                  git remote add nvim-config "$MIRROR_URL"
+          git remote remove nvim-config || true
+          git remote add nvim-config "$MIRROR_URL"
 
-                  git remote -v  # For debugging: check the remote URL
+          git remote -v  # For debugging: check the remote URL
 
-                  git push nvim-config nvim-config:main --force
+          git push nvim-config nvim-config:main --force
