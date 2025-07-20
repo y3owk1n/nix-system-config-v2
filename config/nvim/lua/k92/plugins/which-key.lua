@@ -72,6 +72,8 @@ return {
 					{ "]", group = "next" },
 					{ "g", group = "goto" },
 					{ "gs", group = "surround" },
+					{ "gd", group = "diagnostic" },
+					{ "gr", group = "lsp" },
 					{
 						"<leader>w",
 						group = "windows",

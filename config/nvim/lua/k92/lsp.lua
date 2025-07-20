@@ -30,9 +30,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 		map(event.buf, "<leader>il", ":LspInfo<cr>", "Lsp Info")
 
-		map(event.buf, "<leader>ca", vim.lsp.buf.code_action, "Code Actions")
-
-		map(event.buf, "gK", vim.lsp.buf.signature_help, "Signature help")
+		map(event.buf, "grs", vim.lsp.buf.signature_help, "Signature help")
 
 		map(event.buf, "<leader>lr", ":LspRestart<cr>", "Restart all LSP")
 		map(event.buf, "<leader>ll", ":LspLog<cr>", "Log")
