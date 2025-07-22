@@ -57,6 +57,53 @@ return {
 		},
 	},
 	{
+		"echasnovski/mini-git",
+		main = "mini.git",
+		event = "VeryLazy",
+		cmd = { "Git" },
+		opts = {},
+	},
+	{
+		"echasnovski/mini.diff",
+		event = { "BufReadPre", "BufNewFile" },
+		opts = {
+			view = {
+				style = "sign",
+				signs = {
+					add = "▎",
+					change = "▎",
+					delete = "",
+				},
+			},
+		},
+		keys = {
+			{
+				"]h",
+				function()
+					require("mini.diff").goto_hunk("next")
+				end,
+				mode = "n",
+				desc = "Next hunk",
+			},
+			{
+				"[h",
+				function()
+					require("mini.diff").goto_hunk("prev")
+				end,
+				mode = "n",
+				desc = "Next hunk",
+			},
+			{
+				"<leader>gd",
+				function()
+					require("mini.diff").toggle_overlay(0)
+				end,
+				mode = "n",
+				desc = "Toggle diff overlay",
+			},
+		},
+	},
+	{
 		"catppuccin/nvim",
 		optional = true,
 		opts = {
