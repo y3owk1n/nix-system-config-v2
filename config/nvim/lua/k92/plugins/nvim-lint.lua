@@ -98,7 +98,7 @@ return {
 			table.insert(message, "")
 			table.insert(message, "_Press `q` to close this window_")
 
-			Snacks.win({
+			require("k92.utils.win").win({
 				title = "Lint Information",
 				title_pos = "center",
 				text = message,

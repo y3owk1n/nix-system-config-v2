@@ -21,7 +21,7 @@ return {
 			rollover_todo = {
 				enabled = true,
 			},
-			picker = "snacks",
+			picker = "mini",
 		},
 		keys = {
 			{

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 {
   home.packages = with pkgs; [
     # --- utils ---
@@ -64,6 +64,11 @@
     };
     ripgrep = {
       enable = true;
+      arguments = [
+        "--hidden"
+        "--glob=!.git/*"
+        "--smart-case"
+      ];
     };
     less = {
       enable = true;
@@ -74,5 +79,8 @@
     btop = {
       enable = true;
     };
+  };
+  home.sessionVariables = {
+    RIPGREP_CONFIG_PATH = "${config.home.homeDirectory}/.config/ripgrep/ripgreprc";
   };
 }
