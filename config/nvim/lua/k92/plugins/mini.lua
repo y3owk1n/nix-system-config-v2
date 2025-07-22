@@ -112,12 +112,12 @@ return {
 				draw = {
 					animation = require("mini.indentscope").gen_animation.none(),
 				},
-				options = { indent_at_cursor = true },
+				options = { indent_at_cursor = true, try_as_border = true },
 			}
 		end,
 		init = function()
 			vim.api.nvim_create_autocmd("FileType", {
-				pattern = { "help", "alpha", "dashboard", "neo-tree", "Trouble", "lazy", "mason" },
+				pattern = { "help", "Trouble", "lazy", "mason" },
 				callback = function()
 					vim.b.miniindentscope_disable = true
 				end,
@@ -132,6 +132,21 @@ return {
 				preview = true,
 				width_focus = 30,
 				width_preview = 60,
+			},
+			mappings = {
+				close = "q",
+				go_in = "",
+				go_in_plus = "l",
+				go_out = "",
+				go_out_plus = "h",
+				mark_goto = "'",
+				mark_set = "m",
+				reset = "<BS>",
+				reveal_cwd = "@",
+				show_help = "g?",
+				synchronize = "=",
+				trim_left = "<",
+				trim_right = ">",
 			},
 			options = { use_as_default_explorer = true },
 		},
@@ -156,7 +171,18 @@ return {
 						mini_files.open(vim.api.nvim_buf_get_name(0), true)
 					end
 				end,
-				desc = "Explorer",
+				desc = "Explorer (buffer path)",
+			},
+			{
+				"<leader>E",
+				function()
+					local mini_files = require("mini.files")
+
+					if not mini_files.close() then
+						mini_files.open(vim.uv.cwd(), true)
+					end
+				end,
+				desc = "Explorer (cwd)",
 			},
 		},
 	},
@@ -167,6 +193,20 @@ return {
 		opts = {
 			mappings = { choose_in_vsplit = "<C-v>", choose_in_split = "<C-s>" },
 			options = { use_cache = true },
+
+			window = {
+				config = function()
+					local height = math.floor(0.618 * vim.o.lines)
+					local width = math.floor(0.618 * vim.o.columns)
+					return {
+						anchor = "NW",
+						height = height,
+						width = width,
+						row = math.floor(0.5 * (vim.o.lines - height)),
+						col = math.floor(0.5 * (vim.o.columns - width)),
+					}
+				end,
+			},
 		},
 		config = function(_, opts)
 			require("mini.pick").setup(opts)
