@@ -105,7 +105,7 @@ return {
 	},
 	{
 		"echasnovski/mini.indentscope",
-		event = "VeryLazy",
+		event = { "BufReadPre", "BufNewFile" },
 		opts = function()
 			return {
 				symbol = "│",
