@@ -245,20 +245,3 @@ vim.api.nvim_create_autocmd("FileType", {
 		)
 	end,
 })
-
-------------------------------------------------------------
--- Auto toggle relative number in different modes (Buffer only)
-------------------------------------------------------------
-vim.api.nvim_create_autocmd("InsertEnter", {
-	group = augroup("toggle_off_relative_number"),
-	callback = function()
-		vim.wo.relativenumber = false
-	end,
-})
-
-vim.api.nvim_create_autocmd("InsertLeave", {
-	group = augroup("toggle_on_relative_number"),
-	callback = function()
-		vim.wo.relativenumber = true
-	end,
-})
