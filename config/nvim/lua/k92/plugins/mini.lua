@@ -327,7 +327,17 @@ return {
 		"echasnovski/mini.notify",
 		event = "VeryLazy",
 		opts = {
-			winblend = 100,
+			content = {
+				format = function(notif)
+					return notif.msg
+				end,
+			},
+			window = {
+				config = {
+					width = 37, -- same as math.floor(vim.o.columns * 0.2), but hard code the value
+				},
+				winblend = 0,
+			},
 		},
 		config = function(_, opts)
 			require("mini.notify").setup(opts)
