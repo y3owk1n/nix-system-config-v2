@@ -78,22 +78,6 @@ return {
 		},
 		keys = {
 			{
-				"]h",
-				function()
-					require("mini.diff").goto_hunk("next")
-				end,
-				mode = "n",
-				desc = "Next hunk",
-			},
-			{
-				"[h",
-				function()
-					require("mini.diff").goto_hunk("prev")
-				end,
-				mode = "n",
-				desc = "Next hunk",
-			},
-			{
 				"<leader>gd",
 				function()
 					require("mini.diff").toggle_overlay(0)
@@ -192,8 +176,6 @@ return {
 		event = "VeryLazy",
 		opts = {
 			mappings = { choose_in_vsplit = "<C-v>", choose_in_split = "<C-s>" },
-			options = { use_cache = true },
-
 			window = {
 				config = function()
 					local height = math.floor(0.618 * vim.o.lines)
@@ -206,6 +188,7 @@ return {
 						col = math.floor(0.5 * (vim.o.columns - width)),
 					}
 				end,
+				prompt_prefix = " ",
 			},
 		},
 		config = function(_, opts)
@@ -358,20 +341,6 @@ return {
 					require("mini.notify").clear()
 				end,
 				desc = "Dismiss All",
-			},
-		},
-	},
-	{
-		"echasnovski/mini.misc",
-		event = "VeryLazy",
-		opts = {},
-		keys = {
-			{
-				"<leader>z",
-				function()
-					require("mini.misc").zoom()
-				end,
-				desc = "Toggle Zen Mode",
 			},
 		},
 	},
