@@ -1,3 +1,5 @@
+local info_buffer = require("k92.utils.info-buffer")
+
 ---@type LazySpec
 return {
 	"mfussenegger/nvim-lint",
@@ -95,37 +97,8 @@ return {
 				end
 			end
 
-			table.insert(message, "")
-			table.insert(message, "_Press `q` to close this window_")
-
-			require("k92.utils.win").win({
-				title = "Lint Information",
-				title_pos = "center",
-				text = message,
-				scratch_ft = "float_info",
-				ft = "markdown",
-				fixbuf = true,
-				width = 0.5,
-				height = 0.3,
-				position = "float",
-				border = "rounded",
-				minimal = true,
-				wo = {
-					spell = false,
-					wrap = false,
-					signcolumn = "yes",
-					statuscolumn = " ",
-					conceallevel = 3,
-					concealcursor = "nvic",
-				},
-				bo = {
-					readonly = true,
-					modifiable = false,
-				},
-				keys = {
-					q = "close",
-				},
-			})
+			local buf_id
+			info_buffer.open(buf_id, "lintinfo", message, "markdown")
 		end, {
 			desc = "Display configured linters for the current filetype",
 		})

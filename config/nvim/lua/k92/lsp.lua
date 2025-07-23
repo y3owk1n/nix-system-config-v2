@@ -1,4 +1,5 @@
 local augroup = require("k92.utils.autocmds").augroup
+local info_buffer = require("k92.utils.info-buffer")
 
 vim.diagnostic.config({
 	underline = true,
@@ -268,44 +269,8 @@ vim.api.nvim_create_user_command("LspLog", function()
 		end
 	end
 
-	local ns = vim.api.nvim_create_namespace("lsp_log")
-
-	require("k92.utils.win").win({
-		title = "LSP Log",
-		title_pos = "center",
-		text = message,
-		scratch_ft = "float_info",
-		ft = "markdown",
-		fixbuf = true,
-		width = 0.8,
-		height = 0.8,
-		position = "float",
-		border = "rounded",
-		minimal = true,
-		wo = {
-			spell = false,
-			wrap = false,
-			signcolumn = "yes",
-			statuscolumn = " ",
-			conceallevel = 3,
-			concealcursor = "nvic",
-		},
-		bo = {
-			readonly = true,
-			modifiable = false,
-		},
-		keys = {
-			q = "close",
-		},
-		on_buf = function(self)
-			for _, hl in ipairs(line_highlights) do
-				vim.api.nvim_buf_set_extmark(self.buf, ns, hl.line, hl.start_col, {
-					end_col = hl.end_col,
-					hl_group = hl.hl,
-				})
-			end
-		end,
-	})
+	local buf_id
+	info_buffer.open(buf_id, "lsplog", message, "markdown")
 end, {
 	desc = "Opens the Nvim LSP client log.",
 })
@@ -437,37 +402,8 @@ vim.api.nvim_create_user_command("LspInfo", function()
 		end
 	end
 
-	table.insert(message, "---")
-	table.insert(message, "_Press `q` to close this window_")
-
-	require("k92.utils.win").win({
-		title = "LSP Information",
-		title_pos = "center",
-		text = message,
-		scratch_ft = "float_info",
-		ft = "markdown",
-		fixbuf = true,
-		width = 0.8,
-		height = 0.8,
-		position = "float",
-		border = "rounded",
-		minimal = true,
-		wo = {
-			spell = false,
-			wrap = false,
-			signcolumn = "yes",
-			statuscolumn = " ",
-			conceallevel = 3,
-			concealcursor = "nvic",
-		},
-		bo = {
-			readonly = true,
-			modifiable = false,
-		},
-		keys = {
-			q = "close",
-		},
-	})
+	local buf_id
+	info_buffer.open(buf_id, "lspinfo", message, "markdown")
 end, {
 	desc = "Display detailed information about LSP clients",
 })
