@@ -39,10 +39,10 @@ in
     enable = true;
     package = (
       pkgs.aerospace.overrideAttrs (o: rec {
-        version = "0.19.1-Beta";
+        version = "0.19.2-Beta";
         src = pkgs.fetchzip {
           url = "https://github.com/nikitabobko/AeroSpace/releases/download/v${version}/AeroSpace-v${version}.zip";
-          sha256 = "sha256-9BR3dFqO1X35uyNcT5vgME0HqeHW/yo9qRIGZs2bvuA=";
+          sha256 = "sha256-6RyGw84GhGwULzN0ObjsB3nzRu1HYQS/qoCvzVWOYWQ=";
         };
       })
     );
