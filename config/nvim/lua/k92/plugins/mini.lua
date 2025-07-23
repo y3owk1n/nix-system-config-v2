@@ -9,7 +9,7 @@ return {
 	},
 	{
 		"echasnovski/mini.icons",
-		event = "VeryLazy",
+		lazy = true,
 		opts = {
 			file = {
 				[".keep"] = { glyph = "󰊢", hl = "MiniIconsGrey" },
@@ -59,7 +59,7 @@ return {
 	{
 		"echasnovski/mini-git",
 		main = "mini.git",
-		event = "VeryLazy",
+		event = { "BufReadPre", "BufNewFile" },
 		cmd = { "Git" },
 		opts = {},
 	},
