@@ -71,13 +71,6 @@ vim.keymap.set("v", "J", ":m '>+1<cr> | :normal gv=gv<cr>", { desc = "Move line 
 vim.keymap.set("v", "K", ":m '<-2<cr> | :normal gv=gv<cr>", { desc = "Move line up" })
 
 ------------------------------------------------------------
--- Lazygit
-------------------------------------------------------------
-vim.keymap.set("n", "<leader>gg", function()
-	require("k92.utils.lazygit").lazygit()
-end, { desc = "Lazygit" })
-
-------------------------------------------------------------
 -- Disable Unwanted Commands
 ------------------------------------------------------------
 -- Map Q to no operation to avoid accidental use.
