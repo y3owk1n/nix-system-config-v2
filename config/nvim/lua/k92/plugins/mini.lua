@@ -87,27 +87,27 @@ return {
 			},
 		},
 	},
-	{
-		"echasnovski/mini.indentscope",
-		event = { "BufReadPre", "BufNewFile" },
-		opts = function()
-			return {
-				symbol = "│",
-				draw = {
-					animation = require("mini.indentscope").gen_animation.none(),
-				},
-				options = { indent_at_cursor = true, try_as_border = true },
-			}
-		end,
-		init = function()
-			vim.api.nvim_create_autocmd("FileType", {
-				pattern = { "help", "Trouble", "lazy", "mason", "time-machine-list", "float_info", "checkhealth" },
-				callback = function()
-					vim.b.miniindentscope_disable = true
-				end,
-			})
-		end,
-	},
+	-- {
+	-- 	"echasnovski/mini.indentscope",
+	-- 	event = { "BufReadPre", "BufNewFile" },
+	-- 	opts = function()
+	-- 		return {
+	-- 			symbol = "│",
+	-- 			draw = {
+	-- 				animation = require("mini.indentscope").gen_animation.none(),
+	-- 			},
+	-- 			options = { indent_at_cursor = true, try_as_border = true },
+	-- 		}
+	-- 	end,
+	-- 	init = function()
+	-- 		vim.api.nvim_create_autocmd("FileType", {
+	-- 			pattern = { "help", "Trouble", "lazy", "mason", "time-machine-list", "float_info", "checkhealth" },
+	-- 			callback = function()
+	-- 				vim.b.miniindentscope_disable = true
+	-- 			end,
+	-- 		})
+	-- 	end,
+	-- },
 	{
 		"echasnovski/mini.files",
 		event = "VeryLazy",
@@ -134,17 +134,17 @@ return {
 			},
 			options = { use_as_default_explorer = true },
 		},
-		init = function()
-			local augroup = vim.api.nvim_create_augroup("MiniFilesRename", {})
-			vim.api.nvim_create_autocmd("User", {
-				group = augroup,
-				pattern = "MiniFilesActionRename",
-				callback = function(ev)
-					local from, to = ev.data.from, ev.data.to
-					vim.notify(("Renamed %q → %q"):format(from, to))
-				end,
-			})
-		end,
+		-- init = function()
+		-- 	local augroup = vim.api.nvim_create_augroup("MiniFilesRename", {})
+		-- 	vim.api.nvim_create_autocmd("User", {
+		-- 		group = augroup,
+		-- 		pattern = "MiniFilesActionRename",
+		-- 		callback = function(ev)
+		-- 			local from, to = ev.data.from, ev.data.to
+		-- 			vim.notify(("Renamed %q → %q"):format(from, to))
+		-- 		end,
+		-- 	})
+		-- end,
 		keys = {
 			{
 				"<leader>e",
@@ -310,56 +310,56 @@ return {
 			},
 		},
 	},
-	{
-		"echasnovski/mini.notify",
-		event = "VeryLazy",
-		opts = {
-			content = {
-				format = function(notif)
-					return notif.msg
-				end,
-			},
-			window = {
-				config = {
-					width = 37, -- same as math.floor(vim.o.columns * 0.2), but hard code the value
-				},
-				winblend = 0,
-			},
-		},
-		config = function(_, opts)
-			require("mini.notify").setup(opts)
-
-			vim.notify = require("mini.notify").make_notify()
-		end,
-		keys = {
-			{
-				"<leader>N",
-				function()
-					-- try to find window with filetype "mininotify-history", if not found, vsplit, else, show history
-					local wins = vim.api.nvim_tabpage_list_wins(0)
-					for _, win in ipairs(wins) do
-						local buf = vim.api.nvim_win_get_buf(win)
-						if vim.bo[buf].filetype == "mininotify-history" then
-							vim.api.nvim_set_current_win(win)
-							require("mini.notify").show_history()
-							return
-						end
-					end
-
-					vim.cmd.vsplit()
-					require("mini.notify").show_history()
-				end,
-				desc = "Notification History",
-			},
-			{
-				"<leader>un",
-				function()
-					require("mini.notify").clear()
-				end,
-				desc = "Dismiss All Notifications",
-			},
-		},
-	},
+	-- {
+	-- 	"echasnovski/mini.notify",
+	-- 	event = "VeryLazy",
+	-- 	opts = {
+	-- 		content = {
+	-- 			format = function(notif)
+	-- 				return notif.msg
+	-- 			end,
+	-- 		},
+	-- 		window = {
+	-- 			config = {
+	-- 				width = 37, -- same as math.floor(vim.o.columns * 0.2), but hard code the value
+	-- 			},
+	-- 			winblend = 0,
+	-- 		},
+	-- 	},
+	-- 	config = function(_, opts)
+	-- 		require("mini.notify").setup(opts)
+	--
+	-- 		vim.notify = require("mini.notify").make_notify()
+	-- 	end,
+	-- 	keys = {
+	-- 		{
+	-- 			"<leader>N",
+	-- 			function()
+	-- 				-- try to find window with filetype "mininotify-history", if not found, vsplit, else, show history
+	-- 				local wins = vim.api.nvim_tabpage_list_wins(0)
+	-- 				for _, win in ipairs(wins) do
+	-- 					local buf = vim.api.nvim_win_get_buf(win)
+	-- 					if vim.bo[buf].filetype == "mininotify-history" then
+	-- 						vim.api.nvim_set_current_win(win)
+	-- 						require("mini.notify").show_history()
+	-- 						return
+	-- 					end
+	-- 				end
+	--
+	-- 				vim.cmd.vsplit()
+	-- 				require("mini.notify").show_history()
+	-- 			end,
+	-- 			desc = "Notification History",
+	-- 		},
+	-- 		{
+	-- 			"<leader>un",
+	-- 			function()
+	-- 				require("mini.notify").clear()
+	-- 			end,
+	-- 			desc = "Dismiss All Notifications",
+	-- 		},
+	-- 	},
+	-- },
 	{
 		"echasnovski/mini.starter",
 		event = "VimEnter",
@@ -417,6 +417,17 @@ return {
 		config = function(_, config)
 			local starter = require("mini.starter")
 			starter.setup(config)
+
+			-- close Lazy and re-open when starter is ready
+			if vim.o.filetype == "lazy" then
+				vim.cmd.close()
+				vim.api.nvim_create_autocmd("User", {
+					pattern = "MiniStarterOpened",
+					callback = function()
+						require("lazy").show()
+					end,
+				})
+			end
 
 			vim.api.nvim_create_autocmd("User", {
 				pattern = "LazyVimStarted",
