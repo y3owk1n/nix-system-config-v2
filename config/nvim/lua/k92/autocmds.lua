@@ -21,22 +21,17 @@ end
 vim.api.nvim_create_autocmd("FileType", {
 	group = augroup("close_with_q"),
 	pattern = {
-		"PlenaryTestPopup",
 		"checkhealth",
 		"dbout",
-		"gitsigns-blame",
 		"grug-far",
 		"help",
-		"lspinfo",
-		"neotest-output",
-		"neotest-output-panel",
-		"neotest-summary",
-		"notify",
 		"qf",
-		"spectre_panel",
 		"startuptime",
 		"tsplayground",
 		"mininotify-history",
+		"lspinfo",
+		"lsplog",
+		"lintinfo",
 	},
 	callback = function(event)
 		-- Prevent the buffer from appearing in the buffer list.
