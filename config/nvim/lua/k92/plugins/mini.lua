@@ -101,7 +101,7 @@ return {
 		end,
 		init = function()
 			vim.api.nvim_create_autocmd("FileType", {
-				pattern = { "help", "Trouble", "lazy", "mason", "time-machine-list" },
+				pattern = { "help", "Trouble", "lazy", "mason", "time-machine-list", "float_info" },
 				callback = function()
 					vim.b.miniindentscope_disable = true
 				end,
@@ -331,6 +331,18 @@ return {
 			{
 				"<leader>N",
 				function()
+					-- try to find window with filetype "mininotify-history", if not found, vsplit, else, show history
+					local wins = vim.api.nvim_tabpage_list_wins(0)
+					for _, win in ipairs(wins) do
+						local buf = vim.api.nvim_win_get_buf(win)
+						if vim.bo[buf].filetype == "mininotify-history" then
+							vim.api.nvim_set_current_win(win)
+							require("mini.notify").show_history()
+							return
+						end
+					end
+
+					vim.cmd.vsplit()
 					require("mini.notify").show_history()
 				end,
 				desc = "Notification History",
@@ -340,7 +352,7 @@ return {
 				function()
 					require("mini.notify").clear()
 				end,
-				desc = "Dismiss All",
+				desc = "Dismiss All Notifications",
 			},
 		},
 	},
