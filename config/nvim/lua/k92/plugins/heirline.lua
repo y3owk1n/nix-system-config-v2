@@ -1,7 +1,7 @@
 ---@type LazySpec
 return {
 	"rebelot/heirline.nvim",
-	event = { "BufReadPre", "BufNewFile" },
+	lazy = false,
 	opts = function(_, opts)
 		local conditions = require("heirline.conditions")
 		local utils = require("heirline.utils")
@@ -458,7 +458,7 @@ return {
 			condition = function()
 				return conditions.buffer_matches({
 					buftype = { "nofile", "prompt", "help", "quickfix" },
-					filetype = { "^git.*", "fugitive" },
+					filetype = { "^git.*", "ministarter" },
 				})
 			end,
 
@@ -469,7 +469,6 @@ return {
 		}
 
 		local TerminalStatusline = {
-
 			condition = function()
 				return conditions.buffer_matches({ buftype = { "terminal" } })
 			end,
@@ -482,7 +481,6 @@ return {
 		}
 
 		local StatusLines = {
-
 			hl = function()
 				if conditions.is_active() then
 					return "StatusLine"
