@@ -152,7 +152,11 @@ return {
 					local mini_files = require("mini.files")
 
 					if not mini_files.close() then
-						mini_files.open(vim.api.nvim_buf_get_name(0), true)
+						local buf_path = vim.api.nvim_buf_get_name(0)
+						if buf_path == "" or not vim.uv.fs_stat(buf_path) then
+							buf_path = vim.uv.cwd() or ""
+						end
+						mini_files.open(buf_path, true)
 					end
 				end,
 				desc = "Explorer (buffer path)",
