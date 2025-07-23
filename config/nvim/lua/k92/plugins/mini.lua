@@ -355,35 +355,45 @@ return {
 			end
 
 			local items = {
-				new_section("Find File", "Pick files", "Files"),
-				new_section("Grep Text", "Pick grep_live", "Search"),
-				new_section("Restore", ":lua require('persistence').load()", "Session"),
-				new_section("Quit", "qa", "Built-in"),
+				new_section("e: Explore", "lua require('mini.files').open(vim.uv.cwd(), true)", "Navigate"),
+				new_section("f: Find File", "Pick files", "Navigate"),
+				new_section("g: Grep Text", "Pick grep_live", "Navigate"),
+				new_section("s: Restore", "lua require('persistence').load()", "Session"),
+				new_section("q: Quit", "qa", "Built-in"),
 			}
 
 			if not vim.g.disable_mason then
-				table.insert(items, new_section("Mason Update", "MasonUpdate", "Tools"))
+				table.insert(items, new_section("m: Mason Update", "MasonUpdate", "Tools"))
 			end
 
 			if package.loaded.lazy then
-				table.insert(items, new_section("Lazy", "Lazy", "Tools"))
+				table.insert(items, new_section("l: Lazy Update", "Lazy update", "Tools"))
+			end
+
+			local function header_cb()
+				local versioninfo = vim.version() or {}
+				local major = versioninfo.major or ""
+				local minor = versioninfo.minor or ""
+				local patch = versioninfo.patch or ""
+				local prerelease = versioninfo.prerelease or ""
+				local build = versioninfo.build or ""
+
+				local version = string.format("NVIM v%s.%s.%s", major, minor, patch)
+				if prerelease ~= "" then
+					version = version .. string.format(" (%s-%s)", prerelease, build)
+				end
+				return version
 			end
 
 			local config = {
-				header = [[
-██╗  ██╗██╗   ██╗██╗     ███████╗
-██║ ██╔╝╚██╗ ██╔╝██║     ██╔════╝
-█████╔╝  ╚████╔╝ ██║     █████╗
-██╔═██╗   ╚██╔╝  ██║     ██╔══╝
-██║  ██╗   ██║   ███████╗███████╗
-╚═╝  ╚═╝   ╚═╝   ╚══════╝╚══════╝
-]],
+				header = header_cb,
 				evaluate_single = true,
 				items = items,
 				content_hooks = {
 					starter.gen_hook.adding_bullet("░ ", false),
 					starter.gen_hook.aligning("center", "center"),
 				},
+				silent = true,
 			}
 
 			return config
