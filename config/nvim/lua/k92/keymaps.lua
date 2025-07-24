@@ -33,9 +33,9 @@ vim.keymap.set("n", "<leader>iz", "<cmd>Lazy<cr>", { desc = "Lazy" })
 ------------------------------------------------------------
 -- Yank text in normal and visual modes while keeping the cursor in place.
 vim.keymap.set({ "n", "x" }, "y", function()
-	-- Preserve the current cursor position when yanking.
-	require("k92.utils.preserve-cursor").preserve_cursor()
-	return "y"
+  -- Preserve the current cursor position when yanking.
+  require("k92.utils.preserve-cursor").preserve_cursor()
+  return "y"
 end, { expr = true, noremap = true, desc = "Yank and remain cursor" })
 
 ------------------------------------------------------------
