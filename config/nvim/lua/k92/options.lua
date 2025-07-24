@@ -26,7 +26,7 @@ vim.opt.virtualedit = "block" -- Allow cursor to move past end-of-line in visual
 vim.opt.splitkeep = "screen" -- Maintain screen view when splitting windows.
 vim.opt.splitright = true -- Open vertical splits to the right.
 vim.opt.splitbelow = true -- Open horizontal splits below.
-vim.o.laststatus = 3 -- Use a global statusline.
+vim.o.laststatus = 3 -- Use a global statusline. Checkout my autocmd for more toggles on laststatus.
 vim.opt.showtabline = 0 -- Never show the tabline.
 vim.opt.foldenable = false -- Do not enable folding by default.
 

@@ -241,3 +241,29 @@ vim.api.nvim_create_autocmd("FileType", {
 		)
 	end,
 })
+
+------------------------------------------------------------
+-- Disable laststatus on certain filetypes
+------------------------------------------------------------
+local ft_exclude_laststatus = { "ministarter" }
+
+vim.api.nvim_create_autocmd("BufReadPost", {
+	group = augroup("buf_read_post_laststatus"),
+	callback = function(ev)
+		if vim.tbl_contains(ft_exclude_laststatus, vim.bo[ev.buf].filetype) then
+			return
+		end
+
+		vim.o.laststatus = 3
+	end,
+})
+
+vim.api.nvim_create_autocmd("VimEnter", {
+	group = augroup("vim_enter_laststatus"),
+	pattern = "*",
+	callback = function()
+		if vim.tbl_contains(ft_exclude_laststatus, vim.bo.filetype) then
+			vim.o.laststatus = 0
+		end
+	end,
+})
