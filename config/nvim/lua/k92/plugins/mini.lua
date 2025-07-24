@@ -154,9 +154,9 @@ return {
         callback = function(ev)
           local from, to = ev.data.from, ev.data.to
 
-          local harpoon_exists, harpoon = pcall(require, "k92.harpoon")
-          if harpoon_exists then
-            harpoon.on_file_update(from, to)
+          local warp_exists, warp_list = pcall(require, "warp.list")
+          if warp_exists then
+            warp_list.on_file_update(from, to)
           end
         end,
       })
