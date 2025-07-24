@@ -8,7 +8,7 @@ return {
 		---@type snacks.Config
 		opts = {
 			bigfile = { enabled = true },
-			quickfile = { enabled = true, exclude = { "latex" } },
+			quickfile = { enabled = true },
 			statuscolumn = {
 				enabled = true,
 			},
@@ -45,27 +45,9 @@ return {
 						:map("<leader>uc")
 					Snacks.toggle.inlay_hints():map("<leader>uh")
 					Snacks.toggle.option("foldenable", { name = "Fold" }):map("<leader>uf")
-					Snacks.toggle.indent():map("<leader>ug")
 				end,
 			})
 		end,
-	},
-	--- indent
-	{
-		"folke/snacks.nvim",
-		---@type snacks.Config
-		opts = {
-			indent = {
-				enabled = true,
-				scope = {
-					enabled = false, -- enable highlighting the current scope
-				},
-				chunk = {
-					enabled = true,
-					only_current = true,
-				},
-			},
-		},
 	},
 	--- notifier
 	{
@@ -123,13 +105,6 @@ return {
 		"folke/snacks.nvim",
 		---@type snacks.Config
 		opts = {
-			picker = {
-				previewers = {
-					git = {
-						native = true,
-					},
-				},
-			},
 			lazygit = {
 				configure = false,
 				config = {
@@ -162,7 +137,6 @@ return {
 			integrations = {
 				snacks = {
 					enabled = true,
-					indent_scope_color = "flamingo",
 				},
 			},
 		},
