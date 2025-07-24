@@ -58,6 +58,7 @@ return {
           { "<leader>s", group = "search" },
           { "<leader>i", group = "info" },
           { "<leader>l", group = "lsp" },
+          { "<leader>h", group = "harpoon" },
           {
             "<leader>u",
             group = "ui",
