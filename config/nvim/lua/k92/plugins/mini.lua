@@ -134,17 +134,33 @@ return {
       },
       options = { use_as_default_explorer = true },
     },
-    -- init = function()
-    -- 	local augroup = vim.api.nvim_create_augroup("MiniFilesRename", {})
-    -- 	vim.api.nvim_create_autocmd("User", {
-    -- 		group = augroup,
-    -- 		pattern = "MiniFilesActionRename",
-    -- 		callback = function(ev)
-    -- 			local from, to = ev.data.from, ev.data.to
-    -- 			vim.notify(("Renamed %q → %q"):format(from, to))
-    -- 		end,
-    -- 	})
-    -- end,
+    init = function()
+      local augroup = vim.api.nvim_create_augroup("MiniFilesRename", {})
+      vim.api.nvim_create_autocmd("User", {
+        group = augroup,
+        pattern = "MiniFilesActionRename",
+        callback = function(ev)
+          local from, to = ev.data.from, ev.data.to
+
+          local snacks_exists, snacks = pcall(require, "snacks")
+          if snacks_exists then
+            snacks.rename.on_rename_file(from, to)
+          end
+        end,
+      })
+      vim.api.nvim_create_autocmd("User", {
+        group = augroup,
+        pattern = { "MiniFilesActionRename", "MiniFilesActionMove" },
+        callback = function(ev)
+          local from, to = ev.data.from, ev.data.to
+
+          local harpoon_exists, harpoon = pcall(require, "k92.harpoon")
+          if harpoon_exists then
+            harpoon.on_file_update(from, to)
+          end
+        end,
+      })
+    end,
     keys = {
       {
         "<leader>e",
@@ -383,7 +399,7 @@ return {
       end
 
       if package.loaded.lazy then
-        table.insert(items, new_section("l: Lazy Update", "Lazy update", "Tools"))
+        table.insert(items, new_section("z: Lazy Update", "Lazy update", "Tools"))
       end
 
       local function header_cb()

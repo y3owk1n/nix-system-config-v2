@@ -79,22 +79,16 @@ return {
   --- rename file
   {
     "folke/snacks.nvim",
-    opts = function()
-      local augroup = require("k92.utils.autocmds").augroup
-
-      vim.api.nvim_create_autocmd("User", {
-        group = augroup("snacks_rename"),
-        pattern = "MiniFilesActionRename",
-        callback = function(event)
-          Snacks.rename.on_rename_file(event.data.from, event.data.to)
-        end,
-      })
-    end,
+    opts = {},
     keys = {
       {
         "<leader>cr",
         function()
-          Snacks.rename.rename_file()
+          Snacks.rename.rename_file({
+            on_rename = function(to, from)
+              require("k92.harpoon").on_file_update(from, to)
+            end,
+          })
         end,
         desc = "Rename File",
       },

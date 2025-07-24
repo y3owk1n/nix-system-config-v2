@@ -42,6 +42,8 @@ return {
       }
     end
 
+    local harpoon_exists, harpoon = pcall(require, "k92.harpoon")
+
     local Align = { provider = "%=" }
     local Space = { provider = " " }
 
@@ -409,6 +411,36 @@ return {
       },
     }
 
+    local Harpoon = {}
+
+    if harpoon_exists then
+      Harpoon = {
+        condition = function()
+          return harpoon.get_list_count() > 0
+        end,
+        init = function(self)
+          self.current = harpoon.get_index_by_buf(0)
+          self.total = harpoon.get_list_count()
+        end,
+        hl = { fg = "teal", bold = true },
+        {
+          provider = Space.provider,
+        },
+        {
+          provider = function(self)
+            local output = {}
+
+            if self.total > 0 then
+              table.insert(output, string.format("[%s/%s]", tonumber(self.current) or "-", tonumber(self.total)))
+            end
+
+            local statusline = table.concat(output, " ")
+            return string.format("󱡁 %s", statusline)
+          end,
+        },
+      }
+    end
+
     local HelpFileName = {
       condition = function()
         return vim.bo.filetype == "help"
@@ -433,6 +465,7 @@ return {
     local DefaultStatusline = {
       ViMode,
       Git,
+      Harpoon,
       Align,
       FileNameBlock,
       Diagnostics,
