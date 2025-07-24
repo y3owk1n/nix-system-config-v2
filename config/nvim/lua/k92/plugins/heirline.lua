@@ -42,7 +42,7 @@ return {
       }
     end
 
-    local harpoon_exists, harpoon = pcall(require, "k92.harpoon")
+    local warp_exists, warp_list = pcall(require, "warp.list")
 
     local Align = { provider = "%=" }
     local Space = { provider = " " }
@@ -411,16 +411,16 @@ return {
       },
     }
 
-    local Harpoon = {}
+    local Warp = {}
 
-    if harpoon_exists then
-      Harpoon = {
+    if warp_exists then
+      Warp = {
         condition = function()
-          return harpoon.get_list_count() > 0
+          return warp_list.get_list_count() > 0
         end,
         init = function(self)
-          self.current = harpoon.get_index_by_buf(0)
-          self.total = harpoon.get_list_count()
+          self.current = warp_list.get_index_by_buf(0)
+          self.total = warp_list.get_list_count()
         end,
         hl = { fg = "teal", bold = true },
         {
@@ -465,7 +465,7 @@ return {
     local DefaultStatusline = {
       ViMode,
       Git,
-      Harpoon,
+      Warp,
       Align,
       FileNameBlock,
       Diagnostics,

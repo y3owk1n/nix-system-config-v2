@@ -86,7 +86,7 @@ return {
         function()
           Snacks.rename.rename_file({
             on_rename = function(to, from)
-              require("k92.harpoon").on_file_update(from, to)
+              require("warp.list").on_file_update(from, to)
             end,
           })
         end,
