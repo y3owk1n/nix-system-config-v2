@@ -243,7 +243,8 @@ local floating_win
 local floating_buf
 
 --- Show the floating window with the harpoon list
-local function open_window()
+---@param list_idx number|nil
+local function open_window(list_idx)
   -- prune missing files
   local i = 1
   while i <= #harpoon_list do
@@ -283,7 +284,11 @@ local function open_window()
 
   local lines = {}
   for idx, entry in ipairs(harpoon_list) do
-    lines[idx] = string.format("%d  %s", idx, fn.fnamemodify(entry.path, ":~:."))
+    local display = fn.fnamemodify(entry.path, ":~:.")
+    if idx == list_idx then
+      display = display .. " *"
+    end
+    lines[idx] = string.format("%d  %s", idx, display)
   end
   api.nvim_buf_set_lines(floating_buf, 0, -1, false, lines)
 
@@ -343,7 +348,10 @@ end
 -- keymaps
 --------------------------------------------------
 vim.keymap.set("n", "<leader>ha", add, { desc = "add" })
-vim.keymap.set("n", "<leader>hh", open_window, { desc = "harpoon" })
+vim.keymap.set("n", "<leader>hh", function()
+  local index = M.get_index_by_buf(api.nvim_get_current_buf())
+  open_window(index)
+end, { desc = "harpoon" })
 vim.keymap.set("n", "<leader>hc", function()
   clear_current()
   vim.notify("Harpoon: Cleared current list successfully")
