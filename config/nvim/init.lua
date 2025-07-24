@@ -1,5 +1,5 @@
 if vim.loader then
-	vim.loader.enable()
+  vim.loader.enable()
 end
 
 -- Set <space> as the leader key
@@ -34,21 +34,21 @@ vim.g.has_nix = vim.fn.executable("nix") == 1
 vim.g.has_tmux = vim.fn.executable("tmux") == 1
 
 local function is_nixos()
-	local os_release, err = pcall(vim.fn.readfile, "/etc/os-release")
-	if err then
-		return false
-	end
-	for _, line in ipairs(os_release) do
-		if line:match("^ID=nixos") then
-			return true
-		end
-	end
+  local os_release, err = pcall(vim.fn.readfile, "/etc/os-release")
+  if err then
+    return false
+  end
+  for _, line in ipairs(os_release) do
+    if line:match("^ID=nixos") then
+      return true
+    end
+  end
 
-	return false
+  return false
 end
 
 local function is_nixdarwin()
-	return vim.fn.executable("darwin-rebuild") == 1
+  return vim.fn.executable("darwin-rebuild") == 1
 end
 
 vim.g.disable_mason = is_nixos() or is_nixdarwin()

@@ -1,6 +1,6 @@
-indent_type = "Tabs"
+indent_type = "Spaces"
 column_width = 120
-indent_width = 4
+indent_width = 2
 
 [sort_requires]
 enabled = true

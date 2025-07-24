@@ -14,13 +14,13 @@ vim.opt.signcolumn = "yes" -- Always show the sign column for diagnostics or ver
 vim.opt.winborder = "rounded" -- Use rounded borders for floating windows.
 vim.opt.synmaxcol = 300 -- Limit syntax highlighting to the first 300 columns.
 vim.opt.fillchars = { -- Customize filler characters for various UI elements.
-	foldopen = "", -- Icon for open fold.
-	foldclose = "", -- Icon for closed fold.
-	-- fold = "⸱",
-	fold = " ", -- Filler for folds.
-	foldsep = " ", -- Separator for folds.
-	diff = "╱", -- Diff marker.
-	eob = " ", -- End-of-buffer character (hides ~ symbols).
+  foldopen = "", -- Icon for open fold.
+  foldclose = "", -- Icon for closed fold.
+  -- fold = "⸱",
+  fold = " ", -- Filler for folds.
+  foldsep = " ", -- Separator for folds.
+  diff = "╱", -- Diff marker.
+  eob = " ", -- End-of-buffer character (hides ~ symbols).
 }
 vim.opt.virtualedit = "block" -- Allow cursor to move past end-of-line in visual block mode.
 vim.opt.splitkeep = "screen" -- Maintain screen view when splitting windows.
@@ -41,14 +41,14 @@ vim.opt.inccommand = "split" -- Show live preview of substitutions in a split.
 vim.opt.completeopt = { "menu", "menuone", "noselect" } -- Configure completion menu behavior.
 vim.opt.viewoptions:remove("curdir") -- Do not save the current directory with views.
 vim.opt.sessionoptions = { -- Specify what to save in sessions.
-	"buffers",
-	"curdir",
-	"tabpages",
-	"winsize",
-	"help",
-	"globals",
-	"skiprtp",
-	"folds",
+  "buffers",
+  "curdir",
+  "tabpages",
+  "winsize",
+  "help",
+  -- "globals",
+  "skiprtp",
+  "folds",
 }
 
 ------------------------------------------------------------
@@ -61,10 +61,13 @@ vim.opt.formatoptions:append({ "r" }) -- Automatically insert comment leader aft
 ------------------------------------------------------------
 -- Tabs & Indentation
 ------------------------------------------------------------
-vim.opt.tabstop = 4 -- Set tab width to 4 spaces.
-vim.opt.shiftwidth = 4 -- Set indentation width to 4 spaces.
-vim.opt.softtabstop = 4 -- Configure soft tab stop to 4 spaces.
-vim.opt.expandtab = false -- Use literal tab characters, not spaces.
+--- these should be from my root editorconfig ---
+vim.opt.tabstop = 2 -- Set tab width to 4 spaces.
+vim.opt.shiftwidth = 2 -- Set indentation width to 4 spaces.
+vim.opt.softtabstop = -1 -- Configure soft tab stop to 4 spaces.
+--- these should be from my root editorconfig ---
+
+vim.opt.expandtab = true -- Use literal tab characters, not spaces.
 vim.opt.shiftround = true -- Round indent to multiple of 'shiftwidth'.
 vim.opt.smartindent = true -- Enable smart indentation.
 vim.opt.breakindent = true -- Maintain indent on wrapped lines.
@@ -91,22 +94,22 @@ vim.opt.undodir = os.getenv("HOME") .. "/.vim/undodir" -- Set custom undo direct
 -- Clipboard Configuration
 ------------------------------------------------------------
 if vim.env.IS_ORBSTACK == "1" then
-	vim.g.clipboard = {
-		name = "macOS-clipboard",
-		copy = {
-			["+"] = "mac pbcopy",
-			["*"] = "mac pbcopy",
-		},
-		paste = {
-			["+"] = "mac pbpaste",
-			["*"] = "mac pbpaste",
-		},
-		cache_enabled = 0,
-	}
+  vim.g.clipboard = {
+    name = "macOS-clipboard",
+    copy = {
+      ["+"] = "mac pbcopy",
+      ["*"] = "mac pbcopy",
+    },
+    paste = {
+      ["+"] = "mac pbpaste",
+      ["*"] = "mac pbpaste",
+    },
+    cache_enabled = 0,
+  }
 end
 
 vim.schedule(function()
-	vim.opt.clipboard = "unnamedplus" -- Sync system clipboard with Neovim.
+  vim.opt.clipboard = "unnamedplus" -- Sync system clipboard with Neovim.
 end)
 
 ------------------------------------------------------------
@@ -131,17 +134,17 @@ vim.opt.wildmenu = true -- Enable command-line completion menu.
 vim.opt.wildignorecase = true -- Make wildmenu file matching case-insensitive.
 vim.opt.path:append("**") -- Enable recursive file searching.
 vim.opt.wildignore:append({ -- Ignore certain file patterns in file navigation.
-	".git,.hg,.svn",
-	".aux,*.out,*.toc",
-	".o,*.obj,*.exe,*.dll,*.manifest,*.rbc,*.class",
-	".ai,*.bmp,*.gif,*.ico,*.jpg,*.jpeg,*.png,*.psd,*.webp",
-	".avi,*.divx,*.mp4,*.webm,*.mov,*.m2ts,*.mkv,*.vob,*.mpg,*.mpeg",
-	".mp3,*.oga,*.ogg,*.wav,*.flac",
-	".eot,*.otf,*.ttf,*.woff",
-	".doc,*.pdf,*.cbr,*.cbz",
-	".zip,*.tar.gz,*.tar.bz2,*.rar,*.tar.xz,*.kgb",
-	".swp,.lock,.DS_Store,._*",
-	".,..",
+  ".git,.hg,.svn",
+  ".aux,*.out,*.toc",
+  ".o,*.obj,*.exe,*.dll,*.manifest,*.rbc,*.class",
+  ".ai,*.bmp,*.gif,*.ico,*.jpg,*.jpeg,*.png,*.psd,*.webp",
+  ".avi,*.divx,*.mp4,*.webm,*.mov,*.m2ts,*.mkv,*.vob,*.mpg,*.mpeg",
+  ".mp3,*.oga,*.ogg,*.wav,*.flac",
+  ".eot,*.otf,*.ttf,*.woff",
+  ".doc,*.pdf,*.cbr,*.cbz",
+  ".zip,*.tar.gz,*.tar.bz2,*.rar,*.tar.xz,*.kgb",
+  ".swp,.lock,.DS_Store,._*",
+  ".,..",
 })
 
 ------------------------------------------------------------
@@ -154,7 +157,7 @@ vim.opt.wildignore:append({ -- Ignore certain file patterns in file navigation.
 ------------------------------------------------------------
 vim.cmd("filetype plugin indent on") -- Enable filetype-specific plugins and indentation.
 if vim.fn.exists("syntax_on") ~= 1 then
-	vim.cmd("syntax enable") -- Enable syntax highlighting if not already enabled.
+  vim.cmd("syntax enable") -- Enable syntax highlighting if not already enabled.
 end
 
 ------------------------------------------------------------

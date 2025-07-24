@@ -1,27 +1,27 @@
 // Compatibility Prefix
 const {
-    Clipboard,
-    Front,
-    Hints,
-    Normal,
-    RUNTIME,
-    Visual,
-    aceVimMap,
-    addSearchAlias,
-    cmap,
-    getClickableElements,
-    imap,
-    imapkey,
-    iunmap,
-    map,
-    mapkey,
-    readText,
-    removeSearchAlias,
-    tabOpenLink,
-    unmap,
-    unmapAllExcept,
-    vmapkey,
-    vunmap,
+  Clipboard,
+  Front,
+  Hints,
+  Normal,
+  RUNTIME,
+  Visual,
+  aceVimMap,
+  addSearchAlias,
+  cmap,
+  getClickableElements,
+  imap,
+  imapkey,
+  iunmap,
+  map,
+  mapkey,
+  readText,
+  removeSearchAlias,
+  tabOpenLink,
+  unmap,
+  unmapAllExcept,
+  vmapkey,
+  vunmap,
 } = api;
 
 // ---- Settings ----
@@ -80,10 +80,10 @@ map("L", "D");
 // map("K", "E"); <-- Using arc default keymap to switch tabs
 map("F", "gf");
 mapkey("<Ctrl-d>", "Scroll down", () => {
-    Normal.scroll("pageDown");
+  Normal.scroll("pageDown");
 });
 mapkey("<Ctrl-u>", "Scroll up", () => {
-    Normal.scroll("pageUp");
+  Normal.scroll("pageUp");
 });
 
 // ---- Post Unmap ----
