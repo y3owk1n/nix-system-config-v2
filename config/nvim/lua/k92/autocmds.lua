@@ -59,10 +59,10 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 		local exclude = { "gitcommit" }
 		local buf = event.buf
 		-- Skip if filetype is excluded or already processed.
-		if vim.tbl_contains(exclude, vim.bo[buf].filetype) or vim.b[buf].lazyvim_last_loc then
+		if vim.tbl_contains(exclude, vim.bo[buf].filetype) or vim.b[buf].last_loc then
 			return
 		end
-		vim.b[buf].lazyvim_last_loc = true
+		vim.b[buf].last_loc = true
 		local mark = vim.api.nvim_buf_get_mark(buf, '"')
 		local lcount = vim.api.nvim_buf_line_count(buf)
 		-- Jump to last cursor position if it's within file bounds.
@@ -191,18 +191,22 @@ vim.api.nvim_create_autocmd("BufNew", {
 vim.api.nvim_create_autocmd({ "InsertLeave", "WinEnter" }, {
 	group = augroup("auto_cursorline_show"),
 	callback = function()
-		if vim.w.auto_cursorline then
-			vim.wo.cursorline = true
-			vim.w.auto_cursorline = nil
+		local win = vim.api.nvim_get_current_win()
+
+		if vim.w[win].auto_cursorline then
+			vim.wo[win].cursorline = true
+			vim.w[win].auto_cursorline = nil
 		end
 	end,
 })
 vim.api.nvim_create_autocmd({ "InsertEnter", "WinLeave" }, {
 	group = augroup("auto_cursorline_hide"),
 	callback = function()
-		if vim.wo.cursorline then
-			vim.w.auto_cursorline = true
-			vim.wo.cursorline = false
+		local win = vim.api.nvim_get_current_win()
+
+		if vim.wo[win].cursorline then
+			vim.w[win].auto_cursorline = true
+			vim.wo[win].cursorline = false
 		end
 	end,
 })
