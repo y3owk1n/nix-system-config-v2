@@ -13,66 +13,61 @@ return {
     },
     ---@module "warp"
     ---@type Warp.Config
-    opts = {
-      keymaps = {
-        move_up = { "K" },
-        move_down = { "J" },
-      },
-    },
+    opts = {},
     keys = {
       {
         "<leader>ha",
         function()
-          require("warp.action").add()
+          require("warp").add()
         end,
         desc = "[Warp] Add",
       },
       {
         "<leader>hh",
         function()
-          require("warp.action").show_list()
+          require("warp").show_list()
         end,
         desc = "[Warp] Show list",
       },
       {
         "<leader>hx",
         function()
-          require("warp.list").clear_current_list()
+          require("warp").clear_current_list()
         end,
         desc = "[Warp] Clear current list",
       },
       {
         "<leader>hX",
         function()
-          require("warp.list").clear_all_list()
+          require("warp").clear_all_list()
         end,
         desc = "[Warp] Clear all lists",
       },
       {
         "<leader>1",
         function()
-          require("warp.action").goto_index(1)
+          require("warp").goto_index(1)
         end,
         desc = "[Warp] Goto #1",
       },
       {
         "<leader>2",
         function()
-          require("warp.action").goto_index(2)
+          require("warp").goto_index(2)
         end,
         desc = "[Warp] Goto #2",
       },
       {
         "<leader>3",
         function()
-          require("warp.action").goto_index(3)
+          require("warp").goto_index(3)
         end,
         desc = "[Warp] Goto #3",
       },
       {
         "<leader>4",
         function()
-          require("warp.action").goto_index(4)
+          require("warp").goto_index(4)
         end,
         desc = "[Warp] Goto #4",
       },

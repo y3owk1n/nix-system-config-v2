@@ -42,7 +42,7 @@ return {
       }
     end
 
-    local warp_exists, warp_list = pcall(require, "warp.list")
+    local warp_exists, warp = pcall(require, "warp")
 
     local Align = { provider = "%=" }
     local Space = { provider = " " }
@@ -416,11 +416,11 @@ return {
     if warp_exists then
       Warp = {
         condition = function()
-          return warp_list.get_list_count() > 0
+          return warp.get_list_count() > 0
         end,
         init = function(self)
-          self.current = warp_list.get_index_by_buf(0)
-          self.total = warp_list.get_list_count()
+          self.current = warp.get_index_by_buf(0)
+          self.total = warp.get_list_count()
         end,
         hl = { fg = "teal", bold = true },
         {

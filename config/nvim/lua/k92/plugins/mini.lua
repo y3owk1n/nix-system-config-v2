@@ -154,9 +154,9 @@ return {
         callback = function(ev)
           local from, to = ev.data.from, ev.data.to
 
-          local warp_exists, warp_list = pcall(require, "warp.list")
+          local warp_exists, warp = pcall(require, "warp")
           if warp_exists then
-            warp_list.on_file_update(from, to)
+            warp.on_file_update(from, to)
           end
         end,
       })
