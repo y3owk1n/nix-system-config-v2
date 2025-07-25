@@ -86,7 +86,7 @@ return {
         function()
           Snacks.rename.rename_file({
             on_rename = function(to, from)
-              require("warp.list").on_file_update(from, to)
+              require("warp").on_file_update(from, to)
             end,
           })
         end,
