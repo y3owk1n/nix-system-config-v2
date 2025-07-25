@@ -3,7 +3,6 @@ return {
   {
     "y3owk1n/warp.nvim",
     -- dir = "~/Dev/warp.nvim", -- Your path
-    event = "VeryLazy",
     cmd = {
       "WarpAddFile",
       "WarpShowList",
@@ -16,59 +15,48 @@ return {
     opts = {},
     keys = {
       {
+        "<leader>h",
+        "",
+        desc = "warp",
+      },
+      {
         "<leader>ha",
-        function()
-          require("warp").add()
-        end,
+        "<cmd>WarpAddFile<cr>",
         desc = "[Warp] Add",
       },
       {
         "<leader>hh",
-        function()
-          require("warp").show_list()
-        end,
+        "<cmd>WarpShowList<cr>",
         desc = "[Warp] Show list",
       },
       {
         "<leader>hx",
-        function()
-          require("warp").clear_current_list()
-        end,
+        "<cmd>WarpClearCurrentList<cr>",
         desc = "[Warp] Clear current list",
       },
       {
         "<leader>hX",
-        function()
-          require("warp").clear_all_list()
-        end,
+        "<cmd>WarpClearAllList<cr>",
         desc = "[Warp] Clear all lists",
       },
       {
         "<leader>1",
-        function()
-          require("warp").goto_index(1)
-        end,
+        "<cmd>WarpGoToIndex 1<cr>",
         desc = "[Warp] Goto #1",
       },
       {
         "<leader>2",
-        function()
-          require("warp").goto_index(2)
-        end,
+        "<cmd>WarpGoToIndex 2<cr>",
         desc = "[Warp] Goto #2",
       },
       {
         "<leader>3",
-        function()
-          require("warp").goto_index(3)
-        end,
+        "<cmd>WarpGoToIndex 3<cr>",
         desc = "[Warp] Goto #3",
       },
       {
         "<leader>4",
-        function()
-          require("warp").goto_index(4)
-        end,
+        "<cmd>WarpGoToIndex 4<cr>",
         desc = "[Warp] Goto #4",
       },
     },
