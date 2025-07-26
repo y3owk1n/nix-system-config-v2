@@ -416,11 +416,12 @@ return {
     if warp_exists then
       Warp = {
         condition = function()
-          return warp.get_list_count() > 0
+          return warp.count() > 0
         end,
         init = function(self)
-          self.current = warp.get_index_by_buf(0)
-          self.total = warp.get_list_count()
+          local item = warp.get_item_by_buf(0)
+          self.current = item and item.index or "-"
+          self.total = warp.count()
         end,
         hl = { fg = "teal", bold = true },
         {

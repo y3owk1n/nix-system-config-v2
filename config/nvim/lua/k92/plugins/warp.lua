@@ -5,6 +5,8 @@ return {
     -- dir = "~/Dev/warp.nvim", -- Your path
     cmd = {
       "WarpAddFile",
+      "WarpDelFile",
+      "WarpMoveTo",
       "WarpShowList",
       "WarpClearCurrentList",
       "WarpClearAllList",
@@ -20,14 +22,44 @@ return {
         desc = "warp",
       },
       {
+        "<leader>hm",
+        "",
+        desc = "move",
+      },
+      {
         "<leader>ha",
         "<cmd>WarpAddFile<cr>",
         desc = "[Warp] Add",
       },
       {
-        "<leader>hh",
+        "<leader>hd",
+        "<cmd>WarpDelFile<cr>",
+        desc = "[Warp] Delete",
+      },
+      {
+        "<leader>he",
         "<cmd>WarpShowList<cr>",
         desc = "[Warp] Show list",
+      },
+      {
+        "<leader>hml",
+        "<cmd>WarpMoveTo next<cr>",
+        desc = "[Warp] Move to next index",
+      },
+      {
+        "<leader>hmh",
+        "<cmd>WarpMoveTo prev<cr>",
+        desc = "[Warp] Move to prev index",
+      },
+      {
+        "<leader>hmL",
+        "<cmd>WarpMoveTo last<cr>",
+        desc = "[Warp] Move to the last index",
+      },
+      {
+        "<leader>hmH",
+        "<cmd>WarpMoveTo first<cr>",
+        desc = "[Warp] Move to first index",
       },
       {
         "<leader>hx",
@@ -38,6 +70,26 @@ return {
         "<leader>hX",
         "<cmd>WarpClearAllList<cr>",
         desc = "[Warp] Clear all lists",
+      },
+      {
+        "<leader>hl",
+        "<cmd>WarpGoToIndex next<cr>",
+        desc = "[Warp] Goto next index",
+      },
+      {
+        "<leader>hh",
+        "<cmd>WarpGoToIndex prev<cr>",
+        desc = "[Warp] Goto prev index",
+      },
+      {
+        "<leader>hH",
+        "<cmd>WarpGoToIndex first<cr>",
+        desc = "[Warp] Goto first index",
+      },
+      {
+        "<leader>hL",
+        "<cmd>WarpGoToIndex last<cr>",
+        desc = "[Warp] Goto last index",
       },
       {
         "<leader>1",
