@@ -14,7 +14,12 @@ return {
     },
     ---@module "warp"
     ---@type Warp.Config
-    opts = {},
+    opts = {
+      keymaps = {
+        split_horizontal = { "-" },
+        split_vertical = { "\\" },
+      },
+    },
     keys = {
       {
         "<leader>h",
