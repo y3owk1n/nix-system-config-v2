@@ -5,6 +5,7 @@ return {
     -- dir = "~/Dev/warp.nvim", -- Your path
     cmd = {
       "WarpAddFile",
+      "WarpAddOnScreenFiles",
       "WarpDelFile",
       "WarpMoveTo",
       "WarpShowList",
@@ -35,6 +36,11 @@ return {
         "<leader>ha",
         "<cmd>WarpAddFile<cr>",
         desc = "[Warp] Add",
+      },
+      {
+        "<leader>hA",
+        "<cmd>WarpAddOnScreenFiles<cr>",
+        desc = "[Warp] Add all on screen files",
       },
       {
         "<leader>hd",
