@@ -391,7 +391,6 @@ return {
         new_section("e: Explore", "lua require('mini.files').open(vim.uv.cwd(), true)", "Navigate"),
         new_section("f: Find File", "Pick files", "Navigate"),
         new_section("g: Grep Text", "Pick grep_live", "Navigate"),
-        new_section("s: Restore", "lua require('persistence').load()", "Session"),
       }
 
       if warp_exists then
