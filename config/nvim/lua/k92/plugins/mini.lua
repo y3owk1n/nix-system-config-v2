@@ -381,6 +381,7 @@ return {
     event = "VimEnter",
     opts = function()
       local starter = require("mini.starter")
+      local warp_exists, warp_list = pcall(require, "warp.list")
 
       local new_section = function(name, action, section)
         return { name = name, action = action, section = section }
@@ -391,16 +392,29 @@ return {
         new_section("f: Find File", "Pick files", "Navigate"),
         new_section("g: Grep Text", "Pick grep_live", "Navigate"),
         new_section("s: Restore", "lua require('persistence').load()", "Session"),
-        new_section("q: Quit", "qa", "Built-in"),
       }
+
+      if warp_exists then
+        local warps = warp_list.get.all()
+
+        if #warps > 0 then
+          for index, warp in ipairs(warps) do
+            local display = vim.fn.pathshorten(vim.fn.fnamemodify(warp.path, ":~:."))
+
+            table.insert(items, new_section(index .. ": " .. display, "WarpGoToIndex " .. index, "Warp"))
+          end
+        end
+      end
 
       if not vim.g.disable_mason then
         table.insert(items, new_section("m: Mason Update", "MasonUpdate", "Tools"))
       end
 
       if package.loaded.lazy then
-        table.insert(items, new_section("z: Lazy Update", "Lazy update", "Tools"))
+        table.insert(items, new_section("l: Lazy", "Lazy", "Tools"))
       end
+
+      table.insert(items, new_section("q: Quit", "qa", "Built-in"))
 
       local function header_cb()
         local versioninfo = vim.version() or {}

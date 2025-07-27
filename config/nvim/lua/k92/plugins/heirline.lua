@@ -436,7 +436,7 @@ return {
             end
 
             local statusline = table.concat(output, " ")
-            return string.format("󱡁 %s", statusline)
+            return string.format("󱐋 %s", statusline)
           end,
         },
       }
