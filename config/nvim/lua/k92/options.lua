@@ -40,16 +40,6 @@ vim.opt.timeoutlen = 300 -- Set key sequence timeout to 300ms.
 vim.opt.inccommand = "split" -- Show live preview of substitutions in a split.
 vim.opt.completeopt = { "menu", "menuone", "noselect" } -- Configure completion menu behavior.
 vim.opt.viewoptions:remove("curdir") -- Do not save the current directory with views.
-vim.opt.sessionoptions = { -- Specify what to save in sessions.
-  "buffers",
-  "curdir",
-  "tabpages",
-  "winsize",
-  "help",
-  -- "globals",
-  "skiprtp",
-  "folds",
-}
 
 ------------------------------------------------------------
 -- Text Editing Settings
