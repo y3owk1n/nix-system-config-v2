@@ -17,7 +17,7 @@
     just
 
     # --- rust ---
-    cargo
+    # cargo
 
     # --- node ---
     nodejs_22
