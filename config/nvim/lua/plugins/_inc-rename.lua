@@ -1,6 +1,10 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  cmd = "IncRename",
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "inc_rename")
 
@@ -8,6 +12,7 @@ function M.setup()
     return
   end
 
+  ---@type inc_rename.UserConfig
   local plugin_opts = {}
 
   plugin.setup(plugin_opts)

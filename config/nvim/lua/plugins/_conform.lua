@@ -1,6 +1,11 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  event = { "BufWritePre" },
+  cmd = { "ConformInfo" },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "conform")
 
@@ -40,6 +45,7 @@ function M.setup()
     nix = { "nixfmt" },
   }
 
+  ---@type conform.setupOpts
   local plugin_opts = {
     notify_on_error = false,
     format_on_save = function(bufnr)

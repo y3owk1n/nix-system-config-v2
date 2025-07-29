@@ -1,6 +1,16 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  cmd = {
+    "TimeMachineToggle",
+    "TimeMachinePurgeBuffer",
+    "TimeMachinePurgeAll",
+    "TimeMachineLogShow",
+    "TimeMachineLogClear",
+  },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "time-machine")
 

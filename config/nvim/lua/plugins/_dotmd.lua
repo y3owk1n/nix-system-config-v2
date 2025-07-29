@@ -1,6 +1,18 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  cmd = {
+    "DotMdCreateNote",
+    "DotMdCreateTodoToday",
+    "DotMdCreateJournal",
+    "DotMdInbox",
+    "DotMdNavigate",
+    "DotMdPick",
+    "DotMdOpen",
+  },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "dotmd")
 

@@ -1,6 +1,11 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  event = { "BufReadPre", "BufNewFile" },
+  cmd = { "Git" },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "mini.git")
 

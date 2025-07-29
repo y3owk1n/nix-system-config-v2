@@ -1,6 +1,10 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  cmd = { "GrugFar", "GrugFarWithin" },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "grug-far")
 
@@ -8,6 +12,7 @@ function M.setup()
     return
   end
 
+  ---@type grug.far.OptionsOverride
   local plugin_opts = {}
 
   plugin.setup(plugin_opts)

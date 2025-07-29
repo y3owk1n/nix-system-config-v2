@@ -1,6 +1,16 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  ft = {
+    "javascriptreact",
+    "javascript.jsx",
+    "typescriptreact",
+    "typescript.tsx",
+    "html",
+  },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "nvim-ts-autotag")
 
@@ -8,6 +18,7 @@ function M.setup()
     return
   end
 
+  ---@type nvim-ts-autotag.PluginSetup
   local plugin_opts = {}
 
   plugin.setup(plugin_opts)

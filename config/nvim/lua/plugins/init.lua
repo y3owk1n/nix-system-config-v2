@@ -26,6 +26,8 @@ do
           setup = mod.setup,
           priority = mod.priority or 1000,
           requires = mod.requires or {},
+          lazy = mod.lazy or false,
+          loaded = false,
         }
         table.insert(modules, entry)
         mod_map[name] = entry
@@ -84,12 +86,88 @@ for _, mod in ipairs(modules) do
   visit(mod)
 end
 
--- Step 4: Setup all modules in resolved order
-for _, mod in ipairs(sorted) do
+local eagerly_loaded = 0
+
+local function safe_setup(mod)
+  if mod.loaded then
+    return
+  end
+  mod.loaded = true
   local ok, err = pcall(mod.setup)
   if not ok then
     vim.notify("Setup failed for " .. mod.name .. "\n\n" .. err, vim.log.levels.ERROR)
   end
 end
 
-vim.g.loaded_plugins_count = #sorted
+-- Step 4: Setup all modules in resolved order
+for _, mod in ipairs(sorted) do
+  local lazy = mod.lazy
+  if not lazy then
+    -- Eager load if no lazy field
+    safe_setup(mod)
+    eagerly_loaded = eagerly_loaded + 1
+  else
+    -- Lazy load
+    if lazy.event then
+      vim.api.nvim_create_autocmd(lazy.event, {
+        once = true,
+        callback = function()
+          safe_setup(mod)
+        end,
+      })
+    end
+
+    if lazy.cmd then
+      local cmd = lazy.cmd
+
+      if type(cmd) == "string" then
+        cmd = { cmd }
+      end
+
+      for _, value in ipairs(cmd) do
+        vim.api.nvim_create_user_command(value, function()
+          safe_setup(mod)
+        end, {})
+      end
+    end
+
+    if lazy.ft then
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = lazy.ft,
+        once = true,
+        callback = function()
+          safe_setup(mod)
+        end,
+      })
+    end
+
+    if lazy.keys then
+      vim.keymap.set("n", lazy.keys, function()
+        safe_setup(mod)
+      end, { once = true })
+    end
+
+    if lazy.on_lsp_attach then
+      vim.api.nvim_create_autocmd("LspAttach", {
+        once = true,
+        callback = function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+
+          local allowed_clients = lazy.on_lsp_attach
+
+          if type(allowed_clients) == "string" then
+            allowed_clients = { allowed_clients }
+          end
+
+          if not client or not vim.tbl_contains(allowed_clients, client.name) then
+            return
+          end
+
+          safe_setup(mod)
+        end,
+      })
+    end
+  end
+end
+
+vim.g.loaded_plugins_count = eagerly_loaded

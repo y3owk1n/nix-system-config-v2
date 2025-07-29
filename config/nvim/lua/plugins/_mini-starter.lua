@@ -1,7 +1,7 @@
 ---@type PluginModule
 local M = {}
 
-M.requires = { "_warp" } -- reference by file name (no .lua)
+M.requires = { "_warp", "_mini-files", "_mini-pick" } -- reference by file name (no .lua)
 
 function M.setup()
   local plugin_ok, plugin = pcall(require, "mini.starter")
@@ -76,10 +76,6 @@ function M.setup()
       end
     end,
   })
-
-  vim.keymap.set("n", "<leader>gd", function()
-    plugin.toggle_overlay(0)
-  end, { desc = "Toggle diff overlay" })
 end
 
 return M

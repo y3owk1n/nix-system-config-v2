@@ -3,6 +3,10 @@ local M = {}
 
 M.requires = { "_nvim-treesitter" }
 
+M.lazy = {
+  on_lsp_attach = { "tailwindcss" },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "tailwind-autosort")
 
@@ -10,6 +14,7 @@ function M.setup()
     return
   end
 
+  ---@type TailwindAutoSort.Config
   local plugin_opts = {}
 
   plugin.setup(plugin_opts)

@@ -8,6 +8,7 @@ function M.setup()
     return
   end
 
+  ---@type snacks.Config
   local plugin_opts = {
     bigfile = { enabled = true },
     quickfile = { enabled = true },
