@@ -1,0 +1,33 @@
+---@type PluginModule
+local M = {}
+
+function M.setup()
+  local plugin_ok, plugin = pcall(require, "lint")
+
+  if not plugin_ok then
+    return
+  end
+
+  plugin.linters_by_ft = {
+    sh = { "shfmt" },
+    dockerfile = { "hadolint" },
+    fish = { "fish" },
+  }
+
+  local function try_linting()
+    local linters = plugin.linters_by_ft[vim.bo.filetype]
+
+    plugin.try_lint(linters)
+  end
+
+  local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
+
+  vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
+    group = lint_augroup,
+    callback = function()
+      try_linting()
+    end,
+  })
+end
+
+return M

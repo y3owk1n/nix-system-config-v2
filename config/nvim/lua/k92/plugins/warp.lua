@@ -142,6 +142,31 @@ return {
         "<cmd>WarpGoToIndex 4<cr>",
         desc = "[Warp] Goto #4",
       },
+      {
+        "<leader>5",
+        "<cmd>WarpGoToIndex 5<cr>",
+        desc = "[Warp] Goto #5",
+      },
+      {
+        "<leader>6",
+        "<cmd>WarpGoToIndex 6<cr>",
+        desc = "[Warp] Goto #6",
+      },
+      {
+        "<leader>7",
+        "<cmd>WarpGoToIndex 7<cr>",
+        desc = "[Warp] Goto #7",
+      },
+      {
+        "<leader>8",
+        "<cmd>WarpGoToIndex 8<cr>",
+        desc = "[Warp] Goto #8",
+      },
+      {
+        "<leader>9",
+        "<cmd>WarpGoToIndex 9<cr>",
+        desc = "[Warp] Goto #9",
+      },
     },
   },
 }

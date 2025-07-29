@@ -15,4 +15,10 @@
     source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/nvim";
     # recursive = true;
   };
+
+  xdg.configFile.nvim-pack = {
+    enable = true;
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-system-config-v2/config/nvim-pack";
+    # recursive = true;
+  };
 }
