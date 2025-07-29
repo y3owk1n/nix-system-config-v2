@@ -538,12 +538,14 @@ function M.setup()
     DefaultStatusline,
   }
 
-  plugin.setup({
+  local plugin_opts = {
     opts = {
       colors = C,
     },
     statusline = StatusLines,
-  })
+  }
+
+  plugin.setup(plugin_opts)
 end
 
 return M

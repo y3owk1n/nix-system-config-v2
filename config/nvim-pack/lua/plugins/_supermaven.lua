@@ -8,12 +8,14 @@ function M.setup()
     return
   end
 
-  plugin.setup({
+  local plugin_opts = {
     keymaps = {
       accept_suggestion = "<C-y>",
     },
     ignore_filetypes = { "bigfile", "float_info", "minifiles", "minipick" },
-  })
+  }
+
+  plugin.setup(plugin_opts)
 end
 
 return M

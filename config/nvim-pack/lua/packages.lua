@@ -33,4 +33,7 @@ vim.pack.add({
   { src = "https://github.com/y3owk1n/tailwind-autosort.nvim" },
   { src = "https://github.com/dmmulroy/ts-error-translator.nvim" },
   { src = "https://github.com/folke/lazydev.nvim" },
+  { src = "https://github.com/y3owk1n/dotmd.nvim" },
+  { src = "https://github.com/y3owk1n/time-machine.nvim" },
+  { src = "https://github.com/y3owk1n/undo-glow.nvim" },
 })

@@ -8,7 +8,7 @@ function M.setup()
     return
   end
 
-  plugin.setup({
+  local plugin_opts = {
     code = {
       sign = false,
       width = "block",
@@ -21,7 +21,9 @@ function M.setup()
     checkbox = {
       enabled = false,
     },
-  })
+  }
+
+  plugin.setup(plugin_opts)
 end
 
 return M

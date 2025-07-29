@@ -10,8 +10,8 @@ function M.setup()
 
   local plugin_opts = {
     prompt = {
-      enabled = false
-    }
+      enabled = false,
+    },
   }
 
   plugin.setup(plugin_opts)

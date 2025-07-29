@@ -2,13 +2,15 @@
 local M = {}
 
 function M.setup()
-  local plugin_ok, package = pcall(require, "cloak")
+  local plugin_ok, plugin = pcall(require, "cloak")
 
   if not plugin_ok then
     return
   end
 
-  package.setup()
+  local plugin_opts = {}
+
+  plugin.setup(plugin_opts)
 end
 
 return M

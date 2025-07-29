@@ -48,8 +48,7 @@ function M.setup()
     "yaml",
   }
 
-  -- setup
-  plugin.setup({
+  local plugin_opts = {
     highlight = { enable = true },
     indent = { enable = true },
     ensure_installed = ensure_installed,
@@ -62,7 +61,10 @@ function M.setup()
         node_decremental = "<bs>",
       },
     },
-  })
+  }
+
+  -- setup
+  plugin.setup(plugin_opts)
 
   -- add file types
   vim.filetype.add({

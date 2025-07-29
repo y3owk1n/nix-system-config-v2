@@ -8,9 +8,11 @@ function M.setup()
     return
   end
 
-  plugin.setup({
+  local plugin_opts = {
     n_lines = 500,
-  })
+  }
+
+  plugin.setup(plugin_opts)
 end
 
 return M

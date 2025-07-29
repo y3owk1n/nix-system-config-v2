@@ -2,13 +2,13 @@
 local M = {}
 
 function M.setup()
-  local plugin_ok, package = pcall(require, "snacks")
+  local plugin_ok, plugin = pcall(require, "snacks")
 
   if not plugin_ok then
     return
   end
 
-  package.setup({
+  local plugin_opts = {
     bigfile = { enabled = true },
     quickfile = { enabled = true },
     statuscolumn = {
@@ -27,7 +27,9 @@ function M.setup()
         os = { editPreset = "nvim-remote" },
       },
     },
-  })
+  }
+
+  plugin.setup(plugin_opts)
 
   local augroup = vim.api.nvim_create_augroup("SnacksInit", { clear = true })
 
@@ -51,11 +53,11 @@ function M.setup()
       Snacks.toggle.diagnostics():map("<leader>ud")
       Snacks.toggle.line_number():map("<leader>ul")
       Snacks.toggle
-          .option("conceallevel", {
-            off = 0,
-            on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2,
-          })
-          :map("<leader>uc")
+        .option("conceallevel", {
+          off = 0,
+          on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2,
+        })
+        :map("<leader>uc")
       Snacks.toggle.inlay_hints():map("<leader>uh")
       Snacks.toggle.option("foldenable", { name = "Fold" }):map("<leader>uf")
     end,

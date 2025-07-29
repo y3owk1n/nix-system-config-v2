@@ -8,7 +8,7 @@ function M.setup()
     return
   end
 
-  plugin.setup({
+  local plugin_opts = {
     view = {
       style = "sign",
       signs = {
@@ -17,7 +17,9 @@ function M.setup()
         delete = "",
       },
     },
-  })
+  }
+
+  plugin.setup(plugin_opts)
 
   vim.keymap.set("n", "<leader>gd", function()
     plugin.toggle_overlay(0)

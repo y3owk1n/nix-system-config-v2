@@ -8,7 +8,7 @@ function M.setup()
     return
   end
 
-  plugin.setup({
+  local plugin_opts = {
     file = {
       [".keep"] = { glyph = "󰊢", hl = "MiniIconsGrey" },
       ["devcontainer.json"] = { glyph = "", hl = "MiniIconsAzure" },
@@ -27,12 +27,11 @@ function M.setup()
       dotenv = { glyph = "", hl = "MiniIconsYellow" },
       gotmpl = { glyph = "󰟓", hl = "MiniIconsGrey" },
     },
-  })
+  }
 
-  package.preload["nvim-web-devicons"] = function()
-    plugin.mock_nvim_web_devicons()
-    return package.loaded["nvim-web-devicons"]
-  end
+  plugin.setup(plugin_opts)
+
+  plugin.mock_nvim_web_devicons()
 end
 
 return M

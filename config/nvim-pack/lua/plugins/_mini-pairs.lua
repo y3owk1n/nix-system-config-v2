@@ -8,7 +8,7 @@ function M.setup()
     return
   end
 
-  plugin.setup({
+  local plugin_opts = {
     modes = { insert = true, command = true, terminal = false },
     -- skip autopair when next character is one of these
     skip_next = [=[[%w%%%'%[%"%.%`%$]]=],
@@ -19,7 +19,9 @@ function M.setup()
     skip_unbalanced = true,
     -- better deal with markdown code blocks
     markdown = true,
-  })
+  }
+
+  plugin.setup(plugin_opts)
 end
 
 return M

@@ -8,7 +8,9 @@ function M.setup()
     return
   end
 
-  plugin.setup({})
+  local plugin_opts = {}
+
+  plugin.setup(plugin_opts)
 
   vim.keymap.set("n", "<c-h>", "<cmd>NvimTmuxNavigateLeft<cr>", { desc = "Navigate left" })
   vim.keymap.set("n", "<c-j>", "<cmd>NvimTmuxNavigateDown<cr>", { desc = "Navigate down" })

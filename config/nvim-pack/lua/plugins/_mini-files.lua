@@ -8,7 +8,8 @@ function M.setup()
     return
   end
 
-  plugin.setup({
+  local plugin_opts = {
+
     windows = {
       preview = true,
       width_focus = 30,
@@ -30,7 +31,9 @@ function M.setup()
       trim_right = ">",
     },
     options = { use_as_default_explorer = true },
-  })
+  }
+
+  plugin.setup(plugin_opts)
 
   --- setting autocmd
   local augroup = vim.api.nvim_create_augroup("MiniFilesRename", {})

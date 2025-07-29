@@ -8,7 +8,7 @@ function M.setup()
     return
   end
 
-  plugin.setup({
+  local plugin_opts = {
     mappings = { choose_in_vsplit = "<C-v>", choose_in_split = "<C-s>" },
     window = {
       config = function()
@@ -24,7 +24,9 @@ function M.setup()
       end,
       prompt_prefix = " ",
     },
-  })
+  }
+
+  plugin.setup(plugin_opts)
 
   --- override vim.ui.select
   vim.ui.select = plugin.ui_select
