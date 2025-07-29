@@ -149,7 +149,6 @@ for _, mod in ipairs(sorted) do
 
     if lazy.on_lsp_attach then
       vim.api.nvim_create_autocmd("LspAttach", {
-        once = true,
         callback = function(args)
           local client = vim.lsp.get_client_by_id(args.data.client_id)
 
