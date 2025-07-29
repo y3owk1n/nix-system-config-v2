@@ -29,4 +29,8 @@ vim.pack.add({
   { src = "https://github.com/windwp/nvim-ts-autotag" },
   { src = "https://github.com/folke/snacks.nvim" },
   { src = "https://github.com/supermaven-inc/supermaven-nvim" },
+  { src = "https://github.com/MeanderingProgrammer/render-markdown.nvim" },
+  { src = "https://github.com/y3owk1n/tailwind-autosort.nvim" },
+  { src = "https://github.com/dmmulroy/ts-error-translator.nvim" },
+  { src = "https://github.com/folke/lazydev.nvim" },
 })

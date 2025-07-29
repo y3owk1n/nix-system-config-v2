@@ -8,11 +8,36 @@ function M.setup()
     return
   end
 
-  local formatters = {}
+  local formatters = {
+    biome = {
+      require_cwd = true,
+    },
+    ["markdownlint-cli2"] = {
+      condition = function(_, ctx)
+        local diag = vim.tbl_filter(function(d)
+          return d.source == "markdownlint"
+        end, vim.diagnostic.get(ctx.buf))
+        return #diag > 0
+      end,
+    },
+  }
 
   local formatters_by_ft = {
     sh = { "shfmt" },
     fish = { "fish_indent" },
+    javascript = { "biome", "prettierd", stop_after_first = true },
+    javascriptreact = { "biome", "prettierd", stop_after_first = true },
+    typescript = { "biome", "prettierd", stop_after_first = true },
+    typescriptreact = { "biome", "prettierd", stop_after_first = true },
+    json = { "biome", "prettierd", stop_after_first = true },
+    jsonc = { "biome", "prettierd", stop_after_first = true },
+    css = { "biome", "prettierd", stop_after_first = true },
+    ["markdown"] = { "prettierd", "markdownlint-cli2" },
+    ["markdown.mdx"] = { "prettierd", "markdownlint-cli2" },
+    go = { "goimports", "gofumpt" },
+    just = { "just" },
+    lua = { "stylua" },
+    nix = { "nixfmt" },
   }
 
   plugin.setup({

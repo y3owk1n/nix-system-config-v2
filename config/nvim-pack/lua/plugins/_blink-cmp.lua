@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.requires = { "_lazydev" }
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "blink.cmp")
 
@@ -31,7 +33,14 @@ function M.setup()
     },
 
     sources = {
-      default = { "lsp", "path", "snippets", "buffer" },
+      default = { "lsp", "path", "snippets", "buffer", "lazydev" },
+      providers = {
+        lazydev = {
+          name = "LazyDev",
+          module = "lazydev.integrations.blink",
+          score_offset = 100, -- show at a higher priority than lsp
+        },
+      },
     },
     cmdline = {
       enabled = false,

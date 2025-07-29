@@ -26,6 +26,26 @@ function M.setup()
     "git_rebase",
     "gitignore",
     "gitattributes",
+    "go",
+    "gomod",
+    "gowork",
+    "gosum",
+    "json",
+    "jsonc",
+    "json5",
+    "just",
+    "lua",
+    "luadoc",
+    "luap",
+    "markdown",
+    "markdown_inline",
+    "nix",
+    "prisma",
+    "javascript",
+    "jsdoc",
+    "tsx",
+    "typescript",
+    "yaml",
   }
 
   -- setup
@@ -50,6 +70,19 @@ function M.setup()
       ["docker?-compose?.ya?ml"] = "yaml.docker-compose",
     },
   })
+  vim.filetype.add({
+    extension = { just = "just" },
+    filename = {
+      justfile = "just",
+      Justfile = "just",
+      [".Justfile"] = "just",
+      [".justfile"] = "just",
+    },
+  })
+  vim.filetype.add({
+    extension = { mdx = "markdown.mdx" },
+  })
+  vim.treesitter.language.register("markdown", "markdown.mdx")
 end
 
 return M
