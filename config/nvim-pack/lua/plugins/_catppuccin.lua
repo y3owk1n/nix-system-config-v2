@@ -25,7 +25,9 @@ function M.setup()
       flash = true,
       snacks = {
         enabled = true,
-      }
+      },
+      markdown = true,
+      render_markdown = true,
     },
     custom_highlights = {
       BlinkCmpLabel = { fg = colors.overlay2 },
@@ -34,7 +36,7 @@ function M.setup()
       BlinkCmpDoc = { fg = colors.overlay2 },
       BlinkCmpDocBorder = { fg = colors.blue },
       BlinkCmpSignatureHelpBorder = { fg = colors.blue },
-    }
+    },
   })
 
   vim.cmd.colorscheme("catppuccin-macchiato")

@@ -12,6 +12,9 @@ function M.setup()
     sh = { "shfmt" },
     dockerfile = { "hadolint" },
     fish = { "fish" },
+    go = { "golangcilint" },
+    markdown = { "markdownlint-cli2" },
+    ["markdown.mdx"] = { "markdownlint-cli2" },
   }
 
   local function try_linting()
