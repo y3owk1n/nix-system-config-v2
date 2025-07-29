@@ -6,9 +6,9 @@ local mod_map = {}
 
 -- Step 1: Discover and require plugin modules
 for _, file in
-ipairs(vim.fs.find(function(name)
-  return name:sub(-4) == ".lua"
-end, { type = "file", limit = math.huge, path = mod_path }))
+  ipairs(vim.fs.find(function(name)
+    return name:sub(-4) == ".lua"
+  end, { type = "file", limit = math.huge, path = mod_path }))
 do
   local rel = file:sub(#mod_path + 2, -5):gsub("/", ".")
   if rel ~= "init" then
@@ -91,3 +91,5 @@ for _, mod in ipairs(sorted) do
     vim.notify("Setup failed for " .. mod.name .. "\n\n" .. err, vim.log.levels.ERROR)
   end
 end
+
+vim.g.loaded_plugins_count = #sorted

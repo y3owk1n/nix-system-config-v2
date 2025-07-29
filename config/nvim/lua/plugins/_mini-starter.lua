@@ -65,6 +65,18 @@ function M.setup()
 
   plugin.setup(plugin_opts)
 
+  vim.api.nvim_create_autocmd("VimEnter", {
+    callback = function(ev)
+      local startuptime = vim.g.startuptime
+      local plugins_count = vim.g.loaded_plugins_count
+
+      plugin.config.footer = "⚡ Neovim loaded " .. plugins_count .. " plugins in " .. startuptime .. "ms"
+      if vim.bo[ev.buf].filetype == "ministarter" then
+        pcall(plugin.refresh)
+      end
+    end,
+  })
+
   vim.keymap.set("n", "<leader>gd", function()
     plugin.toggle_overlay(0)
   end, { desc = "Toggle diff overlay" })
