@@ -8,13 +8,15 @@ function M.setup()
     return
   end
 
-  plugin.setup({
+  local plugin_opts = {
     library = {
       { path = "${3rd}/luv/library", words = { "vim%.uv" } },
       { path = "snacks.nvim", words = { "Snacks" } },
       { path = "lazy.nvim", words = { "Lazy" } },
     },
-  })
+  }
+
+  plugin.setup(plugin_opts)
 end
 
 return M

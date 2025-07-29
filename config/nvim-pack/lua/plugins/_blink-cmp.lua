@@ -1,7 +1,7 @@
 ---@type PluginModule
 local M = {}
 
-M.requires = { "_lazydev" }
+M.requires = { "_lazydev", "_mini-icons" }
 
 function M.setup()
   local plugin_ok, plugin = pcall(require, "blink.cmp")
@@ -10,7 +10,7 @@ function M.setup()
     return
   end
 
-  plugin.setup({
+  local plugin_opts = {
     keymap = {
       preset = "none",
       ["<CR>"] = { "select_and_accept", "fallback" },
@@ -85,7 +85,9 @@ function M.setup()
     signature = {
       enabled = true,
     },
-  })
+  }
+
+  plugin.setup(plugin_opts)
 end
 
 return M

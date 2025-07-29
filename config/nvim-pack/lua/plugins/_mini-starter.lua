@@ -51,7 +51,7 @@ function M.setup()
     return version
   end
 
-  plugin.setup({
+  local plugin_opts = {
     header = header_cb,
     evaluate_single = true,
     items = items,
@@ -61,7 +61,9 @@ function M.setup()
     },
     footer = "",
     silent = true,
-  })
+  }
+
+  plugin.setup(plugin_opts)
 
   vim.keymap.set("n", "<leader>gd", function()
     plugin.toggle_overlay(0)

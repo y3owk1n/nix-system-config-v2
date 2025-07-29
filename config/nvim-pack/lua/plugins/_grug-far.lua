@@ -8,7 +8,9 @@ function M.setup()
     return
   end
 
-  plugin.setup()
+  local plugin_opts = {}
+
+  plugin.setup(plugin_opts)
 
   --- setting keymaps
   vim.keymap.set("n", "<leader>sr", function()

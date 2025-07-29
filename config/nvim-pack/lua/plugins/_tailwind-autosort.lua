@@ -10,7 +10,9 @@ function M.setup()
     return
   end
 
-  plugin.setup()
+  local plugin_opts = {}
+
+  plugin.setup(plugin_opts)
 end
 
 return M

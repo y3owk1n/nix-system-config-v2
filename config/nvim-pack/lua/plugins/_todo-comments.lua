@@ -8,9 +8,11 @@ function M.setup()
     return
   end
 
-  plugin.setup({
-    signs = false
-  })
+  local plugin_opts = {
+    signs = false,
+  }
+
+  plugin.setup(plugin_opts)
 
   vim.keymap.set("n", "]t", function()
     plugin.jump_next()

@@ -8,7 +8,8 @@ function M.setup()
     return
   end
 
-  plugin.setup({
+  ---@type Warp.Config
+  local plugin_opts = {
     keymaps = {
       split_horizontal = { "-" },
       split_vertical = { "\\" },
@@ -33,7 +34,9 @@ function M.setup()
         }
       end,
     },
-  })
+  }
+
+  plugin.setup(plugin_opts)
 
   vim.keymap.set("n", "<leader>h", "", { desc = "warp" })
   vim.keymap.set("n", "<leader>hm", "", { desc = "move" })
@@ -45,6 +48,18 @@ function M.setup()
   vim.keymap.set("n", "<leader>hmh", "<cmd>WarpMoveTo prev<cr>", { desc = "[Warp] Move to prev index" })
   vim.keymap.set("n", "<leader>hmL", "<cmd>WarpMoveTo last<cr>", { desc = "[Warp] Move to last index" })
   vim.keymap.set("n", "<leader>hmH", "<cmd>WarpMoveTo first<cr>", { desc = "[Warp] Move to first index" })
+  vim.keymap.set("n", "<leader>hx", "<cmd>WarpClearCurrentList<cr>", { desc = "[Warp] Clear current list" })
+  vim.keymap.set("n", "<leader>hX", "<cmd>WarpClearAllList<cr>", { desc = "[Warp] Clear all lists" })
+  vim.keymap.set("n", "<leader>hl", "<cmd>WarpGoToIndex next<cr>", { desc = "[Warp] Go to next index" })
+  vim.keymap.set("n", "<leader>hh", "<cmd>WarpGoToIndex prev<cr>", { desc = "[Warp] Go to prev index" })
+  vim.keymap.set("n", "<leader>hL", "<cmd>WarpGoToIndex first<cr>", { desc = "[Warp] Go to first index" })
+  vim.keymap.set("n", "<leader>hH", "<cmd>WarpGoToIndex last<cr>", { desc = "[Warp] Go to last index" })
+
+  for i = 1, 9 do
+    vim.keymap.set("n", tostring(i), function()
+      plugin.goto_index(i)
+    end, { desc = "[Warp] Goto #" .. i })
+  end
 end
 
 return M
