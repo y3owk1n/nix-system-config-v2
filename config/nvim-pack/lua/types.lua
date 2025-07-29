@@ -1,0 +1,4 @@
+---@class PluginModule
+---@field enabled? boolean
+---@field requires? string[]
+---@field setup? function()
