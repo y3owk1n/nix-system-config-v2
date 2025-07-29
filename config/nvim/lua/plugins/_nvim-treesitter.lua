@@ -48,6 +48,8 @@ function M.setup()
     "yaml",
   }
 
+  ---@type TSConfig
+  ---@diagnostic disable-next-line: missing-fields
   local plugin_opts = {
     highlight = { enable = true },
     indent = { enable = true },

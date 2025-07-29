@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.requires = { "_mini-extra" }
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "mini.pick")
 

@@ -1,4 +1,13 @@
 ---@class PluginModule
 ---@field enabled? boolean
 ---@field requires? string[]
----@field setup? function()
+---@field setup? fun()
+---@field priority? integer
+---@field lazy? string | PluginModule.Lazy
+
+---@class PluginModule.Lazy
+---@field event? string|string[]
+---@field cmd? string|string[]
+---@field ft? string|string[]
+---@field keys? string|string[]
+---@field on_lsp_attach? string|string[]

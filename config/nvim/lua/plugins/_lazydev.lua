@@ -1,6 +1,11 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  ft = "lua",
+  cmd = "LazyDev",
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "lazydev")
 
@@ -8,6 +13,7 @@ function M.setup()
     return
   end
 
+  ---@type lazydev.Config
   local plugin_opts = {
     library = {
       { path = "${3rd}/luv/library", words = { "vim%.uv" } },

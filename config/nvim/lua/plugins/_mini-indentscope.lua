@@ -1,6 +1,10 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  event = { "BufReadPre", "BufNewFile" },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "mini.indentscope")
 

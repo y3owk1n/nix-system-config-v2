@@ -1,6 +1,10 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  ft = { "markdown", "markdown.mdx", "norg", "rmd", "org" },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "render-markdown")
 
@@ -8,6 +12,7 @@ function M.setup()
     return
   end
 
+  ---@type render.md.UserConfig
   local plugin_opts = {
     code = {
       sign = false,

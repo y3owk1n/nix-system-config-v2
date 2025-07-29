@@ -1,6 +1,10 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  event = { "BufReadPost", "BufNewFile" },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "flash")
 
@@ -8,6 +12,7 @@ function M.setup()
     return
   end
 
+  ---@type Flash.Config
   local plugin_opts = {
     prompt = {
       enabled = false,

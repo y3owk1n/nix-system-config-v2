@@ -11,7 +11,7 @@ function M.setup()
   vim.o.timeout = true
   vim.o.timeoutlen = 500
 
-  ---@class wk.Config: wk.Opts
+  ---@class wk.Opts
   local plugin_opts = {
     preset = "helix",
     icons = {

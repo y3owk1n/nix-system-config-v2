@@ -3,6 +3,8 @@ local M = {}
 
 M.requires = { "_lazydev", "_mini-icons" }
 
+M.lazy = { event = "InsertEnter" }
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "blink.cmp")
 
@@ -10,6 +12,7 @@ function M.setup()
     return
   end
 
+  ---@type blink.cmp.Config
   local plugin_opts = {
     keymap = {
       preset = "none",

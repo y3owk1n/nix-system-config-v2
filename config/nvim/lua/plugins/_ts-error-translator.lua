@@ -1,6 +1,10 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  on_lsp_attach = { "vtsls" },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "ts-error-translator")
 
