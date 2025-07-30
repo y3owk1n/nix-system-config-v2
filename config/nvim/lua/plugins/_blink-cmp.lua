@@ -9,7 +9,7 @@ M.lazy = { event = "InsertEnter" }
 
 function M.setup()
   vim.pack.add({
-    { src = "https://github.com/saghen/blink.cmp", version = vim.version.range("*") },
+    { src = "https://github.com/saghen/blink.cmp", version = vim.version.range("1.*") },
     { src = "https://github.com/rafamadriz/friendly-snippets" },
   })
 
