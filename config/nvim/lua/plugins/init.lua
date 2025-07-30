@@ -224,10 +224,6 @@ end
 
 function M.init()
   local modules = M.discover()
-  vim.print({
-    modules,
-    M.mod_map,
-  })
   local sorted = M.sort_modules(modules)
   local count = M.setup_modules(sorted)
 
