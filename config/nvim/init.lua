@@ -67,4 +67,4 @@ require("diagnostics")
 
 -- Load plugins
 -- NOTE: lsp configurations will be loaded after `lspconfig` is ensured
-require("plugins")
+require("plugins").init()
