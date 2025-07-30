@@ -17,7 +17,7 @@ function M.setup()
   end
 
   vim.schedule(function()
-    require("lsp")
+    require("lsp").init()
   end)
 end
 

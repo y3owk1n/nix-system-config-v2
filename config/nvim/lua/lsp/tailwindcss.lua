@@ -1,21 +1,5 @@
 local util = require("lspconfig.util")
-
-local function decode_json_file(filename)
-  local file = io.open(filename, "r")
-  if file then
-    local content = file:read("*all")
-    file:close()
-
-    local ok, data = pcall(vim.fn.json_decode, content)
-    if ok and type(data) == "table" then
-      return data
-    end
-  end
-end
-
-local function has_nested_key(json, ...)
-  return vim.tbl_get(json, ...) ~= nil
-end
+local utils_lsp = require("utils.lsp")
 
 --- Find Tailwind entry CSS file within a root directory
 ---@param root_dir string
@@ -85,12 +69,12 @@ vim.lsp.config("tailwindcss", {
     local package_root = util.root_pattern("package.json")(fname)
 
     if package_root then
-      local package_data = decode_json_file(package_root .. "/package.json")
+      local package_data = utils_lsp.decode_json_file(package_root .. "/package.json")
       if
         package_data
         and (
-          has_nested_key(package_data, "dependencies", "tailwindcss")
-          or has_nested_key(package_data, "devDependencies", "tailwindcss")
+          utils_lsp.has_nested_key(package_data, "dependencies", "tailwindcss")
+          or utils_lsp.has_nested_key(package_data, "devDependencies", "tailwindcss")
         )
       then
         if workspace_root then
