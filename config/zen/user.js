@@ -12,13 +12,12 @@
  * "Ex nihilo nihil fit"                                                    *
  * version: 137                                                             *
  * url: https://github.com/yokoffing/Betterfox                              *
-****************************************************************************/
+ ****************************************************************************/
 
 /****************************************************************************
  * SECTION: FASTFOX                                                         *
-****************************************************************************/
+ ****************************************************************************/
 /** GFX ***/
-user_pref("gfx.canvas.accelerated.cache-items", 8192); // DEFAULT FF135+
 user_pref("gfx.canvas.accelerated.cache-size", 512);
 
 /** DISK CACHE ***/
@@ -36,7 +35,7 @@ user_pref("network.predictor.enable-prefetch", false);
 
 /****************************************************************************
  * SECTION: SECUREFOX                                                       *
-****************************************************************************/
+ ****************************************************************************/
 /** TRACKING PROTECTION ***/
 user_pref("browser.contentblocking.category", "strict");
 user_pref("browser.download.start_downloads_in_tmp_dir", true);
@@ -76,7 +75,7 @@ user_pref("permissions.manager.defaultsUrl", "");
 
 /****************************************************************************
  * SECTION: PESKYFOX                                                        *
-****************************************************************************/
+ ****************************************************************************/
 /** MOZILLA UI ***/
 user_pref("browser.shell.checkDefaultBrowser", false);
 
@@ -88,12 +87,8 @@ user_pref("dom.text_fragments.create_text_fragment.enabled", true);
 
 /****************************************************************************
  * START: ZEN-SPECIFIC OVERRIDES                                            *
-****************************************************************************/
+ ****************************************************************************/
 // Remove the slashes to enable the prefs
-
-// PREF: reduce CPU and GPU use until bug is fixed
-// [1] https://github.com/zen-browser/desktop/issues/6302
-user_pref("zen.view.experimental-rounded-view", false);
 
 // PREF: re-enable Windows efficiency mode
 //user_pref("dom.ipc.processPriorityManager.backgroundUsesEcoQoS", true);
@@ -107,7 +102,7 @@ user_pref("zen.view.experimental-rounded-view", false);
 
 /****************************************************************************
  * START: MY OVERRIDES                                                      *
-****************************************************************************/
+ ****************************************************************************/
 // visit https://github.com/yokoffing/Betterfox/wiki/Common-Overrides
 // visit https://github.com/yokoffing/Betterfox/wiki/Optional-Hardening
 // Enter your personal overrides below this line:
@@ -116,7 +111,7 @@ user_pref("zen.view.experimental-rounded-view", false);
 user_pref("identity.fxaccounts.enabled", false);
 
 // PREF: disable the Firefox View tour from popping up
-user_pref("browser.firefox-view.feature-tour", "{\"screen\":\"\",\"complete\":true}");
+user_pref("browser.firefox-view.feature-tour", '{"screen":"","complete":true}');
 
 // PREF: disable login manager
 user_pref("signon.rememberSignons", false);
@@ -166,7 +161,10 @@ user_pref("extensions.postDownloadThirdPartyPrompt", false);
 user_pref("security.ssl.require_safe_negotiation", true);
 
 // PREF: make Strict ETP less aggressive
-user_pref("browser.contentblocking.features.strict", "tp,tpPrivate,cookieBehavior5,cookieBehaviorPBM5,cm,fp,stp,emailTP,emailTPPrivate,-lvl2,rp,rpTop,ocsp,qps,qpsPBM,fpp,fppPrivate,3pcd,btp");
+user_pref(
+  "browser.contentblocking.features.strict",
+  "tp,tpPrivate,cookieBehavior5,cookieBehaviorPBM5,cm,fp,stp,emailTP,emailTPPrivate,-lvl2,rp,rpTop,ocsp,qps,qpsPBM,fpp,fppPrivate,3pcd,btp",
+);
 
 // Disable Safe Browsing
 user_pref("browser.safebrowsing.malware.enabled", false);
