@@ -3,6 +3,8 @@ local M = {}
 
 M.name = "heirline"
 
+M.requires = { "mini.icons" }
+
 M.lazy = {
   event = { "UIEnter" },
 }
