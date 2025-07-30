@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "undo-glow"
+
 M.lazy = {
   event = { "UIEnter" },
 }

@@ -1,7 +1,9 @@
 ---@type PluginModule
 local M = {}
 
-M.requires = { "_warp", "_mini-files", "_mini-pick" } -- reference by file name (no .lua)
+M.name = "mini.starter"
+
+M.requires = { "warp", "mini.files", "mini.pick" } -- reference by file name (no .lua)
 
 function M.setup()
   local plugin_ok, plugin = pcall(require, "mini.starter")
@@ -69,8 +71,10 @@ function M.setup()
     callback = function(ev)
       local startuptime = vim.g.startuptime
       local plugins_count = vim.g.loaded_plugins_count
+      local total_plugins_count = vim.g.total_plugins_count
 
-      plugin.config.footer = "⚡ Neovim loaded " .. plugins_count .. " plugins in " .. startuptime .. "ms"
+      plugin.config.footer =
+        string.format("⚡ Neovim loaded %s plugins of %s in %sms", plugins_count, total_plugins_count, startuptime)
       if vim.bo[ev.buf].filetype == "ministarter" then
         pcall(plugin.refresh)
       end

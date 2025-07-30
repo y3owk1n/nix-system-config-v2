@@ -1,9 +1,10 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "lazydev"
+
 M.lazy = {
   ft = "lua",
-  cmd = "LazyDev",
 }
 
 function M.setup()

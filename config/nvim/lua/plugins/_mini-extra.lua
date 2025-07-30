@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "mini.extra"
+
 M.lazy = {
   event = { "UIEnter" },
 }

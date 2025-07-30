@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "ts-error-translator"
+
 M.lazy = {
   on_lsp_attach = { "vtsls" },
 }

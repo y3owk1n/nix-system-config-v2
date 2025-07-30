@@ -1,9 +1,9 @@
 ---@type PluginModule
 local M = {}
 
-M.lazy = {
-  cmd = { "GrugFar", "GrugFarWithin" },
-}
+M.name = "grug-far"
+
+M.lazy = { event = { "BufReadPre", "BufNewFile" } }
 
 function M.setup()
   local plugin_ok, plugin = pcall(require, "grug-far")

@@ -1,14 +1,10 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "time-machine"
+
 M.lazy = {
-  cmd = {
-    "TimeMachineToggle",
-    "TimeMachinePurgeBuffer",
-    "TimeMachinePurgeAll",
-    "TimeMachineLogShow",
-    "TimeMachineLogClear",
-  },
+  event = { "BufReadPre", "BufNewFile" },
 }
 
 function M.setup()

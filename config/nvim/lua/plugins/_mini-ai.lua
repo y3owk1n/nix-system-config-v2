@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "mini.ai"
+
 M.lazy = {
   event = { "BufReadPre", "BufNewFile" },
 }

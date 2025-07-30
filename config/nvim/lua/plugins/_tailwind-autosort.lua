@@ -1,7 +1,9 @@
 ---@type PluginModule
 local M = {}
 
-M.requires = { "_nvim-treesitter" }
+M.name = "tailwind-autosort"
+
+M.requires = { "nvim-treesitter" }
 
 M.lazy = {
   on_lsp_attach = { "tailwindcss" },

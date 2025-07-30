@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "nvim-treesitter"
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "nvim-treesitter.configs")
 

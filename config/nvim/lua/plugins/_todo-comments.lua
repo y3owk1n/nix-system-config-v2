@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "todo-comments"
+
 M.lazy = {
   event = { "BufReadPre", "BufNewFile" },
 }

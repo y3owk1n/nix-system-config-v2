@@ -1,6 +1,10 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "catppuccin"
+
+M.priority = 1
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "catppuccin")
 

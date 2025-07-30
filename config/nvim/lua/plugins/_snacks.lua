@@ -1,9 +1,9 @@
 ---@type PluginModule
 local M = {}
 
-M.lazy = {
-  event = { "UIEnter" },
-}
+M.name = "snacks"
+
+M.priority = 2
 
 function M.setup()
   local plugin_ok, plugin = pcall(require, "snacks")
@@ -39,9 +39,8 @@ function M.setup()
   local augroup = vim.api.nvim_create_augroup("SnacksInit", { clear = true })
 
   ---init
-  vim.api.nvim_create_autocmd("User", {
+  vim.api.nvim_create_autocmd("VimEnter", {
     group = augroup,
-    pattern = "VeryLazy",
     callback = function()
       -- Setup some globals for debugging (lazy-loaded)
       _G.dd = function(...)

@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "supermaven-nvim"
+
 M.lazy = {
   event = "InsertEnter",
 }

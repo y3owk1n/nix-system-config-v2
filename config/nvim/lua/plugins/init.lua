@@ -6,6 +6,28 @@ local modules = {}
 ---@type PluginModule.Resolved[]
 local mod_map = {}
 
+local function get_plus_commands()
+  local commands = {}
+  for _, arg in ipairs(vim.v.argv) do
+    local cmd = arg:match("^%+(.+)")
+    if cmd then
+      table.insert(commands, cmd)
+    end
+  end
+  return commands
+end
+
+local function string_includes_cmds(str)
+  local cmds = get_plus_commands()
+  for _, cmd in ipairs(cmds) do
+    str = str:lower()
+    cmd = cmd:lower()
+    if cmd:match(str) then
+      return true
+    end
+  end
+end
+
 -- Step 1: Discover and require plugin modules
 for _, file in
   ipairs(vim.fs.find(function(name)
@@ -14,7 +36,8 @@ for _, file in
 do
   local rel = file:sub(#mod_path + 2, -5):gsub("/", ".")
   if rel ~= "init" then
-    local name = mod_root .. "." .. rel
+    local path = mod_root .. "." .. rel
+    local name = path
     local full_path = vim.fn.fnamemodify(file, ":p") -- get absolute path
     local ok, chunk = pcall(loadfile, full_path)
 
@@ -24,9 +47,19 @@ do
 
       local success, mod = pcall(chunk)
       if success and type(mod) == "table" and mod.setup and mod.enabled ~= false then
+        if mod.name then
+          name = mod.name
+        end
+
+        -- if neovim starts with +cmd, disable lazy loading
+        if string_includes_cmds(name) then
+          mod.lazy = false
+        end
+
         ---@type PluginModule.Resolved
         local entry = {
           name = name,
+          path = path,
           setup = mod.setup, -- will be replaced later
           priority = mod.priority or 1000,
           requires = mod.requires or {},
@@ -34,6 +67,7 @@ do
           loaded = false,
         }
         table.insert(modules, entry)
+
         mod_map[name] = entry
       else
         vim.notify("Plugin " .. name .. " does not export a valid setup()", vim.log.levels.WARN)
@@ -105,7 +139,7 @@ local function safe_setup(mod)
 
   if depends_on and #depends_on > 0 then
     for _, dep in ipairs(depends_on) do
-      local dep_mod = mod_map[mod_root .. "." .. dep]
+      local dep_mod = mod_map[dep]
       if not dep_mod then
         vim.notify("Missing dependency: " .. dep .. " (required by " .. mod.name .. ")", vim.log.levels.WARN)
         return false
@@ -114,7 +148,7 @@ local function safe_setup(mod)
     end
   end
 
-  local require_ok, require_data = pcall(require, mod.name)
+  local require_ok, require_data = pcall(require, mod.path)
   if not require_ok then
     vim.notify("Failed to load plugin " .. mod.name .. "\n\n" .. tostring(require_data), vim.log.levels.ERROR)
     return false
@@ -146,25 +180,6 @@ for _, mod in ipairs(sorted) do
       })
     end
 
-    if lazy.cmd then
-      local cmd = lazy.cmd or {}
-
-      if type(cmd) == "string" then
-        cmd = { cmd }
-      end
-
-      for _, value in ipairs(cmd) do
-        vim.api.nvim_create_user_command(value, function()
-          local ok = safe_setup(mod)
-          if ok then
-            vim.schedule(function()
-              vim.cmd(value)
-            end)
-          end
-        end, {})
-      end
-    end
-
     if lazy.ft then
       vim.api.nvim_create_autocmd("FileType", {
         pattern = lazy.ft,
@@ -173,32 +188,6 @@ for _, mod in ipairs(sorted) do
           safe_setup(mod)
         end,
       })
-    end
-
-    if lazy.keys then
-      local keys = lazy.keys or {}
-
-      for _, value in ipairs(keys) do
-        vim.keymap.set(value.mode or "n", value.lhs, function()
-          local ok = safe_setup(mod)
-          if ok then
-            vim.schedule(function()
-              if type(value.rhs) == "function" then
-                value.rhs()
-              elseif type(value.rhs) == "string" then
-                local rhs = value.rhs
-
-                -- Strip <cmd> and <cr> if present
-                if rhs:match("^<cmd>") and rhs:match("<cr>$") then
-                  rhs = rhs:gsub("^<cmd>", ""):gsub("<cr>$", "")
-                end
-
-                vim.cmd(rhs)
-              end
-            end)
-          end
-        end, value.opts)
-      end
     end
 
     if lazy.on_lsp_attach then
@@ -223,4 +212,34 @@ for _, mod in ipairs(sorted) do
   end
 end
 
+--- setup some global variables for other plugins to use
 vim.g.loaded_plugins_count = eagerly_loaded
+vim.g.total_plugins_count = #sorted
+
+--- setup some keymaps for plugin management
+vim.keymap.set("n", "<leader>p", "", { desc = "plugins" })
+vim.keymap.set("n", "<leader>pu", function()
+  vim.pack.update()
+end, { desc = "Update plugins" })
+
+vim.keymap.set("n", "<leader>pi", function()
+  local copy = vim.deepcopy(sorted)
+
+  -- Get a list of loaded plugins
+  local loaded = {}
+  for _, mod in ipairs(copy) do
+    if mod.loaded then
+      table.insert(loaded, mod.name)
+    end
+  end
+
+  --- Get a list of not yet loaded plugins
+  local not_loaded = {}
+  for _, mod in ipairs(copy) do
+    if not mod.loaded then
+      table.insert(not_loaded, mod.name)
+    end
+  end
+
+  vim.notify("Loaded:\n" .. table.concat(loaded, "\n") .. "\n\nNot loaded: " .. table.concat(not_loaded, "\n"))
+end, { desc = "Plugin status" })

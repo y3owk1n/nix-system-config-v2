@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "flash"
+
 M.lazy = {
   event = { "BufReadPost", "BufNewFile" },
 }

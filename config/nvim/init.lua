@@ -56,22 +56,26 @@ vim.g.maplocalleader = " "
 -- First source packages
 require("packages")
 
--- Load plugins
-require("plugins")
-
 -- Set options
 require("options")
 
 -- Set autocmds
 require("autocmds")
 
+-- Set mappings
+require("mappings")
+
+-- Set diagnostics
+require("diagnostics")
+
+-- Load plugins
+require("plugins")
+
 -- Setup autocmds to load the rest in `UIEnter`
 vim.api.nvim_create_autocmd("UIEnter", {
   callback = function()
     vim.schedule(function()
-      require("mappings")
       require("lsp")
-      require("diagnostics")
     end)
   end,
 })

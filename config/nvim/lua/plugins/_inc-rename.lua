@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "inc_rename"
+
 M.lazy = {
   event = { "BufReadPost", "InsertLeave" },
 }
