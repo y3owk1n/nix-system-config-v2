@@ -8,6 +8,8 @@ M.lazy = {
 }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/supermaven-inc/supermaven-nvim" })
+
   local plugin_ok, plugin = pcall(require, "supermaven-nvim")
 
   if not plugin_ok then

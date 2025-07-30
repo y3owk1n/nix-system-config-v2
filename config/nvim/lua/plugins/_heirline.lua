@@ -8,6 +8,8 @@ M.lazy = {
 }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/rebelot/heirline.nvim" })
+
   local plugin_ok, plugin = pcall(require, "heirline")
 
   if not plugin_ok then

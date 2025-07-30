@@ -10,6 +10,8 @@ M.lazy = {
 }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/y3owk1n/tailwind-autosort.nvim" })
+
   local plugin_ok, plugin = pcall(require, "tailwind-autosort")
 
   if not plugin_ok then

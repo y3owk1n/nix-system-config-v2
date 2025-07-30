@@ -8,6 +8,8 @@ M.lazy = {
 }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/dmmulroy/ts-error-translator.nvim" })
+
   local plugin_ok, plugin = pcall(require, "ts-error-translator")
 
   if not plugin_ok then

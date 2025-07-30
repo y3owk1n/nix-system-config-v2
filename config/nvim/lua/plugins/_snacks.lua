@@ -6,6 +6,8 @@ M.name = "snacks"
 M.priority = 2
 
 function M.setup()
+  vim.pack.add({ "https://github.com/folke/snacks.nvim" })
+
   local plugin_ok, plugin = pcall(require, "snacks")
 
   if not plugin_ok then

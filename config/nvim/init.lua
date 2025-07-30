@@ -53,9 +53,6 @@ end
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- First source packages
-require("packages")
-
 -- Set options
 require("options")
 
@@ -69,13 +66,5 @@ require("mappings")
 require("diagnostics")
 
 -- Load plugins
+-- NOTE: lsp configurations will be loaded after `lspconfig` is ensured
 require("plugins")
-
--- Setup autocmds to load the rest in `UIEnter`
-vim.api.nvim_create_autocmd("UIEnter", {
-  callback = function()
-    vim.schedule(function()
-      require("lsp")
-    end)
-  end,
-})

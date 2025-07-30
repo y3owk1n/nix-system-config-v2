@@ -8,6 +8,8 @@ M.lazy = {
 }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/mfussenegger/nvim-lint" })
+
   local plugin_ok, plugin = pcall(require, "lint")
 
   if not plugin_ok then

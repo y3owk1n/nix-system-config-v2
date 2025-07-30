@@ -8,6 +8,8 @@ M.lazy = {
 }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/echasnovski/mini.pairs" })
+
   local plugin_ok, plugin = pcall(require, "mini.pairs")
 
   if not plugin_ok then

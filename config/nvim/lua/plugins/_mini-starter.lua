@@ -6,6 +6,8 @@ M.name = "mini.starter"
 M.requires = { "warp", "mini.files", "mini.pick" } -- reference by file name (no .lua)
 
 function M.setup()
+  vim.pack.add({ "https://github.com/echasnovski/mini.starter" })
+
   local plugin_ok, plugin = pcall(require, "mini.starter")
 
   if not plugin_ok then

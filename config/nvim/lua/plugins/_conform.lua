@@ -6,6 +6,8 @@ M.name = "conform"
 M.lazy = { event = { "BufReadPre", "BufNewFile" } }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/stevearc/conform.nvim" })
+
   local plugin_ok, plugin = pcall(require, "conform")
 
   if not plugin_ok then

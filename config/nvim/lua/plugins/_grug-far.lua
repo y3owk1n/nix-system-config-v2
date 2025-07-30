@@ -6,6 +6,8 @@ M.name = "grug-far"
 M.lazy = { event = { "BufReadPre", "BufNewFile" } }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/MagicDuck/grug-far.nvim" })
+
   local plugin_ok, plugin = pcall(require, "grug-far")
 
   if not plugin_ok then
