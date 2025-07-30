@@ -265,13 +265,3 @@ vim.api.nvim_create_autocmd("BufReadPost", {
     vim.o.laststatus = 3
   end,
 })
-
-vim.api.nvim_create_autocmd("VimEnter", {
-  group = augroup("vim_enter_laststatus"),
-  pattern = "*",
-  callback = function()
-    if vim.tbl_contains(ft_exclude_laststatus, vim.bo.filetype) then
-      vim.o.laststatus = 0
-    end
-  end,
-})

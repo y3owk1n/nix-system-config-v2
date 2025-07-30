@@ -16,6 +16,6 @@
 ---@field loaded? boolean
 
 ---@class PluginModule.Lazy
----@field event? string|string[]
+---@field event? vim.api.keyset.events|vim.api.keyset.events[]
 ---@field ft? string|string[]
 ---@field on_lsp_attach? string|string[]

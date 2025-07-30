@@ -66,7 +66,7 @@ function M.setup()
     vim.keymap.set("n", "<leader>hH", "<cmd>WarpGoToIndex last<cr>", { desc = "[Warp] Go to last index" })
 
     for i = 1, 9 do
-      vim.keymap.set("n", tostring(i), function()
+      vim.keymap.set("n", "<leader>" .. tostring(i), function()
         plugin.goto_index(i)
       end, { desc = "[Warp] Goto #" .. i })
     end
