@@ -3,6 +3,10 @@ local M = {}
 
 M.requires = { "_mini-extra" }
 
+M.lazy = {
+  event = { "UIEnter" },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "mini.pick")
 

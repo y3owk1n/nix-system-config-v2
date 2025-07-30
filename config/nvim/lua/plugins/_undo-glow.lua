@@ -1,6 +1,10 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  event = { "UIEnter" },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "undo-glow")
 
