@@ -4,6 +4,8 @@ local M = {}
 M.name = "nvim-treesitter"
 
 function M.setup()
+  vim.pack.add({ "https://github.com/nvim-treesitter/nvim-treesitter" })
+
   local plugin_ok, plugin = pcall(require, "nvim-treesitter.configs")
 
   if not plugin_ok then

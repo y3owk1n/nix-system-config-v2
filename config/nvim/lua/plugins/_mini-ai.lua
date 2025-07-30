@@ -8,6 +8,8 @@ M.lazy = {
 }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/echasnovski/mini.ai" })
+
   local plugin_ok, plugin = pcall(require, "mini.ai")
 
   if not plugin_ok then

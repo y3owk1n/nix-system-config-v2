@@ -8,6 +8,8 @@ M.lazy = {
 }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/echasnovski/mini.extra" })
+
   local plugin_ok, plugin = pcall(require, "mini.extra")
 
   if not plugin_ok then

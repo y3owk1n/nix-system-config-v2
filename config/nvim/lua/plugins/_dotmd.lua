@@ -8,6 +8,8 @@ M.lazy = {
 }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/y3owk1n/dotmd.nvim" })
+
   local plugin_ok, plugin = pcall(require, "dotmd")
 
   if not plugin_ok then

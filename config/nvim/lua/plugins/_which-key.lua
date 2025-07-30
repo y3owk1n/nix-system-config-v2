@@ -8,6 +8,8 @@ M.lazy = {
 }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/folke/which-key.nvim" })
+
   local plugin_ok, plugin = pcall(require, "which-key")
 
   if not plugin_ok then

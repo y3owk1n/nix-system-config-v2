@@ -8,6 +8,8 @@ M.lazy = {
 }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/folke/lazydev.nvim" })
+
   local plugin_ok, plugin = pcall(require, "lazydev")
 
   if not plugin_ok then

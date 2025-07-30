@@ -222,6 +222,23 @@ vim.keymap.set("n", "<leader>pu", function()
   vim.pack.update()
 end, { desc = "Update plugins" })
 
+vim.keymap.set("n", "<leader>pI", function()
+  local plugins = vim.pack.get()
+  vim.notify(vim.inspect(plugins))
+end, { desc = "Update plugins" })
+
+vim.keymap.set("n", "<leader>pX", function()
+  local plugins = vim.pack.get()
+
+  local names = {}
+
+  for _, plugin in ipairs(plugins) do
+    table.insert(names, plugin.spec.name)
+  end
+
+  vim.pack.del(names)
+end, { desc = "Clear all plugins" })
+
 vim.keymap.set("n", "<leader>pi", function()
   local copy = vim.deepcopy(sorted)
 

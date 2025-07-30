@@ -8,6 +8,8 @@ M.lazy = {
 }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/y3owk1n/time-machine.nvim" })
+
   local plugin_ok, plugin = pcall(require, "time-machine")
 
   if not plugin_ok then

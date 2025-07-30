@@ -8,6 +8,8 @@ M.lazy = {
 }
 
 function M.setup()
+  vim.pack.add({ "https://github.com/MeanderingProgrammer/render-markdown.nvim" })
+
   local plugin_ok, plugin = pcall(require, "render-markdown")
 
   if not plugin_ok then
