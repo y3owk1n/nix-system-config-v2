@@ -1,6 +1,20 @@
 ---@type PluginModule
 local M = {}
 
+M.lazy = {
+  event = { "UIEnter" },
+  cmd = {
+    "WarpAddFile",
+    "WarpAddOnScreenFiles",
+    "WarpDelFile",
+    "WarpShowList",
+    "WarpMoveTo",
+    "WarpGoToIndex",
+    "WarpClearCurrentList",
+    "WarpClearAllList",
+  },
+}
+
 function M.setup()
   local plugin_ok, plugin = pcall(require, "warp")
 
@@ -38,28 +52,30 @@ function M.setup()
 
   plugin.setup(plugin_opts)
 
-  vim.keymap.set("n", "<leader>h", "", { desc = "warp" })
-  vim.keymap.set("n", "<leader>hm", "", { desc = "move" })
-  vim.keymap.set("n", "<leader>ha", "<cmd>WarpAddFile<cr>", { desc = "[Warp] Add" })
-  vim.keymap.set("n", "<leader>hA", "<cmd>WarpAddOnScreenFiles<cr>", { desc = "[Warp] Add" })
-  vim.keymap.set("n", "<leader>hd", "<cmd>WarpDelFile<cr>", { desc = "[Warp] Delete" })
-  vim.keymap.set("n", "<leader>he", "<cmd>WarpShowList<cr>", { desc = "[Warp] Show list" })
-  vim.keymap.set("n", "<leader>hml", "<cmd>WarpMoveTo next<cr>", { desc = "[Warp] Move to next index" })
-  vim.keymap.set("n", "<leader>hmh", "<cmd>WarpMoveTo prev<cr>", { desc = "[Warp] Move to prev index" })
-  vim.keymap.set("n", "<leader>hmL", "<cmd>WarpMoveTo last<cr>", { desc = "[Warp] Move to last index" })
-  vim.keymap.set("n", "<leader>hmH", "<cmd>WarpMoveTo first<cr>", { desc = "[Warp] Move to first index" })
-  vim.keymap.set("n", "<leader>hx", "<cmd>WarpClearCurrentList<cr>", { desc = "[Warp] Clear current list" })
-  vim.keymap.set("n", "<leader>hX", "<cmd>WarpClearAllList<cr>", { desc = "[Warp] Clear all lists" })
-  vim.keymap.set("n", "<leader>hl", "<cmd>WarpGoToIndex next<cr>", { desc = "[Warp] Go to next index" })
-  vim.keymap.set("n", "<leader>hh", "<cmd>WarpGoToIndex prev<cr>", { desc = "[Warp] Go to prev index" })
-  vim.keymap.set("n", "<leader>hL", "<cmd>WarpGoToIndex first<cr>", { desc = "[Warp] Go to first index" })
-  vim.keymap.set("n", "<leader>hH", "<cmd>WarpGoToIndex last<cr>", { desc = "[Warp] Go to last index" })
+  vim.schedule(function()
+    vim.keymap.set("n", "<leader>h", "", { desc = "warp" })
+    vim.keymap.set("n", "<leader>hm", "", { desc = "move" })
+    vim.keymap.set("n", "<leader>ha", "<cmd>WarpAddFile<cr>", { desc = "[Warp] Add" })
+    vim.keymap.set("n", "<leader>hA", "<cmd>WarpAddOnScreenFiles<cr>", { desc = "[Warp] Add" })
+    vim.keymap.set("n", "<leader>hd", "<cmd>WarpDelFile<cr>", { desc = "[Warp] Delete" })
+    vim.keymap.set("n", "<leader>he", "<cmd>WarpShowList<cr>", { desc = "[Warp] Show list" })
+    vim.keymap.set("n", "<leader>hml", "<cmd>WarpMoveTo next<cr>", { desc = "[Warp] Move to next index" })
+    vim.keymap.set("n", "<leader>hmh", "<cmd>WarpMoveTo prev<cr>", { desc = "[Warp] Move to prev index" })
+    vim.keymap.set("n", "<leader>hmL", "<cmd>WarpMoveTo last<cr>", { desc = "[Warp] Move to last index" })
+    vim.keymap.set("n", "<leader>hmH", "<cmd>WarpMoveTo first<cr>", { desc = "[Warp] Move to first index" })
+    vim.keymap.set("n", "<leader>hx", "<cmd>WarpClearCurrentList<cr>", { desc = "[Warp] Clear current list" })
+    vim.keymap.set("n", "<leader>hX", "<cmd>WarpClearAllList<cr>", { desc = "[Warp] Clear all lists" })
+    vim.keymap.set("n", "<leader>hl", "<cmd>WarpGoToIndex next<cr>", { desc = "[Warp] Go to next index" })
+    vim.keymap.set("n", "<leader>hh", "<cmd>WarpGoToIndex prev<cr>", { desc = "[Warp] Go to prev index" })
+    vim.keymap.set("n", "<leader>hL", "<cmd>WarpGoToIndex first<cr>", { desc = "[Warp] Go to first index" })
+    vim.keymap.set("n", "<leader>hH", "<cmd>WarpGoToIndex last<cr>", { desc = "[Warp] Go to last index" })
 
-  for i = 1, 9 do
-    vim.keymap.set("n", tostring(i), function()
-      plugin.goto_index(i)
-    end, { desc = "[Warp] Goto #" .. i })
-  end
+    for i = 1, 9 do
+      vim.keymap.set("n", tostring(i), function()
+        plugin.goto_index(i)
+      end, { desc = "[Warp] Goto #" .. i })
+    end
+  end)
 end
 
 return M

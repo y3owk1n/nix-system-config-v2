@@ -1,7 +1,9 @@
 local mod_root = "plugins"
 local mod_path = vim.fn.stdpath("config") .. "/lua/" .. mod_root
 
+---@type PluginModule.Resolved[]
 local modules = {}
+---@type PluginModule.Resolved[]
 local mod_map = {}
 
 -- Step 1: Discover and require plugin modules
@@ -13,17 +15,19 @@ do
   local rel = file:sub(#mod_path + 2, -5):gsub("/", ".")
   if rel ~= "init" then
     local name = mod_root .. "." .. rel
-    local ok, mod = pcall(require, name)
+    local full_path = vim.fn.fnamemodify(file, ":p") -- get absolute path
+    local ok, chunk = pcall(loadfile, full_path)
 
-    if ok then
-      if type(mod) == "function" then
-        mod = { setup = mod }
-      end
+    if ok and chunk then
+      local env = {}
+      setfenv(chunk, env)
 
-      if type(mod) == "table" and mod.setup and mod.enabled ~= false then
+      local success, mod = pcall(chunk)
+      if success and type(mod) == "table" and mod.setup and mod.enabled ~= false then
+        ---@type PluginModule.Resolved
         local entry = {
           name = name,
-          setup = mod.setup,
+          setup = mod.setup, -- will be replaced later
           priority = mod.priority or 1000,
           requires = mod.requires or {},
           lazy = mod.lazy or false,
@@ -35,13 +39,15 @@ do
         vim.notify("Plugin " .. name .. " does not export a valid setup()", vim.log.levels.WARN)
       end
     else
-      vim.notify("Failed to load " .. name .. "\n\n" .. mod, vim.log.levels.ERROR)
+      vim.notify("Failed to load metadata for " .. name .. "\n\n" .. tostring(chunk), vim.log.levels.ERROR)
     end
   end
 end
 
 -- Step 2: Priority-aware topological sort
+---@type table<string, "temp"|true>
 local visited = {}
+---@type PluginModule.Resolved[]
 local sorted = {}
 
 local function visit(mod)
@@ -88,15 +94,39 @@ end
 
 local eagerly_loaded = 0
 
+---@param mod PluginModule.Resolved
+---@return boolean loaded
 local function safe_setup(mod)
   if mod.loaded then
-    return
+    return true
   end
-  mod.loaded = true
-  local ok, err = pcall(mod.setup)
+
+  local depends_on = mod.requires
+
+  if depends_on and #depends_on > 0 then
+    for _, dep in ipairs(depends_on) do
+      local dep_mod = mod_map[mod_root .. "." .. dep]
+      if not dep_mod then
+        vim.notify("Missing dependency: " .. dep .. " (required by " .. mod.name .. ")", vim.log.levels.WARN)
+        return false
+      end
+      safe_setup(dep_mod)
+    end
+  end
+
+  local require_ok, require_data = pcall(require, mod.name)
+  if not require_ok then
+    vim.notify("Failed to load plugin " .. mod.name .. "\n\n" .. tostring(require_data), vim.log.levels.ERROR)
+    return false
+  end
+  local ok, err = pcall(require_data.setup)
   if not ok then
     vim.notify("Setup failed for " .. mod.name .. "\n\n" .. err, vim.log.levels.ERROR)
+    return false
   end
+  mod.loaded = true
+  eagerly_loaded = eagerly_loaded + 1
+  return true
 end
 
 -- Step 4: Setup all modules in resolved order
@@ -105,7 +135,6 @@ for _, mod in ipairs(sorted) do
   if not lazy then
     -- Eager load if no lazy field
     safe_setup(mod)
-    eagerly_loaded = eagerly_loaded + 1
   else
     -- Lazy load
     if lazy.event then
@@ -118,7 +147,7 @@ for _, mod in ipairs(sorted) do
     end
 
     if lazy.cmd then
-      local cmd = lazy.cmd
+      local cmd = lazy.cmd or {}
 
       if type(cmd) == "string" then
         cmd = { cmd }
@@ -126,7 +155,12 @@ for _, mod in ipairs(sorted) do
 
       for _, value in ipairs(cmd) do
         vim.api.nvim_create_user_command(value, function()
-          safe_setup(mod)
+          local ok = safe_setup(mod)
+          if ok then
+            vim.schedule(function()
+              vim.cmd(value)
+            end)
+          end
         end, {})
       end
     end
@@ -142,9 +176,29 @@ for _, mod in ipairs(sorted) do
     end
 
     if lazy.keys then
-      vim.keymap.set("n", lazy.keys, function()
-        safe_setup(mod)
-      end, { once = true })
+      local keys = lazy.keys or {}
+
+      for _, value in ipairs(keys) do
+        vim.keymap.set(value.mode or "n", value.lhs, function()
+          local ok = safe_setup(mod)
+          if ok then
+            vim.schedule(function()
+              if type(value.rhs) == "function" then
+                value.rhs()
+              elseif type(value.rhs) == "string" then
+                local rhs = value.rhs
+
+                -- Strip <cmd> and <cr> if present
+                if rhs:match("^<cmd>") and rhs:match("<cr>$") then
+                  rhs = rhs:gsub("^<cmd>", ""):gsub("<cr>$", "")
+                end
+
+                vim.cmd(rhs)
+              end
+            end)
+          end
+        end, value.opts)
+      end
     end
 
     if lazy.on_lsp_attach then
@@ -152,7 +206,7 @@ for _, mod in ipairs(sorted) do
         callback = function(args)
           local client = vim.lsp.get_client_by_id(args.data.client_id)
 
-          local allowed_clients = lazy.on_lsp_attach
+          local allowed_clients = lazy.on_lsp_attach or {}
 
           if type(allowed_clients) == "string" then
             allowed_clients = { allowed_clients }

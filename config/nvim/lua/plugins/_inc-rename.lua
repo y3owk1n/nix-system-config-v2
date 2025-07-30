@@ -2,7 +2,7 @@
 local M = {}
 
 M.lazy = {
-  cmd = "IncRename",
+  event = { "BufReadPost", "InsertLeave" },
 }
 
 function M.setup()
