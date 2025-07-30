@@ -9,6 +9,7 @@ M.lazy = {
 
 function M.setup()
   vim.pack.add({ "https://github.com/y3owk1n/warp.nvim" })
+  -- vim.pack.add({ "file:///Users/kylewong/Dev/warp.nvim" })
 
   local plugin_ok, plugin = pcall(require, "warp")
 
