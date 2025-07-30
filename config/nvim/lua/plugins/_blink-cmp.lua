@@ -1,7 +1,9 @@
 ---@type PluginModule
 local M = {}
 
-M.requires = { "_lazydev", "_mini-icons" }
+M.name = "blink.cmp"
+
+M.requires = { "lazydev", "mini.icons" }
 
 M.lazy = { event = "InsertEnter" }
 

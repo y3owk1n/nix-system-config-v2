@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "nvim-ts-autotag"
+
 M.lazy = {
   ft = {
     "javascriptreact",

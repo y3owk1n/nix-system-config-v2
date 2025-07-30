@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "render-markdown"
+
 M.lazy = {
   ft = { "markdown", "markdown.mdx", "norg", "rmd", "org" },
 }

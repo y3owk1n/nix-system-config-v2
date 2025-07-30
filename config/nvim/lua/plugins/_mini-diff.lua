@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "mini.diff"
+
 M.lazy = {
   event = { "BufReadPre", "BufNewFile" },
 }

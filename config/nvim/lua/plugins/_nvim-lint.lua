@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "lint"
+
 M.lazy = {
   event = { "BufReadPost", "InsertLeave" },
 }

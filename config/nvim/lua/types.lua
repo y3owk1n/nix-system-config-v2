@@ -1,4 +1,5 @@
 ---@class PluginModule
+---@field name? string
 ---@field enabled? boolean
 ---@field requires? string[]
 ---@field setup? fun()
@@ -7,6 +8,7 @@
 
 ---@class PluginModule.Resolved
 ---@field name? string
+---@field path? string
 ---@field setup? fun()
 ---@field priority? integer
 ---@field requires? string[]
@@ -15,13 +17,5 @@
 
 ---@class PluginModule.Lazy
 ---@field event? string|string[]
----@field cmd? string|string[]
 ---@field ft? string|string[]
----@field keys? PluginModule.Lazy.Keys[]
 ---@field on_lsp_attach? string|string[]
-
----@class PluginModule.Lazy.Keys
----@field mode? string|string[]
----@field lhs? string
----@field rhs? string|function
----@field opts? vim.keymap.set.Opts

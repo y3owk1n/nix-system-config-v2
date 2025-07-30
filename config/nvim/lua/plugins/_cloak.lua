@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "cloak"
+
 M.lazy = { event = { "BufReadPre", "BufNewFile" } }
 
 function M.setup()

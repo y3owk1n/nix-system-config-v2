@@ -1,7 +1,9 @@
 ---@type PluginModule
 local M = {}
 
-M.requires = { "_mini-extra" }
+M.name = "mini.pick"
+
+M.requires = { "mini.extra" }
 
 M.lazy = {
   event = { "UIEnter" },

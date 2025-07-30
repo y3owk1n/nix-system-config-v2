@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "which-key"
+
 M.lazy = {
   event = { "UIEnter" },
 }

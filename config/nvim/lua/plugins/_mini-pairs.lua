@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "mini.pairs"
+
 M.lazy = {
   event = "InsertEnter",
 }

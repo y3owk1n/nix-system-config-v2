@@ -1,18 +1,10 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "warp"
+
 M.lazy = {
   event = { "UIEnter" },
-  cmd = {
-    "WarpAddFile",
-    "WarpAddOnScreenFiles",
-    "WarpDelFile",
-    "WarpShowList",
-    "WarpMoveTo",
-    "WarpGoToIndex",
-    "WarpClearCurrentList",
-    "WarpClearAllList",
-  },
 }
 
 function M.setup()

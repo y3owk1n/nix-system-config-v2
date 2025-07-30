@@ -1,6 +1,8 @@
 ---@type PluginModule
 local M = {}
 
+M.name = "heirline"
+
 M.lazy = {
   event = { "UIEnter" },
 }
