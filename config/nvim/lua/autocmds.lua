@@ -236,7 +236,7 @@ vim.api.nvim_create_autocmd("FileType", {
       0,
       "n",
       "<leader>cc",
-      ":lua require('k92.utils.markdown').toggle_markdown_checkbox()<CR>",
+      ":lua require('utils.markdown').toggle_markdown_checkbox()<CR>",
       { desc = "Toggle Markdown Checkbox", noremap = true, silent = true }
     )
 
@@ -244,7 +244,7 @@ vim.api.nvim_create_autocmd("FileType", {
       0,
       "n",
       "<leader>cgc",
-      ":lua require('k92.utils.markdown').insert_markdown_checkbox()<CR>",
+      ":lua require('utils.markdown').insert_markdown_checkbox()<CR>",
       { desc = "Insert Markdown Checkbox", noremap = true, silent = true }
     )
   end,
