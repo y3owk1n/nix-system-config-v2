@@ -24,22 +24,16 @@ function M.setup()
   local plugin_opts = {
     default_integrations = false,
     integrations = {
-      treesitter = true,
+      blink_cmp = {
+        style = "bordered",
+      },
+      flash = true,
+      grug_far = true,
+      markdown = true,
       mini = {
         enabled = true,
         indentscope_color = "flamingo",
       },
-      blink_cmp = {
-        style = "bordered",
-      },
-      grug_far = true,
-      flash = true,
-      snacks = {
-        enabled = true,
-      },
-      markdown = true,
-      render_markdown = true,
-      which_key = true,
       native_lsp = {
         enabled = true,
         virtual_text = {
@@ -60,6 +54,12 @@ function M.setup()
           background = true,
         },
       },
+      treesitter = true,
+      render_markdown = true,
+      snacks = {
+        enabled = true,
+      },
+      which_key = true,
     },
     custom_highlights = {
       --- for blink.cmp
