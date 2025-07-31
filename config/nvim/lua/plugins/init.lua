@@ -201,6 +201,44 @@ function M.setup_modules(sorted)
         })
       end
 
+      if lazy.keys then
+        local keys = lazy.keys or {}
+
+        for _, d in ipairs(keys) do
+          local lhs = assert(d.lhs, "lazy.key entry must have lhs")
+          local rhs = function()
+            safe_setup(mod)
+            if type(d.rhs) == "string" then
+              vim.api.nvim_feedkeys(d.rhs, "t", false)
+            end
+            if type(d.rhs) == "function" then
+              d.rhs()
+            end
+          end
+          local mode = d.mode or "n"
+          local opts = vim.tbl_extend("force", { noremap = true, silent = true, nowait = true }, d.opts or {})
+          vim.keymap.set(mode, lhs, rhs, opts)
+        end
+      end
+
+      if lazy.cmd then
+        local cmds = lazy.cmd or {}
+        if type(cmds) == "string" then
+          cmds = { cmds }
+        end
+
+        for _, name in ipairs(cmds) do
+          vim.api.nvim_create_user_command(name, function(opts)
+            safe_setup(mod)
+            -- Forward the command to the plugin if it defines one
+            local ok, plugin_cmd = pcall(vim.api.nvim_get_user_command, name)
+            if ok and plugin_cmd then
+              vim.cmd(opts.args == "" and name or (name .. " " .. opts.args))
+            end
+          end, { bang = true, nargs = "*" })
+        end
+      end
+
       if lazy.on_lsp_attach then
         vim.api.nvim_create_autocmd("LspAttach", {
           callback = function(args)
