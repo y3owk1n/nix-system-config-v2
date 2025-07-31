@@ -7,10 +7,11 @@ M.lazy = {
   event = { "UIEnter" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/y3owk1n/warp.nvim" })
-  -- vim.pack.add({ "file:///Users/kylewong/Dev/warp.nvim" })
+M.registry = {
+  "https://github.com/y3owk1n/warp.nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "warp")
 
   if not plugin_ok then

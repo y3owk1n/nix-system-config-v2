@@ -7,9 +7,11 @@ M.lazy = {
   ft = { "markdown", "markdown.mdx", "norg", "rmd", "org" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/MeanderingProgrammer/render-markdown.nvim" })
+M.registry = {
+  "https://github.com/MeanderingProgrammer/render-markdown.nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "render-markdown")
 
   if not plugin_ok then

@@ -9,9 +9,11 @@ M.lazy = {
   },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/echasnovski/mini-git" })
+M.registry = {
+  "https://github.com/echasnovski/mini-git",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "mini.git")
 
   if not plugin_ok then

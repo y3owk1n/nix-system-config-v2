@@ -7,9 +7,11 @@ M.lazy = {
   ft = "lua",
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/folke/lazydev.nvim" })
+M.registry = {
+  "https://github.com/folke/lazydev.nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "lazydev")
 
   if not plugin_ok then

@@ -7,9 +7,11 @@ M.lazy = {
   event = { "BufReadPost", "InsertLeave" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/mfussenegger/nvim-lint" })
+M.registry = {
+  "https://github.com/mfussenegger/nvim-lint",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "lint")
 
   if not plugin_ok then

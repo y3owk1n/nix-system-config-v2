@@ -3,6 +3,9 @@ local M = {}
 ---@type table<string, PluginModule.Resolved>
 M.mod_map = {}
 
+---@type (string|vim.pack.Spec)[]
+M.registry_map = {}
+
 local mod_root = "plugins"
 local mod_path = vim.fn.stdpath("config") .. "/lua/" .. mod_root
 
@@ -49,7 +52,7 @@ function M.discover()
       local ok, chunk = pcall(loadfile, full_path)
 
       if ok and chunk then
-        local env = {}
+        local env = setmetatable({ vim = vim }, { __index = _G })
         setfenv(chunk, env)
 
         local success, mod = pcall(chunk)
@@ -70,10 +73,16 @@ function M.discover()
             requires = mod.requires or {},
             lazy = mod.lazy or false,
             loaded = false,
+            registry = mod.registry or {},
           }
 
           table.insert(modules, entry)
           M.mod_map[name] = entry
+          if #entry.registry > 0 then
+            for _, registry in ipairs(entry.registry) do
+              table.insert(M.registry_map, registry)
+            end
+          end
         else
           vim.notify("Plugin " .. name .. " does not export a valid setup()", vim.log.levels.WARN)
         end
@@ -153,6 +162,9 @@ local function safe_setup(mod)
     end
   end
 
+  ---install the package first
+  vim.pack.add(mod.registry)
+  ---load the package setup
   local require_ok, require_data = pcall(require, mod.path)
   if not require_ok then
     vim.notify("Failed to load plugin " .. mod.name .. "\n\n" .. tostring(require_data), vim.log.levels.ERROR)
@@ -290,7 +302,11 @@ function M.init()
   --- setup some keymaps for plugin management
   vim.keymap.set("n", "<leader>p", "", { desc = "plugins" })
 
+  --- NOTE: this is a workaround for updating lazy loaded packages
   vim.keymap.set("n", "<leader>pu", function()
+    vim.pack.add(M.registry_map)
+
+    --- Get the names of all plugins
     local plugins = vim.pack.get()
 
     local names = {}
@@ -299,6 +315,7 @@ function M.init()
       table.insert(names, plugin.spec.name)
     end
 
+    --- Update all pluins
     vim.pack.update(names)
   end, { desc = "Update plugins" })
 

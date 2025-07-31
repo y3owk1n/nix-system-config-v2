@@ -7,9 +7,11 @@ M.lazy = {
   event = { "BufReadPre", "BufNewFile" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/echasnovski/mini.ai" })
+M.registry = {
+  "https://github.com/echasnovski/mini.ai",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "mini.ai")
 
   if not plugin_ok then

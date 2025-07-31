@@ -5,9 +5,11 @@ M.name = "catppuccin"
 
 M.priority = 1
 
-function M.setup()
-  vim.pack.add({ "https://github.com/catppuccin/nvim" })
+M.registry = {
+  "https://github.com/catppuccin/nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "catppuccin")
 
   if not plugin_ok then

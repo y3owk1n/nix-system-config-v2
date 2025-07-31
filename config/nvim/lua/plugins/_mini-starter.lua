@@ -5,9 +5,11 @@ M.name = "mini.starter"
 
 M.requires = { "warp", "mini.files", "mini.pick" }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/echasnovski/mini.starter" })
+M.registry = {
+  "https://github.com/echasnovski/mini.starter",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "mini.starter")
 
   if not plugin_ok then

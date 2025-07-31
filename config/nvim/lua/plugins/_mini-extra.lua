@@ -7,9 +7,11 @@ M.lazy = {
   event = { "UIEnter" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/echasnovski/mini.extra" })
+M.registry = {
+  "https://github.com/echasnovski/mini.extra",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "mini.extra")
 
   if not plugin_ok then

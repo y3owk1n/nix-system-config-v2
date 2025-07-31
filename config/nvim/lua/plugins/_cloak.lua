@@ -7,9 +7,11 @@ M.lazy = {
   event = { "BufReadPre", "BufNewFile" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/laytan/cloak.nvim" })
+M.registry = {
+  "https://github.com/laytan/cloak.nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "cloak")
 
   if not plugin_ok then

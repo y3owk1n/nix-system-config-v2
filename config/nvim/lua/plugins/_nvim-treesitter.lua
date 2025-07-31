@@ -8,9 +8,11 @@ M.lazy = {
   cmd = { "TSUpdateSync", "TSUpdate", "TSInstall" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/nvim-treesitter/nvim-treesitter" })
+M.registry = {
+  "https://github.com/nvim-treesitter/nvim-treesitter",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "nvim-treesitter.configs")
 
   if not plugin_ok then

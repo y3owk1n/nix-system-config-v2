@@ -9,9 +9,11 @@ M.lazy = {
   },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/folke/flash.nvim" })
+M.registry = {
+  "https://github.com/folke/flash.nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "flash")
 
   if not plugin_ok then

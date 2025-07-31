@@ -7,6 +7,10 @@ M.lazy = {
   event = "InsertEnter",
 }
 
+M.registry = {
+  "https://github.com/echasnovski/mini.pairs",
+}
+
 function M.setup()
   vim.pack.add({ "https://github.com/echasnovski/mini.pairs" })
 

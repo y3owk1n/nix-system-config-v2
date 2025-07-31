@@ -31,9 +31,11 @@ M.lazy = {
   },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/y3owk1n/dotmd.nvim" })
+M.registry = {
+  "https://github.com/y3owk1n/dotmd.nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "dotmd")
 
   if not plugin_ok then

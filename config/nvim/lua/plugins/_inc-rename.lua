@@ -8,9 +8,11 @@ M.lazy = {
   keys = { "grn" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/smjonas/inc-rename.nvim" })
+M.registry = {
+  "https://github.com/smjonas/inc-rename.nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "inc_rename")
 
   if not plugin_ok then

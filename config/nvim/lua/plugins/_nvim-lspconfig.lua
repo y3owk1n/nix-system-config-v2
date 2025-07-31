@@ -7,9 +7,11 @@ M.lazy = {
   event = { "BufReadPre", "BufNewFile" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/neovim/nvim-lspconfig" })
+M.registry = {
+  "https://github.com/neovim/nvim-lspconfig",
+}
 
+function M.setup()
   local plugin_ok, _ = pcall(require, "lspconfig")
 
   if not plugin_ok then
