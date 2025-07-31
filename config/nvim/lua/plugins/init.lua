@@ -1,254 +1,197 @@
 local M = {}
 
----@type table<string, PluginModule.Resolved>
-M.mod_map = {}
+-----------------------------------------------------------------------------//
+-- 0.  Public contract
+-----------------------------------------------------------------------------//
+M.init = nil
+M.setup_keymaps = nil
+M.get_plugins = nil
+-----------------------------------------------------------------------------//
 
----@type (string|vim.pack.Spec)[]
-M.registry_map = {}
-
----@type PluginModule.Resolved[]
-M.sorted_modules = {}
-
+-----------------------------------------------------------------------------//
+-- 1.  State
+-----------------------------------------------------------------------------//
 local mod_root = "plugins"
-local mod_path = vim.fn.stdpath("config") .. "/lua/" .. mod_root
+local mod_base_path = vim.fn.stdpath("config") .. "/lua/" .. mod_root
 
-function M.init()
-  local modules = M.discover()
-  M.sort_modules(modules)
-  M.setup_modules()
-  M.setup_keymaps()
-end
+---@type table<string, PluginModule.Resolved>
+local mod_map = {}
+---@type PluginModule.Resolved[]
+local sorted_modules = {}
+---@type (string|vim.pack.Spec)[]
+local registry_map = {}
 
-function M.setup_keymaps()
-  --- setup some keymaps for plugin management
-  vim.keymap.set("n", "<leader>p", "", { desc = "plugins" })
+-- Caches
+local _discovered = nil
+local _argv_cmds = nil
 
-  --- NOTE: this is a workaround for updating lazy loaded packages
-  vim.keymap.set("n", "<leader>pu", function()
-    vim.pack.add(M.registry_map)
+-----------------------------------------------------------------------------//
+-- 2.  Utilities
+-----------------------------------------------------------------------------//
+local log = {
+  warn = function(msg)
+    vim.notify(msg, vim.log.levels.WARN)
+  end,
+  error = function(msg)
+    vim.notify(msg, vim.log.levels.ERROR)
+  end,
+}
 
-    --- Get the names of all plugins
-    local plugins = vim.pack.get()
-
-    local names = {}
-
-    for _, plugin in ipairs(plugins) do
-      table.insert(names, plugin.spec.name)
-    end
-
-    --- Update all pluins
-    vim.pack.update(names)
-  end, { desc = "Update plugins" })
-
-  vim.keymap.set("n", "<leader>pI", function()
-    local plugins = vim.pack.get()
-    vim.notify(vim.inspect(plugins))
-  end, { desc = "Pack info" })
-
-  vim.keymap.set("n", "<leader>pX", function()
-    local plugins = vim.pack.get()
-
-    local names = {}
-
-    for _, plugin in ipairs(plugins) do
-      table.insert(names, plugin.spec.name)
-    end
-
-    vim.pack.del(names)
-  end, { desc = "Clear all plugins" })
-
-  vim.keymap.set("n", "<leader>pi", function()
-    local loaded = M.get_plugins(true)
-    local not_loaded = M.get_plugins(false)
-
-    local formatted = string.format(
-      "Loaded [%s]:\n%s\n\nNot loaded [%s]:\n%s",
-      #loaded,
-      table.concat(loaded, "\n"),
-      #not_loaded,
-      table.concat(not_loaded, "\n")
-    )
-    vim.notify(formatted)
-  end, { desc = "Plugin status" })
-end
-
----@param query? boolean
-function M.get_plugins(query)
-  if type(query) == "nil" then
-    return M.sorted_modules
+local function argv_cmds()
+  if _argv_cmds then
+    return _argv_cmds
   end
-
-  local data = {}
-
-  for _, mod in ipairs(M.sorted_modules) do
-    if mod.loaded == query then
-      table.insert(data, mod.name)
-    end
-  end
-  return data
-end
-
----@return string[]
-local function get_plus_commands()
-  local commands = {}
+  _argv_cmds = {}
   for _, arg in ipairs(vim.v.argv) do
     local cmd = arg:match("^%+(.+)")
     if cmd then
-      table.insert(commands, cmd)
+      _argv_cmds[cmd:lower()] = true
     end
   end
-  return commands
+  return _argv_cmds
 end
 
----@param str string
----@return boolean|nil
-local function string_includes_cmds(str)
-  local cmds = get_plus_commands()
-  for _, cmd in ipairs(cmds) do
-    str = str:lower()
-    cmd = cmd:lower()
-    if cmd:match(str) then
-      return true
-    end
+-----------------------------------------------------------------------------//
+-- 3.  Discovery
+-----------------------------------------------------------------------------//
+local function discover()
+  if _discovered then
+    return _discovered
   end
-end
-
----@return PluginModule.Resolved[] modules
-function M.discover()
-  ---@type PluginModule.Resolved[]
   local modules = {}
 
   local files = vim.fs.find(function(name)
     return name:sub(-4) == ".lua"
-  end, { type = "file", limit = math.huge, path = mod_path })
+  end, { type = "file", limit = math.huge, path = mod_base_path })
 
   for _, file in ipairs(files) do
-    local rel = file:sub(#mod_path + 2, -5):gsub("/", ".")
+    local rel = file:sub(#mod_base_path + 2, -5):gsub("/", ".")
     if rel ~= "init" then
       local path = mod_root .. "." .. rel
-      local name = path
-      local full_path = vim.fn.fnamemodify(file, ":p")
-      local ok, chunk = pcall(loadfile, full_path)
-
-      if ok and chunk then
-        local env = setmetatable({ vim = vim }, { __index = _G })
-        setfenv(chunk, env)
-
-        local success, mod = pcall(chunk)
-        if success and type(mod) == "table" and mod.setup and mod.enabled ~= false then
-          if mod.name then
-            name = mod.name
-          end
-          if string_includes_cmds(name) then
-            mod.lazy = false
-          end
-
-          ---@type PluginModule.Resolved
-          local entry = {
-            name = name,
-            path = path,
-            setup = mod.setup,
-            priority = mod.priority or 1000,
-            requires = mod.requires or {},
-            lazy = mod.lazy or false,
-            loaded = false,
-            registry = mod.registry or {},
-          }
-
-          table.insert(modules, entry)
-          M.mod_map[name] = entry
-          if #entry.registry > 0 then
-            for _, registry in ipairs(entry.registry) do
-              table.insert(M.registry_map, registry)
-            end
-          end
-        else
-          vim.notify("Plugin " .. name .. " does not export a valid setup()", vim.log.levels.WARN)
-        end
-      else
-        vim.notify("Failed to load metadata for " .. name .. "\n\n" .. tostring(chunk), vim.log.levels.ERROR)
+      local ok, chunk = pcall(loadfile, file)
+      if not ok or type(chunk) ~= "function" then
+        log.error(("Bad file %s: %s"):format(file, chunk))
+        goto continue
       end
+
+      local env = setmetatable({ vim = vim }, { __index = _G })
+      setfenv(chunk, env)
+      local success, mod = pcall(chunk)
+      if not success or type(mod) ~= "table" or type(mod.setup) ~= "function" or mod.enabled == false then
+        log.warn(("Plugin %s does not export valid setup"):format(path))
+        goto continue
+      end
+
+      local name = mod.name or path
+      if argv_cmds()[name:lower()] then
+        mod.lazy = false
+      end
+
+      local entry = {
+        name = name,
+        path = path,
+        setup = mod.setup,
+        priority = mod.priority or 1000,
+        requires = mod.requires or {},
+        lazy = mod.lazy or false,
+        loaded = false,
+        registry = mod.registry or {},
+      }
+
+      table.insert(modules, entry)
+      mod_map[name] = entry
+      for _, reg in ipairs(entry.registry) do
+        table.insert(registry_map, reg)
+      end
+      ::continue::
     end
   end
 
+  _discovered = modules
   return modules
 end
 
----@param modules PluginModule.Resolved[]
-function M.sort_modules(modules)
-  local visited = {}
-
-  local function visit(mod)
-    if visited[mod.name] == "temp" then
-      vim.notify("Cyclic dependency detected: " .. mod.name, vim.log.levels.ERROR)
-      return
-    end
-    if visited[mod.name] then
-      return
-    end
-
-    visited[mod.name] = "temp"
-
-    local deps = {}
-    for _, req in ipairs(mod.requires) do
-      local dep = M.mod_map[mod_root .. "." .. req] or M.mod_map[req]
+-----------------------------------------------------------------------------//
+-- 4.  Topological sort  (Kahn’s algorithm – O(n+m))
+-----------------------------------------------------------------------------//
+local function sort_modules(mods)
+  -- Build adjacency
+  local in_degree, rev = {}, {}
+  for _, m in ipairs(mods) do
+    in_degree[m.name] = 0
+  end
+  for _, m in ipairs(mods) do
+    for _, req in ipairs(m.requires) do
+      local dep = mod_map[req] or mod_map[mod_root .. "." .. req]
       if dep then
-        table.insert(deps, dep)
+        in_degree[m.name] = in_degree[m.name] + 1
+        rev[dep.name] = rev[dep.name] or {}
+        table.insert(rev[dep.name], m)
       else
-        vim.notify("Missing dependency: " .. req .. " (required by " .. mod.name .. ")", vim.log.levels.WARN)
+        log.warn(("Missing dependency %s for %s"):format(req, m.name))
       end
     end
-
-    table.sort(deps, function(a, b)
-      return a.priority < b.priority
-    end)
-
-    for _, dep in ipairs(deps) do
-      visit(dep)
-    end
-
-    visited[mod.name] = true
-    table.insert(M.sorted_modules, mod)
   end
 
-  table.sort(modules, function(a, b)
+  -- Priority queue (min-heap on priority)
+  local pq = {}
+  for _, m in ipairs(mods) do
+    if in_degree[m.name] == 0 then
+      table.insert(pq, m)
+    end
+  end
+  table.sort(pq, function(a, b)
     return a.priority < b.priority
   end)
 
-  for _, mod in ipairs(modules) do
-    visit(mod)
+  local out = {}
+  while #pq > 0 do
+    local cur = table.remove(pq, 1)
+    table.insert(out, cur)
+    for _, next_mod in ipairs(rev[cur.name] or {}) do
+      in_degree[next_mod.name] = in_degree[next_mod.name] - 1
+      if in_degree[next_mod.name] == 0 then
+        table.insert(pq, next_mod)
+        table.sort(pq, function(a, b)
+          return a.priority < b.priority
+        end)
+      end
+    end
   end
+
+  sorted_modules = out
 end
 
----@param mod PluginModule.Resolved
----@return boolean
-local function safe_setup(mod)
+-----------------------------------------------------------------------------//
+-- 5.  Safe setup
+-----------------------------------------------------------------------------//
+local function setup_one(mod)
   if mod.loaded then
     return true
   end
 
-  for _, dep in ipairs(mod.requires or {}) do
-    local dep_mod = M.mod_map[dep]
-    if dep_mod then
-      safe_setup(dep_mod)
-    else
-      vim.notify("Missing dependency: " .. dep .. " (required by " .. mod.name .. ")", vim.log.levels.WARN)
+  -- 1. Ensure every declared dependency is loaded first
+  for _, dep_name in ipairs(mod.requires) do
+    local dep = mod_map[dep_name] or mod_map[mod_root .. "." .. dep_name]
+    if not dep then
+      log.warn(("Missing dependency %s for %s"):format(dep_name, mod.name))
       return false
+    end
+    if not setup_one(dep) then -- recursive, but safe: list is topo-sorted
+      return false -- abort on first failure
     end
   end
 
-  ---install the package first
+  -- 2. Install & run the plugin itself
   vim.pack.add(mod.registry)
-  ---load the package setup
-  local require_ok, require_data = pcall(require, mod.path)
-  if not require_ok then
-    vim.notify("Failed to load plugin " .. mod.name .. "\n\n" .. tostring(require_data), vim.log.levels.ERROR)
+  local ok, data = pcall(require, mod.path)
+  if not ok then
+    log.error(("Failed to require %s: %s"):format(mod.name, data))
     return false
   end
-
-  local ok, err = pcall(require_data.setup)
-  if not ok then
-    vim.notify("Setup failed for " .. mod.name .. "\n\n" .. err, vim.log.levels.ERROR)
+  local setup_ok, err = pcall(data.setup)
+  if not setup_ok then
+    log.error(("Setup failed for %s: %s"):format(mod.name, err))
     return false
   end
 
@@ -256,98 +199,152 @@ local function safe_setup(mod)
   return true
 end
 
-function M.setup_modules()
-  for _, mod in ipairs(M.sorted_modules) do
-    local lazy = mod.lazy
+-----------------------------------------------------------------------------//
+-- 6.  Lazy-load wiring
+-----------------------------------------------------------------------------//
+local function wire_lazy(mod)
+  local l = mod.lazy
+  if type(l) ~= "table" then
+    return
+  end
 
-    if not lazy then
-      safe_setup(mod)
-    else
-      if lazy.event then
-        vim.api.nvim_create_autocmd(lazy.event, {
-          once = true,
-          callback = function()
-            safe_setup(mod)
-          end,
-        })
-      end
+  if l.event then
+    local events = type(l.event) == "string" and { l.event } or l.event
+    vim.api.nvim_create_autocmd(events, {
+      once = true,
+      callback = function()
+        setup_one(mod)
+      end,
+    })
+  end
 
-      if lazy.ft then
-        vim.api.nvim_create_autocmd("FileType", {
-          pattern = lazy.ft,
-          once = true,
-          callback = function()
-            safe_setup(mod)
-          end,
-        })
-      end
+  if l.ft then
+    local fts = type(l.ft) == "string" and { l.ft } or l.ft
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = fts,
+      once = true,
+      callback = function()
+        setup_one(mod)
+      end,
+    })
+  end
 
-      if lazy.keys then
-        local keys = lazy.keys or {}
-
-        if type(keys) == "string" then
-          keys = { keys }
+  if l.keys then
+    local keys = type(l.keys) == "string" and { l.keys } or l.keys
+    for _, key in ipairs(keys) do
+      vim.keymap.set({ "n", "v", "x", "o" }, key, function()
+        pcall(vim.keymap.del, { "n", "v", "x", "o" }, key)
+        if setup_one(mod) then
+          vim.schedule(function()
+            vim.api.nvim_feedkeys(vim.keycode(key), "m", false)
+          end)
         end
-
-        local modes = { "n", "v", "x", "o" }
-
-        for _, key in ipairs(keys) do
-          vim.keymap.set(modes, key, function()
-            pcall(vim.keymap.del, modes, key)
-
-            local ok = safe_setup(mod)
-
-            if ok then
-              vim.schedule(function()
-                vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, false, true), "m", false)
-              end)
-            end
-          end, { noremap = true, silent = true, nowait = true, desc = "Lazyload plugin " .. mod.name })
-        end
-      end
-
-      if lazy.cmd then
-        local cmds = lazy.cmd or {}
-        if type(cmds) == "string" then
-          cmds = { cmds }
-        end
-
-        for _, name in ipairs(cmds) do
-          vim.api.nvim_create_user_command(name, function(opts)
-            local ok = safe_setup(mod)
-
-            if not ok then
-              return
-            end
-
-            -- Use schedule to let plugin finish setting up its commands
-            vim.schedule(function()
-              local bang = opts.bang and "!" or ""
-              local args = opts.args or ""
-              local full_cmd = string.format("%s%s %s", name, bang, args):gsub("%s+$", "")
-              vim.cmd(full_cmd)
-            end)
-          end, { bang = true, nargs = "*" })
-        end
-      end
-
-      if lazy.on_lsp_attach then
-        vim.api.nvim_create_autocmd("LspAttach", {
-          callback = function(args)
-            local client = vim.lsp.get_client_by_id(args.data.client_id)
-            local allowed = lazy.on_lsp_attach or {}
-            if type(allowed) == "string" then
-              allowed = { allowed }
-            end
-
-            if client and vim.tbl_contains(allowed, client.name) then
-              safe_setup(mod)
-            end
-          end,
-        })
-      end
+      end, { noremap = true, silent = true, desc = "Lazy: " .. mod.name })
     end
   end
+
+  if l.cmd then
+    local cmds = type(l.cmd) == "string" and { l.cmd } or l.cmd
+    for _, name in ipairs(cmds) do
+      vim.api.nvim_create_user_command(name, function(opts)
+        if setup_one(mod) then
+          vim.schedule(function()
+            vim.cmd((opts.bang and "%s! %s" or "%s %s"):format(name, opts.args))
+          end)
+        end
+      end, { bang = true, nargs = "*" })
+    end
+  end
+
+  if l.on_lsp_attach then
+    local allowed = type(l.on_lsp_attach) == "string" and { l.on_lsp_attach } or l.on_lsp_attach
+    vim.api.nvim_create_autocmd("LspAttach", {
+      callback = function(args)
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        if client and vim.tbl_contains(allowed, client.name) then
+          setup_one(mod)
+        end
+      end,
+    })
+  end
+end
+
+-----------------------------------------------------------------------------//
+-- 7.  Setup
+-----------------------------------------------------------------------------//
+function M.setup_modules()
+  for _, mod in ipairs(sorted_modules) do
+    if mod.lazy then
+      wire_lazy(mod)
+    else
+      setup_one(mod)
+    end
+  end
+end
+
+-----------------------------------------------------------------------------//
+-- 8.  Keymaps
+-----------------------------------------------------------------------------//
+function M.setup_keymaps()
+  vim.keymap.set("n", "<leader>p", "", { desc = "plugins" })
+
+  vim.keymap.set("n", "<leader>pu", function()
+    vim.pack.add(registry_map)
+    local plugins = vim.pack.get()
+    local names = vim.tbl_map(function(p)
+      return p.spec.name
+    end, plugins)
+    vim.pack.update(names)
+  end, { desc = "Update plugins" })
+
+  vim.keymap.set("n", "<leader>pI", function()
+    vim.notify(vim.inspect(vim.pack.get()))
+  end, { desc = "Pack info" })
+
+  vim.keymap.set("n", "<leader>pX", function()
+    local plugins = vim.pack.get()
+    local names = vim.tbl_map(function(p)
+      return p.spec.name
+    end, plugins)
+    vim.pack.del(names)
+  end, { desc = "Clear all plugins" })
+
+  vim.keymap.set("n", "<leader>pi", function()
+    local loaded = M.get_plugins(true)
+    local not_loaded = M.get_plugins(false)
+    vim.notify(
+      string.format(
+        "Loaded [%d]:\n%s\n\nNot loaded [%d]:\n%s",
+        #loaded,
+        table.concat(loaded, "\n"),
+        #not_loaded,
+        table.concat(not_loaded, "\n")
+      )
+    )
+  end, { desc = "Plugin status" })
+end
+
+-----------------------------------------------------------------------------//
+-- 9.  Public API
+-----------------------------------------------------------------------------//
+function M.init()
+  local modules = discover()
+  sort_modules(modules)
+  M.setup_modules()
+  M.setup_keymaps()
+end
+
+function M.get_plugins(query)
+  if query == nil then
+    return sorted_modules
+  end
+  local out = {}
+  for _, m in ipairs(sorted_modules) do
+    if m.loaded == query then
+      table.insert(out, m.name)
+    end
+  end
+  return out
 end
 
 return M
