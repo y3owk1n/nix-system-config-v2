@@ -73,9 +73,11 @@ function M.setup()
 
   vim.api.nvim_create_autocmd("VimEnter", {
     callback = function(ev)
+      local plugin_core = require("plugins")
+
       local startuptime = vim.g.startuptime
-      local plugins_count = vim.g.loaded_plugins_count
-      local total_plugins_count = vim.g.total_plugins_count
+      local plugins_count = #plugin_core.get_plugins(true)
+      local total_plugins_count = #plugin_core.get_plugins()
 
       plugin.config.footer =
         string.format("⚡ Neovim loaded %s plugins of %s in %sms", plugins_count, total_plugins_count, startuptime)
