@@ -1,14 +1,3 @@
-local start_time = vim.uv.hrtime()
-
-vim.api.nvim_create_autocmd("VimEnter", {
-  callback = function()
-    local elapsed = (vim.uv.hrtime() - start_time) / 1e6
-    local formatted = string.format("%.2f", elapsed) -- 2 decimals
-    vim.g.startuptime = formatted
-  end,
-  once = true,
-})
-
 local function disable_builtin_plugins()
   local plugins = {
     "2html_plugin",
