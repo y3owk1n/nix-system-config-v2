@@ -1,89 +1,164 @@
+-- lsp-loader.lua  (production-grade refactor)
 local M = {}
 
-local mod_root = "lsp"
-local mod_path = vim.fn.stdpath("config") .. "/lua/" .. mod_root
+-----------------------------------------------------------------------------//
+-- 0.  Configuration
+-----------------------------------------------------------------------------//
+local MOD_ROOT = "lsp"
+local MOD_PATH = vim.fn.stdpath("config") .. "/lua/" .. MOD_ROOT
 
----@return string[]
-function M.discover()
-  ---@type string[]
+-----------------------------------------------------------------------------//
+-- 1.  State & caches
+-----------------------------------------------------------------------------//
+local _discovered_modules ---@type string[]|nil
+
+-----------------------------------------------------------------------------//
+-- 2.  Utilities
+-----------------------------------------------------------------------------//
+local log = {
+  warn = function(msg)
+    vim.notify(msg, vim.log.levels.WARN)
+  end,
+  error = function(msg)
+    vim.notify(msg, vim.log.levels.ERROR)
+  end,
+}
+
+-----------------------------------------------------------------------------//
+-- 3.  Discovery – memoised, one-shot
+-----------------------------------------------------------------------------//
+local function discover()
+  if _discovered_modules then
+    return _discovered_modules
+  end
+
   local modules = {}
+  local files = vim.fs.find(function(name)
+    return name:sub(-4) == ".lua"
+  end, { type = "file", limit = math.huge, path = MOD_PATH })
 
-  for _, file in
-    ipairs(vim.fs.find(function(name)
-      return name:sub(-4) == ".lua"
-    end, { type = "file", limit = math.huge, path = mod_path }))
-  do
-    local rel = file:sub(#mod_path + 2, -5):gsub("/", ".") -- remove path prefix & .lua
+  for _, file in ipairs(files) do
+    local rel = file:sub(#MOD_PATH + 2, -5):gsub("/", ".")
     if rel ~= "init" then
-      local module = mod_root .. "." .. rel
-      table.insert(modules, module)
+      table.insert(modules, MOD_ROOT .. "." .. rel)
     end
   end
 
+  _discovered_modules = modules
   return modules
 end
 
----@param modules string[]
-function M.setup_modules(modules)
-  for _, module in ipairs(modules) do
-    require(module)
+-----------------------------------------------------------------------------//
+-- 4.  Module loader – handles errors gracefully
+-----------------------------------------------------------------------------//
+local function load_modules(modules)
+  for _, mod in ipairs(modules) do
+    local ok, err = pcall(require, mod)
+    if not ok then
+      log.error(("LSP module %s failed to load: %s"):format(mod, err))
+    end
   end
 end
 
-function M.setup_autocmds()
+-----------------------------------------------------------------------------//
+-- 5.  Progress spinner – throttled, GC-friendly
+-----------------------------------------------------------------------------//
+local function setup_progress_spinner()
   local augroup = vim.api.nvim_create_augroup("LspProgress", { clear = true })
 
-  ---@type table<number, {token:lsp.ProgressToken, msg:string, done:boolean}[]>
-  local progress = vim.defaulttable()
+  ---@type table<integer, table>
+  local client_progress = setmetatable({}, { __mode = "k" })
+
+  local spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
+  local last_spinner = 0
+  local spinner_idx = 1
+
   vim.api.nvim_create_autocmd("LspProgress", {
     group = augroup,
     ---@param ev {data: {client_id: integer, params: lsp.ProgressParams}}
     callback = function(ev)
       local client = vim.lsp.get_client_by_id(ev.data.client_id)
-      local value = ev.data.params.value --[[@as {percentage?: number, title?: string, message?: string, kind: "begin" | "report" | "end"}]]
+      local value = ev.data.params.value
       if not client or type(value) ~= "table" then
         return
       end
-      local p = progress[client.id]
 
-      for i = 1, #p + 1 do
-        if i == #p + 1 or p[i].token == ev.data.params.token then
-          p[i] = {
-            token = ev.data.params.token,
-            msg = ("[%3d%%] %s%s"):format(
-              value.kind == "end" and 100 or value.percentage or 100,
-              value.title or "",
-              value.message and (" **%s**"):format(value.message) or ""
-            ),
-            done = value.kind == "end",
-          }
+      -- client list
+      local p = client_progress[client.id] or {}
+      client_progress[client.id] = p
+
+      -- update / create token
+      local token = ev.data.params.token
+      local is_last = value.kind == "end"
+      local found
+      for _, item in ipairs(p) do
+        if item.token == token then
+          item.msg = string.format(
+            "[%3d%%] %s%s",
+            value.percentage or 100,
+            value.title or "Loading workspace",
+            is_last and " – done" or (value.message and (" **" .. value.message .. "**") or "")
+          )
+          item.done = is_last
+          found = true
           break
         end
       end
+      if not found then
+        table.insert(p, {
+          token = token,
+          msg = string.format("[100%%] %s%s", value.title or "Loading workspace", is_last and " – done" or ""),
+          done = is_last,
+        })
+      end
 
-      local msg = {} ---@type string[]
-      progress[client.id] = vim.tbl_filter(function(v)
-        return table.insert(msg, v.msg) or not v.done
-      end, p)
+      -- Build message (include finished tokens)
+      local msg = {}
+      for _, v in ipairs(p) do
+        table.insert(msg, v.msg)
+      end
+      local text = table.concat(msg, "\n")
 
-      local spinner = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
-      vim.notify(table.concat(msg, "\n"), vim.diagnostic.severity.INFO, {
+      -- Are we completely done?
+      local all_done = #vim.tbl_filter(function(v)
+        return not v.done
+      end, p) == 0
+
+      -- Choose icon
+      local icon
+      if all_done then
+        icon = " "
+      else
+        local now = vim.uv.hrtime()
+        if now - last_spinner > 80e6 then
+          spinner_idx = (spinner_idx % #spinner_chars) + 1
+          last_spinner = now
+        end
+        icon = spinner_chars[spinner_idx]
+      end
+
+      -- Always send the message; never send "" (it closes the window)
+      vim.notify(text, vim.log.levels.INFO, {
         id = "lsp_progress",
         title = client.name,
-        opts = function(notif)
-          notif.icon = #progress[client.id] == 0 and " "
-            or spinner[math.floor(vim.uv.hrtime() / (1e6 * 80)) % #spinner + 1]
-        end,
+        icon = icon,
       })
+
+      -- GC finished tokens *after* display
+      client_progress[client.id] = vim.tbl_filter(function(v)
+        return not v.done
+      end, p)
     end,
   })
 end
 
+-----------------------------------------------------------------------------//
+-- 6.  Public API
+-----------------------------------------------------------------------------//
 function M.init()
-  local modules = M.discover()
-  M.setup_modules(modules)
-
-  M.setup_autocmds()
+  local modules = discover()
+  load_modules(modules)
+  setup_progress_spinner()
 end
 
 return M
