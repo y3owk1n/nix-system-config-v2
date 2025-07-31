@@ -6,6 +6,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
     local formatted = string.format("%.2f", elapsed) -- 2 decimals
     vim.g.startuptime = formatted
   end,
+  once = true,
 })
 
 local function disable_builtin_plugins()

@@ -3,7 +3,9 @@ local M = {}
 
 M.name = "cloak"
 
-M.lazy = { event = { "BufReadPre", "BufNewFile" } }
+M.lazy = {
+  event = { "BufReadPre", "BufNewFile" },
+}
 
 function M.setup()
   vim.pack.add({ "https://github.com/laytan/cloak.nvim" })

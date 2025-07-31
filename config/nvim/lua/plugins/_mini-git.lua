@@ -4,7 +4,9 @@ local M = {}
 M.name = "mini.git"
 
 M.lazy = {
-  event = { "BufReadPre", "BufNewFile" },
+  cmd = {
+    "Git",
+  },
 }
 
 function M.setup()

@@ -4,7 +4,8 @@ local M = {}
 M.name = "inc_rename"
 
 M.lazy = {
-  event = { "BufReadPost", "InsertLeave" },
+  cmd = "IncRename",
+  keys = { "grn" },
 }
 
 function M.setup()

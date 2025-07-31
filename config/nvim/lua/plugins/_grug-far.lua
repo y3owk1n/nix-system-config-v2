@@ -3,7 +3,10 @@ local M = {}
 
 M.name = "grug-far"
 
-M.lazy = { event = { "BufReadPre", "BufNewFile" } }
+M.lazy = {
+  cmd = { "GrugFar", "GrugFarWithin" },
+  keys = { "<leader>sr" },
+}
 
 function M.setup()
   vim.pack.add({ "https://github.com/MagicDuck/grug-far.nvim" })

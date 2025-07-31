@@ -18,12 +18,6 @@
 ---@class PluginModule.Lazy
 ---@field event? vim.api.keyset.events|vim.api.keyset.events[]
 ---@field ft? string|string[]
----@field keys? PluginModule.Lazy.Keys[]
+---@field keys? string|string[]
 ---@field cmd? string|string[]
 ---@field on_lsp_attach? string|string[]
-
----@class PluginModule.Lazy.Keys
----@field lhs? string
----@field rhs? string|function
----@field mode? string|string[]
----@field opts? vim.keymap.set.Opts

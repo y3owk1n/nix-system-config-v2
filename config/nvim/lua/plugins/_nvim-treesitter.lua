@@ -3,6 +3,11 @@ local M = {}
 
 M.name = "nvim-treesitter"
 
+M.lazy = {
+  event = "UIEnter",
+  cmd = { "TSUpdateSync", "TSUpdate", "TSInstall" },
+}
+
 function M.setup()
   vim.pack.add({ "https://github.com/nvim-treesitter/nvim-treesitter" })
 

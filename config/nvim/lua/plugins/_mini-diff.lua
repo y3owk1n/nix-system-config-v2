@@ -5,6 +5,9 @@ M.name = "mini.diff"
 
 M.lazy = {
   event = { "BufReadPre", "BufNewFile" },
+  keys = {
+    "<leader>gd",
+  },
 }
 
 function M.setup()
