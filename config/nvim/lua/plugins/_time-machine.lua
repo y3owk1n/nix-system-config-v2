@@ -4,7 +4,18 @@ local M = {}
 M.name = "time-machine"
 
 M.lazy = {
-  event = { "BufReadPre", "BufNewFile" },
+  cmd = {
+    "TimeMachineToggle",
+    "TimeMachinePurgeBuffer",
+    "TimeMachinePurgeAll",
+    "TimeMachineLogShow",
+  },
+  keys = {
+    "<leader>tt",
+    "<leader>tx",
+    "<leader>tX",
+    "<leader>tl",
+  },
 }
 
 function M.setup()

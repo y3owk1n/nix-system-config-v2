@@ -4,7 +4,10 @@ local M = {}
 M.name = "mini.files"
 
 M.lazy = {
-  event = { "UIEnter" },
+  keys = {
+    "<leader>e",
+    "<leader>E",
+  },
 }
 
 function M.setup()

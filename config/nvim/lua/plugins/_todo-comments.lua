@@ -5,6 +5,7 @@ M.name = "todo-comments"
 
 M.lazy = {
   event = { "BufReadPre", "BufNewFile" },
+  keys = { "]t", "[t" },
 }
 
 function M.setup()

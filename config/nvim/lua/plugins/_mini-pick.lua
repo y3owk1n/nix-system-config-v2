@@ -6,7 +6,25 @@ M.name = "mini.pick"
 M.requires = { "mini.extra" }
 
 M.lazy = {
-  event = { "UIEnter" },
+  cmd = { "Pick" },
+  keys = {
+    "<leader><space>",
+    "<leader>sf",
+    "<leader>sh",
+    "<leader>sg",
+    "<leader>sR",
+    "<leader>sb",
+    "<leader>st",
+    "<leader>sH",
+    "<leader>sk",
+    "<leader>sd",
+    "<leader>so",
+    "grd",
+    "grr",
+    "gri",
+    "grt",
+    "gO",
+  },
 }
 
 function M.setup()

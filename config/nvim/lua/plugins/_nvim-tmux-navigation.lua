@@ -4,7 +4,13 @@ local M = {}
 M.name = "nvim-tmux-navigation"
 
 M.lazy = {
-  event = { "UIEnter" },
+  cmd = { "NvimTmuxNavigateLeft", "NvimTmuxNavigateDown", "NvimTmuxNavigateUp", "NvimTmuxNavigateRight" },
+  keys = {
+    "<c-h>",
+    "<c-j>",
+    "<c-k>",
+    "<c-l>",
+  },
 }
 
 function M.setup()

@@ -18,4 +18,6 @@
 ---@class PluginModule.Lazy
 ---@field event? vim.api.keyset.events|vim.api.keyset.events[]
 ---@field ft? string|string[]
+---@field keys? string|string[]
+---@field cmd? string|string[]
 ---@field on_lsp_attach? string|string[]

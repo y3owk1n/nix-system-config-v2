@@ -4,7 +4,31 @@ local M = {}
 M.name = "dotmd"
 
 M.lazy = {
-  event = "UIEnter",
+  cmd = {
+    "DotMdCreateNote",
+    "DotMdCreateTodoToday",
+    "DotMdInbox",
+    "DotMdCreateJournal",
+    "DotMdNavigate",
+    "DotMdOpen",
+    "DotMdPick",
+  },
+  keys = {
+    "<leader>nc",
+    "<leader>nt",
+    "<leader>ni",
+    "<leader>nj",
+    "<leader>np",
+    "<leader>nn",
+    "<leader>no",
+    "<leader>sna",
+    "<leader>snA",
+    "<leader>snn",
+    "<leader>snN",
+    "<leader>snt",
+    "<leader>snT",
+    "<leader>snj",
+  },
 }
 
 function M.setup()

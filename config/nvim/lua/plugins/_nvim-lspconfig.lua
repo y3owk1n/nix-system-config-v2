@@ -4,7 +4,7 @@ local M = {}
 M.name = "nvim-lspconfig"
 
 M.lazy = {
-  event = { "UIEnter" },
+  event = { "BufReadPre", "BufNewFile" },
 }
 
 function M.setup()

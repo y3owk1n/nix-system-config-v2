@@ -3,7 +3,7 @@ local M = {}
 
 M.name = "mini.starter"
 
-M.requires = { "warp", "mini.files", "mini.pick" } -- reference by file name (no .lua)
+M.requires = { "warp", "mini.files", "mini.pick" }
 
 function M.setup()
   vim.pack.add({ "https://github.com/echasnovski/mini.starter" })

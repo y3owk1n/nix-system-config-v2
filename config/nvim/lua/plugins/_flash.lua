@@ -4,7 +4,9 @@ local M = {}
 M.name = "flash"
 
 M.lazy = {
-  event = { "BufReadPost", "BufNewFile" },
+  keys = {
+    "s",
+  },
 }
 
 function M.setup()

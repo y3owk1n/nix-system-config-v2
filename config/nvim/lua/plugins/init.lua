@@ -170,17 +170,12 @@ local function safe_setup(mod)
 end
 
 ---@param sorted PluginModule.Resolved[]
----@return number
 function M.setup_modules(sorted)
-  local eagerly_loaded = 0
-
   for _, mod in ipairs(sorted) do
     local lazy = mod.lazy
 
     if not lazy then
-      if safe_setup(mod) then
-        eagerly_loaded = eagerly_loaded + 1
-      end
+      safe_setup(mod)
     else
       if lazy.event then
         vim.api.nvim_create_autocmd(lazy.event, {
@@ -201,6 +196,53 @@ function M.setup_modules(sorted)
         })
       end
 
+      if lazy.keys then
+        local keys = lazy.keys or {}
+
+        if type(keys) == "string" then
+          keys = { keys }
+        end
+
+        local modes = { "n", "v", "x", "o" }
+
+        for _, key in ipairs(keys) do
+          vim.keymap.set(modes, key, function()
+            pcall(vim.keymap.del, modes, key)
+
+            local ok = safe_setup(mod)
+            if ok then
+              vim.schedule(function()
+                vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, false, true), "m", false)
+              end)
+            end
+          end, { noremap = true, silent = true, nowait = true, desc = "Lazyload plugin " .. mod.name })
+        end
+      end
+
+      if lazy.cmd then
+        local cmds = lazy.cmd or {}
+        if type(cmds) == "string" then
+          cmds = { cmds }
+        end
+
+        for _, name in ipairs(cmds) do
+          vim.api.nvim_create_user_command(name, function(opts)
+            local ok = safe_setup(mod)
+            if not ok then
+              return
+            end
+
+            -- Use schedule to let plugin finish setting up its commands
+            vim.schedule(function()
+              local bang = opts.bang and "!" or ""
+              local args = opts.args or ""
+              local full_cmd = string.format("%s%s %s", name, bang, args):gsub("%s+$", "")
+              vim.cmd(full_cmd)
+            end)
+          end, { bang = true, nargs = "*" })
+        end
+      end
+
       if lazy.on_lsp_attach then
         vim.api.nvim_create_autocmd("LspAttach", {
           callback = function(args)
@@ -218,17 +260,31 @@ function M.setup_modules(sorted)
       end
     end
   end
-
-  return eagerly_loaded
 end
 
 function M.init()
   local modules = M.discover()
   local sorted = M.sort_modules(modules)
-  local count = M.setup_modules(sorted)
+  M.setup_modules(sorted)
+
+  -- Get a list of loaded plugins
+  local loaded = {}
+  for _, mod in ipairs(sorted) do
+    if mod.loaded then
+      table.insert(loaded, mod.name)
+    end
+  end
+
+  --- Get a list of not yet loaded plugins
+  local not_loaded = {}
+  for _, mod in ipairs(sorted) do
+    if not mod.loaded then
+      table.insert(not_loaded, mod.name)
+    end
+  end
 
   --- setup some global variables for other plugins to use
-  vim.g.loaded_plugins_count = count
+  vim.g.loaded_plugins_count = #loaded
   vim.g.total_plugins_count = #sorted
 
   --- setup some keymaps for plugin management
@@ -264,25 +320,14 @@ function M.init()
   end, { desc = "Clear all plugins" })
 
   vim.keymap.set("n", "<leader>pi", function()
-    local copy = vim.deepcopy(sorted)
-
-    -- Get a list of loaded plugins
-    local loaded = {}
-    for _, mod in ipairs(copy) do
-      if mod.loaded then
-        table.insert(loaded, mod.name)
-      end
-    end
-
-    --- Get a list of not yet loaded plugins
-    local not_loaded = {}
-    for _, mod in ipairs(copy) do
-      if not mod.loaded then
-        table.insert(not_loaded, mod.name)
-      end
-    end
-
-    vim.notify("Loaded:\n" .. table.concat(loaded, "\n") .. "\n\nNot loaded: " .. table.concat(not_loaded, "\n"))
+    local formatted = string.format(
+      "Loaded [%s]:\n%s\n\nNot loaded [%s]:\n%s",
+      #loaded,
+      table.concat(loaded, "\n"),
+      #not_loaded,
+      table.concat(not_loaded, "\n")
+    )
+    vim.notify(formatted)
   end, { desc = "Plugin status" })
 end
 

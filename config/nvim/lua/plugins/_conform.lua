@@ -3,7 +3,10 @@ local M = {}
 
 M.name = "conform"
 
-M.lazy = { event = { "BufReadPre", "BufNewFile" } }
+M.lazy = {
+  event = { "BufReadPre", "BufNewFile" },
+  keys = { "<leader>cf", "<leader>ic" },
+}
 
 function M.setup()
   vim.pack.add({ "https://github.com/stevearc/conform.nvim" })
@@ -78,7 +81,7 @@ function M.setup()
     })
   end, { desc = "Format buffer" })
 
-  vim.keymap.set("n", "<leader>ic", "<cmd>ConformInfo<cr>", { desc = "Format buffer" })
+  vim.keymap.set("n", "<leader>ic", "<cmd>ConformInfo<cr>", { desc = "Show conform info" })
 end
 
 return M

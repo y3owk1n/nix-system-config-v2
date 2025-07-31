@@ -3,7 +3,7 @@ local M = {}
 
 M.name = "heirline"
 
-M.requires = { "mini.icons" }
+M.requires = { "mini.icons", "mini.git", "catppuccin", "warp" }
 
 M.lazy = {
   event = { "UIEnter" },
