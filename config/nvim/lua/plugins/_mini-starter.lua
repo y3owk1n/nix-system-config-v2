@@ -70,22 +70,6 @@ function M.setup()
   }
 
   plugin.setup(plugin_opts)
-
-  vim.api.nvim_create_autocmd("VimEnter", {
-    callback = function(ev)
-      local plugin_core = require("plugins")
-
-      local startuptime = vim.g.startuptime
-      local plugins_count = #plugin_core.get_plugins(true)
-      local total_plugins_count = #plugin_core.get_plugins()
-
-      plugin.config.footer =
-        string.format("⚡ Neovim loaded %s plugins of %s in %sms", plugins_count, total_plugins_count, startuptime)
-      if vim.bo[ev.buf].filetype == "ministarter" then
-        pcall(plugin.refresh)
-      end
-    end,
-  })
 end
 
 return M
