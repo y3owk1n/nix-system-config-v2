@@ -13,9 +13,11 @@ M.lazy = {
   },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/alexghergh/nvim-tmux-navigation" })
+M.registry = {
+  "https://github.com/alexghergh/nvim-tmux-navigation",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "nvim-tmux-navigation")
 
   if not plugin_ok then

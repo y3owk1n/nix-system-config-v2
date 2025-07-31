@@ -8,9 +8,11 @@ M.lazy = {
   keys = { "]t", "[t" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/folke/todo-comments.nvim" })
+M.registry = {
+  "https://github.com/folke/todo-comments.nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "todo-comments")
 
   if not plugin_ok then

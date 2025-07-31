@@ -7,9 +7,11 @@ M.lazy = {
   event = "InsertEnter",
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/supermaven-inc/supermaven-nvim" })
+M.registry = {
+  "https://github.com/supermaven-inc/supermaven-nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "supermaven-nvim")
 
   if not plugin_ok then

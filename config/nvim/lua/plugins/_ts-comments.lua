@@ -7,9 +7,11 @@ M.lazy = {
   event = { "BufReadPre", "BufNewFile" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/folke/ts-comments.nvim" })
+M.registry = {
+  "https://github.com/folke/ts-comments.nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "ts-comments")
 
   if not plugin_ok then

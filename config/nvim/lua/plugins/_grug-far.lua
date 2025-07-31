@@ -8,9 +8,11 @@ M.lazy = {
   keys = { "<leader>sr" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/MagicDuck/grug-far.nvim" })
+M.registry = {
+  "https://github.com/MagicDuck/grug-far.nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "grug-far")
 
   if not plugin_ok then

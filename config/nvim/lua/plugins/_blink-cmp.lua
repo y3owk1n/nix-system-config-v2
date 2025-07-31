@@ -7,12 +7,15 @@ M.requires = { "lazydev", "mini.icons" }
 
 M.lazy = { event = "InsertEnter" }
 
-function M.setup()
-  vim.pack.add({
-    { src = "https://github.com/saghen/blink.cmp", version = vim.version.range("*") },
-    { src = "https://github.com/rafamadriz/friendly-snippets" },
-  })
+M.registry = {
+  {
+    src = "https://github.com/saghen/blink.cmp",
+    version = vim.version.range("*"),
+  },
+  "https://github.com/rafamadriz/friendly-snippets",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "blink.cmp")
 
   if not plugin_ok then

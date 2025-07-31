@@ -27,9 +27,11 @@ M.lazy = {
   },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/echasnovski/mini.pick" })
+M.registry = {
+  "https://github.com/echasnovski/mini.pick",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "mini.pick")
 
   if not plugin_ok then

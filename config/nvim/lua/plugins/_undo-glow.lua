@@ -7,9 +7,11 @@ M.lazy = {
   event = { "UIEnter" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/y3owk1n/undo-glow.nvim" })
+M.registry = {
+  "https://github.com/y3owk1n/undo-glow.nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "undo-glow")
 
   if not plugin_ok then

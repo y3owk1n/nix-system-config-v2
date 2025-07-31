@@ -18,9 +18,11 @@ M.lazy = {
   },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/y3owk1n/time-machine.nvim" })
+M.registry = {
+  "https://github.com/y3owk1n/time-machine.nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "time-machine")
 
   if not plugin_ok then

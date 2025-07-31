@@ -13,9 +13,11 @@ M.lazy = {
   },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/windwp/nvim-ts-autotag" })
+M.registry = {
+  "https://github.com/windwp/nvim-ts-autotag",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "nvim-ts-autotag")
 
   if not plugin_ok then

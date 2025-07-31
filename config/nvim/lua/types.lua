@@ -5,6 +5,7 @@
 ---@field setup? fun()
 ---@field priority? integer
 ---@field lazy? string | PluginModule.Lazy
+---@field registry? (string|vim.pack.Spec)[]
 
 ---@class PluginModule.Resolved
 ---@field name? string
@@ -14,6 +15,7 @@
 ---@field requires? string[]
 ---@field lazy? string | PluginModule.Lazy | false
 ---@field loaded? boolean
+---@field registry? (string|vim.pack.Spec)[]
 
 ---@class PluginModule.Lazy
 ---@field event? vim.api.keyset.events|vim.api.keyset.events[]

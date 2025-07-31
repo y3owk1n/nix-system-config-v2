@@ -10,9 +10,11 @@ M.lazy = {
   },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/echasnovski/mini.diff" })
+M.registry = {
+  "https://github.com/echasnovski/mini.diff",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "mini.diff")
 
   if not plugin_ok then

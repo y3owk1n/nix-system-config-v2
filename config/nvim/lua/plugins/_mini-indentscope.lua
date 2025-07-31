@@ -7,9 +7,11 @@ M.lazy = {
   event = { "BufReadPre", "BufNewFile" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/echasnovski/mini.indentscope" })
+M.registry = {
+  "https://github.com/echasnovski/mini.indentscope",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "mini.indentscope")
 
   if not plugin_ok then

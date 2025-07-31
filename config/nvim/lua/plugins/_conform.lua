@@ -8,9 +8,11 @@ M.lazy = {
   keys = { "<leader>cf", "<leader>ic" },
 }
 
-function M.setup()
-  vim.pack.add({ "https://github.com/stevearc/conform.nvim" })
+M.registry = {
+  "https://github.com/stevearc/conform.nvim",
+}
 
+function M.setup()
   local plugin_ok, plugin = pcall(require, "conform")
 
   if not plugin_ok then
