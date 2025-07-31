@@ -92,8 +92,13 @@ local function discover()
       local env = setmetatable({ vim = vim }, { __index = _G })
       setfenv(chunk, env)
       local success, mod = pcall(chunk)
-      if not success or type(mod) ~= "table" or type(mod.setup) ~= "function" or mod.enabled == false then
+      if not success or type(mod) ~= "table" or type(mod.setup) ~= "function" then
         log.warn(("Plugin %s does not export valid setup"):format(path))
+        goto continue
+      end
+
+      if mod.enabled == false then
+        log.warn(("Plugin %s is disabled"):format(path))
         goto continue
       end
 
