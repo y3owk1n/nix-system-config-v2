@@ -6,8 +6,87 @@ M.mod_map = {}
 ---@type (string|vim.pack.Spec)[]
 M.registry_map = {}
 
+---@type PluginModule.Resolved[]
+M.sorted_modules = {}
+
 local mod_root = "plugins"
 local mod_path = vim.fn.stdpath("config") .. "/lua/" .. mod_root
+
+function M.init()
+  local modules = M.discover()
+  M.sort_modules(modules)
+  M.setup_modules()
+  M.setup_keymaps()
+end
+
+function M.setup_keymaps()
+  --- setup some keymaps for plugin management
+  vim.keymap.set("n", "<leader>p", "", { desc = "plugins" })
+
+  --- NOTE: this is a workaround for updating lazy loaded packages
+  vim.keymap.set("n", "<leader>pu", function()
+    vim.pack.add(M.registry_map)
+
+    --- Get the names of all plugins
+    local plugins = vim.pack.get()
+
+    local names = {}
+
+    for _, plugin in ipairs(plugins) do
+      table.insert(names, plugin.spec.name)
+    end
+
+    --- Update all pluins
+    vim.pack.update(names)
+  end, { desc = "Update plugins" })
+
+  vim.keymap.set("n", "<leader>pI", function()
+    local plugins = vim.pack.get()
+    vim.notify(vim.inspect(plugins))
+  end, { desc = "Pack info" })
+
+  vim.keymap.set("n", "<leader>pX", function()
+    local plugins = vim.pack.get()
+
+    local names = {}
+
+    for _, plugin in ipairs(plugins) do
+      table.insert(names, plugin.spec.name)
+    end
+
+    vim.pack.del(names)
+  end, { desc = "Clear all plugins" })
+
+  vim.keymap.set("n", "<leader>pi", function()
+    local loaded = M.get_plugins(true)
+    local not_loaded = M.get_plugins(false)
+
+    local formatted = string.format(
+      "Loaded [%s]:\n%s\n\nNot loaded [%s]:\n%s",
+      #loaded,
+      table.concat(loaded, "\n"),
+      #not_loaded,
+      table.concat(not_loaded, "\n")
+    )
+    vim.notify(formatted)
+  end, { desc = "Plugin status" })
+end
+
+---@param query? boolean
+function M.get_plugins(query)
+  if type(query) == "nil" then
+    return M.sorted_modules
+  end
+
+  local data = {}
+
+  for _, mod in ipairs(M.sorted_modules) do
+    if mod.loaded == query then
+      table.insert(data, mod.name)
+    end
+  end
+  return data
+end
 
 ---@return string[]
 local function get_plus_commands()
@@ -96,10 +175,8 @@ function M.discover()
 end
 
 ---@param modules PluginModule.Resolved[]
----@return PluginModule.Resolved[]
 function M.sort_modules(modules)
   local visited = {}
-  local sorted = {}
 
   local function visit(mod)
     if visited[mod.name] == "temp" then
@@ -131,7 +208,7 @@ function M.sort_modules(modules)
     end
 
     visited[mod.name] = true
-    table.insert(sorted, mod)
+    table.insert(M.sorted_modules, mod)
   end
 
   table.sort(modules, function(a, b)
@@ -141,8 +218,6 @@ function M.sort_modules(modules)
   for _, mod in ipairs(modules) do
     visit(mod)
   end
-
-  return sorted
 end
 
 ---@param mod PluginModule.Resolved
@@ -181,9 +256,8 @@ local function safe_setup(mod)
   return true
 end
 
----@param sorted PluginModule.Resolved[]
-function M.setup_modules(sorted)
-  for _, mod in ipairs(sorted) do
+function M.setup_modules()
+  for _, mod in ipairs(M.sorted_modules) do
     local lazy = mod.lazy
 
     if not lazy then
@@ -222,6 +296,7 @@ function M.setup_modules(sorted)
             pcall(vim.keymap.del, modes, key)
 
             local ok = safe_setup(mod)
+
             if ok then
               vim.schedule(function()
                 vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, false, true), "m", false)
@@ -240,6 +315,7 @@ function M.setup_modules(sorted)
         for _, name in ipairs(cmds) do
           vim.api.nvim_create_user_command(name, function(opts)
             local ok = safe_setup(mod)
+
             if not ok then
               return
             end
@@ -272,80 +348,6 @@ function M.setup_modules(sorted)
       end
     end
   end
-end
-
-function M.init()
-  local modules = M.discover()
-  local sorted = M.sort_modules(modules)
-  M.setup_modules(sorted)
-
-  -- Get a list of loaded plugins
-  local loaded = {}
-  for _, mod in ipairs(sorted) do
-    if mod.loaded then
-      table.insert(loaded, mod.name)
-    end
-  end
-
-  --- Get a list of not yet loaded plugins
-  local not_loaded = {}
-  for _, mod in ipairs(sorted) do
-    if not mod.loaded then
-      table.insert(not_loaded, mod.name)
-    end
-  end
-
-  --- setup some global variables for other plugins to use
-  vim.g.loaded_plugins_count = #loaded
-  vim.g.total_plugins_count = #sorted
-
-  --- setup some keymaps for plugin management
-  vim.keymap.set("n", "<leader>p", "", { desc = "plugins" })
-
-  --- NOTE: this is a workaround for updating lazy loaded packages
-  vim.keymap.set("n", "<leader>pu", function()
-    vim.pack.add(M.registry_map)
-
-    --- Get the names of all plugins
-    local plugins = vim.pack.get()
-
-    local names = {}
-
-    for _, plugin in ipairs(plugins) do
-      table.insert(names, plugin.spec.name)
-    end
-
-    --- Update all pluins
-    vim.pack.update(names)
-  end, { desc = "Update plugins" })
-
-  vim.keymap.set("n", "<leader>pI", function()
-    local plugins = vim.pack.get()
-    vim.notify(vim.inspect(plugins))
-  end, { desc = "Pack info" })
-
-  vim.keymap.set("n", "<leader>pX", function()
-    local plugins = vim.pack.get()
-
-    local names = {}
-
-    for _, plugin in ipairs(plugins) do
-      table.insert(names, plugin.spec.name)
-    end
-
-    vim.pack.del(names)
-  end, { desc = "Clear all plugins" })
-
-  vim.keymap.set("n", "<leader>pi", function()
-    local formatted = string.format(
-      "Loaded [%s]:\n%s\n\nNot loaded [%s]:\n%s",
-      #loaded,
-      table.concat(loaded, "\n"),
-      #not_loaded,
-      table.concat(not_loaded, "\n")
-    )
-    vim.notify(formatted)
-  end, { desc = "Plugin status" })
 end
 
 return M
