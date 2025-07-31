@@ -22,7 +22,9 @@ local sorted_modules = {}
 local registry_map = {}
 
 -- Caches
-local _discovered = nil
+---@type PluginModule.Resolved[]
+local _discovered_modules = nil
+---@type table<string, boolean>
 local _argv_cmds = nil
 
 -----------------------------------------------------------------------------//
@@ -37,10 +39,12 @@ local log = {
   end,
 }
 
+---@return table<string, boolean>
 local function argv_cmds()
   if _argv_cmds then
     return _argv_cmds
   end
+  ---@type table<string, boolean>
   _argv_cmds = {}
   for _, arg in ipairs(vim.v.argv) do
     local cmd = arg:match("^%+(.+)")
@@ -51,13 +55,24 @@ local function argv_cmds()
   return _argv_cmds
 end
 
+---@param x string|string[]
+---@return string[]
+local function string_or_table(x)
+  if type(x) == "string" then
+    return { x }
+  end
+  return x
+end
+
 -----------------------------------------------------------------------------//
 -- 3.  Discovery
 -----------------------------------------------------------------------------//
+---@return PluginModule.Resolved[]
 local function discover()
-  if _discovered then
-    return _discovered
+  if _discovered_modules then
+    return _discovered_modules
   end
+  ---@type PluginModule.Resolved
   local modules = {}
 
   local files = vim.fs.find(function(name)
@@ -87,6 +102,7 @@ local function discover()
         mod.lazy = false
       end
 
+      ---@type PluginModule.Resolved
       local entry = {
         name = name,
         path = path,
@@ -107,13 +123,14 @@ local function discover()
     end
   end
 
-  _discovered = modules
+  _discovered_modules = modules
   return modules
 end
 
 -----------------------------------------------------------------------------//
 -- 4.  Topological sort  (Kahn’s algorithm – O(n+m))
 -----------------------------------------------------------------------------//
+---@param mods PluginModule.Resolved[]
 local function sort_modules(mods)
   -- Build adjacency
   local in_degree, rev = {}, {}
@@ -134,6 +151,7 @@ local function sort_modules(mods)
   end
 
   -- Priority queue (min-heap on priority)
+  ---@type PluginModule.Resolved[]
   local pq = {}
   for _, m in ipairs(mods) do
     if in_degree[m.name] == 0 then
@@ -144,6 +162,7 @@ local function sort_modules(mods)
     return a.priority < b.priority
   end)
 
+  ---@type PluginModule.Resolved[]
   local out = {}
   while #pq > 0 do
     local cur = table.remove(pq, 1)
@@ -165,6 +184,8 @@ end
 -----------------------------------------------------------------------------//
 -- 5.  Safe setup
 -----------------------------------------------------------------------------//
+---@param mod PluginModule.Resolved
+---@return boolean
 local function setup_one(mod)
   if mod.loaded then
     return true
@@ -202,6 +223,7 @@ end
 -----------------------------------------------------------------------------//
 -- 6.  Lazy-load wiring
 -----------------------------------------------------------------------------//
+---@param mod PluginModule.Resolved
 local function wire_lazy(mod)
   local l = mod.lazy
   if type(l) ~= "table" then
@@ -209,7 +231,7 @@ local function wire_lazy(mod)
   end
 
   if l.event then
-    local events = type(l.event) == "string" and { l.event } or l.event
+    local events = string_or_table(l.event)
     vim.api.nvim_create_autocmd(events, {
       once = true,
       callback = function()
@@ -219,7 +241,7 @@ local function wire_lazy(mod)
   end
 
   if l.ft then
-    local fts = type(l.ft) == "string" and { l.ft } or l.ft
+    local fts = string_or_table(l.ft)
     vim.api.nvim_create_autocmd("FileType", {
       pattern = fts,
       once = true,
@@ -230,7 +252,7 @@ local function wire_lazy(mod)
   end
 
   if l.keys then
-    local keys = type(l.keys) == "string" and { l.keys } or l.keys
+    local keys = string_or_table(l.keys)
     for _, key in ipairs(keys) do
       vim.keymap.set({ "n", "v", "x", "o" }, key, function()
         pcall(vim.keymap.del, { "n", "v", "x", "o" }, key)
@@ -244,7 +266,7 @@ local function wire_lazy(mod)
   end
 
   if l.cmd then
-    local cmds = type(l.cmd) == "string" and { l.cmd } or l.cmd
+    local cmds = string_or_table(l.cmd)
     for _, name in ipairs(cmds) do
       vim.api.nvim_create_user_command(name, function(opts)
         if setup_one(mod) then
@@ -257,7 +279,7 @@ local function wire_lazy(mod)
   end
 
   if l.on_lsp_attach then
-    local allowed = type(l.on_lsp_attach) == "string" and { l.on_lsp_attach } or l.on_lsp_attach
+    local allowed = string_or_table(l.on_lsp_attach)
     vim.api.nvim_create_autocmd("LspAttach", {
       callback = function(args)
         local client = vim.lsp.get_client_by_id(args.data.client_id)
@@ -272,6 +294,7 @@ end
 -----------------------------------------------------------------------------//
 -- 7.  Setup
 -----------------------------------------------------------------------------//
+---@return nil
 function M.setup_modules()
   for _, mod in ipairs(sorted_modules) do
     if mod.lazy then
@@ -285,6 +308,7 @@ end
 -----------------------------------------------------------------------------//
 -- 8.  Keymaps
 -----------------------------------------------------------------------------//
+---@return nil
 function M.setup_keymaps()
   vim.keymap.set("n", "<leader>p", "", { desc = "plugins" })
 
@@ -327,6 +351,7 @@ end
 -----------------------------------------------------------------------------//
 -- 9.  Public API
 -----------------------------------------------------------------------------//
+---@return nil
 function M.init()
   local modules = discover()
   sort_modules(modules)
@@ -334,6 +359,7 @@ function M.init()
   M.setup_keymaps()
 end
 
+---@return PluginModule.Resolved[]
 function M.get_plugins(query)
   if query == nil then
     return sorted_modules

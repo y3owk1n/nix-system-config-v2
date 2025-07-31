@@ -1,16 +1,16 @@
--- lsp-loader.lua  (production-grade refactor)
 local M = {}
 
 -----------------------------------------------------------------------------//
 -- 0.  Configuration
 -----------------------------------------------------------------------------//
-local MOD_ROOT = "lsp"
-local MOD_PATH = vim.fn.stdpath("config") .. "/lua/" .. MOD_ROOT
+local mod_root = "lsp"
+local mad_base_path = vim.fn.stdpath("config") .. "/lua/" .. mod_root
 
 -----------------------------------------------------------------------------//
 -- 1.  State & caches
 -----------------------------------------------------------------------------//
-local _discovered_modules ---@type string[]|nil
+---@type LspModule.Resolved[]
+local _discovered_modules = nil
 
 -----------------------------------------------------------------------------//
 -- 2.  Utilities
@@ -27,20 +27,50 @@ local log = {
 -----------------------------------------------------------------------------//
 -- 3.  Discovery – memoised, one-shot
 -----------------------------------------------------------------------------//
+---@return LspModule.Resolved[]
 local function discover()
   if _discovered_modules then
     return _discovered_modules
   end
 
+  ---@type LspModule.Resolved[]
   local modules = {}
+
   local files = vim.fs.find(function(name)
     return name:sub(-4) == ".lua"
-  end, { type = "file", limit = math.huge, path = MOD_PATH })
+  end, { type = "file", limit = math.huge, path = mad_base_path })
 
   for _, file in ipairs(files) do
-    local rel = file:sub(#MOD_PATH + 2, -5):gsub("/", ".")
+    local rel = file:sub(#mad_base_path + 2, -5):gsub("/", ".")
     if rel ~= "init" then
-      table.insert(modules, MOD_ROOT .. "." .. rel)
+      local path = mod_root .. "." .. rel
+      local ok, chunk = pcall(loadfile, file)
+
+      if not ok or type(chunk) ~= "function" then
+        log.error(("Bad file %s: %s"):format(file, chunk))
+        goto continue
+      end
+
+      local env = setmetatable({ vim = vim }, { __index = _G })
+      setfenv(chunk, env)
+      local success, mod = pcall(chunk)
+      if not success or type(mod) ~= "table" or type(mod.setup) ~= "function" or mod.enabled == false then
+        log.warn(("Plugin %s does not export valid setup"):format(path))
+        goto continue
+      end
+
+      local name = mod.name or path
+
+      ---@type LspModule.Resolved
+      local entry = {
+        name = name,
+        path = path,
+        setup = mod.setup,
+        loaded = false,
+      }
+
+      table.insert(modules, entry)
+      ::continue::
     end
   end
 
@@ -51,19 +81,27 @@ end
 -----------------------------------------------------------------------------//
 -- 4.  Module loader – handles errors gracefully
 -----------------------------------------------------------------------------//
-local function load_modules(modules)
+---@param modules LspModule.Resolved[]
+function M.load_modules(modules)
   for _, mod in ipairs(modules) do
-    local ok, err = pcall(require, mod)
+    local ok, data = pcall(require, mod.path)
     if not ok then
-      log.error(("LSP module %s failed to load: %s"):format(mod, err))
+      log.error(("Failed to require %s: %s"):format(mod.name, data))
     end
+    local setup_ok, err = pcall(data.setup)
+    if not setup_ok then
+      log.error(("Setup failed for %s: %s"):format(mod.name, err))
+    end
+
+    mod.loaded = true
   end
 end
 
 -----------------------------------------------------------------------------//
 -- 5.  Progress spinner – throttled, GC-friendly
 -----------------------------------------------------------------------------//
-local function setup_progress_spinner()
+---@return nil
+function M.setup_progress_spinner()
   local augroup = vim.api.nvim_create_augroup("LspProgress", { clear = true })
 
   ---@type table<integer, table>
@@ -155,10 +193,11 @@ end
 -----------------------------------------------------------------------------//
 -- 6.  Public API
 -----------------------------------------------------------------------------//
+---@return nil
 function M.init()
   local modules = discover()
-  load_modules(modules)
-  setup_progress_spinner()
+  M.load_modules(modules)
+  M.setup_progress_spinner()
 end
 
 return M

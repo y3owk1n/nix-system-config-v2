@@ -23,3 +23,14 @@
 ---@field keys? string|string[]
 ---@field cmd? string|string[]
 ---@field on_lsp_attach? string|string[]
+
+---@class LspModule
+---@field enabled? boolean
+---@field setup? fun()
+
+---@class LspModule.Resolved
+---@field name? string
+---@field path? string
+---@field enabled? boolean
+---@field setup? fun()
+---@field loaded? boolean
