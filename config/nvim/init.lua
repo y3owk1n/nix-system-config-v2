@@ -37,9 +37,6 @@ if vim.loader then
   vim.loader.enable()
 end
 
--- Set <space> as the leader key
--- See `:help mapleader`
---  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
@@ -55,6 +52,9 @@ require("mappings")
 -- Set diagnostics
 require("diagnostics")
 
--- Load plugins
+-- Load plugins & lsp settings
 -- NOTE: lsp configurations will be loaded after `lspconfig` is ensured
 require("plugins").init()
+
+-- Load the restart module
+require("restart")
