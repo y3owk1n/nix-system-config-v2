@@ -19,7 +19,6 @@ function M.setup()
   end
 
   plugin.linters_by_ft = {
-    sh = { "shfmt" },
     dockerfile = { "hadolint" },
     fish = { "fish" },
     go = { "golangcilint" },
