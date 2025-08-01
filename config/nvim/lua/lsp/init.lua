@@ -86,19 +86,32 @@ end
 -----------------------------------------------------------------------------//
 -- 4.  Module loader – handles errors gracefully
 -----------------------------------------------------------------------------//
----@param modules LspModule.Resolved[]
-function M.load_modules(modules)
-  for _, mod in ipairs(modules) do
-    local ok, data = pcall(require, mod.path)
-    if not ok then
-      log.error(("Failed to require %s: %s"):format(mod.name, data))
-    end
-    local setup_ok, err = pcall(data.setup)
-    if not setup_ok then
-      log.error(("Setup failed for %s: %s"):format(mod.name, err))
-    end
+---@param mod LspModule.Resolved
+---@return boolean
+local function setup_one(mod)
+  if mod.loaded then
+    return true
+  end
 
-    mod.loaded = true
+  local ok, data = pcall(require, mod.path)
+  if not ok then
+    log.error(("Failed to require %s: %s"):format(mod.name, data))
+    return false
+  end
+  local setup_ok, err = pcall(data.setup)
+  if not setup_ok then
+    log.error(("Setup failed for %s: %s"):format(mod.name, err))
+    return false
+  end
+
+  mod.loaded = true
+  return true
+end
+
+---@return nil
+function M.setup_modules()
+  for _, mod in ipairs(_discovered_modules) do
+    setup_one(mod)
   end
 end
 
@@ -200,8 +213,8 @@ end
 -----------------------------------------------------------------------------//
 ---@return nil
 function M.init()
-  local modules = discover()
-  M.load_modules(modules)
+  discover()
+  M.setup_modules()
   M.setup_progress_spinner()
 end
 
