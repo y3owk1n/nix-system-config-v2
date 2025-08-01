@@ -8,6 +8,8 @@ M.lazy = {
   cmd = { "TSUpdateSync", "TSUpdate", "TSInstall" },
 }
 
+M.build = ":TSUpdate"
+
 M.registry = {
   "https://github.com/nvim-treesitter/nvim-treesitter",
 }

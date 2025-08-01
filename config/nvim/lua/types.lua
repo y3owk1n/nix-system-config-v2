@@ -2,20 +2,22 @@
 ---@field name? string
 ---@field enabled? boolean
 ---@field requires? string[]
----@field setup? fun()
+---@field setup? function
 ---@field priority? integer
 ---@field lazy? string | PluginModule.Lazy
 ---@field registry? (string|vim.pack.Spec)[]
+---@field build? string|function
 
 ---@class PluginModule.Resolved
 ---@field name? string
 ---@field path? string
----@field setup? fun()
+---@field setup? function
 ---@field priority? integer
 ---@field requires? string[]
 ---@field lazy? string | PluginModule.Lazy | false
 ---@field loaded? boolean
 ---@field registry? (string|vim.pack.Spec)[]
+---@field build? string|function
 
 ---@class PluginModule.ResolutionEntry
 ---@field name string
@@ -31,11 +33,11 @@
 
 ---@class LspModule
 ---@field enabled? boolean
----@field setup? fun()
+---@field setup? function
 
 ---@class LspModule.Resolved
 ---@field name? string
 ---@field path? string
 ---@field enabled? boolean
----@field setup? fun()
+---@field setup? function
 ---@field loaded? boolean
