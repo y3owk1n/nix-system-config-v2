@@ -10,7 +10,7 @@ local function save_restart()
   end)
 end
 
-vim.keymap.set("n", "<leader>R", save_restart, { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>R", save_restart, { noremap = true, silent = true, desc = "Save and restart" })
 
 --Auto-restore on the *next* startup
 vim.api.nvim_create_autocmd("VimEnter", {

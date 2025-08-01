@@ -6,6 +6,7 @@
 ---@field priority? integer
 ---@field lazy? string | PluginModule.Lazy
 ---@field registry? (string|vim.pack.Spec)[]
+---@field async? boolean -- whether to run setup asynchronously, true by default
 
 ---@class PluginModule.Resolved
 ---@field name? string
@@ -16,11 +17,13 @@
 ---@field lazy? string | PluginModule.Lazy | false
 ---@field loaded? boolean
 ---@field registry? (string|vim.pack.Spec)[]
+---@field async? boolean -- whether to run setup asynchronously, true by default
 
 ---@class PluginModule.ResolutionEntry
 ---@field name string
 ---@field ms number
 ---@field parent? PluginModule.Resolved
+---@field async boolean
 
 ---@class PluginModule.Lazy
 ---@field event? vim.api.keyset.events|vim.api.keyset.events[]
@@ -32,6 +35,7 @@
 ---@class LspModule
 ---@field enabled? boolean
 ---@field setup? fun()
+---@field async? boolean -- whether to run setup asynchronously, true by default
 
 ---@class LspModule.Resolved
 ---@field name? string
@@ -39,3 +43,4 @@
 ---@field enabled? boolean
 ---@field setup? fun()
 ---@field loaded? boolean
+---@field async? boolean -- whether to run setup asynchronously, true by default

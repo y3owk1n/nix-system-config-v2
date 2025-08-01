@@ -72,12 +72,27 @@ local function discover()
 
       local name = mod.name or path
 
+      ---@param x boolean|nil
+      ---@param default boolean
+      local function parse_boolean(x, default)
+        if x == nil then
+          return default
+        end
+
+        if type(x) == "boolean" then
+          return x
+        end
+
+        return default
+      end
+
       ---@type LspModule.Resolved
       local entry = {
         name = name,
         path = path,
         setup = mod.setup,
         loaded = false,
+        async = parse_boolean(mod.async, true),
       }
 
       table.insert(modules, entry)
@@ -116,6 +131,51 @@ local function setup_one(mod)
   return true
 end
 
+local ASYNC_SLICE_MS = 16
+
+---Safely setup a module asynchronously.
+---@param mod LspModule.Resolved
+local function async_setup_one(mod)
+  if mod.loaded then
+    return true
+  end
+
+  local co = coroutine.create(function()
+    local ok, data = pcall(require, mod.path)
+    if not ok then
+      log.error(("require failed %s: %s"):format(mod.name, data))
+      return false
+    end
+
+    local t0 = vim.uv.hrtime()
+
+    if type(data.setup) == "function" then
+      local setup_ok, err = pcall(data.setup)
+      if not setup_ok then
+        log.error(("setup failed %s: %s"):format(mod.name, err))
+        return false
+      end
+      if (vim.uv.hrtime() - t0) / 1e6 > ASYNC_SLICE_MS then
+        coroutine.yield() -- yield to UI
+      end
+    end
+
+    mod.loaded = true
+    return true
+  end)
+
+  local function tick()
+    local ok, err = coroutine.resume(co)
+    if coroutine.status(co) ~= "dead" then
+      vim.defer_fn(tick, 0)
+    elseif not ok then
+      -- full traceback to the error
+      log.error(("Async setup error %s:\n%s"):format(mod.name, debug.traceback(co, err)))
+    end
+  end
+  tick()
+end
+
 -----------------------------------------------------------------------------//
 -- Setup
 -----------------------------------------------------------------------------//
@@ -124,7 +184,11 @@ end
 ---@return nil
 local function setup_modules()
   for _, mod in ipairs(_discovered_modules) do
-    setup_one(mod)
+    if mod.async then
+      async_setup_one(mod)
+    else
+      setup_one(mod)
+    end
   end
 end
 

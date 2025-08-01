@@ -81,7 +81,14 @@ local function print_resolution_timeline()
   for i, entry in ipairs(resolution_order) do
     table.insert(
       lines,
-      string.format("%2d. %-30s %-20s %.2f ms", i, entry.name, entry.parent and entry.parent.name or "-", entry.ms)
+      string.format(
+        "%2d. [%s] %-30s %-20s %.2f ms",
+        i,
+        entry.async and "async" or "sync",
+        entry.name,
+        entry.parent and entry.parent.name or "-",
+        entry.ms
+      )
     )
   end
   vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
@@ -178,6 +185,20 @@ local function discover()
         mod.lazy = false
       end
 
+      ---@param x boolean|nil
+      ---@param default boolean
+      local function parse_boolean(x, default)
+        if x == nil then
+          return default
+        end
+
+        if type(x) == "boolean" then
+          return x
+        end
+
+        return default
+      end
+
       ---@type PluginModule.Resolved
       local entry = {
         name = name,
@@ -188,6 +209,7 @@ local function discover()
         lazy = mod.lazy or false,
         loaded = false,
         registry = mod.registry or {},
+        async = parse_boolean(mod.async, true),
       }
 
       table.insert(modules, entry)
@@ -285,7 +307,7 @@ local function setup_one(mod, parent)
   end
 
   -- start measuring
-  local t0 = vim.loop.hrtime()
+  local t0 = vim.uv.hrtime()
 
   -- install from vim.pack
   vim.pack.add(mod.registry)
@@ -305,11 +327,85 @@ local function setup_one(mod, parent)
   end
 
   -- stop measuring and add to resolution order
-  local ms = (vim.loop.hrtime() - t0) / 1e6
-  table.insert(resolution_order, { name = mod.name, ms = ms, parent = parent })
+  local ms = (vim.uv.hrtime() - t0) / 1e6
+  table.insert(resolution_order, { async = false, name = mod.name, ms = ms, parent = parent })
 
   mod.loaded = true
   return true
+end
+
+local ASYNC_SLICE_MS = 16
+
+---Safely setup a module asynchronously.
+---@param mod PluginModule.Resolved
+---@param parent? PluginModule.Resolved|nil nil if this is the root module, this is just to visualize the timeline
+---@param on_done? fun()
+local function async_setup_one(mod, parent, on_done)
+  if mod.loaded then
+    return true
+  end
+
+  local co = coroutine.create(function()
+    -- 1. synchronous deps (tiny & safe)
+    for _, dep_name in ipairs(mod.requires) do
+      local dep = mod_map[dep_name] or mod_map[mod_root .. "." .. dep_name]
+      if dep and not dep.loaded then
+        -- recurse synchronously (dependencies are cheap)
+        local ok = setup_one(dep, mod)
+        if not ok then
+          return false
+        end
+      end
+    end
+
+    -- 2. install via vim.pack (already async)
+    vim.pack.add(mod.registry)
+
+    -- 3. require + setup in slices
+    local ok, data = pcall(require, mod.path)
+    if not ok then
+      log.error(("require failed %s: %s"):format(mod.name, data))
+      return false
+    end
+
+    -- start measuring
+    local t0 = vim.uv.hrtime()
+
+    if type(data.setup) == "function" then
+      local setup_ok, err = pcall(data.setup)
+      if not setup_ok then
+        log.error(("setup failed %s: %s"):format(mod.name, err))
+        return false
+      end
+      if (vim.uv.hrtime() - t0) / 1e6 > ASYNC_SLICE_MS then
+        coroutine.yield() -- yield to UI
+      end
+    end
+
+    local ms = (vim.uv.hrtime() - t0) / 1e6
+    table.insert(resolution_order, { async = true, name = mod.name, ms = ms, parent = parent })
+
+    mod.loaded = true
+
+    -- vim.notify(("Loaded %s in %.2fms"):format(mod.name, ms), vim.log.levels.INFO)
+
+    return true
+  end)
+
+  local function tick()
+    local ok, err = coroutine.resume(co)
+    if coroutine.status(co) ~= "dead" then
+      vim.defer_fn(tick, 0)
+    elseif ok then
+      if on_done and type(on_done) == "function" then
+        on_done()
+      end
+    elseif not ok then
+      -- full traceback to the error
+      log.error(("Async setup error %s:\n%s"):format(mod.name, debug.traceback(co, err)))
+    end
+  end
+  tick()
 end
 
 -----------------------------------------------------------------------------//
@@ -323,7 +419,11 @@ local function setup_event_handler(mod)
   vim.api.nvim_create_autocmd(events, {
     once = true,
     callback = function()
-      setup_one(mod)
+      if mod.async then
+        async_setup_one(mod)
+      else
+        setup_one(mod)
+      end
     end,
   })
 end
@@ -336,7 +436,11 @@ local function setup_ft_handler(mod)
     pattern = fts,
     once = true,
     callback = function()
-      setup_one(mod)
+      if mod.async then
+        async_setup_one(mod)
+      else
+        setup_one(mod)
+      end
     end,
   })
 end
@@ -350,10 +454,19 @@ local function setup_keymap_handler(mod)
   for _, key in ipairs(keys) do
     vim.keymap.set(potential_keys, key, function()
       pcall(vim.keymap.del, potential_keys, key)
-      if setup_one(mod) then
+
+      local success_fn = function()
         vim.schedule(function()
           vim.api.nvim_feedkeys(vim.keycode(key), "m", false)
         end)
+      end
+
+      if mod.async then
+        async_setup_one(mod, nil, success_fn)
+      else
+        if setup_one(mod) then
+          success_fn()
+        end
       end
     end, { noremap = true, silent = true, desc = "Lazy: " .. mod.name })
   end
@@ -365,10 +478,18 @@ local function setup_cmd_handler(mod)
   local cmds = string_or_table(mod.lazy.cmd)
   for _, name in ipairs(cmds) do
     vim.api.nvim_create_user_command(name, function(opts)
-      if setup_one(mod) then
+      local success_fn = function()
         vim.schedule(function()
           vim.cmd((opts.bang and "%s! %s" or "%s %s"):format(name, opts.args))
         end)
+      end
+
+      if mod.async then
+        async_setup_one(mod, nil, success_fn)
+      else
+        if setup_one(mod) then
+          success_fn()
+        end
       end
     end, { bang = true, nargs = "*" })
   end
@@ -380,7 +501,11 @@ local function setup_on_lsp_attach_handler(mod)
     callback = function(args)
       local client = vim.lsp.get_client_by_id(args.data.client_id)
       if client and vim.tbl_contains(allowed, client.name) then
-        setup_one(mod)
+        if mod.async then
+          async_setup_one(mod)
+        else
+          setup_one(mod)
+        end
       end
     end,
   })
@@ -426,7 +551,11 @@ local function setup_modules()
     if mod.lazy then
       lazy_handlers(mod)
     else
-      setup_one(mod)
+      if mod.async then
+        async_setup_one(mod)
+      else
+        setup_one(mod)
+      end
     end
   end
 end
