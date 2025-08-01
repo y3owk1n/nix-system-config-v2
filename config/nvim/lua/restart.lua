@@ -1,20 +1,18 @@
 local session_file = vim.fn.stdpath("data") .. "/restart-session.vim"
 
----Save current state
-local function save_restart_session()
+---Save current state & restart
+local function save_restart()
   vim.cmd("silent! wall")
   vim.cmd("mksession! " .. vim.fn.fnameescape(session_file))
+
+  vim.schedule(function()
+    vim.cmd("restart")
+  end)
 end
 
----Wrapper that saves and then restarts
-vim.api.nvim_create_user_command("Restart", function(opts)
-  save_restart_session()
-  ---Forward any argument the user typed, e.g. '+qall!'
-  vim.cmd("restart " .. (opts.args or ""))
-end, { bang = true, nargs = "?" })
+vim.keymap.set("n", "<leader>R", save_restart, { noremap = true, silent = true })
 
--- 3. Auto-restore on the *next* startup
---    We use a once-only autocmd so it fires after *every* restart.
+--Auto-restore on the *next* startup
 vim.api.nvim_create_autocmd("VimEnter", {
   once = true,
   nested = true,
