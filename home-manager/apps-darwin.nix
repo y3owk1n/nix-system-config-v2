@@ -32,7 +32,7 @@
     shellcheck
     bash-language-server
     docker-compose-language-service
-    dockerfile-language-server-nodejs
+    docker-language-server
     hadolint
     gh-actions-language-server # from `nixos-npm-ls` flake
     gopls
