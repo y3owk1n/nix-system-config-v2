@@ -22,6 +22,10 @@ function M.setup()
 
   ---@type CatppuccinOptions
   local plugin_opts = {
+    float = {
+      solid = false,
+      transparent = false,
+    },
     default_integrations = false,
     integrations = {
       blink_cmp = {
