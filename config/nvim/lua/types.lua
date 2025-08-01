@@ -17,6 +17,11 @@
 ---@field loaded? boolean
 ---@field registry? (string|vim.pack.Spec)[]
 
+---@class PluginModule.ResolutionEntry
+---@field name string
+---@field ms number
+---@field parent? PluginModule.Resolved
+
 ---@class PluginModule.Lazy
 ---@field event? vim.api.keyset.events|vim.api.keyset.events[]
 ---@field ft? string|string[]

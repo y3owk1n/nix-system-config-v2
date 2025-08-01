@@ -1,20 +1,24 @@
 local M = {}
 
 -----------------------------------------------------------------------------//
--- 0.  Configuration
+-- Configuration
 -----------------------------------------------------------------------------//
+
 local mod_root = "lsp"
 local mad_base_path = vim.fn.stdpath("config") .. "/lua/" .. mod_root
 
 -----------------------------------------------------------------------------//
--- 1.  State & caches
+-- State & caches
 -----------------------------------------------------------------------------//
+
+---Cache discovered modules
 ---@type LspModule.Resolved[]
 local _discovered_modules = nil
 
 -----------------------------------------------------------------------------//
--- 2.  Utilities
+-- Utilities
 -----------------------------------------------------------------------------//
+
 local log = {
   warn = function(msg)
     vim.notify(msg, vim.log.levels.WARN)
@@ -25,8 +29,10 @@ local log = {
 }
 
 -----------------------------------------------------------------------------//
--- 3.  Discovery – memoised, one-shot
+-- Discovery
 -----------------------------------------------------------------------------//
+
+---Discover plugin modules from filesystem
 ---@return LspModule.Resolved[]
 local function discover()
   if _discovered_modules then
@@ -84,8 +90,10 @@ local function discover()
 end
 
 -----------------------------------------------------------------------------//
--- 4.  Module loader – handles errors gracefully
+-- Safe setup
 -----------------------------------------------------------------------------//
+
+---Safely setup a plugin module.
 ---@param mod LspModule.Resolved
 ---@return boolean
 local function setup_one(mod)
@@ -108,18 +116,25 @@ local function setup_one(mod)
   return true
 end
 
+-----------------------------------------------------------------------------//
+-- Setup
+-----------------------------------------------------------------------------//
+
+---Setup all discovered modules.
 ---@return nil
-function M.setup_modules()
+local function setup_modules()
   for _, mod in ipairs(_discovered_modules) do
     setup_one(mod)
   end
 end
 
 -----------------------------------------------------------------------------//
--- 5.  Progress spinner – throttled, GC-friendly
+-- Progress spinner
 -----------------------------------------------------------------------------//
+
+---Setup a progress spinner for LSP.
 ---@return nil
-function M.setup_progress_spinner()
+local function setup_progress_spinner()
   local augroup = vim.api.nvim_create_augroup("LspProgress", { clear = true })
 
   ---@type table<integer, table>
@@ -152,8 +167,8 @@ function M.setup_progress_spinner()
           item.msg = string.format(
             "[%3d%%] %s%s",
             value.percentage or 100,
-            value.title or "Loading workspace",
-            is_last and " – done" or (value.message and (" **" .. value.message .. "**") or "")
+            is_last and "Done" or value.title or "Loading workspace",
+            is_last and "" or (value.message and (" **" .. value.message .. "**") or "")
           )
           item.done = is_last
           found = true
@@ -209,13 +224,15 @@ function M.setup_progress_spinner()
 end
 
 -----------------------------------------------------------------------------//
--- 6.  Public API
+-- Public API
 -----------------------------------------------------------------------------//
+
+---Initialize the plugin manager.
 ---@return nil
 function M.init()
   discover()
-  M.setup_modules()
-  M.setup_progress_spinner()
+  setup_modules()
+  setup_progress_spinner()
 end
 
 return M
