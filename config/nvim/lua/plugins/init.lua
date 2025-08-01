@@ -132,6 +132,41 @@ local function print_plugin_status()
   vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
 end
 
+---Run the build function of a plugin module.
+---@param mod PluginModule.Resolved
+---@return boolean
+local function run_build(mod)
+  local build = mod.build
+  if not build then
+    return true
+  end
+
+  local ok, msg
+  if type(build) == "string" and build:match("^:") then
+    -- Neovim ex commands
+    ok, msg = pcall(function()
+      vim.cmd(build:sub(2))
+    end)
+  elseif type(build) == "string" then
+    -- Shell command
+    ok, msg = pcall(function()
+      local r = vim.system({ vim.o.shell, "-c", build }, { text = true }):wait()
+      return r.code == 0 or r.stderr
+    end)
+  elseif type(build) == "function" then
+    ok, msg = pcall(build)
+  else
+    log.error(("Bad build type for %s"):format(mod.name))
+    return false
+  end
+
+  if not ok then
+    log.error(("Build failed for %s: %s"):format(mod.name, msg))
+    return false
+  end
+  return true
+end
+
 -----------------------------------------------------------------------------//
 -- Discovery
 -----------------------------------------------------------------------------//
@@ -188,6 +223,7 @@ local function discover()
         lazy = mod.lazy or false,
         loaded = false,
         registry = mod.registry or {},
+        build = mod.build,
       }
 
       table.insert(modules, entry)
@@ -289,6 +325,11 @@ local function setup_one(mod, parent)
 
   -- install from vim.pack
   vim.pack.add(mod.registry)
+
+  -- run build commands
+  if mod.build then
+    run_build(mod)
+  end
 
   -- require the module
   local ok, data = pcall(require, mod.path)
