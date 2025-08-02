@@ -121,6 +121,12 @@ local function show_terminal(cmd, title)
         end
 
         local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+
+        ---trim the lines first
+        lines = vim.tbl_filter(function(s)
+          return s ~= ""
+        end, lines)
+
         local preview = (#lines <= 6) and table.concat(lines, "\n")
           or table.concat(vim.list_slice(lines, 1, 3), "\n")
             .. "\n...omitted...\n"
