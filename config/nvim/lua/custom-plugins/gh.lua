@@ -106,6 +106,9 @@ local function show_terminal(cmd, title)
   vim.api.nvim_buf_set_name(buf, title)
   vim.cmd("botright split | buffer " .. buf)
 
+  ---set the cmd to not use pager but cat
+  cmd = { "env", "GH_PAGER=cat", unpack(cmd) }
+
   vim.fn.jobstart(cmd, {
     cwd = cwd,
     term = true,
