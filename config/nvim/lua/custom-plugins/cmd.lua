@@ -371,7 +371,7 @@ function M.setup(user_config)
       bang = true
     end
 
-    if #args == 0 then
+    if #args < 1 then
       notify("No arguments provided", "WARN")
       return
     end
@@ -383,7 +383,7 @@ function M.setup(user_config)
       return
     end
 
-    local force_terminal_executable = M.config.force_terminal[executable]
+    local force_terminal_executable = M.config.force_terminal[executable] or {}
 
     if not vim.tbl_isempty(force_terminal_executable) then
       for _, arg in ipairs(args) do
