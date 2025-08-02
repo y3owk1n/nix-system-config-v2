@@ -36,6 +36,7 @@ vim.api.nvim_create_autocmd("FileType", {
     "lspinfo",
     "lsplog",
     "lintinfo",
+    "gh",
   },
   callback = function(event)
     -- Prevent the buffer from appearing in the buffer list.
