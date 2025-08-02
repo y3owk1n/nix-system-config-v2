@@ -41,7 +41,6 @@ function M.setup()
         { "<leader>q", group = "quit/session" },
         { "<leader>s", group = "search" },
         { "<leader>i", group = "info" },
-        { "<leader>l", group = "lsp" },
         {
           "<leader>u",
           group = "ui",
