@@ -310,7 +310,9 @@ local function setup_one(mod, parent)
   local t0 = vim.uv.hrtime()
 
   -- install from vim.pack
-  vim.pack.add(mod.registry)
+  if mod.registry then
+    vim.pack.add(mod.registry)
+  end
 
   -- require the module
   local ok, data = pcall(require, mod.path)
@@ -359,7 +361,9 @@ local function async_setup_one(mod, parent, on_done)
     end
 
     -- 2. install via vim.pack (already async)
-    vim.pack.add(mod.registry)
+    if mod.registry then
+      vim.pack.add(mod.registry)
+    end
 
     -- 3. require + setup in slices
     local ok, data = pcall(require, mod.path)
