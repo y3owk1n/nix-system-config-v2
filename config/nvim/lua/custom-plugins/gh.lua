@@ -13,7 +13,9 @@ local term_buf
 ---@param msg string
 ---@param lvl "INFO"|"WARN"|"ERROR"
 local function notify(msg, lvl)
-  vim.notify("(gh.nvim) " .. msg, vim.log.levels[lvl:upper()])
+  vim.notify(msg, vim.log.levels[lvl:upper()], {
+    title = "gh",
+  })
 end
 
 ---Escape and join shell command arguments.
@@ -26,24 +28,6 @@ local function shellescape(parts)
     escaped[#escaped + 1] = '"' .. s .. '"'
   end
   return table.concat(escaped, " ")
-end
-
----Determine whether the command needs to run in terminal.
----@param args string[]
----@return boolean
-local function needs_term(args)
-  local matches = {
-    "--watch",
-    "--follow",
-    "--paginate",
-  }
-
-  for _, arg in ipairs(args) do
-    if vim.tbl_contains(matches, arg) then
-      return true
-    end
-  end
-  return false
 end
 
 ---Determine if the command is informational (help/version).
@@ -114,26 +98,29 @@ local function open_term(cmd, bang)
       if bang then
         return
       end
-      if code == 0 then
+
+      local lines = vim.api.nvim_buf_get_lines(term_buf, 0, -1, false)
+
+      ---trim the stderr for empty lines
+      lines = vim.tbl_filter(function(s)
+        return s ~= ""
+      end, lines)
+
+      local stderr = table.concat(lines, "\n")
+
+      if code == 0 or code == 2 then
+        notify(stderr, "INFO")
+
         vim.schedule(function()
           pcall(vim.api.nvim_buf_delete, term_buf, { force = true })
         end)
       end
       if code == 1 then
-        local lines = vim.api.nvim_buf_get_lines(term_buf, 0, -1, false)
-
-        ---trim the stderr for empty lines
-        lines = vim.tbl_filter(function(s)
-          return s ~= ""
-        end, lines)
-
-        local stderr = table.concat(lines, "\n")
-
         notify(stderr, "ERROR")
 
-        pcall(vim.api.nvim_buf_delete, term_buf, { force = true })
-
-        -- show_buffer(stderr, "error")
+        vim.schedule(function()
+          pcall(vim.api.nvim_buf_delete, term_buf, { force = true })
+        end)
       end
     end,
   })
@@ -168,12 +155,6 @@ function M.setup()
       return
     end
 
-    ---Like `--watch`.
-    if needs_term(args) then
-      open_term(shellescape(cmd), bang)
-      return
-    end
-
     ---Like `--help` or `--version`.
     if is_info(args) then
       local out, err, code = run_sync(cmd)
@@ -185,12 +166,14 @@ function M.setup()
       return
     end
 
-    local out, err, code = run_sync(cmd)
-    if code ~= 0 then
-      notify(err ~= "" and err or out, "ERROR")
-    elseif out ~= "" then
-      notify(out, "INFO")
-    end
+    open_term(shellescape(cmd), bang)
+
+    -- local out, err, code = run_sync(cmd)
+    -- if code ~= 0 then
+    --   notify(err ~= "" and err or out, "ERROR")
+    -- elseif out ~= "" then
+    --   notify(out, "INFO")
+    -- end
   end, { nargs = "*", bang = true })
 end
 
