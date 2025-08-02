@@ -71,16 +71,25 @@ local function read_stream(pipe, buffer)
   end)
 end
 
+---Trim empty lines from a string array.
+---@param lines string[]
+---@return string[]
+local function trim_empty_lines(lines)
+  return vim.tbl_filter(function(s)
+    return s ~= ""
+  end, lines)
+end
+
 ------------------------------------------------------------------
 -- UI Helpers
 ------------------------------------------------------------------
 
 ---Show output in a scratch buffer (readonly, vsplit).
----@param out string
+---@param lines string[]
 ---@param title string
-local function show_buffer(out, title)
+local function show_buffer(lines, title)
   local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(out, "\n"))
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.bo[buf].filetype = "gh"
   vim.bo[buf].buftype = "nofile"
   vim.bo[buf].bufhidden = "wipe"
@@ -124,11 +133,7 @@ local function show_terminal(cmd, title)
         end
 
         local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-
-        ---trim the lines first
-        lines = vim.tbl_filter(function(s)
-          return s ~= ""
-        end, lines)
+        lines = trim_empty_lines(lines)
 
         local preview = (#lines <= 6) and table.concat(lines, "\n")
           or table.concat(vim.list_slice(lines, 1, 3), "\n")
@@ -236,10 +241,19 @@ local function run(args, bang)
       notify(string.format("failed to get response from cli with cmd %s", table.concat(cmd, " ")), "ERROR")
       return
     end
+
+    local out = res.out
+    local lines = vim.split(out, "\n")
+    lines = trim_empty_lines(lines)
+
     if res.code ~= 0 then
       notify(res.err ~= "" and res.err or res.out, "ERROR")
-    elseif res.out ~= "" then
-      show_buffer(res.out, "gh://" .. table.concat(args, " "))
+    else
+      if #lines > 0 then
+        show_buffer(lines, "gh://" .. table.concat(args, " "))
+      else
+        notify("Nothing to show after trimmed", "WARN")
+      end
     end
   end
 end
