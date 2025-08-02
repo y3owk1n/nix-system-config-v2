@@ -108,20 +108,17 @@ local function open_term(cmd, bang)
 
       local stderr = table.concat(lines, "\n")
 
-      if code == 0 or code == 2 then
+      if code == 0 then
         notify(stderr, "INFO")
-
-        vim.schedule(function()
-          pcall(vim.api.nvim_buf_delete, term_buf, { force = true })
-        end)
-      end
-      if code == 1 then
+      elseif code == 1 then
         notify(stderr, "ERROR")
-
-        vim.schedule(function()
-          pcall(vim.api.nvim_buf_delete, term_buf, { force = true })
-        end)
+      else
+        notify(string.format("gh exited with code %d", code), "ERROR")
       end
+
+      vim.schedule(function()
+        pcall(vim.api.nvim_buf_delete, term_buf, { force = true })
+      end)
     end,
   })
   vim.cmd("startinsert")
@@ -167,13 +164,6 @@ function M.setup()
     end
 
     open_term(shellescape(cmd), bang)
-
-    -- local out, err, code = run_sync(cmd)
-    -- if code ~= 0 then
-    --   notify(err ~= "" and err or out, "ERROR")
-    -- elseif out ~= "" then
-    --   notify(out, "INFO")
-    -- end
   end, { nargs = "*", bang = true })
 end
 
