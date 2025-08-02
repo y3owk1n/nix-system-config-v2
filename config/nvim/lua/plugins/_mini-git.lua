@@ -20,7 +20,11 @@ function M.setup()
     return
   end
 
-  local plugin_opts = {}
+  local plugin_opts = {
+    command = {
+      split = "vertical",
+    },
+  }
 
   plugin.setup(plugin_opts)
 end
