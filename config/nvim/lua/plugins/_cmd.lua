@@ -16,7 +16,18 @@ function M.setup()
     return
   end
 
-  local plugin_opts = {}
+  ---@type Cmd.Config
+  local plugin_opts = {
+    force_terminal = {
+      git = {
+        "-p",
+      },
+      gh = {
+        "create",
+        "--watch",
+      },
+    },
+  }
 
   plugin.setup(plugin_opts)
 end

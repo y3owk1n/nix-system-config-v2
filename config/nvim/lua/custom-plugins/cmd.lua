@@ -89,6 +89,11 @@ local function trim_empty_lines(lines)
   end, lines)
 end
 
+local function refresh_ui()
+  vim.cmd("redraw!")
+  vim.cmd("checktime")
+end
+
 ------------------------------------------------------------------
 -- Spinners
 ------------------------------------------------------------------
@@ -179,7 +184,10 @@ local function show_terminal(cmd, title)
   vim.bo[buf].bufhidden = "wipe"
   vim.bo[buf].swapfile = false
   vim.bo[buf].buflisted = false
-  vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = buf, nowait = true })
+  vim.keymap.set("n", "q", function()
+    vim.cmd("close")
+    refresh_ui()
+  end, { buffer = buf, nowait = true })
 
   vim.api.nvim_buf_set_name(buf, title)
   vim.cmd("botright split | buffer " .. buf)
@@ -327,6 +335,7 @@ local function run(args, bang)
       else
         notify("Nothing to show after trimmed", "WARN")
       end
+      refresh_ui()
     end
   end
 end
@@ -339,7 +348,10 @@ end
 M.config = {}
 
 ---@class Cmd.Config
-M.defaults = {}
+---@field force_terminal? table<string, string[]> Detect any of these command to force terminal
+M.defaults = {
+  force_terminal = {},
+}
 
 ---Setup the `:Cmd` command.
 ---@param user_config? Cmd.Config
@@ -362,6 +374,24 @@ function M.setup(user_config)
     if #args == 0 then
       notify("No arguments provided", "WARN")
       return
+    end
+
+    local executable = args[1]
+
+    if vim.fn.executable(executable) == 0 then
+      notify(("%s is not executable"):format(executable), "WARN")
+      return
+    end
+
+    local force_terminal_executable = M.config.force_terminal[executable]
+
+    if not vim.tbl_isempty(force_terminal_executable) then
+      for _, arg in ipairs(args) do
+        if vim.tbl_contains(force_terminal_executable, arg) then
+          bang = true
+          break
+        end
+      end
     end
 
     run(args, bang)
