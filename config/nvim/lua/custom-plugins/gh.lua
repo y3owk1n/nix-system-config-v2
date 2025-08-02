@@ -5,6 +5,11 @@ local has_gh = vim.fn.executable("gh") == 1
 ---@type integer|nil
 local term_buf
 
+local cwd = vim.fn.expand("%:p:h")
+if not vim.loop.fs_stat(cwd .. "/.git") then
+  cwd = vim.fn.getcwd()
+end
+
 ------------------------------------------------------------------
 -- Helpers
 ------------------------------------------------------------------
@@ -69,7 +74,7 @@ end
 ---@param cmd string[]
 ---@return string out, string err, integer code
 local function run_sync(cmd)
-  local obj = vim.system(cmd, { text = true, cwd = vim.fn.getcwd() }):wait()
+  local obj = vim.system(cmd, { text = true, cwd = cwd }):wait()
   ---@cast obj {stdout:string,stderr:string,code:integer}
   return obj.stdout or "", obj.stderr or "", obj.code
 end
@@ -93,6 +98,7 @@ local function open_term(cmd, bang)
 
   vim.fn.jobstart(cmd, {
     term = true,
+    cwd = cwd,
     on_exit = function(_, code)
       ---If bang then dont do anything, let the user handle it.
       if bang then
