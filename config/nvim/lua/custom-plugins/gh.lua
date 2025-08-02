@@ -2,9 +2,6 @@ local M = {}
 
 local has_gh = vim.fn.executable("gh") == 1
 
----@type integer|nil
-local term_buf
-
 local cwd = vim.fn.expand("%:p:h")
 if not vim.loop.fs_stat(cwd .. "/.git") then
   cwd = vim.fn.getcwd()
@@ -87,7 +84,7 @@ end
 ---@param cmd string
 ---@param bang? boolean
 local function open_term(cmd, bang)
-  term_buf = vim.api.nvim_create_buf(false, true)
+  local term_buf = vim.api.nvim_create_buf(false, true)
 
   local win = vim.fn.bufwinnr(term_buf)
   if win == -1 then
