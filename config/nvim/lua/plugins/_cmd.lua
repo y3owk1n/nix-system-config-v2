@@ -7,6 +7,9 @@ M.lazy = {
   cmd = {
     "Cmd",
   },
+  event = {
+    "CmdlineEnter",
+  },
 }
 
 function M.setup()
@@ -18,6 +21,10 @@ function M.setup()
 
   ---@type Cmd.Config
   local plugin_opts = {
+    create_usercmd = {
+      git = "Git",
+      gh = "Gh",
+    },
     force_terminal = {
       git = {
         "-p",
@@ -25,6 +32,11 @@ function M.setup()
       gh = {
         "create",
         "--watch",
+      },
+    },
+    env = {
+      gh = {
+        "GH_PAGER=cat",
       },
     },
   }

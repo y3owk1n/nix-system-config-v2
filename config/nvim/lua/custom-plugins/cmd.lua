@@ -94,6 +94,32 @@ local function refresh_ui()
   vim.cmd("checktime")
 end
 
+---Get the environment variables for a command.
+---@param executable string
+---@return string[]|nil
+local function get_cmd_env(executable)
+  local env = M.config.env or {}
+
+  ---@type string[]
+  local found = {}
+
+  if not vim.tbl_isempty(env) then
+    for k, v in pairs(env) do
+      if k == executable then
+        for _, v2 in ipairs(v) do
+          table.insert(found, v2)
+        end
+      end
+    end
+  end
+
+  if #found == 0 then
+    return nil
+  end
+
+  return found
+end
+
 ------------------------------------------------------------------
 -- Spinners
 ------------------------------------------------------------------
@@ -192,8 +218,16 @@ local function show_terminal(cmd, title)
   vim.api.nvim_buf_set_name(buf, title)
   vim.cmd("botright split | buffer " .. buf)
 
-  ---set the cmd to not use pager but cat
-  cmd = { unpack(cmd) }
+  local env = get_cmd_env(cmd[1])
+
+  if env then
+    local env_copy = vim.deepcopy(env)
+    table.insert(env_copy, 1, "env")
+
+    cmd = vim.list_extend(env_copy, cmd)
+  else
+    cmd = { unpack(cmd) }
+  end
 
   vim.fn.jobstart(cmd, {
     cwd = cwd,
@@ -349,14 +383,53 @@ M.config = {}
 
 ---@class Cmd.Config
 ---@field force_terminal? table<string, string[]> Detect any of these command to force terminal
+---@field create_usercmd? table<string, string> Create user commands for these executables if it does'nt exists
+---@field env? table<string, string[]> Environment variables to set for the command
 M.defaults = {
   force_terminal = {},
+  create_usercmd = {},
+  env = {},
 }
+
+function M.create_usercmd_if_not_exists()
+  local existing_cmds = vim.api.nvim_get_commands({})
+  for executable, cmd_name in pairs(M.config.create_usercmd) do
+    if vim.fn.executable(executable) == 1 and not existing_cmds[cmd_name] then
+      vim.api.nvim_create_user_command(cmd_name, function(opts)
+        local args = { executable, unpack(opts.fargs) }
+        local bang = opts.bang
+
+        local force_terminal_executable = M.config.force_terminal[executable] or {}
+
+        if not vim.tbl_isempty(force_terminal_executable) then
+          for _, arg in ipairs(args) do
+            if vim.tbl_contains(force_terminal_executable, arg) then
+              bang = true
+              break
+            end
+          end
+        end
+
+        run(args, bang)
+      end, {
+        nargs = "*",
+        bang = true,
+        desc = "Auto-generated command for " .. executable,
+      })
+    else
+      notify(("%s is not executable or already exists"):format(executable), "WARN")
+    end
+  end
+end
 
 ---Setup the `:Cmd` command.
 ---@param user_config? Cmd.Config
 function M.setup(user_config)
   M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
+
+  if M.config.create_usercmd and not vim.tbl_isempty(M.config.create_usercmd) then
+    M.create_usercmd_if_not_exists()
+  end
 
   vim.api.nvim_create_user_command("Cmd", function(opts)
     local bang = opts.bang or false
