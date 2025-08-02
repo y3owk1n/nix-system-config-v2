@@ -42,7 +42,7 @@ end
 ---@param args string[]
 ---@return boolean
 local function is_info(args)
-  local matches = { "help", "--help", "--version" }
+  local matches = { "help", "list", "view", "--help", "--version" }
   for _, arg in ipairs(args) do
     if vim.tbl_contains(matches, arg) then
       return true
