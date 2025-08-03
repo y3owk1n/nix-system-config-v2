@@ -28,6 +28,7 @@ function M.setup()
     force_terminal = {
       git = {
         "-p",
+        "commit",
       },
       gh = {
         "create",
