@@ -22,8 +22,8 @@ function M.setup()
   ---@type Cmd.Config
   local plugin_opts = {
     create_usercmd = {
-      git = "Git",
       gh = "Gh",
+      git = "Git",
     },
     force_terminal = {
       git = {
@@ -35,9 +35,9 @@ function M.setup()
       },
     },
     env = {
-      gh = {
-        "GH_PAGER=cat",
-      },
+      -- gh = {
+      --   "GH_PAGER=cat",
+      -- },
     },
   }
 
