@@ -482,19 +482,22 @@ local function run(args, bang)
       if is_cancelled then
         status = "cancelled"
       else
-        status = code ~= 0 and "failed" or "completed"
+        status = code == 0 and "completed" or "failed"
 
-        local lines_string = out
+        local text = table.concat(
+          vim.tbl_filter(function(s)
+            return s ~= ""
+          end, { err, out }),
+          "\n"
+        )
 
-        if status == "failed" then
-          lines_string = err ~= "" and err or out
-        end
-
-        local lines = vim.split(lines_string, "\n")
+        local lines = vim.split(text, "\n")
         lines = trim_empty_lines(lines)
 
         if #lines > 0 then
           show_buffer(lines, "cmd://" .. table.concat(args, " ") .. "-" .. spinner_id)
+        else
+          notify("Completed but no output lines", "INFO")
         end
 
         if status == "completed" then
@@ -544,8 +547,11 @@ function M.create_usercmd_if_not_exists()
         local force_terminal_executable = M.config.force_terminal[executable] or {}
 
         if not vim.tbl_isempty(force_terminal_executable) then
-          for _, arg in ipairs(args) do
-            if vim.tbl_contains(force_terminal_executable, arg) then
+          for _, value in ipairs(force_terminal_executable) do
+            local args_string = table.concat(args, " ")
+            local matched = string.find(args_string, value, 1, true) ~= nil
+
+            if matched == true then
               bang = true
               break
             end
@@ -606,8 +612,11 @@ function M.setup(user_config)
     local force_terminal_executable = M.config.force_terminal[executable] or {}
 
     if not vim.tbl_isempty(force_terminal_executable) then
-      for _, arg in ipairs(args) do
-        if vim.tbl_contains(force_terminal_executable, arg) then
+      for _, value in pairs(force_terminal_executable) do
+        local args_string = table.concat(args, " ")
+        local matched = string.find(args_string, value, 1, true) ~= nil
+
+        if matched == true then
           bang = true
           break
         end
