@@ -50,9 +50,12 @@ end
 ---Display a notification.
 ---@param msg string
 ---@param lvl Cmd.LogLevel
+---@param opts table
 ---@return nil
-local function notify(msg, lvl)
-  vim.notify(msg, vim.log.levels[lvl:upper()], { title = "cmd" })
+local function notify(msg, lvl, opts)
+  opts = opts or {}
+  opts.title = opts.title or "cmd"
+  vim.notify(msg, vim.log.levels[lvl:upper()], opts)
 end
 
 ---Stream chunks to a string.
@@ -168,7 +171,7 @@ local function start_cmd_spinner(title, msg, cmd)
           last = now
         end
 
-        vim.notify(spin_state[spinner_id].msg, vim.log.levels.INFO, {
+        notify(spin_state[spinner_id].msg, "INFO", {
           id = "cmd_progress_" .. spinner_id,
           title = spin_state[spinner_id].title,
           icon = spinner_chars[idx],
@@ -202,9 +205,9 @@ local function stop_cmd_spinner(spinner_id, status)
   }
 
   local level_map = {
-    completed = vim.log.levels.INFO,
-    failed = vim.log.levels.ERROR,
-    cancelled = vim.log.levels.WARN,
+    completed = "INFO",
+    failed = "ERROR",
+    cancelled = "WARN",
   }
 
   local icon = icon_map[status] or " "
@@ -213,7 +216,7 @@ local function stop_cmd_spinner(spinner_id, status)
   local level = level_map[status] or vim.log.levels.ERROR
 
   vim.schedule(function()
-    vim.notify(msg, level, {
+    notify(msg, level, {
       id = "cmd_progress_" .. spinner_id,
       title = "cmd",
       icon = icon,
