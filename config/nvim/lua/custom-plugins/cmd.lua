@@ -19,6 +19,9 @@ local spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", 
 ---@type integer
 local next_spinner_id = 0
 
+---@type table<integer, uv.uv_process_t>
+local active_jobs = {}
+
 ------------------------------------------------------------------
 -- Type Aliases
 ------------------------------------------------------------------
@@ -138,8 +141,13 @@ local function start_cmd_spinner(title, msg, cmd)
 
   local timer = uv.new_timer()
   if timer then
-    spin_state[spinner_id] =
-      { timer = timer, active = true, msg = string.format("running `%s`", msg), title = title, cmd = cmd }
+    spin_state[spinner_id] = {
+      timer = timer,
+      active = true,
+      msg = string.format("[#%s] running `%s`", spinner_id, msg),
+      title = title,
+      cmd = cmd,
+    }
   end
 
   -- local index for this spinner only
@@ -174,9 +182,9 @@ end
 
 ---Stop a spinner.
 ---@param spinner_id integer
----@param success boolean
+---@param status "completed"|"failed"|"cancelled"
 ---@return nil
-local function stop_cmd_spinner(spinner_id, success)
+local function stop_cmd_spinner(spinner_id, status)
   if not spinner_id or not spin_state[spinner_id] or not spin_state[spinner_id].active then
     return
   end
@@ -187,11 +195,25 @@ local function stop_cmd_spinner(spinner_id, success)
   st.timer:close()
   spin_state[spinner_id] = nil
 
-  local icon = success and " " or " "
-  local msg = string.format("`%s` %s", st.cmd, success and "completed" or "failed")
+  local icon_map = {
+    completed = " ",
+    failed = " ",
+    cancelled = " ",
+  }
+
+  local level_map = {
+    completed = vim.log.levels.INFO,
+    failed = vim.log.levels.ERROR,
+    cancelled = vim.log.levels.WARN,
+  }
+
+  local icon = icon_map[status] or " "
+
+  local msg = string.format("[#%s] `%s` %s", spinner_id, st.cmd, status)
+  local level = level_map[status] or vim.log.levels.ERROR
 
   vim.schedule(function()
-    vim.notify(msg, success and vim.log.levels.INFO or vim.log.levels.ERROR, {
+    vim.notify(msg, level, {
       id = "cmd_progress_" .. spinner_id,
       title = "cmd",
       icon = icon,
@@ -207,17 +229,19 @@ end
 ---@param lines string[]
 ---@param title string
 local function show_buffer(lines, title)
-  local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-  vim.bo[buf].filetype = "cmd"
-  vim.bo[buf].buftype = "nofile"
-  vim.bo[buf].bufhidden = "wipe"
-  vim.bo[buf].swapfile = false
-  vim.bo[buf].modifiable = false
-  vim.bo[buf].readonly = true
-  vim.bo[buf].buflisted = false
-  vim.api.nvim_buf_set_name(buf, title)
-  vim.cmd("vsplit | buffer " .. buf)
+  vim.schedule(function()
+    local buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+    vim.bo[buf].filetype = "cmd"
+    vim.bo[buf].buftype = "nofile"
+    vim.bo[buf].bufhidden = "wipe"
+    vim.bo[buf].swapfile = false
+    vim.bo[buf].modifiable = false
+    vim.bo[buf].readonly = true
+    vim.bo[buf].buflisted = false
+    vim.api.nvim_buf_set_name(buf, title)
+    vim.cmd("vsplit | buffer " .. buf)
+  end)
 end
 
 ---Show output in a terminal buffer.
@@ -286,10 +310,11 @@ end
 
 ---Run a CLI command.
 ---@param cmd string[]
----@param on_done fun(code: integer, out: string, err: string)
+---@param spinner_id integer
+---@param on_done fun(code: integer, out: string, err: string, is_cancelled?: boolean)
 ---@param timeout? integer Timeout in milliseconds
 ---@return Cmd.RunResult? result Only if synchronous
-local function run_cli(cmd, on_done, timeout)
+local function run_cli(cmd, spinner_id, on_done, timeout)
   timeout = timeout or 30000
 
   ensure_cwd()
@@ -319,8 +344,13 @@ local function run_cli(cmd, on_done, timeout)
     if stderr and not stderr:is_closing() then
       stderr:close()
     end
+
+    local is_cancelled = code == 130
+    local final_out = out or ""
+    local final_err = err or ""
+
     vim.schedule(function()
-      on_done(code, out or "", err or "")
+      on_done(code, final_out, final_err, is_cancelled)
     end)
   end
 
@@ -334,14 +364,28 @@ local function run_cli(cmd, on_done, timeout)
     verbatim = nil,
     detached = nil,
     hide = nil,
-  }, function(code)
+  }, function(code, signal)
+    active_jobs[spinner_id] = nil
+
+    if signal == 2 then
+      code = 130
+    end -- SIGINT
+    if signal == 15 then
+      code = 143
+    end -- SIGTERM
+    if signal == 9 then
+      code = 137
+    end -- SIGKILL
+
     finish(code, stream_tostring(out_chunks), stream_tostring(err_chunks))
   end)
 
   if not process then
-    on_done(127, "", string.format("failed to spaw process: %s", cmd[1]))
+    on_done(127, "", string.format("failed to spawn process: %s", cmd[1]))
     return
   end
+
+  active_jobs[spinner_id] = process
 
   if stdout then
     read_stream(stdout, out_chunks)
@@ -355,11 +399,60 @@ local function run_cli(cmd, on_done, timeout)
   if timer then
     timer:start(timeout, 0, function()
       if process and not process:is_closing() then
-        process:kill("sigkill")
+        process:kill("sigterm")
+        vim.defer_fn(function()
+          if process and not process:is_closing() then
+            process:kill("sigkill")
+          end
+        end, 1000)
       end
       timer:close()
-      on_done(124, "", string.format("process killed after timeout: %s", cmd[1]))
+      finish(124, "", string.format("process killed after timeout: %s", cmd[1]))
     end)
+  end
+end
+
+---@param job uv.uv_process_t|nil
+local function cancel_with_fallback(job)
+  if not job or job:is_closing() then
+    return
+  end
+
+  job:kill("sigint")
+  vim.defer_fn(function()
+    if job and not job:is_closing() then
+      job:kill("sigkill")
+    end
+  end, 1000) -- give 1 second to terminate cleanly
+end
+
+---Cancel the currently running command.
+---@param spinner_id number|nil
+---@param all boolean
+---@return nil
+local function cancel_cmd(spinner_id, all)
+  if all then
+    local count = 0
+    for id, job in pairs(active_jobs) do
+      if job and not job:is_closing() then
+        cancel_with_fallback(job)
+        active_jobs[id] = nil
+        count = count + 1
+      end
+    end
+    notify(string.format("Cancelled %d running commands", count), "WARN")
+    return
+  end
+
+  local id = spinner_id or next_spinner_id
+  local job = active_jobs[id]
+
+  if job and not job:is_closing() then
+    cancel_with_fallback(job)
+    active_jobs[id] = nil
+    notify("Cancelled command #" .. id, "WARN")
+  else
+    notify("No active command to cancel", "WARN")
   end
 end
 
@@ -377,23 +470,33 @@ local function run(args, bang)
   else
     local spinner_id = start_cmd_spinner("cmd", table.concat(args, " "), table.concat(args, " "))
 
-    run_cli(args, function(code, out, err)
-      stop_cmd_spinner(spinner_id, code == 0)
+    run_cli(args, spinner_id, function(code, out, err, is_cancelled)
+      local status
 
-      if code ~= 0 then
-        notify(err ~= "" and err or out, "ERROR")
+      if is_cancelled then
+        status = "cancelled"
       else
-        local lines = vim.split(out, "\n")
+        status = code ~= 0 and "failed" or "completed"
+
+        local lines_string = out
+
+        if status == "failed" then
+          lines_string = err ~= "" and err or out
+        end
+
+        local lines = vim.split(lines_string, "\n")
         lines = trim_empty_lines(lines)
 
         if #lines > 0 then
-          show_buffer(lines, "cmd://" .. table.concat(args, " "))
-        else
-          notify("Command succeeded but no output", "INFO")
+          show_buffer(lines, "cmd://" .. table.concat(args, " ") .. "-" .. spinner_id)
         end
 
-        refresh_ui()
+        if status == "completed" then
+          refresh_ui()
+        end
       end
+
+      stop_cmd_spinner(spinner_id, status)
     end)
   end
 end
@@ -508,6 +611,15 @@ function M.setup(user_config)
     nargs = "*",
     bang = true,
     desc = "Run CLI command",
+  })
+
+  vim.api.nvim_create_user_command("CmdCancel", function(opts)
+    local id = tonumber(opts.args)
+    cancel_cmd(id, opts.bang)
+  end, {
+    bang = true,
+    nargs = "?",
+    desc = "Cancel the currently running Cmd (add ! to cancel all)",
   })
 
   vim.api.nvim_create_autocmd("VimLeavePre", {
