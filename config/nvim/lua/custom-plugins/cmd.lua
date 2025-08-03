@@ -418,7 +418,16 @@ function M.create_usercmd_if_not_exists()
   for executable, cmd_name in pairs(M.config.create_usercmd) do
     if vim.fn.executable(executable) == 1 and not existing_cmds[cmd_name] then
       vim.api.nvim_create_user_command(cmd_name, function(opts)
-        local args = { executable, unpack(opts.fargs) }
+        local fargs = vim.deepcopy(opts.fargs)
+
+        -- Expand '%' to current file path
+        for i, arg in ipairs(fargs) do
+          if arg == "%" then
+            fargs[i] = vim.fn.expand("%:p")
+          end
+        end
+
+        local args = { executable, unpack(fargs) }
         local bang = opts.bang
 
         local force_terminal_executable = M.config.force_terminal[executable] or {}
@@ -455,7 +464,14 @@ function M.setup(user_config)
 
   vim.api.nvim_create_user_command("Cmd", function(opts)
     local bang = opts.bang or false
-    local args = opts.fargs
+    local args = vim.deepcopy(opts.fargs)
+
+    -- Expand '%' to current file path
+    for i, arg in ipairs(args) do
+      if arg == "%" then
+        args[i] = vim.fn.expand("%:p")
+      end
+    end
 
     if opts.bang and opts.args == "!" then
       if vim.tbl_isempty(last_cmd) then
