@@ -172,10 +172,11 @@ local function start_cmd_spinner(title, msg, cmd)
           last = now
         end
 
-        notify(spin_state[spinner_id].msg, "INFO", {
+        local msg_with_spinner = string.format("%s %s", spinner_chars[idx], spin_state[spinner_id].msg)
+
+        notify(msg_with_spinner, "INFO", {
           id = "cmd_progress_" .. spinner_id,
           title = spin_state[spinner_id].title,
-          icon = spinner_chars[idx],
         })
       end)
     end)
@@ -213,14 +214,13 @@ local function stop_cmd_spinner(spinner_id, status)
 
   local icon = icon_map[status] or " "
 
-  local msg = string.format("[#%s] `%s` %s", spinner_id, st.cmd, status)
+  local msg = string.format("%s [#%s] `%s` %s", icon, spinner_id, st.cmd, status)
   local level = level_map[status] or vim.log.levels.ERROR
 
   vim.schedule(function()
     notify(msg, level, {
       id = "cmd_progress_" .. spinner_id,
       title = "cmd",
-      icon = icon,
     })
   end)
 end
