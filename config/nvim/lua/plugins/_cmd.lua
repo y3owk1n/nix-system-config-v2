@@ -27,12 +27,12 @@ function M.setup()
     },
     force_terminal = {
       git = {
-        "-p",
+        "add -p",
         "commit",
       },
       gh = {
-        "create",
-        "--watch",
+        "pr create",
+        "checks --watch",
       },
     },
     env = {
