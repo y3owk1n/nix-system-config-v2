@@ -315,7 +315,7 @@ end
 ---@param timeout? integer Timeout in milliseconds
 ---@return Cmd.RunResult? result Only if synchronous
 local function run_cli(cmd, spinner_id, on_done, timeout)
-  timeout = timeout or 30000
+  timeout = timeout or M.config.timeout
 
   ensure_cwd()
 
@@ -396,7 +396,7 @@ local function run_cli(cmd, spinner_id, on_done, timeout)
 
   -- Set up timeout
   timer = uv.new_timer()
-  if timer then
+  if timer and timeout then
     timer:start(timeout, 0, function()
       if process and not process:is_closing() then
         process:kill("sigterm")
@@ -450,7 +450,6 @@ local function cancel_cmd(spinner_id, all)
   if job and not job:is_closing() then
     cancel_with_fallback(job)
     active_jobs[id] = nil
-    notify("Cancelled command #" .. id, "WARN")
   else
     notify("No active command to cancel", "WARN")
   end
@@ -512,10 +511,12 @@ M.config = {}
 ---@field force_terminal? table<string, string[]> Detect any of these command to force terminal
 ---@field create_usercmd? table<string, string> Create user commands for these executables if it does'nt exists
 ---@field env? table<string, string[]> Environment variables to set for the command
+---@field timeout? integer Job timeout in ms. Default: 30000
 M.defaults = {
   force_terminal = {},
   create_usercmd = {},
   env = {},
+  timeout = 30000,
 }
 
 function M.create_usercmd_if_not_exists()
