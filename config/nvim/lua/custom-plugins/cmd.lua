@@ -214,7 +214,7 @@ local function stop_cmd_spinner(spinner_id, status)
 
   local icon = icon_map[status] or " "
 
-  local msg = string.format("%s [#%s] `%s` %s", icon, spinner_id, st.cmd, status)
+  local msg = string.format("%s [#%s] %s `%s`", icon, spinner_id, status, st.cmd)
   local level = level_map[status] or vim.log.levels.ERROR
 
   vim.schedule(function()
@@ -618,7 +618,7 @@ function M.setup(user_config)
   end, {
     nargs = "*",
     bang = true,
-    desc = "Run CLI command",
+    desc = "Run CLI command (add ! to run in terminal, add !! to rerun last command in terminal)",
   })
 
   vim.api.nvim_create_user_command("CmdCancel", function(opts)
