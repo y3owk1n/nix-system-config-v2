@@ -282,10 +282,13 @@ local function show_terminal(cmd, title)
       end
 
       vim.schedule(function()
-        if code == 2 then
+        -- 130 = Interrupted (Ctrl+C)
+        if code == 130 then
           pcall(vim.api.nvim_buf_delete, buf, { force = true })
           return
         end
+
+        local cmd_string = table.concat(cmd, " ")
 
         local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
         lines = trim_empty_lines(lines)
@@ -295,7 +298,7 @@ local function show_terminal(cmd, title)
             .. "\n...omitted...\n"
             .. table.concat(vim.list_slice(lines, #lines - 2, #lines), "\n")
 
-        notify(("cmd exited %d\n%s"):format(code, preview), "ERROR")
+        notify(string.format("`%s` exited %d\n%s", cmd_string, code, preview), "ERROR")
         pcall(vim.api.nvim_buf_delete, buf, { force = true })
       end)
     end,
