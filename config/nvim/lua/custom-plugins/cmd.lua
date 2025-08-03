@@ -8,10 +8,7 @@ local M = {}
 ------------------------------------------------------------------
 
 ---@type string
-local cwd = vim.fn.expand("%:p:h")
-if not uv.fs_stat(cwd .. "/.git") then
-  cwd = vim.fn.getcwd()
-end
+local cwd
 
 ---@type string[]
 local last_cmd = {}
@@ -20,20 +17,7 @@ local last_cmd = {}
 local spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
 
 ---@type integer
-local spinner_idx = 1
-
----@type integer
-local last_spinner = vim.uv.hrtime()
-
----@class Cmd.Progress
----@field id integer?
----@field timer uv.uv_timer_t?
----@field active boolean
-local cmd_progress = {
-  id = nil,
-  timer = nil,
-  active = false,
-}
+local next_spinner_id = 0
 
 ------------------------------------------------------------------
 -- Type Aliases
@@ -49,6 +33,16 @@ local cmd_progress = {
 ------------------------------------------------------------------
 -- Utility Functions
 ------------------------------------------------------------------
+
+local function ensure_cwd()
+  if cwd then
+    return
+  end
+  cwd = vim.fn.expand("%:p:h")
+  if not uv.fs_stat(cwd .. "/.git") then
+    cwd = vim.fn.getcwd()
+  end
+end
 
 ---Display a notification.
 ---@param msg string
@@ -90,8 +84,10 @@ local function trim_empty_lines(lines)
 end
 
 local function refresh_ui()
-  vim.cmd("redraw!")
-  vim.cmd("checktime")
+  vim.schedule(function()
+    vim.cmd("redraw!")
+    vim.cmd("checktime")
+  end)
 end
 
 ---Get the environment variables for a command.
@@ -124,56 +120,79 @@ end
 -- Spinners
 ------------------------------------------------------------------
 
+---@class Cmd.Spinner
+---@field timer uv.uv_timer_t|nil
+---@field active boolean
+---@field msg string
+---@field title string
+---@field cmd string
+local spin_state = {}
+
 ---Start a spinner.
 ---@param title string
 ---@param msg string
----@return nil
-local function start_cmd_spinner(title, msg)
-  if cmd_progress.active then
-    return
+---@return integer spinner_id
+local function start_cmd_spinner(title, msg, cmd)
+  next_spinner_id = next_spinner_id + 1
+  local spinner_id = next_spinner_id
+
+  local timer = uv.new_timer()
+  if timer then
+    spin_state[spinner_id] =
+      { timer = timer, active = true, msg = string.format("running `%s`", msg), title = title, cmd = cmd }
   end
 
-  cmd_progress.active = true
-  cmd_progress.timer = uv.new_timer()
-  cmd_progress.id = (cmd_progress.id or 0) + 1
+  -- local index for this spinner only
+  local idx = 1
+  local last = vim.uv.hrtime()
 
-  cmd_progress.timer:start(0, 100, function()
-    vim.schedule(function()
-      local now = vim.uv.hrtime()
-      if now - last_spinner > 80e6 then
-        spinner_idx = (spinner_idx % #spinner_chars) + 1
-        last_spinner = now
-      end
+  if timer then
+    timer:start(0, 100, function()
+      vim.schedule(function()
+        if not spin_state[spinner_id] or not spin_state[spinner_id].active then
+          return
+        end
 
-      local icon = spinner_chars[spinner_idx]
+        local now = vim.uv.hrtime()
 
-      vim.notify(msg, vim.log.levels.INFO, {
-        id = "cmd_progress_" .. cmd_progress.id,
-        title = title,
-        icon = icon,
-      })
+        if now - last > 80e6 then
+          idx = (idx % #spinner_chars) + 1
+          last = now
+        end
+
+        vim.notify(spin_state[spinner_id].msg, vim.log.levels.INFO, {
+          id = "cmd_progress_" .. spinner_id,
+          title = spin_state[spinner_id].title,
+          icon = spinner_chars[idx],
+        })
+      end)
     end)
-  end)
+  end
+
+  return spinner_id
 end
 
 ---Stop a spinner.
+---@param spinner_id integer
 ---@param success boolean
 ---@return nil
-local function stop_cmd_spinner(success)
-  if not cmd_progress.active then
+local function stop_cmd_spinner(spinner_id, success)
+  if not spinner_id or not spin_state[spinner_id] or not spin_state[spinner_id].active then
     return
   end
 
-  cmd_progress.timer:stop()
-  cmd_progress.timer:close()
-  cmd_progress.active = false
+  local st = spin_state[spinner_id]
+  st.active = false
+  st.timer:stop()
+  st.timer:close()
+  spin_state[spinner_id] = nil
 
   local icon = success and " " or " "
-  local msg = success and "Command completed" or "Command failed"
+  local msg = string.format("`%s` %s", st.cmd, success and "completed" or "failed")
 
   vim.schedule(function()
     vim.notify(msg, success and vim.log.levels.INFO or vim.log.levels.ERROR, {
-      id = "cmd_progress_" .. cmd_progress.id,
+      id = "cmd_progress_" .. spinner_id,
       title = "cmd",
       icon = icon,
     })
@@ -212,7 +231,6 @@ local function show_terminal(cmd, title)
   vim.bo[buf].buflisted = false
   vim.keymap.set("n", "q", function()
     vim.cmd("close")
-    refresh_ui()
   end, { buffer = buf, nowait = true })
 
   vim.api.nvim_buf_set_name(buf, title)
@@ -233,6 +251,8 @@ local function show_terminal(cmd, title)
     cwd = cwd,
     term = true,
     on_exit = function(_, code)
+      refresh_ui()
+
       if code == 0 then
         return
       end
@@ -266,22 +286,43 @@ end
 
 ---Run a CLI command.
 ---@param cmd string[]
----@param on_done? fun(code: integer, out: string, err: string)
+---@param on_done fun(code: integer, out: string, err: string)
 ---@param timeout? integer Timeout in milliseconds
 ---@return Cmd.RunResult? result Only if synchronous
 local function run_cli(cmd, on_done, timeout)
-  timeout = timeout or 30000 -- 30 seconds
-  local is_sync = on_done == nil
-  local result ---@type Cmd.RunResult?
+  timeout = timeout or 30000
 
-  if is_sync then
-    on_done = function(code, out, err)
-      result = { code = code, out = out, err = err }
-    end
-  end
+  ensure_cwd()
 
+  -- Create a coroutine
   local stdout, stderr = uv.new_pipe(false), uv.new_pipe(false)
   local out_chunks, err_chunks = {}, {}
+  local done = false
+  ---@type uv.uv_timer_t|nil
+  local timer
+
+  local function finish(code, out, err)
+    if done then
+      return
+    end
+    done = true
+
+    -- stop & close the timer so it can never fire
+    if timer and not timer:is_closing() then
+      timer:stop()
+      timer:close()
+    end
+
+    if stdout and not stdout:is_closing() then
+      stdout:close()
+    end
+    if stderr and not stderr:is_closing() then
+      stderr:close()
+    end
+    vim.schedule(function()
+      on_done(code, out or "", err or "")
+    end)
+  end
 
   local process = uv.spawn(cmd[1], {
     args = vim.list_slice(cmd, 2),
@@ -294,16 +335,13 @@ local function run_cli(cmd, on_done, timeout)
     detached = nil,
     hide = nil,
   }, function(code)
-    if stdout and not stdout:is_closing() then
-      stdout:close()
-    end
-    if stderr and not stderr:is_closing() then
-      stderr:close()
-    end
-    if on_done then
-      on_done(code, stream_tostring(out_chunks), stream_tostring(err_chunks))
-    end
+    finish(code, stream_tostring(out_chunks), stream_tostring(err_chunks))
   end)
+
+  if not process then
+    on_done(127, "", string.format("failed to spaw process: %s", cmd[1]))
+    return
+  end
 
   if stdout then
     read_stream(stdout, out_chunks)
@@ -312,24 +350,16 @@ local function run_cli(cmd, on_done, timeout)
     read_stream(stderr, err_chunks)
   end
 
-  local timer = uv.new_timer()
+  -- Set up timeout
+  timer = uv.new_timer()
   if timer then
     timer:start(timeout, 0, function()
       if process and not process:is_closing() then
         process:kill("sigkill")
-        if on_done then
-          on_done(124, "", "process killed after timeout")
-        end
       end
       timer:close()
+      on_done(124, "", string.format("process killed after timeout: %s", cmd[1]))
     end)
-  end
-
-  if is_sync then
-    vim.wait(timeout + 100, function()
-      return result ~= nil
-    end, 10)
-    return result
   end
 end
 
@@ -345,32 +375,24 @@ local function run(args, bang)
   if bang then
     show_terminal(args, "cmd://" .. table.concat(args, " "))
   else
-    start_cmd_spinner("cmd", table.concat(args, " "))
+    local spinner_id = start_cmd_spinner("cmd", table.concat(args, " "), table.concat(args, " "))
 
-    local res = run_cli(args)
+    run_cli(args, function(code, out, err)
+      stop_cmd_spinner(spinner_id, code == 0)
 
-    if not res then
-      stop_cmd_spinner(false)
-      notify(string.format("failed to get response from cli with cmd %s", table.concat(args, " ")), "ERROR")
-      return
-    end
-
-    stop_cmd_spinner(res.code == 0)
-
-    local out = res.out
-    local lines = vim.split(out, "\n")
-    lines = trim_empty_lines(lines)
-
-    if res.code ~= 0 then
-      notify(res.err ~= "" and res.err or res.out, "ERROR")
-    else
-      if #lines > 0 then
-        show_buffer(lines, "cmd://" .. table.concat(args, " "))
+      if code ~= 0 then
+        notify(err ~= "" and err or out, "ERROR")
       else
-        notify("Nothing to show after trimmed", "WARN")
+        local lines = vim.split(out, "\n")
+        lines = trim_empty_lines(lines)
+
+        if #lines > 0 then
+          show_buffer(lines, "cmd://" .. table.concat(args, " "))
+        end
+
+        refresh_ui()
       end
-      refresh_ui()
-    end
+    end)
   end
 end
 
@@ -472,6 +494,17 @@ function M.setup(user_config)
     nargs = "*",
     bang = true,
     desc = "Run CLI command",
+  })
+
+  vim.api.nvim_create_autocmd("VimLeavePre", {
+    callback = function()
+      for _, st in pairs(spin_state) do
+        if st.timer and not st.timer:is_closing() then
+          st.timer:stop()
+          st.timer:close()
+        end
+      end
+    end,
   })
 end
 
