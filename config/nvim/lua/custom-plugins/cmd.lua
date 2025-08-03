@@ -484,12 +484,7 @@ local function run(args, bang)
       else
         status = code == 0 and "completed" or "failed"
 
-        local text = table.concat(
-          vim.tbl_filter(function(s)
-            return s ~= ""
-          end, { err, out }),
-          "\n"
-        )
+        local text = table.concat(trim_empty_lines({ err, out }), "\n")
 
         local lines = vim.split(text, "\n")
         lines = trim_empty_lines(lines)
