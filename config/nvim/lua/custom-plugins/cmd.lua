@@ -50,7 +50,7 @@ end
 ---Display a notification.
 ---@param msg string
 ---@param lvl Cmd.LogLevel
----@param opts table
+---@param opts? table
 ---@return nil
 local function notify(msg, lvl, opts)
   opts = opts or {}
@@ -137,6 +137,7 @@ local spin_state = {}
 ---Start a spinner.
 ---@param title string
 ---@param msg string
+---@param cmd string
 ---@return integer spinner_id
 local function start_cmd_spinner(title, msg, cmd)
   next_spinner_id = next_spinner_id + 1
