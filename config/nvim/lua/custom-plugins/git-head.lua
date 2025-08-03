@@ -5,9 +5,6 @@ local M = {}
 -- Config & state
 -- ------------------------------------------------------------------
 
----@type string
-local cwd
-
 ---Stores info about a Git repo being watched
 ---@class GitHead.Repo
 ---@field buffers table<integer, boolean> Buffers associated with this repo
@@ -33,17 +30,6 @@ local cache = {}
 -- low-level helpers
 -- ------------------------------------------------------------------
 
----Ensure current working directory is set
-local function ensure_cwd()
-  if cwd then
-    return
-  end
-  cwd = vim.fn.expand("%:p:h")
-  if not vim.uv.fs_stat(cwd .. "/.git") then
-    cwd = vim.fn.getcwd()
-  end
-end
-
 ---Build a git command with standard args
 ---@param args string[]
 ---@return string[]
@@ -53,16 +39,16 @@ end
 
 ---Run a git command asynchronously
 ---@param cmd string[]
----@param _cwd string
+---@param cwd string
 ---@param on_done fun(code: integer, stdout: string)
 ---@return nil
-local function spawn(cmd, _cwd, on_done)
+local function spawn(cmd, cwd, on_done)
   local out = {}
   local stdout = vim.uv.new_pipe()
   local handle
   handle = vim.uv.spawn(cmd[1], {
     args = vim.list_slice(cmd, 2),
-    cwd = _cwd,
+    cwd = cwd,
     stdio = { nil, stdout, nil },
     env = nil,
     uid = nil,
@@ -213,9 +199,9 @@ local function enable_buf(buf)
     return
   end
 
-  ensure_cwd()
+  local dir = vim.fn.fnamemodify(path, ":h")
 
-  spawn(git_cmd({ "rev-parse", "--git-dir", "--show-toplevel" }), cwd, function(code, out)
+  spawn(git_cmd({ "rev-parse", "--git-dir", "--show-toplevel" }), dir, function(code, out)
     if code ~= 0 then
       return
     end
