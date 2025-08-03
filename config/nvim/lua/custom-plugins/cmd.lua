@@ -388,6 +388,8 @@ local function run(args, bang)
 
         if #lines > 0 then
           show_buffer(lines, "cmd://" .. table.concat(args, " "))
+        else
+          notify("Command succeeded but no output", "INFO")
         end
 
         refresh_ui()
@@ -420,11 +422,9 @@ function M.create_usercmd_if_not_exists()
       vim.api.nvim_create_user_command(cmd_name, function(opts)
         local fargs = vim.deepcopy(opts.fargs)
 
-        -- Expand '%' to current file path
+        -- to support expanding the args like %
         for i, arg in ipairs(fargs) do
-          if arg == "%" then
-            fargs[i] = vim.fn.expand("%:p")
-          end
+          fargs[i] = vim.fn.expand(arg)
         end
 
         local args = { executable, unpack(fargs) }
@@ -466,11 +466,9 @@ function M.setup(user_config)
     local bang = opts.bang or false
     local args = vim.deepcopy(opts.fargs)
 
-    -- Expand '%' to current file path
+    -- to support expanding the args like %
     for i, arg in ipairs(args) do
-      if arg == "%" then
-        args[i] = vim.fn.expand("%:p")
-      end
+      args[i] = vim.fn.expand(arg)
     end
 
     if opts.bang and opts.args == "!" then
