@@ -40,7 +40,10 @@ function M.setup()
       --   "GH_PAGER=cat",
       -- },
     },
-    prompt_pattern_to_remove = "^",
+    completion = {
+      enabled = true,
+      prompt_pattern_to_remove = "^",
+    },
   }
 
   plugin.setup(plugin_opts)

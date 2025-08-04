@@ -150,8 +150,8 @@ local function sanitize_file_output(handle)
     line = line:gsub("%s+$", "")
 
     -- Remove user-specified prompt
-    if M.config.prompt_pattern_to_remove then
-      line = line:gsub(M.config.prompt_pattern_to_remove, "")
+    if M.config.completion.prompt_pattern_to_remove then
+      line = line:gsub(M.config.completion.prompt_pattern_to_remove, "")
     end
 
     local token = line:match("^%s*(%-%-?[%w%-]*%w)%s") -- e.g., --help, -v
@@ -262,6 +262,10 @@ end
 ---@param cmd_line string
 ---@param cursor_pos integer
 local function cached_shell_complete(executable, lead_args, cmd_line, cursor_pos)
+  if M.config.completion.enabled == false then
+    return {}
+  end
+
   --- this should be the root `Cmd` call rather than user defined commands
   --- we can then set the right executable and reconstruct the cmd_line to let it work normally
   if not executable then
@@ -273,7 +277,7 @@ local function cached_shell_complete(executable, lead_args, cmd_line, cursor_pos
     cmd_line = table.concat(cmd_line_table, " ")
   end
 
-  local shell = M.config.shell or vim.env.SHELL or "/bin/bash"
+  local shell = M.config.completion.shell or vim.env.SHELL or "/bin/bash"
   local script_path = write_temp_script(shell)
   if not script_path then
     notify("Failed to create temp script", "ERROR")
@@ -691,19 +695,26 @@ end
 ---@type Cmd.Config
 M.config = {}
 
+---@class Cmd.Config.Completion
+---@field enabled? boolean Whether to enable completion. Default: false
+---@field shell? string Shell to use for the completion. Default: vim.env.SHELL
+---@field prompt_pattern_to_remove? string Regex pattern to remove from the output, e.g. "^"
+
 ---@class Cmd.Config
 ---@field force_terminal? table<string, string[]> Detect any of these command to force terminal
 ---@field create_usercmd? table<string, string> Create user commands for these executables if it does'nt exists
 ---@field env? table<string, string[]> Environment variables to set for the command
 ---@field timeout? integer Job timeout in ms. Default: 30000
----@field shell? string Shell to use for the completion. Default: vim.env.SHELL
----@field prompt_pattern_to_remove? string Regex pattern to remove from the output, e.g. "^"
+---@field completion? Cmd.Config.Completion Completion configuration
 M.defaults = {
   force_terminal = {},
   create_usercmd = {},
   env = {},
   timeout = 30000,
-  shell = vim.env.SHELL or "/bin/sh",
+  completion = {
+    enabled = false,
+    shell = vim.env.SHELL or "/bin/sh",
+  },
 }
 
 function M.create_usercmd_if_not_exists()
