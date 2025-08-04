@@ -140,6 +140,7 @@ end
 ---@param handle file*
 ---@return string[]
 local function sanitize_file_output(handle)
+  ---@type string[]
   local cleaned = {}
 
   for line in handle:lines() do
@@ -147,19 +148,25 @@ local function sanitize_file_output(handle)
     line = line:gsub("\27%[[0-9;]*m", "")
 
     -- Trim trailing whitespace
-    line = line:gsub("%s+$", "")
+    line = line:gsub("^%s+", ""):gsub("%s+$", "")
 
     -- Remove user-specified prompt
     if M.config.completion.prompt_pattern_to_remove then
       line = line:gsub(M.config.completion.prompt_pattern_to_remove, "")
     end
 
-    local token = line:match("^%s*(%-%-?[%w%-]*%w)%s") -- e.g., --help, -v
-      or line:match("^%s*(%-%-?)%s") -- just --
-      or line:match("^%s*(%w[%w%-]*)") -- e.g., build
+    -- Trim leading & trailing whitespace
+    line = line:gsub("^%s+", ""):gsub("%s+$", "")
 
-    if token then
-      table.insert(cleaned, token)
+    -- Split the line by tab
+    local splitted_item = vim.split(line, "\t")
+
+    -- Get the first item, which is the command
+    local first = splitted_item[1]
+
+    -- Only add the first item if it's not empty
+    if first and first ~= "" then
+      table.insert(cleaned, first)
     end
   end
 
