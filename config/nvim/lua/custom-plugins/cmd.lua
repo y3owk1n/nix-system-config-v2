@@ -679,6 +679,11 @@ local function run(args, bang)
         local lines = vim.split(text, "\n")
         lines = trim_empty_lines(lines)
 
+        for i, line in ipairs(lines) do
+          --- Strip ANSI escape codes
+          lines[i] = line:gsub("\27%[[0-9;]*m", "")
+        end
+
         if #lines > 0 then
           show_buffer(lines, "cmd://" .. table.concat(args, " ") .. "-" .. spinner_id)
         else
