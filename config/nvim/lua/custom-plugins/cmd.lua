@@ -1,7 +1,16 @@
 local uv = vim.uv or vim.loop
 
 ---@class Cmd
-local M = {}
+local Cmd = {}
+
+---@class Cmd.Helpers
+local H = {}
+
+---@class Cmd.UI
+local U = {}
+
+---@class Cmd.Core
+local C = {}
 
 ------------------------------------------------------------------
 -- Constants & Setup
@@ -34,7 +43,7 @@ local complete_cache = {}
 ---@field msg string
 ---@field title string
 ---@field cmd string
-local spin_state = {}
+local spinner_state = {}
 
 ------------------------------------------------------------------
 -- Type Aliases
@@ -48,10 +57,11 @@ local spin_state = {}
 ---@field err string
 
 ------------------------------------------------------------------
--- Utility Functions
+-- Helpers
 ------------------------------------------------------------------
 
-local function ensure_cwd()
+---Ensure that the current working directory is set.
+function H.ensure_cwd()
   if cwd then
     return
   end
@@ -66,7 +76,7 @@ end
 ---@param lvl Cmd.LogLevel
 ---@param opts? table
 ---@return nil
-local function notify(msg, lvl, opts)
+function H.notify(msg, lvl, opts)
   opts = opts or {}
   opts.title = opts.title or "cmd"
   vim.notify(msg, vim.log.levels[lvl:upper()], opts)
@@ -75,7 +85,7 @@ end
 ---Stream chunks to a string.
 ---@param chunks string[]
 ---@return string
-local function stream_tostring(chunks)
+function H.stream_tostring(chunks)
   return (table.concat(chunks):gsub("\r", "\n"))
 end
 
@@ -83,7 +93,7 @@ end
 ---@param pipe uv.uv_stream_t
 ---@param buffer string[]
 ---@return nil
-local function read_stream(pipe, buffer)
+function H.read_stream(pipe, buffer)
   uv.read_start(pipe, function(err, chunk)
     if err then
       return
@@ -97,24 +107,17 @@ end
 ---Trim empty lines from a string array.
 ---@param lines string[]
 ---@return string[]
-local function trim_empty_lines(lines)
+function H.trim_empty_lines(lines)
   return vim.tbl_filter(function(s)
     return s ~= ""
   end, lines)
 end
 
-local function refresh_ui()
-  vim.schedule(function()
-    vim.cmd("redraw!")
-    vim.cmd("checktime")
-  end)
-end
-
 ---Get the environment variables for a command.
 ---@param executable string
 ---@return string[]|nil
-local function get_cmd_env(executable)
-  local env = M.config.env or {}
+function H.get_cmd_env(executable)
+  local env = Cmd.config.env or {}
 
   ---@type string[]
   local found = {}
@@ -139,7 +142,7 @@ end
 ---Sanitize the output of a file handle.
 ---@param handle file*
 ---@return string[]
-local function sanitize_file_output(handle)
+function H.sanitize_file_output(handle)
   ---@type string[]
   local cleaned = {}
 
@@ -151,8 +154,8 @@ local function sanitize_file_output(handle)
     line = line:gsub("^%s+", ""):gsub("%s+$", "")
 
     -- Remove user-specified prompt
-    if M.config.completion.prompt_pattern_to_remove then
-      line = line:gsub(M.config.completion.prompt_pattern_to_remove, "")
+    if Cmd.config.completion.prompt_pattern_to_remove then
+      line = line:gsub(Cmd.config.completion.prompt_pattern_to_remove, "")
     end
 
     -- Trim leading & trailing whitespace
@@ -173,16 +176,12 @@ local function sanitize_file_output(handle)
   return cleaned
 end
 
-------------------------------------------------------------------
--- Shell
-------------------------------------------------------------------
-
 ---Get the right shell arguments for the given shell.
 ---@param shell string
 ---@param script_path string
 ---@param input string
 ---@return string
-local function shell_args(shell, script_path, input)
+function H.shell_args(shell, script_path, input)
   local shell_name = vim.fn.fnamemodify(shell, ":t")
 
   if shell_name == "fish" then
@@ -199,7 +198,7 @@ end
 ---Write a temporary shell script.
 ---@param shell string
 ---@return string|nil
-local function write_temp_script(shell)
+function H.write_temp_script(shell)
   if temp_script_cache[shell] then
     return temp_script_cache[shell]
   end
@@ -260,68 +259,7 @@ done
 end
 
 ------------------------------------------------------------------
--- Completion
-------------------------------------------------------------------
-
----Get the cached shell completion for the given executable.
----@param executable? string
----@param lead_args string
----@param cmd_line string
----@param cursor_pos integer
-local function cached_shell_complete(executable, lead_args, cmd_line, cursor_pos)
-  if M.config.completion.enabled == false then
-    return {}
-  end
-
-  --- this should be the root `Cmd` call rather than user defined commands
-  --- we can then set the right executable and reconstruct the cmd_line to let it work normally
-  if not executable then
-    local cmd_line_table = vim.split(cmd_line, " ")
-    table.remove(cmd_line_table, 1)
-
-    executable = cmd_line_table[1]
-
-    cmd_line = table.concat(cmd_line_table, " ")
-  end
-
-  local shell = M.config.completion.shell or vim.env.SHELL or "/bin/bash"
-  local script_path = write_temp_script(shell)
-  if not script_path then
-    notify("Failed to create temp script", "ERROR")
-    return {}
-  end
-
-  -- Build the exact line the shell would see
-  local full_line = cmd_line:sub(1, cursor_pos)
-
-  local full_line_table = vim.split(full_line, " ")
-  full_line_table[1] = executable
-  full_line = table.concat(full_line_table, " ")
-
-  local cache_key = executable .. "\0" .. full_line
-
-  if complete_cache[cache_key] then
-    return complete_cache[cache_key]
-  end
-
-  local cmd = shell_args(shell, script_path, full_line)
-  local handle = io.popen(cmd, "r")
-  if not handle then
-    notify("Failed to open shell for completion", "ERROR")
-    return {}
-  end
-
-  local completions = sanitize_file_output(handle)
-
-  handle:close()
-
-  complete_cache[cache_key] = completions
-
-  return completions
-end
-
-------------------------------------------------------------------
--- Spinners
+-- UI
 ------------------------------------------------------------------
 
 ---Start a spinner.
@@ -329,13 +267,13 @@ end
 ---@param msg string
 ---@param cmd string
 ---@return integer spinner_id
-local function start_cmd_spinner(title, msg, cmd)
+function U.start_cmd_spinner(title, msg, cmd)
   next_spinner_id = next_spinner_id + 1
   local spinner_id = next_spinner_id
 
   local timer = uv.new_timer()
   if timer then
-    spin_state[spinner_id] = {
+    spinner_state[spinner_id] = {
       timer = timer,
       active = true,
       msg = string.format("[#%s] running `%s`", spinner_id, msg),
@@ -346,12 +284,12 @@ local function start_cmd_spinner(title, msg, cmd)
 
   -- local index for this spinner only
   local idx = 1
-  local last = vim.uv.hrtime()
+  local last = uv.hrtime()
 
   if timer then
     timer:start(0, 100, function()
       vim.schedule(function()
-        if not spin_state[spinner_id] or not spin_state[spinner_id].active then
+        if not spinner_state[spinner_id] or not spinner_state[spinner_id].active then
           return
         end
 
@@ -362,11 +300,11 @@ local function start_cmd_spinner(title, msg, cmd)
           last = now
         end
 
-        local msg_with_spinner = string.format("%s %s", spinner_chars[idx], spin_state[spinner_id].msg)
+        local msg_with_spinner = string.format("%s %s", spinner_chars[idx], spinner_state[spinner_id].msg)
 
-        notify(msg_with_spinner, "INFO", {
+        H.notify(msg_with_spinner, "INFO", {
           id = "cmd_progress_" .. spinner_id,
-          title = spin_state[spinner_id].title,
+          title = spinner_state[spinner_id].title,
         })
       end)
     end)
@@ -379,16 +317,16 @@ end
 ---@param spinner_id integer
 ---@param status "completed"|"failed"|"cancelled"
 ---@return nil
-local function stop_cmd_spinner(spinner_id, status)
-  if not spinner_id or not spin_state[spinner_id] or not spin_state[spinner_id].active then
+function U.stop_cmd_spinner(spinner_id, status)
+  if not spinner_id or not spinner_state[spinner_id] or not spinner_state[spinner_id].active then
     return
   end
 
-  local st = spin_state[spinner_id]
+  local st = spinner_state[spinner_id]
   st.active = false
   st.timer:stop()
   st.timer:close()
-  spin_state[spinner_id] = nil
+  spinner_state[spinner_id] = nil
 
   local icon_map = {
     completed = " ",
@@ -408,21 +346,17 @@ local function stop_cmd_spinner(spinner_id, status)
   local level = level_map[status] or vim.log.levels.ERROR
 
   vim.schedule(function()
-    notify(msg, level, {
+    H.notify(msg, level, {
       id = "cmd_progress_" .. spinner_id,
       title = "cmd",
     })
   end)
 end
 
-------------------------------------------------------------------
--- UI Helpers
-------------------------------------------------------------------
-
 ---Show output in a scratch buffer (readonly, vsplit).
 ---@param lines string[]
 ---@param title string
-local function show_buffer(lines, title)
+function U.show_buffer(lines, title)
   vim.schedule(function()
     local buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
@@ -441,7 +375,7 @@ end
 ---Show output in a terminal buffer.
 ---@param cmd string[]
 ---@param title string
-local function show_terminal(cmd, title)
+function U.show_terminal(cmd, title)
   local buf = vim.api.nvim_create_buf(false, true)
   vim.bo[buf].filetype = "cmd"
   vim.bo[buf].bufhidden = "wipe"
@@ -454,7 +388,7 @@ local function show_terminal(cmd, title)
   vim.api.nvim_buf_set_name(buf, title)
   vim.cmd("botright split | buffer " .. buf)
 
-  local env = get_cmd_env(cmd[1])
+  local env = H.get_cmd_env(cmd[1])
 
   if env then
     local env_copy = vim.deepcopy(env)
@@ -469,7 +403,7 @@ local function show_terminal(cmd, title)
     cwd = cwd,
     term = true,
     on_exit = function(_, code)
-      refresh_ui()
+      U.refresh_ui()
 
       if code == 0 then
         return
@@ -485,14 +419,14 @@ local function show_terminal(cmd, title)
         local cmd_string = table.concat(cmd, " ")
 
         local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-        lines = trim_empty_lines(lines)
+        lines = H.trim_empty_lines(lines)
 
         local preview = (#lines <= 6) and table.concat(lines, "\n")
           or table.concat(vim.list_slice(lines, 1, 3), "\n")
             .. "\n...omitted...\n"
             .. table.concat(vim.list_slice(lines, #lines - 2, #lines), "\n")
 
-        notify(string.format("`%s` exited %d\n%s", cmd_string, code, preview), "ERROR")
+        H.notify(string.format("`%s` exited %d\n%s", cmd_string, code, preview), "ERROR")
         pcall(vim.api.nvim_buf_delete, buf, { force = true })
       end)
     end,
@@ -501,8 +435,15 @@ local function show_terminal(cmd, title)
   vim.cmd("startinsert")
 end
 
+function U.refresh_ui()
+  vim.schedule(function()
+    vim.cmd("redraw!")
+    vim.cmd("checktime")
+  end)
+end
+
 ------------------------------------------------------------------
--- Process Management
+-- Core
 ------------------------------------------------------------------
 
 ---Run a CLI command.
@@ -511,10 +452,10 @@ end
 ---@param on_done fun(code: integer, out: string, err: string, is_cancelled?: boolean)
 ---@param timeout? integer Timeout in milliseconds
 ---@return Cmd.RunResult? result Only if synchronous
-local function run_cli(cmd, spinner_id, on_done, timeout)
-  timeout = timeout or M.config.timeout
+function C.exec_cli(cmd, spinner_id, on_done, timeout)
+  timeout = timeout or Cmd.config.timeout
 
-  ensure_cwd()
+  H.ensure_cwd()
 
   -- Create a coroutine
   local stdout, stderr = uv.new_pipe(false), uv.new_pipe(false)
@@ -574,7 +515,7 @@ local function run_cli(cmd, spinner_id, on_done, timeout)
       code = 137
     end -- SIGKILL
 
-    finish(code, stream_tostring(out_chunks), stream_tostring(err_chunks))
+    finish(code, H.stream_tostring(out_chunks), H.stream_tostring(err_chunks))
   end)
 
   if not process then
@@ -585,10 +526,10 @@ local function run_cli(cmd, spinner_id, on_done, timeout)
   active_jobs[spinner_id] = process
 
   if stdout then
-    read_stream(stdout, out_chunks)
+    H.read_stream(stdout, out_chunks)
   end
   if stderr then
-    read_stream(stderr, err_chunks)
+    H.read_stream(stderr, err_chunks)
   end
 
   -- Set up timeout
@@ -610,7 +551,7 @@ local function run_cli(cmd, spinner_id, on_done, timeout)
 end
 
 ---@param job uv.uv_process_t|nil
-local function cancel_with_fallback(job)
+function C.cancel_with_fallback(job)
   if not job or job:is_closing() then
     return
   end
@@ -632,12 +573,12 @@ local function cancel_cmd(spinner_id, all)
     local count = 0
     for id, job in pairs(active_jobs) do
       if job and not job:is_closing() then
-        cancel_with_fallback(job)
+        C.cancel_with_fallback(job)
         active_jobs[id] = nil
         count = count + 1
       end
     end
-    notify(string.format("Cancelled %d running commands", count), "WARN")
+    H.notify(string.format("Cancelled %d running commands", count), "WARN")
     return
   end
 
@@ -645,28 +586,81 @@ local function cancel_cmd(spinner_id, all)
   local job = active_jobs[id]
 
   if job and not job:is_closing() then
-    cancel_with_fallback(job)
+    C.cancel_with_fallback(job)
     active_jobs[id] = nil
   else
-    notify("No active command to cancel", "WARN")
+    H.notify("No active command to cancel", "WARN")
   end
 end
 
-------------------------------------------------------------------
--- Execution Dispatcher
-------------------------------------------------------------------
+---Get the cached shell completion for the given executable.
+---@param executable? string
+---@param lead_args string
+---@param cmd_line string
+---@param cursor_pos integer
+function C.cached_shell_complete(executable, lead_args, cmd_line, cursor_pos)
+  if Cmd.config.completion.enabled == false then
+    return {}
+  end
+
+  --- this should be the root `Cmd` call rather than user defined commands
+  --- we can then set the right executable and reconstruct the cmd_line to let it work normally
+  if not executable then
+    local cmd_line_table = vim.split(cmd_line, " ")
+    table.remove(cmd_line_table, 1)
+
+    executable = cmd_line_table[1]
+
+    cmd_line = table.concat(cmd_line_table, " ")
+  end
+
+  local shell = Cmd.config.completion.shell or vim.env.SHELL or "/bin/bash"
+  local script_path = H.write_temp_script(shell)
+  if not script_path then
+    H.notify("Failed to create temp script", "ERROR")
+    return {}
+  end
+
+  -- Build the exact line the shell would see
+  local full_line = cmd_line:sub(1, cursor_pos)
+
+  local full_line_table = vim.split(full_line, " ")
+  full_line_table[1] = executable
+  full_line = table.concat(full_line_table, " ")
+
+  local cache_key = executable .. "\0" .. full_line
+
+  if complete_cache[cache_key] then
+    return complete_cache[cache_key]
+  end
+
+  local cmd = H.shell_args(shell, script_path, full_line)
+  local handle = io.popen(cmd, "r")
+  if not handle then
+    H.notify("Failed to open shell for completion", "ERROR")
+    return {}
+  end
+
+  local completions = H.sanitize_file_output(handle)
+
+  handle:close()
+
+  complete_cache[cache_key] = completions
+
+  return completions
+end
 
 ---Run `cmd` command in terminal (interactive) or buffer (info).
 ---@param args string[]
 ---@param bang boolean
-local function run(args, bang)
+function C.run_cmd(args, bang)
   last_cmd = args
   if bang then
-    show_terminal(args, "cmd://" .. table.concat(args, " "))
+    U.show_terminal(args, "cmd://" .. table.concat(args, " "))
   else
-    local spinner_id = start_cmd_spinner("cmd", table.concat(args, " "), table.concat(args, " "))
+    local spinner_id = U.start_cmd_spinner("cmd", table.concat(args, " "), table.concat(args, " "))
 
-    run_cli(args, spinner_id, function(code, out, err, is_cancelled)
+    C.exec_cli(args, spinner_id, function(code, out, err, is_cancelled)
       local status
 
       if is_cancelled then
@@ -674,10 +668,10 @@ local function run(args, bang)
       else
         status = code == 0 and "completed" or "failed"
 
-        local text = table.concat(trim_empty_lines({ err, out }), "\n")
+        local text = table.concat(H.trim_empty_lines({ err, out }), "\n")
 
         local lines = vim.split(text, "\n")
-        lines = trim_empty_lines(lines)
+        lines = H.trim_empty_lines(lines)
 
         for i, line in ipairs(lines) do
           --- Strip ANSI escape codes
@@ -685,17 +679,17 @@ local function run(args, bang)
         end
 
         if #lines > 0 then
-          show_buffer(lines, "cmd://" .. table.concat(args, " ") .. "-" .. spinner_id)
+          U.show_buffer(lines, "cmd://" .. table.concat(args, " ") .. "-" .. spinner_id)
         else
-          notify("Completed but no output lines", "INFO")
+          H.notify("Completed but no output lines", "INFO")
         end
 
         if status == "completed" then
-          refresh_ui()
+          U.refresh_ui()
         end
       end
 
-      stop_cmd_spinner(spinner_id, status)
+      U.stop_cmd_spinner(spinner_id, status)
     end)
   end
 end
@@ -705,7 +699,7 @@ end
 ------------------------------------------------------------------
 
 ---@type Cmd.Config
-M.config = {}
+Cmd.config = {}
 
 ---@class Cmd.Config.Completion
 ---@field enabled? boolean Whether to enable completion. Default: false
@@ -718,7 +712,7 @@ M.config = {}
 ---@field env? table<string, string[]> Environment variables to set for the command
 ---@field timeout? integer Job timeout in ms. Default: 30000
 ---@field completion? Cmd.Config.Completion Completion configuration
-M.defaults = {
+Cmd.defaults = {
   force_terminal = {},
   create_usercmd = {},
   env = {},
@@ -729,9 +723,9 @@ M.defaults = {
   },
 }
 
-function M.create_usercmd_if_not_exists()
+function Cmd.create_usercmd_if_not_exists()
   local existing_cmds = vim.api.nvim_get_commands({})
-  for executable, cmd_name in pairs(M.config.create_usercmd) do
+  for executable, cmd_name in pairs(Cmd.config.create_usercmd) do
     if vim.fn.executable(executable) == 1 and not existing_cmds[cmd_name] then
       vim.api.nvim_create_user_command(cmd_name, function(opts)
         local fargs = vim.deepcopy(opts.fargs)
@@ -744,7 +738,7 @@ function M.create_usercmd_if_not_exists()
         local args = { executable, unpack(fargs) }
         local bang = opts.bang
 
-        local force_terminal_executable = M.config.force_terminal[executable] or {}
+        local force_terminal_executable = Cmd.config.force_terminal[executable] or {}
 
         if not vim.tbl_isempty(force_terminal_executable) then
           for _, value in ipairs(force_terminal_executable) do
@@ -758,28 +752,28 @@ function M.create_usercmd_if_not_exists()
           end
         end
 
-        run(args, bang)
+        C.run_cmd(args, bang)
       end, {
         nargs = "*",
         bang = true,
         complete = function(...)
-          return cached_shell_complete(executable, ...)
+          return C.cached_shell_complete(executable, ...)
         end,
         desc = "Auto-generated command for " .. executable,
       })
     else
-      notify(("%s is not executable or already exists"):format(executable), "WARN")
+      H.notify(("%s is not executable or already exists"):format(executable), "WARN")
     end
   end
 end
 
 ---Setup the `:Cmd` command.
 ---@param user_config? Cmd.Config
-function M.setup(user_config)
-  M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
+function Cmd.setup(user_config)
+  Cmd.config = vim.tbl_deep_extend("force", Cmd.defaults, user_config or {})
 
-  if M.config.create_usercmd and not vim.tbl_isempty(M.config.create_usercmd) then
-    M.create_usercmd_if_not_exists()
+  if Cmd.config.create_usercmd and not vim.tbl_isempty(Cmd.config.create_usercmd) then
+    Cmd.create_usercmd_if_not_exists()
   end
 
   vim.api.nvim_create_user_command("Cmd", function(opts)
@@ -793,7 +787,7 @@ function M.setup(user_config)
 
     if opts.bang and opts.args == "!" then
       if vim.tbl_isempty(last_cmd) then
-        notify("No previous command to re-run", "WARN")
+        H.notify("No previous command to re-run", "WARN")
         return
       end
       args = last_cmd
@@ -801,18 +795,18 @@ function M.setup(user_config)
     end
 
     if #args < 1 then
-      notify("No arguments provided", "WARN")
+      H.notify("No arguments provided", "WARN")
       return
     end
 
     local executable = args[1]
 
     if vim.fn.executable(executable) == 0 then
-      notify(("%s is not executable"):format(executable), "WARN")
+      H.notify(("%s is not executable"):format(executable), "WARN")
       return
     end
 
-    local force_terminal_executable = M.config.force_terminal[executable] or {}
+    local force_terminal_executable = Cmd.config.force_terminal[executable] or {}
 
     if not vim.tbl_isempty(force_terminal_executable) then
       for _, value in pairs(force_terminal_executable) do
@@ -826,12 +820,12 @@ function M.setup(user_config)
       end
     end
 
-    run(args, bang)
+    C.run_cmd(args, bang)
   end, {
     nargs = "*",
     bang = true,
     complete = function(...)
-      return cached_shell_complete(nil, ...)
+      return C.cached_shell_complete(nil, ...)
     end,
     desc = "Run CLI command (add ! to run in terminal, add !! to rerun last command in terminal)",
   })
@@ -848,7 +842,7 @@ function M.setup(user_config)
   vim.api.nvim_create_autocmd("VimLeavePre", {
     callback = function()
       -- stop all timers
-      for _, st in pairs(spin_state) do
+      for _, st in pairs(spinner_state) do
         if st.timer and not st.timer:is_closing() then
           st.timer:stop()
           st.timer:close()
@@ -863,4 +857,4 @@ function M.setup(user_config)
   })
 end
 
-return M
+return Cmd
