@@ -122,6 +122,175 @@ local function get_cmd_env(executable)
   return found
 end
 
+---Sanitize the output of a file handle.
+---@param handle file*
+---@return string[]
+local function sanitize_file_output(handle)
+  local cleaned = {}
+
+  for line in handle:lines() do
+    -- Strip ANSI escape codes
+    line = line:gsub("\27%[[0-9;]*m", "")
+
+    -- Trim trailing whitespace
+    line = line:gsub("%s+$", "")
+
+    -- Remove user-specified prompt
+    if M.config.prompt_pattern_to_remove then
+      line = line:gsub(M.config.prompt_pattern_to_remove, "")
+    end
+
+    -- Remove empty or irrelevant lines
+    local plain = line:match("^[^\t ]+")
+    if plain and plain ~= "" then
+      table.insert(cleaned, plain)
+    end
+  end
+
+  return cleaned
+end
+
+------------------------------------------------------------------
+-- Shell
+------------------------------------------------------------------
+
+---Get the right shell arguments for the given shell.
+---@param shell string
+---@param script_path string
+---@param input string
+---@return string
+local function shell_args(shell, script_path, input)
+  local shell_name = vim.fn.fnamemodify(shell, ":t")
+
+  if shell_name == "fish" then
+    return string.format("%s %s %q", shell, script_path, input)
+  elseif shell_name == "zsh" then
+    return string.format("%s %s %q", shell, script_path, input)
+  elseif shell_name == "bash" then
+    return string.format("%s %s %q", shell, script_path, input)
+  else
+    error("Unsupported shell: " .. shell)
+  end
+end
+
+---Write a temporary shell script.
+---@param shell string
+---@return string|nil
+local function write_temp_script(shell)
+  local path = vim.fn.tempname() .. ".sh"
+  local content = ""
+
+  if shell:find("fish") then
+    content = [[
+#!/usr/bin/env fish
+set -l input "$argv"
+complete -C "$input"
+]]
+  elseif shell:find("zsh") then
+    -- TODO: not tested yet, as i don't use zsh, come back later
+    content = [[
+#!/usr/bin/env zsh
+autoload -U +X compinit && compinit -u
+autoload -U +X bashcompinit && bashcompinit -u
+setopt no_aliases
+
+local line=$1
+BUFFER=$line
+CURSOR=${#line}
+zle -C my-complete complete-word _main_complete
+zle my-complete
+]]
+  else -- bash or default
+    -- TODO: not tested yet, as i don't use bash, come back later
+    content = [[
+#!/usr/bin/env bash
+COMP_LINE="$1"
+COMP_POINT=${#1}
+read -ra COMP_WORDS <<< "$COMP_LINE"
+COMP_CWORD=${#COMP_WORDS[@]}
+
+cmd="${COMP_WORDS[0]}"
+type _completion_loader &>/dev/null && _completion_loader "$cmd" &>/dev/null
+type "_$cmd" &>/dev/null && "_$cmd" &>/dev/null
+
+for i in "${COMPREPLY[@]}"; do
+  printf '%s\n' "$i"
+done
+]]
+  end
+
+  local f = io.open(path, "w")
+  if not f then
+    return nil
+  end
+  f:write(content)
+  f:close()
+  vim.fn.system({ "chmod", "+x", path })
+
+  return path
+end
+
+------------------------------------------------------------------
+-- Completion
+------------------------------------------------------------------
+
+local complete_cache = {}
+
+---Get the cached shell completion for the given executable.
+---@param executable? string
+local function cached_shell_complete(executable)
+  return function(_, cmd_line, cursor_pos)
+    --- this should be the root `Cmd` call rather than user defined commands
+    --- we can then set the right executable and reconstruct the cmd_line to let it work normally
+    if not executable then
+      local cmd_line_table = vim.split(cmd_line, " ")
+      table.remove(cmd_line_table, 1)
+
+      executable = cmd_line_table[1]
+
+      cmd_line = table.concat(cmd_line_table, " ")
+    end
+
+    local shell = M.config.shell or vim.env.SHELL or "/bin/bash"
+    local script_path = write_temp_script(shell)
+    if not script_path then
+      notify("Failed to create temp script", "ERROR")
+      return {}
+    end
+
+    -- Build the exact line the shell would see
+    local full_line = cmd_line:sub(1, cursor_pos)
+
+    local full_line_table = vim.split(full_line, " ")
+    full_line_table[1] = executable
+    full_line = table.concat(full_line_table, " ")
+
+    local cache_key = executable .. "\0" .. full_line
+
+    if complete_cache[cache_key] then
+      return complete_cache[cache_key]
+    end
+
+    local cmd = shell_args(shell, script_path, full_line)
+    local handle = io.popen(cmd, "r")
+    if not handle then
+      notify("Failed to open shell for completion", "ERROR")
+      return {}
+    end
+
+    local completions = sanitize_file_output(handle)
+    handle:close()
+
+    -- Very small cache TTL (optional)
+    complete_cache[cache_key] = completions
+    vim.defer_fn(function()
+      complete_cache[cache_key] = nil
+    end, 5000)
+
+    return completions
+  end
+end
+
 ------------------------------------------------------------------
 -- Spinners
 ------------------------------------------------------------------
@@ -517,11 +686,14 @@ M.config = {}
 ---@field create_usercmd? table<string, string> Create user commands for these executables if it does'nt exists
 ---@field env? table<string, string[]> Environment variables to set for the command
 ---@field timeout? integer Job timeout in ms. Default: 30000
+---@field shell? string Shell to use for the completion. Default: vim.env.SHELL
+---@field prompt_pattern_to_remove? string Regex pattern to remove from the output, e.g. "^"
 M.defaults = {
   force_terminal = {},
   create_usercmd = {},
   env = {},
   timeout = 30000,
+  shell = vim.env.SHELL or "/bin/sh",
 }
 
 function M.create_usercmd_if_not_exists()
@@ -557,6 +729,7 @@ function M.create_usercmd_if_not_exists()
       end, {
         nargs = "*",
         bang = true,
+        complete = cached_shell_complete(executable),
         desc = "Auto-generated command for " .. executable,
       })
     else
@@ -622,6 +795,7 @@ function M.setup(user_config)
   end, {
     nargs = "*",
     bang = true,
+    complete = cached_shell_complete(),
     desc = "Run CLI command (add ! to run in terminal, add !! to rerun last command in terminal)",
   })
 
