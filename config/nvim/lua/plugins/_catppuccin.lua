@@ -5,6 +5,8 @@ M.name = "catppuccin"
 
 M.priority = 1
 
+M.async = false
+
 M.registry = {
   "https://github.com/catppuccin/nvim",
 }
