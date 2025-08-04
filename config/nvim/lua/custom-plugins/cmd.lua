@@ -842,11 +842,17 @@ function M.setup(user_config)
 
   vim.api.nvim_create_autocmd("VimLeavePre", {
     callback = function()
+      -- stop all timers
       for _, st in pairs(spin_state) do
         if st.timer and not st.timer:is_closing() then
           st.timer:stop()
           st.timer:close()
         end
+      end
+
+      -- delete all temp scripts
+      for _, path in pairs(temp_script_cache) do
+        pcall(vim.fn.delete, path)
       end
     end,
   })
