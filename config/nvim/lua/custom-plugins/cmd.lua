@@ -22,6 +22,20 @@ local next_spinner_id = 0
 ---@type table<integer, uv.uv_process_t>
 local active_jobs = {}
 
+---@type table<string, string>
+local temp_script_cache = {}
+
+---@type table<string, string[]>
+local complete_cache = {}
+
+---@class Cmd.Spinner
+---@field timer uv.uv_timer_t|nil
+---@field active boolean
+---@field msg string
+---@field title string
+---@field cmd string
+local spin_state = {}
+
 ------------------------------------------------------------------
 -- Type Aliases
 ------------------------------------------------------------------
@@ -140,10 +154,12 @@ local function sanitize_file_output(handle)
       line = line:gsub(M.config.prompt_pattern_to_remove, "")
     end
 
-    -- Remove empty or irrelevant lines
-    local plain = line:match("^[^\t ]+")
-    if plain and plain ~= "" then
-      table.insert(cleaned, plain)
+    local token = line:match("^%s*(%-%-?[%w%-]*%w)%s") -- e.g., --help, -v
+      or line:match("^%s*(%-%-?)%s") -- just --
+      or line:match("^%s*(%w[%w%-]*)") -- e.g., build
+
+    if token then
+      table.insert(cleaned, token)
     end
   end
 
@@ -177,6 +193,10 @@ end
 ---@param shell string
 ---@return string|nil
 local function write_temp_script(shell)
+  if temp_script_cache[shell] then
+    return temp_script_cache[shell]
+  end
+
   local path = vim.fn.tempname() .. ".sh"
   local content = ""
 
@@ -227,14 +247,14 @@ done
   f:close()
   vim.fn.system({ "chmod", "+x", path })
 
+  temp_script_cache[shell] = path
+
   return path
 end
 
 ------------------------------------------------------------------
 -- Completion
 ------------------------------------------------------------------
-
-local complete_cache = {}
 
 ---Get the cached shell completion for the given executable.
 ---@param executable? string
@@ -281,13 +301,10 @@ local function cached_shell_complete(executable, lead_args, cmd_line, cursor_pos
   end
 
   local completions = sanitize_file_output(handle)
+
   handle:close()
 
-  -- Very small cache TTL (optional)
   complete_cache[cache_key] = completions
-  vim.defer_fn(function()
-    complete_cache[cache_key] = nil
-  end, 5000)
 
   return completions
 end
@@ -295,14 +312,6 @@ end
 ------------------------------------------------------------------
 -- Spinners
 ------------------------------------------------------------------
-
----@class Cmd.Spinner
----@field timer uv.uv_timer_t|nil
----@field active boolean
----@field msg string
----@field title string
----@field cmd string
-local spin_state = {}
 
 ---Start a spinner.
 ---@param title string
