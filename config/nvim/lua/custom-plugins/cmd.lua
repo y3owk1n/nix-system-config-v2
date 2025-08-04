@@ -238,57 +238,58 @@ local complete_cache = {}
 
 ---Get the cached shell completion for the given executable.
 ---@param executable? string
-local function cached_shell_complete(executable)
-  return function(_, cmd_line, cursor_pos)
-    --- this should be the root `Cmd` call rather than user defined commands
-    --- we can then set the right executable and reconstruct the cmd_line to let it work normally
-    if not executable then
-      local cmd_line_table = vim.split(cmd_line, " ")
-      table.remove(cmd_line_table, 1)
+---@param lead_args string
+---@param cmd_line string
+---@param cursor_pos integer
+local function cached_shell_complete(executable, lead_args, cmd_line, cursor_pos)
+  --- this should be the root `Cmd` call rather than user defined commands
+  --- we can then set the right executable and reconstruct the cmd_line to let it work normally
+  if not executable then
+    local cmd_line_table = vim.split(cmd_line, " ")
+    table.remove(cmd_line_table, 1)
 
-      executable = cmd_line_table[1]
+    executable = cmd_line_table[1]
 
-      cmd_line = table.concat(cmd_line_table, " ")
-    end
-
-    local shell = M.config.shell or vim.env.SHELL or "/bin/bash"
-    local script_path = write_temp_script(shell)
-    if not script_path then
-      notify("Failed to create temp script", "ERROR")
-      return {}
-    end
-
-    -- Build the exact line the shell would see
-    local full_line = cmd_line:sub(1, cursor_pos)
-
-    local full_line_table = vim.split(full_line, " ")
-    full_line_table[1] = executable
-    full_line = table.concat(full_line_table, " ")
-
-    local cache_key = executable .. "\0" .. full_line
-
-    if complete_cache[cache_key] then
-      return complete_cache[cache_key]
-    end
-
-    local cmd = shell_args(shell, script_path, full_line)
-    local handle = io.popen(cmd, "r")
-    if not handle then
-      notify("Failed to open shell for completion", "ERROR")
-      return {}
-    end
-
-    local completions = sanitize_file_output(handle)
-    handle:close()
-
-    -- Very small cache TTL (optional)
-    complete_cache[cache_key] = completions
-    vim.defer_fn(function()
-      complete_cache[cache_key] = nil
-    end, 5000)
-
-    return completions
+    cmd_line = table.concat(cmd_line_table, " ")
   end
+
+  local shell = M.config.shell or vim.env.SHELL or "/bin/bash"
+  local script_path = write_temp_script(shell)
+  if not script_path then
+    notify("Failed to create temp script", "ERROR")
+    return {}
+  end
+
+  -- Build the exact line the shell would see
+  local full_line = cmd_line:sub(1, cursor_pos)
+
+  local full_line_table = vim.split(full_line, " ")
+  full_line_table[1] = executable
+  full_line = table.concat(full_line_table, " ")
+
+  local cache_key = executable .. "\0" .. full_line
+
+  if complete_cache[cache_key] then
+    return complete_cache[cache_key]
+  end
+
+  local cmd = shell_args(shell, script_path, full_line)
+  local handle = io.popen(cmd, "r")
+  if not handle then
+    notify("Failed to open shell for completion", "ERROR")
+    return {}
+  end
+
+  local completions = sanitize_file_output(handle)
+  handle:close()
+
+  -- Very small cache TTL (optional)
+  complete_cache[cache_key] = completions
+  vim.defer_fn(function()
+    complete_cache[cache_key] = nil
+  end, 5000)
+
+  return completions
 end
 
 ------------------------------------------------------------------
@@ -729,7 +730,9 @@ function M.create_usercmd_if_not_exists()
       end, {
         nargs = "*",
         bang = true,
-        complete = cached_shell_complete(executable),
+        complete = function(...)
+          return cached_shell_complete(executable, ...)
+        end,
         desc = "Auto-generated command for " .. executable,
       })
     else
@@ -795,7 +798,9 @@ function M.setup(user_config)
   end, {
     nargs = "*",
     bang = true,
-    complete = cached_shell_complete(),
+    complete = function(...)
+      return cached_shell_complete(nil, ...)
+    end,
     desc = "Run CLI command (add ! to run in terminal, add !! to rerun last command in terminal)",
   })
 
