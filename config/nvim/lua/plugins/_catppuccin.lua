@@ -29,6 +29,7 @@ function M.setup()
     default_integrations = false,
     integrations = {
       blink_cmp = {
+        enabled = true,
         style = "bordered",
       },
       flash = true,
@@ -66,13 +67,6 @@ function M.setup()
       which_key = true,
     },
     custom_highlights = {
-      --- for blink.cmp
-      BlinkCmpLabel = { fg = colors.overlay2 },
-      BlinkCmpMenu = { fg = colors.text },
-      BlinkCmpMenuBorder = { fg = colors.blue },
-      BlinkCmpDoc = { fg = colors.overlay2 },
-      BlinkCmpDocBorder = { fg = colors.blue },
-      BlinkCmpSignatureHelpBorder = { fg = colors.blue },
       --- for time-machine.nvim
       TimeMachineCurrent = {
         bg = c_utils.darken(colors.blue, 0.18, colors.base),
