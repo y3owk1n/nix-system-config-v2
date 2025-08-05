@@ -31,9 +31,6 @@ local active_jobs = {}
 ---@type table<string, string>
 local temp_script_cache = {}
 
----@type table<string, string[]>
-local complete_cache = {}
-
 ---@class Cmd.Spinner
 ---@field timer uv.uv_timer_t|nil
 ---@field active boolean
@@ -680,12 +677,6 @@ function C.cached_shell_complete(executable, lead_args, cmd_line, cursor_pos)
   full_line_table[1] = executable
   full_line = table.concat(full_line_table, " ")
 
-  local cache_key = executable .. "\0" .. full_line
-
-  if complete_cache[cache_key] then
-    return complete_cache[cache_key]
-  end
-
   local result = vim
     .system({ shell, script_path, full_line }, {
       text = true,
@@ -701,8 +692,6 @@ function C.cached_shell_complete(executable, lead_args, cmd_line, cursor_pos)
   local lines = vim.split(result.stdout, "\n")
 
   local completions = H.sanitize_file_output(lines)
-
-  complete_cache[cache_key] = completions
 
   return completions
 end
