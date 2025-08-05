@@ -170,13 +170,13 @@ function H.get_cmd_env(executable)
 end
 
 ---Sanitize the output of a file handle.
----@param handle file*
+---@param lines string[]
 ---@return string[]
-function H.sanitize_file_output(handle)
+function H.sanitize_file_output(lines)
   ---@type string[]
   local cleaned = {}
 
-  for line in handle:lines() do
+  for _, line in ipairs(lines) do
     -- Strip ANSI escape codes
     line = line:gsub("\27%[[0-9;]*m", "")
 
@@ -653,6 +653,8 @@ function C.cached_shell_complete(executable, lead_args, cmd_line, cursor_pos)
     return {}
   end
 
+  H.ensure_cwd()
+
   --- this should be the root `Cmd` call rather than user defined commands
   --- we can then set the right executable and reconstruct the cmd_line to let it work normally
   if not executable then
@@ -684,16 +686,21 @@ function C.cached_shell_complete(executable, lead_args, cmd_line, cursor_pos)
     return complete_cache[cache_key]
   end
 
-  local cmd = H.shell_args(shell, script_path, full_line)
-  local handle = io.popen(cmd, "r")
-  if not handle then
-    H.notify("Failed to open shell for completion", "ERROR")
+  local result = vim
+    .system({ shell, script_path, full_line }, {
+      text = true,
+      cwd = cwd,
+    })
+    :wait()
+
+  if result.code ~= 0 then
+    H.notify("Shell completion failed with exit code: " .. result.code, "WARN")
     return {}
   end
 
-  local completions = H.sanitize_file_output(handle)
+  local lines = vim.split(result.stdout, "\n")
 
-  handle:close()
+  local completions = H.sanitize_file_output(lines)
 
   complete_cache[cache_key] = completions
 
