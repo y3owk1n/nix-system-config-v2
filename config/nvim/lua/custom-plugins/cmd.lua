@@ -612,10 +612,10 @@ function C.cancel_with_fallback(job)
 end
 
 ---Cancel the currently running command.
----@param spinner_id number|nil
+---@param command_id number|nil
 ---@param all boolean
 ---@return nil
-local function cancel_cmd(spinner_id, all)
+local function cancel_cmd(command_id, all)
   if all then
     local count = 0
     for id, job in pairs(S.active_jobs) do
@@ -629,7 +629,7 @@ local function cancel_cmd(spinner_id, all)
     return
   end
 
-  local id = spinner_id or #S.command_history
+  local id = command_id or #S.command_history
   local job = S.active_jobs[id]
 
   if job and not job:is_closing() then
@@ -849,7 +849,7 @@ local function create_usercmd_if_not_exists()
   end
 end
 
-local function setup_autocmds()
+local function setup_usercmds()
   vim.api.nvim_create_user_command("Cmd", function(opts)
     local bang = opts.bang or false
     local args = vim.deepcopy(opts.fargs)
@@ -857,15 +857,6 @@ local function setup_autocmds()
     -- to support expanding the args like %
     for i, arg in ipairs(args) do
       args[i] = vim.fn.expand(arg)
-    end
-
-    if opts.bang and opts.args == "!" then
-      if #S.command_history > 0 then
-        args = S.command_history[#S.command_history].cmd
-      else
-        H.notify("No previous command to re-run", "WARN")
-      end
-      bang = true
     end
 
     if #args < 1 then
@@ -904,6 +895,36 @@ local function setup_autocmds()
     desc = "Run CLI command (add ! to run in terminal, add !! to rerun last command in terminal)",
   })
 
+  vim.api.nvim_create_user_command("CmdRerun", function(opts)
+    local bang = opts.bang or false
+    local id = tonumber(opts.args) or #S.command_history
+    local command_entry = S.command_history[id]
+
+    local args = command_entry.cmd
+
+    local executable = args[1]
+
+    local force_terminal_executable = Cmd.config.force_terminal[executable] or {}
+
+    if not vim.tbl_isempty(force_terminal_executable) then
+      for _, value in pairs(force_terminal_executable) do
+        local args_string = table.concat(args, " ")
+        local matched = string.find(args_string, value, 1, true) ~= nil
+
+        if matched == true then
+          bang = true
+          break
+        end
+      end
+    end
+
+    C.run_cmd(args, bang)
+  end, {
+    bang = true,
+    nargs = "?",
+    desc = "Rerun the last command",
+  })
+
   vim.api.nvim_create_user_command("CmdCancel", function(opts)
     local id = tonumber(opts.args)
     cancel_cmd(id, opts.bang)
@@ -911,23 +932,6 @@ local function setup_autocmds()
     bang = true,
     nargs = "?",
     desc = "Cancel the currently running Cmd (add ! to cancel all)",
-  })
-
-  vim.api.nvim_create_autocmd("VimLeavePre", {
-    callback = function()
-      -- stop all timers
-      for _, st in pairs(S.spinner_state) do
-        if st.timer and not st.timer:is_closing() then
-          st.timer:stop()
-          st.timer:close()
-        end
-      end
-
-      -- delete all temp scripts
-      for _, path in pairs(S.temp_script_cache) do
-        H.safe_delete(path)
-      end
-    end,
   })
 
   vim.api.nvim_create_user_command("CmdHistory", function()
@@ -968,6 +972,11 @@ local function setup_autocmds()
         separator,
         {
           text = status_icon,
+          hl_group = hl_groups[entry.status],
+        },
+        separator,
+        {
+          text = string.format("[%s]", entry.type:sub(1, 1):upper()),
           hl_group = hl_groups[entry.status],
         },
         separator,
@@ -1014,6 +1023,25 @@ local function setup_autocmds()
   })
 end
 
+local function setup_autocmds()
+  vim.api.nvim_create_autocmd("VimLeavePre", {
+    callback = function()
+      -- stop all timers
+      for _, st in pairs(S.spinner_state) do
+        if st.timer and not st.timer:is_closing() then
+          st.timer:stop()
+          st.timer:close()
+        end
+      end
+
+      -- delete all temp scripts
+      for _, path in pairs(S.temp_script_cache) do
+        H.safe_delete(path)
+      end
+    end,
+  })
+end
+
 ---Setup the default highlight groups.
 local function setup_hls()
   local hi = function(name, opts)
@@ -1038,6 +1066,7 @@ function Cmd.setup(user_config)
   end
 
   setup_autocmds()
+  setup_usercmds()
   setup_hls()
 end
 
