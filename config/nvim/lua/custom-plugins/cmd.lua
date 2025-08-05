@@ -728,6 +728,7 @@ function C.run_cmd(args, bang)
     U.start_cmd_spinner("cmd", table.concat(args, " "), table.concat(args, " "), command_id)
 
     C.exec_cli(args, command_id, function(code, out, err, is_cancelled)
+      ---@type Cmd.CommandStatus
       local status
 
       if is_cancelled then
@@ -751,7 +752,7 @@ function C.run_cmd(args, bang)
           H.notify("Completed but no output lines", "INFO")
         end
 
-        if status == "completed" then
+        if status == "success" then
           U.refresh_ui()
         end
       end
