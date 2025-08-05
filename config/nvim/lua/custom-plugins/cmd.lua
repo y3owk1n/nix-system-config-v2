@@ -203,25 +203,6 @@ function H.sanitize_file_output(lines)
   return cleaned
 end
 
----Get the right shell arguments for the given shell.
----@param shell string
----@param script_path string
----@param input string
----@return string
-function H.shell_args(shell, script_path, input)
-  local shell_name = vim.fn.fnamemodify(shell, ":t")
-
-  if shell_name == "fish" then
-    return string.format("%s %s %q", shell, script_path, input)
-  elseif shell_name == "zsh" then
-    return string.format("%s %s %q", shell, script_path, input)
-  elseif shell_name == "bash" then
-    return string.format("%s %s %q", shell, script_path, input)
-  else
-    error("Unsupported shell: " .. shell)
-  end
-end
-
 ---Write a temporary shell script.
 ---@param shell string
 ---@return string|nil
