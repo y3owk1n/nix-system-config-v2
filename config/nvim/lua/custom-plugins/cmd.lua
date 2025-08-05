@@ -25,9 +25,6 @@ local last_cmd = {}
 ---@type string[]
 local spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
 
----@type integer
-local next_spinner_id = 0
-
 ---@type table<integer, uv.uv_process_t>
 local active_jobs = {}
 
@@ -44,6 +41,39 @@ local complete_cache = {}
 ---@field title string
 ---@field cmd string
 local spinner_state = {}
+
+---@class Cmd.CommandHistory
+---@field id integer
+---@field cmd string[]
+---@field timestamp? number
+---@field type "normal"|"interactive"
+---@field status Cmd.CommandStatus
+
+---@alias Cmd.CommandStatus "success"|"failed"|"cancelled"|"running"
+
+---@type Cmd.CommandHistory[]
+local command_history = {}
+
+---@type table<Cmd.CommandStatus, string>
+local icon_map = {
+  success = " ",
+  failed = " ",
+  cancelled = " ",
+}
+
+---@type table<Cmd.CommandStatus, string>
+local level_map = {
+  success = "INFO",
+  failed = "ERROR",
+  cancelled = "WARN",
+}
+
+---@type table<Cmd.CommandStatus, string>
+local hl_groups = {
+  success = "MoreMsg",
+  failed = "ErrorMsg",
+  cancelled = "WarningMsg",
+}
 
 ------------------------------------------------------------------
 -- Type Aliases
@@ -266,17 +296,14 @@ end
 ---@param title string
 ---@param msg string
 ---@param cmd string
----@return integer spinner_id
-function U.start_cmd_spinner(title, msg, cmd)
-  next_spinner_id = next_spinner_id + 1
-  local spinner_id = next_spinner_id
-
+---@param command_id integer
+function U.start_cmd_spinner(title, msg, cmd, command_id)
   local timer = uv.new_timer()
   if timer then
-    spinner_state[spinner_id] = {
+    spinner_state[command_id] = {
       timer = timer,
       active = true,
-      msg = string.format("[#%s] running `%s`", spinner_id, msg),
+      msg = string.format("[#%s] running `%s`", command_id, msg),
       title = title,
       cmd = cmd,
     }
@@ -289,7 +316,7 @@ function U.start_cmd_spinner(title, msg, cmd)
   if timer then
     timer:start(0, 100, function()
       vim.schedule(function()
-        if not spinner_state[spinner_id] or not spinner_state[spinner_id].active then
+        if not spinner_state[command_id] or not spinner_state[command_id].active then
           return
         end
 
@@ -300,22 +327,20 @@ function U.start_cmd_spinner(title, msg, cmd)
           last = now
         end
 
-        local msg_with_spinner = string.format("%s %s", spinner_chars[idx], spinner_state[spinner_id].msg)
+        local msg_with_spinner = string.format("%s %s", spinner_chars[idx], spinner_state[command_id].msg)
 
         H.notify(msg_with_spinner, "INFO", {
-          id = "cmd_progress_" .. spinner_id,
-          title = spinner_state[spinner_id].title,
+          id = "cmd_progress_" .. command_id,
+          title = spinner_state[command_id].title,
         })
       end)
     end)
   end
-
-  return spinner_id
 end
 
 ---Stop a spinner.
 ---@param spinner_id integer
----@param status "completed"|"failed"|"cancelled"
+---@param status Cmd.CommandStatus
 ---@return nil
 function U.stop_cmd_spinner(spinner_id, status)
   if not spinner_id or not spinner_state[spinner_id] or not spinner_state[spinner_id].active then
@@ -327,18 +352,6 @@ function U.stop_cmd_spinner(spinner_id, status)
   st.timer:stop()
   st.timer:close()
   spinner_state[spinner_id] = nil
-
-  local icon_map = {
-    completed = " ",
-    failed = " ",
-    cancelled = " ",
-  }
-
-  local level_map = {
-    completed = "INFO",
-    failed = "ERROR",
-    cancelled = "WARN",
-  }
 
   local icon = icon_map[status] or " "
 
@@ -356,7 +369,13 @@ end
 ---Show output in a scratch buffer (readonly, vsplit).
 ---@param lines string[]
 ---@param title string
-function U.show_buffer(lines, title)
+---@param post_hook? fun(buf: integer, lines: string[])
+function U.show_buffer(lines, title, post_hook)
+  local old_buf = vim.fn.bufnr(title)
+  if old_buf ~= -1 then
+    vim.api.nvim_buf_delete(old_buf, { force = true })
+  end
+
   vim.schedule(function()
     local buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
@@ -369,13 +388,25 @@ function U.show_buffer(lines, title)
     vim.bo[buf].buflisted = false
     vim.api.nvim_buf_set_name(buf, title)
     vim.cmd("vsplit | buffer " .. buf)
+
+    if post_hook then
+      post_hook(buf, lines)
+    end
   end)
 end
 
 ---Show output in a terminal buffer.
 ---@param cmd string[]
 ---@param title string
-function U.show_terminal(cmd, title)
+---@param command_id integer
+function U.show_terminal(cmd, title, command_id)
+  C.track_cmd({
+    id = command_id,
+    cmd = cmd,
+    type = "interactive",
+    status = "running",
+  })
+
   local buf = vim.api.nvim_create_buf(false, true)
   vim.bo[buf].filetype = "cmd"
   vim.bo[buf].bufhidden = "wipe"
@@ -406,12 +437,24 @@ function U.show_terminal(cmd, title)
       U.refresh_ui()
 
       if code == 0 then
+        C.track_cmd({
+          id = command_id,
+          cmd = cmd,
+          type = "interactive",
+          status = "success",
+        })
         return
       end
 
       vim.schedule(function()
         -- 130 = Interrupted (Ctrl+C)
         if code == 130 then
+          C.track_cmd({
+            id = command_id,
+            cmd = cmd,
+            type = "interactive",
+            status = "cancelled",
+          })
           pcall(vim.api.nvim_buf_delete, buf, { force = true })
           return
         end
@@ -427,6 +470,13 @@ function U.show_terminal(cmd, title)
             .. table.concat(vim.list_slice(lines, #lines - 2, #lines), "\n")
 
         H.notify(string.format("`%s` exited %d\n%s", cmd_string, code, preview), "ERROR")
+
+        C.track_cmd({
+          id = command_id,
+          cmd = cmd,
+          type = "interactive",
+          status = "failed",
+        })
         pcall(vim.api.nvim_buf_delete, buf, { force = true })
       end)
     end,
@@ -582,7 +632,7 @@ local function cancel_cmd(spinner_id, all)
     return
   end
 
-  local id = spinner_id or next_spinner_id
+  local id = spinner_id or #command_history
   local job = active_jobs[id]
 
   if job and not job:is_closing() then
@@ -655,18 +705,28 @@ end
 ---@param bang boolean
 function C.run_cmd(args, bang)
   last_cmd = args
-  if bang then
-    U.show_terminal(args, "cmd://" .. table.concat(args, " "))
-  else
-    local spinner_id = U.start_cmd_spinner("cmd", table.concat(args, " "), table.concat(args, " "))
 
-    C.exec_cli(args, spinner_id, function(code, out, err, is_cancelled)
+  local command_id = #command_history + 1
+
+  if bang then
+    U.show_terminal(args, "cmd://" .. table.concat(args, " "), command_id)
+  else
+    C.track_cmd({
+      id = command_id,
+      cmd = args,
+      type = "normal",
+      status = "running",
+    })
+
+    U.start_cmd_spinner("cmd", table.concat(args, " "), table.concat(args, " "), command_id)
+
+    C.exec_cli(args, command_id, function(code, out, err, is_cancelled)
       local status
 
       if is_cancelled then
         status = "cancelled"
       else
-        status = code == 0 and "completed" or "failed"
+        status = code == 0 and "success" or "failed"
 
         local text = table.concat(H.trim_empty_lines({ err, out }), "\n")
 
@@ -679,7 +739,7 @@ function C.run_cmd(args, bang)
         end
 
         if #lines > 0 then
-          U.show_buffer(lines, "cmd://" .. table.concat(args, " ") .. "-" .. spinner_id)
+          U.show_buffer(lines, "cmd://" .. table.concat(args, " ") .. "-" .. command_id)
         else
           H.notify("Completed but no output lines", "INFO")
         end
@@ -689,9 +749,26 @@ function C.run_cmd(args, bang)
         end
       end
 
-      U.stop_cmd_spinner(spinner_id, status)
+      U.stop_cmd_spinner(command_id, status)
+
+      C.track_cmd({
+        id = command_id,
+        cmd = args,
+        type = "normal",
+        status = status,
+      })
     end)
   end
+end
+
+---@param opts Cmd.CommandHistory
+function C.track_cmd(opts)
+  if #command_history > 100 then
+    table.remove(command_history, 1)
+  end
+
+  opts.timestamp = os.time()
+  command_history[opts.id] = opts
 end
 
 ------------------------------------------------------------------
@@ -854,6 +931,88 @@ function Cmd.setup(user_config)
         pcall(vim.fn.delete, path)
       end
     end,
+  })
+
+  vim.api.nvim_create_user_command("CmdHistory", function()
+    local history = vim.deepcopy(command_history)
+
+    if #history == 0 then
+      H.notify("No command history", "INFO")
+      return
+    end
+
+    ---@type table<integer, { text: string|osdate, hl_group: string }>[]
+    local segments = {}
+
+    local separator = {
+      text = " ",
+    }
+
+    for i = #history, 1, -1 do
+      local entry = history[i]
+      local status_icon = icon_map[entry.status] or "?"
+
+      local cmd_str = table.concat(entry.cmd, " ")
+      local timetamp = entry.timestamp
+
+      local pretty_time = os.date("%Y-%m-%d %H:%M:%S", timetamp)
+
+      segments[i] = {
+        {
+          text = string.format("#%d", entry.id),
+          hl_group = "Identifier",
+        },
+        separator,
+        {
+          text = pretty_time,
+          hl_group = "Comment",
+        },
+        separator,
+        {
+          text = status_icon,
+          hl_group = hl_groups[entry.status],
+        },
+        separator,
+        {
+          text = cmd_str,
+          hl_group = hl_groups[entry.status],
+        },
+      }
+    end
+
+    local lines = {}
+
+    for i = 1, #segments do
+      local flattened = {}
+      local segment = segments[i]
+      for j = 1, #segment do
+        local item = segment[j]
+        table.insert(flattened, item.text)
+      end
+      lines[i] = table.concat(flattened, "")
+    end
+
+    U.show_buffer(lines, "cmd://history", function(buf)
+      local ns = vim.api.nvim_create_namespace("cmd_history")
+      vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
+
+      for i = 1, #segments do
+        local segment = segments[i]
+        local col = 0
+        for j = 1, #segment do
+          local item = segment[j]
+          if item.hl_group then
+            vim.api.nvim_buf_set_extmark(buf, ns, i - 1, col, {
+              end_col = col + #item.text,
+              hl_group = item.hl_group,
+            })
+          end
+          col = col + #item.text
+        end
+      end
+    end)
+  end, {
+    desc = "History",
   })
 end
 
