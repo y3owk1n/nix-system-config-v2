@@ -67,9 +67,9 @@ local level_map = {
 
 ---@type table<Cmd.CommandStatus, string>
 local hl_groups = {
-  success = "MoreMsg",
-  failed = "ErrorMsg",
-  cancelled = "WarningMsg",
+  success = "CmdSuccess",
+  failed = "CmdFailed",
+  cancelled = "CmdCancelled",
 }
 
 ------------------------------------------------------------------
@@ -797,7 +797,7 @@ Cmd.defaults = {
   },
 }
 
-function Cmd.create_usercmd_if_not_exists()
+local function create_usercmd_if_not_exists()
   local existing_cmds = vim.api.nvim_get_commands({})
   for executable, cmd_name in pairs(Cmd.config.create_usercmd) do
     if vim.fn.executable(executable) == 1 and not existing_cmds[cmd_name] then
@@ -841,15 +841,7 @@ function Cmd.create_usercmd_if_not_exists()
   end
 end
 
----Setup the `:Cmd` command.
----@param user_config? Cmd.Config
-function Cmd.setup(user_config)
-  Cmd.config = vim.tbl_deep_extend("force", Cmd.defaults, user_config or {})
-
-  if Cmd.config.create_usercmd and not vim.tbl_isempty(Cmd.config.create_usercmd) then
-    Cmd.create_usercmd_if_not_exists()
-  end
-
+local function setup_autocmds()
   vim.api.nvim_create_user_command("Cmd", function(opts)
     local bang = opts.bang or false
     local args = vim.deepcopy(opts.fargs)
@@ -957,12 +949,12 @@ function Cmd.setup(user_config)
       segments[i] = {
         {
           text = string.format("#%d", entry.id),
-          hl_group = "Identifier",
+          hl_group = "CmdHistoryIdentifier",
         },
         separator,
         {
           text = pretty_time,
-          hl_group = "Comment",
+          hl_group = "CmdHistoryTime",
         },
         separator,
         {
@@ -1011,6 +1003,33 @@ function Cmd.setup(user_config)
   end, {
     desc = "History",
   })
+end
+
+---Setup the default highlight groups.
+local function setup_hls()
+  local hi = function(name, opts)
+    opts.default = true
+    vim.api.nvim_set_hl(0, name, opts)
+  end
+
+  hi("CmdHistoryIdentifier", { link = "Identifier" })
+  hi("CmdHistoryTime", { link = "Comment" })
+  hi("CmdSuccess", { link = "MoreMsg" })
+  hi("CmdFailed", { link = "ErrorMsg" })
+  hi("CmdCancelled", { link = "WarningMsg" })
+end
+
+---Setup the `:Cmd` command.
+---@param user_config? Cmd.Config
+function Cmd.setup(user_config)
+  Cmd.config = vim.tbl_deep_extend("force", Cmd.defaults, user_config or {})
+
+  if Cmd.config.create_usercmd and not vim.tbl_isempty(Cmd.config.create_usercmd) then
+    create_usercmd_if_not_exists()
+  end
+
+  setup_autocmds()
+  setup_hls()
 end
 
 return Cmd
