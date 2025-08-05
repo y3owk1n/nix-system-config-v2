@@ -45,6 +45,9 @@ let
       mkdir -p $out/bin
       cp $src $out/bin/nvs
       chmod +x $out/bin/nvs
+
+      mkdir -p $out/share/fish/vendor_completions.d
+      HOME=$(mktemp -d) $out/bin/nvs completion fish > $out/share/fish/vendor_completions.d/nvs.fish
     '';
   };
 in

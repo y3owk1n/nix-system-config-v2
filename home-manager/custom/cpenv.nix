@@ -45,6 +45,9 @@ let
       mkdir -p $out/bin
       cp $src $out/bin/cpenv
       chmod +x $out/bin/cpenv
+
+      mkdir -p $out/share/fish/vendor_completions.d
+      HOME=$(mktemp -d) $out/bin/cpenv completion fish > $out/share/fish/vendor_completions.d/cpenv.fish
     '';
   };
 in
