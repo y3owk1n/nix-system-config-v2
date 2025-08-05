@@ -1,4 +1,14 @@
-local uv = vim.uv or vim.loop
+local ok, uv = pcall(function()
+  return vim.uv or vim.loop
+end)
+if not ok or uv == nil then
+  error("Cmd.nvim: libuv not available")
+end
+
+local nvim = vim.version()
+if nvim.major == 0 and nvim.minor < 10 then
+  error("Cmd.nvim requires Neovim 0.10+")
+end
 
 ---@class Cmd
 local Cmd = {}
@@ -16,29 +26,6 @@ local C = {}
 -- Constants & Setup
 ------------------------------------------------------------------
 
----@type string
-local cwd
-
----@type string[]
-local last_cmd = {}
-
----@type string[]
-local spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
-
----@type table<integer, uv.uv_process_t>
-local active_jobs = {}
-
----@type table<string, string>
-local temp_script_cache = {}
-
----@class Cmd.Spinner
----@field timer uv.uv_timer_t|nil
----@field active boolean
----@field msg string
----@field title string
----@field cmd string
-local spinner_state = {}
-
 ---@class Cmd.CommandHistory
 ---@field id integer
 ---@field cmd string[]
@@ -48,8 +35,26 @@ local spinner_state = {}
 
 ---@alias Cmd.CommandStatus "success"|"failed"|"cancelled"|"running"
 
----@type Cmd.CommandHistory[]
-local command_history = {}
+---@class Cmd.Spinner
+---@field timer uv.uv_timer_t|nil
+---@field active boolean
+---@field msg string
+---@field title string
+---@field cmd string
+
+---@class Cmd.State
+---@field cwd string
+---@field active_jobs table<integer, uv.uv_process_t>
+---@field temp_script_cache table<string, string>
+---@field spinner_state table<integer, Cmd.Spinner>
+---@field command_history Cmd.CommandHistory[]
+local S = {
+  cwd = "",
+  active_jobs = {},
+  temp_script_cache = {},
+  spinner_state = {},
+  command_history = {},
+}
 
 ---@type table<Cmd.CommandStatus, string>
 local icon_map = {
@@ -73,30 +78,28 @@ local hl_groups = {
 }
 
 ------------------------------------------------------------------
--- Type Aliases
-------------------------------------------------------------------
-
----@alias Cmd.LogLevel "INFO"|"WARN"|"ERROR"
-
----@class Cmd.RunResult
----@field code integer
----@field out string
----@field err string
-
-------------------------------------------------------------------
 -- Helpers
 ------------------------------------------------------------------
 
+---Safely delete a file.
+function H.safe_delete(path)
+  vim.defer_fn(function()
+    pcall(vim.fn.delete, path)
+  end, 0)
+end
+
 ---Ensure that the current working directory is set.
 function H.ensure_cwd()
-  local buf_path = vim.fn.expand("%:p:h")
+  local buf_dir = vim.fn.expand("%:p:h")
 
-  if buf_path and buf_path ~= "" and vim.fn.isdirectory(buf_path) == 1 then
-    cwd = buf_path
+  if buf_dir and vim.fn.isdirectory(buf_dir) == 1 then
+    S.cwd = buf_dir
   else
-    cwd = vim.fn.getcwd()
+    S.cwd = vim.fn.getcwd()
   end
 end
+
+---@alias Cmd.LogLevel "INFO"|"WARN"|"ERROR"
 
 ---Display a notification.
 ---@param msg string
@@ -166,36 +169,29 @@ function H.get_cmd_env(executable)
   return found
 end
 
+---Sanitize a line.
+---@param line string
+---@return string
+function H.sanitize_line(line)
+  line = line
+    :gsub("\27%[[0-9;]*m", "") -- ANSI
+    :gsub("^%s+", "")
+    :gsub("%s+$", "")
+  if Cmd.config.completion.prompt_pattern_to_remove then
+    line = line:gsub(Cmd.config.completion.prompt_pattern_to_remove, "")
+  end
+  return line
+end
+
 ---Sanitize the output of a file handle.
 ---@param lines string[]
 ---@return string[]
 function H.sanitize_file_output(lines)
   ---@type string[]
   local cleaned = {}
-
-  for _, line in ipairs(lines) do
-    -- Strip ANSI escape codes
-    line = line:gsub("\27%[[0-9;]*m", "")
-
-    -- Trim trailing whitespace
-    line = line:gsub("^%s+", ""):gsub("%s+$", "")
-
-    -- Remove user-specified prompt
-    if Cmd.config.completion.prompt_pattern_to_remove then
-      line = line:gsub(Cmd.config.completion.prompt_pattern_to_remove, "")
-    end
-
-    -- Trim leading & trailing whitespace
-    line = line:gsub("^%s+", ""):gsub("%s+$", "")
-
-    -- Split the line by tab
-    local splitted_item = vim.split(line, "\t")
-
-    -- Get the first item, which is the command
-    local first = splitted_item[1]
-
-    -- Only add the first item if it's not empty
-    if first and first ~= "" then
+  for _, l in ipairs(lines) do
+    local first = (H.sanitize_line(l):gsub("\t.*", "")) -- NOTE: safer split
+    if first ~= "" then
       table.insert(cleaned, first)
     end
   end
@@ -207,8 +203,8 @@ end
 ---@param shell string
 ---@return string|nil
 function H.write_temp_script(shell)
-  if temp_script_cache[shell] then
-    return temp_script_cache[shell]
+  if S.temp_script_cache[shell] then
+    return S.temp_script_cache[shell]
   end
 
   local path = vim.fn.tempname() .. ".sh"
@@ -221,49 +217,64 @@ set -l input "$argv"
 complete -C "$input"
 ]]
   elseif shell:find("zsh") then
-    -- TODO: not tested yet, as i don't use zsh, come back later
     content = [[
 #!/usr/bin/env zsh
 autoload -U +X compinit && compinit -u
 autoload -U +X bashcompinit && bashcompinit -u
 setopt no_aliases
-
 local line=$1
 BUFFER=$line
 CURSOR=${#line}
 zle -C my-complete complete-word _main_complete
 zle my-complete
 ]]
-  else -- bash or default
-    -- TODO: not tested yet, as i don't use bash, come back later
+  else -- bash
     content = [[
 #!/usr/bin/env bash
-COMP_LINE="$1"
+COMP_LINE=$1
 COMP_POINT=${#1}
-read -ra COMP_WORDS <<< "$COMP_LINE"
-COMP_CWORD=${#COMP_WORDS[@]}
-
+IFS=' ' read -ra COMP_WORDS <<< "$COMP_LINE"
+COMP_CWORD=$((${#COMP_WORDS[@]}-1))
 cmd="${COMP_WORDS[0]}"
-type _completion_loader &>/dev/null && _completion_loader "$cmd" &>/dev/null
-type "_$cmd" &>/dev/null && "_$cmd" &>/dev/null
-
-for i in "${COMPREPLY[@]}"; do
-  printf '%s\n' "$i"
-done
+type _completion_loader &>/dev/null && _completion_loader "$cmd"
+type "_$cmd" &>/dev/null && "_$cmd"
+printf '%s\n' "${COMPREPLY[@]}"
 ]]
   end
 
-  local f = io.open(path, "w")
-  if not f then
+  local fd = uv.fs_open(path, "w", 384) -- 0600
+  if not fd then
     return nil
   end
-  f:write(content)
-  f:close()
-  vim.fn.system({ "chmod", "+x", path })
+  uv.fs_write(fd, content)
+  uv.fs_close(fd)
 
-  temp_script_cache[shell] = path
+  S.temp_script_cache[shell] = path
 
   return path
+end
+
+function H.prepare_history()
+  -- Pull out non-nil entries
+  local list = {}
+  for _, v in pairs(S.command_history) do
+    table.insert(list, v)
+  end
+  table.sort(list, function(a, b)
+    return a.id < b.id
+  end)
+
+  -- Remove oldest if over limit
+  while #list > Cmd.config.max_history do
+    table.remove(list, 1)
+  end
+
+  -- Rebuild sparse array with contiguous ids starting at 1
+  S.command_history = {}
+  for i, v in ipairs(list) do
+    v.id = i
+    S.command_history[i] = v
+  end
 end
 
 ------------------------------------------------------------------
@@ -276,9 +287,10 @@ end
 ---@param cmd string
 ---@param command_id integer
 function U.start_cmd_spinner(title, msg, cmd, command_id)
+  local spinner_chars = Cmd.config.spinner_chars
   local timer = uv.new_timer()
   if timer then
-    spinner_state[command_id] = {
+    S.spinner_state[command_id] = {
       timer = timer,
       active = true,
       msg = string.format("[#%s] running `%s`", command_id, msg),
@@ -289,56 +301,55 @@ function U.start_cmd_spinner(title, msg, cmd, command_id)
 
   -- local index for this spinner only
   local idx = 1
-  local last = uv.hrtime()
 
   if timer then
-    timer:start(0, 100, function()
+    timer:start(0, 150, function()
       vim.schedule(function()
-        if not spinner_state[command_id] or not spinner_state[command_id].active then
+        if not S.spinner_state[command_id] then
           return
         end
 
-        local now = vim.uv.hrtime()
-
-        if now - last > 80e6 then
-          idx = (idx % #spinner_chars) + 1
-          last = now
+        local st = S.spinner_state[command_id]
+        if not st or not st.active then
+          return
         end
 
-        local msg_with_spinner = string.format("%s %s", spinner_chars[idx], spinner_state[command_id].msg)
+        local message = st.msg
 
-        H.notify(msg_with_spinner, "INFO", {
-          id = "cmd_progress_" .. command_id,
-          title = spinner_state[command_id].title,
-        })
+        if spinner_chars and #spinner_chars > 0 then
+          idx = (idx % #spinner_chars) + 1
+          message = string.format("%s %s", spinner_chars[idx], st.msg)
+        end
+        H.notify(message, "INFO", { id = "cmd_progress_" .. command_id, title = st.title })
       end)
     end)
   end
 end
 
 ---Stop a spinner.
----@param spinner_id integer
+---@param command_id integer
 ---@param status Cmd.CommandStatus
 ---@return nil
-function U.stop_cmd_spinner(spinner_id, status)
-  if not spinner_id or not spinner_state[spinner_id] or not spinner_state[spinner_id].active then
+function U.stop_cmd_spinner(command_id, status)
+  local st = S.spinner_state[command_id]
+  if not st or not st.active then
     return
   end
-
-  local st = spinner_state[spinner_id]
   st.active = false
-  st.timer:stop()
-  st.timer:close()
-  spinner_state[spinner_id] = nil
+  if st.timer and not st.timer:is_closing() then
+    st.timer:stop()
+    st.timer:close()
+  end
+  S.spinner_state[command_id] = nil
 
   local icon = icon_map[status] or " "
 
-  local msg = string.format("%s [#%s] %s `%s`", icon, spinner_id, status, st.cmd)
+  local msg = string.format("%s [#%s] %s `%s`", icon, command_id, status, st.cmd)
   local level = level_map[status] or vim.log.levels.ERROR
 
   vim.schedule(function()
     H.notify(msg, level, {
-      id = "cmd_progress_" .. spinner_id,
+      id = "cmd_progress_" .. command_id,
       title = "cmd",
     })
   end)
@@ -409,7 +420,7 @@ function U.show_terminal(cmd, title, command_id)
   end
 
   vim.fn.jobstart(cmd, {
-    cwd = cwd,
+    cwd = S.cwd,
     term = true,
     on_exit = function(_, code)
       U.refresh_ui()
@@ -474,6 +485,11 @@ end
 -- Core
 ------------------------------------------------------------------
 
+---@class Cmd.RunResult
+---@field code integer
+---@field out string
+---@field err string
+
 ---Run a CLI command.
 ---@param cmd string[]
 ---@param spinner_id integer
@@ -522,7 +538,7 @@ function C.exec_cli(cmd, spinner_id, on_done, timeout)
 
   local process = uv.spawn(cmd[1], {
     args = vim.list_slice(cmd, 2),
-    cwd = cwd,
+    cwd = S.cwd,
     stdio = { nil, stdout, stderr },
     env = nil,
     uid = nil,
@@ -531,7 +547,7 @@ function C.exec_cli(cmd, spinner_id, on_done, timeout)
     detached = nil,
     hide = nil,
   }, function(code, signal)
-    active_jobs[spinner_id] = nil
+    S.active_jobs[spinner_id] = nil
 
     if signal == 2 then
       code = 130
@@ -551,7 +567,7 @@ function C.exec_cli(cmd, spinner_id, on_done, timeout)
     return
   end
 
-  active_jobs[spinner_id] = process
+  S.active_jobs[spinner_id] = process
 
   if stdout then
     H.read_stream(stdout, out_chunks)
@@ -561,20 +577,22 @@ function C.exec_cli(cmd, spinner_id, on_done, timeout)
   end
 
   -- Set up timeout
-  timer = uv.new_timer()
-  if timer and timeout then
-    timer:start(timeout, 0, function()
-      if process and not process:is_closing() then
-        process:kill("sigterm")
-        vim.defer_fn(function()
-          if process and not process:is_closing() then
-            process:kill("sigkill")
-          end
-        end, 1000)
-      end
-      timer:close()
-      finish(124, "", string.format("process killed after timeout: %s", cmd[1]))
-    end)
+  if timeout and timeout > 0 then
+    timer = uv.new_timer()
+    if timer then
+      timer:start(timeout, 0, function()
+        if process and not process:is_closing() then
+          process:kill("sigterm")
+          vim.defer_fn(function()
+            if process and not process:is_closing() then
+              process:kill("sigkill")
+            end
+          end, 1000)
+        end
+        timer:close()
+        finish(124, "", string.format("process killed after timeout: %s", cmd[1]))
+      end)
+    end
   end
 end
 
@@ -599,10 +617,10 @@ end
 local function cancel_cmd(spinner_id, all)
   if all then
     local count = 0
-    for id, job in pairs(active_jobs) do
+    for id, job in pairs(S.active_jobs) do
       if job and not job:is_closing() then
         C.cancel_with_fallback(job)
-        active_jobs[id] = nil
+        S.active_jobs[id] = nil
         count = count + 1
       end
     end
@@ -610,12 +628,12 @@ local function cancel_cmd(spinner_id, all)
     return
   end
 
-  local id = spinner_id or #command_history
-  local job = active_jobs[id]
+  local id = spinner_id or #S.command_history
+  local job = S.active_jobs[id]
 
   if job and not job:is_closing() then
     C.cancel_with_fallback(job)
-    active_jobs[id] = nil
+    S.active_jobs[id] = nil
   else
     H.notify("No active command to cancel", "WARN")
   end
@@ -661,7 +679,7 @@ function C.cached_shell_complete(executable, lead_args, cmd_line, cursor_pos)
   local result = vim
     .system({ shell, script_path, full_line }, {
       text = true,
-      cwd = cwd,
+      cwd = S.cwd,
     })
     :wait()
 
@@ -681,9 +699,13 @@ end
 ---@param args string[]
 ---@param bang boolean
 function C.run_cmd(args, bang)
-  last_cmd = args
+  local executable = args[1]
+  if vim.fn.executable(executable) == 0 then
+    H.notify(executable .. " is not executable", "WARN")
+    return
+  end
 
-  local command_id = #command_history + 1
+  local command_id = #S.command_history + 1
 
   if bang then
     U.show_terminal(args, "cmd://" .. table.concat(args, " "), command_id)
@@ -741,12 +763,12 @@ end
 
 ---@param opts Cmd.CommandHistory
 function C.track_cmd(opts)
-  if #command_history > 100 then
-    table.remove(command_history, 1)
+  if #S.command_history >= Cmd.config.max_history then
+    table.remove(S.command_history, 1)
   end
 
   opts.timestamp = os.time()
-  command_history[opts.id] = opts
+  S.command_history[opts.id] = opts
 end
 
 ------------------------------------------------------------------
@@ -766,12 +788,16 @@ Cmd.config = {}
 ---@field create_usercmd? table<string, string> Create user commands for these executables if it does'nt exists
 ---@field env? table<string, string[]> Environment variables to set for the command
 ---@field timeout? integer Job timeout in ms. Default: 30000
+---@field max_history? integer Maximum number of commands to keep in history. Default: 100
+---@field spinner_chars? string[] Characters to use for the spinner. Default: { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏
 ---@field completion? Cmd.Config.Completion Completion configuration
 Cmd.defaults = {
   force_terminal = {},
   create_usercmd = {},
   env = {},
   timeout = 30000,
+  max_history = 100,
+  spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
   completion = {
     enabled = false,
     shell = vim.env.SHELL or "/bin/sh",
@@ -833,11 +859,11 @@ local function setup_autocmds()
     end
 
     if opts.bang and opts.args == "!" then
-      if vim.tbl_isempty(last_cmd) then
+      if #S.command_history > 0 then
+        args = S.command_history[#S.command_history].cmd
+      else
         H.notify("No previous command to re-run", "WARN")
-        return
       end
-      args = last_cmd
       bang = true
     end
 
@@ -889,7 +915,7 @@ local function setup_autocmds()
   vim.api.nvim_create_autocmd("VimLeavePre", {
     callback = function()
       -- stop all timers
-      for _, st in pairs(spinner_state) do
+      for _, st in pairs(S.spinner_state) do
         if st.timer and not st.timer:is_closing() then
           st.timer:stop()
           st.timer:close()
@@ -897,14 +923,15 @@ local function setup_autocmds()
       end
 
       -- delete all temp scripts
-      for _, path in pairs(temp_script_cache) do
-        pcall(vim.fn.delete, path)
+      for _, path in pairs(S.temp_script_cache) do
+        H.safe_delete(path)
       end
     end,
   })
 
   vim.api.nvim_create_user_command("CmdHistory", function()
-    local history = vim.deepcopy(command_history)
+    H.prepare_history()
+    local history = vim.deepcopy(S.command_history)
 
     if #history == 0 then
       H.notify("No command history", "INFO")
