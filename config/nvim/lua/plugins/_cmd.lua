@@ -6,6 +6,9 @@ M.name = "custom.cmd"
 M.lazy = {
   cmd = {
     "Cmd",
+    "CmdCancel",
+    "CmdHistory",
+    "CmdRerun",
   },
   event = {
     "CmdlineEnter",
