@@ -24,6 +24,8 @@ function M.setup()
     create_usercmd = {
       gh = "Gh",
       git = "Git",
+      just = "Just",
+      nix = "Nix",
     },
     force_terminal = {
       git = {
@@ -34,6 +36,11 @@ function M.setup()
         "pr create",
         "checks --watch",
       },
+      just = {
+        "rebuild",
+        "update",
+      },
+      nix = { "flake update" },
     },
     env = {
       -- gh = {
