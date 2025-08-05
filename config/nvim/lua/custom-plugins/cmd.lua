@@ -56,8 +56,8 @@ local command_history = {}
 
 ---@type table<Cmd.CommandStatus, string>
 local icon_map = {
-  success = " ",
-  failed = " ",
+  success = " ",
+  failed = " ",
   cancelled = " ",
 }
 
