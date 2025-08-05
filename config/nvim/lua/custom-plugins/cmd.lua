@@ -92,11 +92,11 @@ local hl_groups = {
 
 ---Ensure that the current working directory is set.
 function H.ensure_cwd()
-  if cwd then
-    return
-  end
-  cwd = vim.fn.expand("%:p:h")
-  if not uv.fs_stat(cwd .. "/.git") then
+  local buf_path = vim.fn.expand("%:p:h")
+
+  if buf_path and buf_path ~= "" and vim.fn.isdirectory(buf_path) == 1 then
+    cwd = buf_path
+  else
     cwd = vim.fn.getcwd()
   end
 end
