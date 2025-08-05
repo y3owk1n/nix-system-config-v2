@@ -28,10 +28,11 @@ local C = {}
 
 ---@class Cmd.CommandHistory
 ---@field id integer
----@field cmd string[]
+---@field cmd? string[]
 ---@field timestamp? number
----@field type "normal"|"interactive"
----@field status Cmd.CommandStatus
+---@field type? "normal"|"interactive"
+---@field status? Cmd.CommandStatus
+---@field job? uv.uv_process_t|nil
 
 ---@alias Cmd.CommandStatus "success"|"failed"|"cancelled"|"running"
 
@@ -44,13 +45,11 @@ local C = {}
 
 ---@class Cmd.State
 ---@field cwd string
----@field active_jobs table<integer, uv.uv_process_t>
 ---@field temp_script_cache table<string, string>
 ---@field spinner_state table<integer, Cmd.Spinner>
 ---@field command_history Cmd.CommandHistory[]
 local S = {
   cwd = "",
-  active_jobs = {},
   temp_script_cache = {},
   spinner_state = {},
   command_history = {},
@@ -265,11 +264,6 @@ function H.prepare_history()
     return a.id < b.id
   end)
 
-  -- Remove oldest if over limit
-  while #list > Cmd.config.max_history do
-    table.remove(list, 1)
-  end
-
   -- Rebuild sparse array with contiguous ids starting at 1
   S.command_history = {}
   for i, v in ipairs(list) do
@@ -429,8 +423,6 @@ function U.show_terminal(cmd, title, command_id)
       if code == 0 then
         C.track_cmd({
           id = command_id,
-          cmd = cmd,
-          type = "interactive",
           status = "success",
         })
         return
@@ -441,8 +433,6 @@ function U.show_terminal(cmd, title, command_id)
         if code == 130 then
           C.track_cmd({
             id = command_id,
-            cmd = cmd,
-            type = "interactive",
             status = "cancelled",
           })
           pcall(vim.api.nvim_buf_delete, buf, { force = true })
@@ -463,8 +453,6 @@ function U.show_terminal(cmd, title, command_id)
 
         C.track_cmd({
           id = command_id,
-          cmd = cmd,
-          type = "interactive",
           status = "failed",
         })
         pcall(vim.api.nvim_buf_delete, buf, { force = true })
@@ -493,11 +481,11 @@ end
 
 ---Run a CLI command.
 ---@param cmd string[]
----@param spinner_id integer
+---@param command_id integer
 ---@param on_done fun(code: integer, out: string, err: string, is_cancelled?: boolean)
 ---@param timeout? integer Timeout in milliseconds
 ---@return Cmd.RunResult? result Only if synchronous
-function C.exec_cli(cmd, spinner_id, on_done, timeout)
+function C.exec_cli(cmd, command_id, on_done, timeout)
   timeout = timeout or Cmd.config.timeout
 
   H.ensure_cwd()
@@ -548,7 +536,7 @@ function C.exec_cli(cmd, spinner_id, on_done, timeout)
     detached = nil,
     hide = nil,
   }, function(code, signal)
-    S.active_jobs[spinner_id] = nil
+    S.command_history[command_id].job = nil
 
     if signal == 2 then
       code = 130
@@ -568,7 +556,7 @@ function C.exec_cli(cmd, spinner_id, on_done, timeout)
     return
   end
 
-  S.active_jobs[spinner_id] = process
+  S.command_history[command_id].job = process
 
   if stdout then
     H.read_stream(stdout, out_chunks)
@@ -598,7 +586,8 @@ function C.exec_cli(cmd, spinner_id, on_done, timeout)
 end
 
 ---@param job uv.uv_process_t|nil
-function C.cancel_with_fallback(job)
+---@param command_id number
+function C.cancel_with_fallback(job, command_id)
   if not job or job:is_closing() then
     return
   end
@@ -609,6 +598,11 @@ function C.cancel_with_fallback(job)
       job:kill("sigkill")
     end
   end, 1000) -- give 1 second to terminate cleanly
+
+  C.track_cmd({
+    id = command_id,
+    status = "cancelled",
+  })
 end
 
 ---Cancel the currently running command.
@@ -618,10 +612,10 @@ end
 local function cancel_cmd(command_id, all)
   if all then
     local count = 0
-    for id, job in pairs(S.active_jobs) do
-      if job and not job:is_closing() then
-        C.cancel_with_fallback(job)
-        S.active_jobs[id] = nil
+    for id, entry in pairs(S.command_history) do
+      if entry.job and not entry.job:is_closing() then
+        C.cancel_with_fallback(entry.job, entry.id)
+        S.command_history[id].job = nil
         count = count + 1
       end
     end
@@ -630,13 +624,13 @@ local function cancel_cmd(command_id, all)
   end
 
   local id = command_id or #S.command_history
-  local job = S.active_jobs[id]
+  local job = S.command_history[id].job
 
   if job and not job:is_closing() then
-    C.cancel_with_fallback(job)
-    S.active_jobs[id] = nil
+    C.cancel_with_fallback(job, id)
+    S.command_history[id].job = nil
   else
-    H.notify("No active command to cancel", "WARN")
+    H.notify("No running command to cancel", "WARN")
   end
 end
 
@@ -754,8 +748,6 @@ function C.run_cmd(args, bang)
 
       C.track_cmd({
         id = command_id,
-        cmd = args,
-        type = "normal",
         status = status,
       })
     end)
@@ -764,11 +756,10 @@ end
 
 ---@param opts Cmd.CommandHistory
 function C.track_cmd(opts)
-  if #S.command_history >= Cmd.config.max_history then
-    table.remove(S.command_history, 1)
-  end
+  opts = vim.tbl_deep_extend("force", S.command_history[opts.id] or {}, opts)
 
   opts.timestamp = os.time()
+
   S.command_history[opts.id] = opts
 end
 
@@ -789,7 +780,6 @@ Cmd.config = {}
 ---@field create_usercmd? table<string, string> Create user commands for these executables if it does'nt exists
 ---@field env? table<string, string[]> Environment variables to set for the command
 ---@field timeout? integer Job timeout in ms. Default: 30000
----@field max_history? integer Maximum number of commands to keep in history. Default: 100
 ---@field spinner_chars? string[] Characters to use for the spinner. Default: { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏
 ---@field completion? Cmd.Config.Completion Completion configuration
 Cmd.defaults = {
@@ -797,7 +787,6 @@ Cmd.defaults = {
   create_usercmd = {},
   env = {},
   timeout = 30000,
-  max_history = 100,
   spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
   completion = {
     enabled = false,
@@ -902,6 +891,11 @@ local function setup_usercmds()
 
     local args = command_entry.cmd
 
+    if not args then
+      H.notify("No args to rerun", "WARN")
+      return
+    end
+
     local executable = args[1]
 
     local force_terminal_executable = Cmd.config.force_terminal[executable] or {}
@@ -935,8 +929,7 @@ local function setup_usercmds()
   })
 
   vim.api.nvim_create_user_command("CmdHistory", function()
-    H.prepare_history()
-    local history = vim.deepcopy(S.command_history)
+    local history = S.command_history
 
     if #history == 0 then
       H.notify("No command history", "INFO")
