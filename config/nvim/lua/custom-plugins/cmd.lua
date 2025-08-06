@@ -11,7 +11,12 @@ if nvim.major == 0 and nvim.minor < 10 then
 end
 
 ---@class Cmd
-local Cmd = {}
+local Cmd = {
+  builtins = {
+    pre_exec_notifier = {},
+    post_exec_notifier = {},
+  },
+}
 
 ---@class Cmd.Helpers
 local H = {}
@@ -272,26 +277,40 @@ function H.prepare_history()
   end
 end
 
+---@param command_id integer
+---@param opts Cmd.Spinner|nil
+function H.set_spinner_state(command_id, opts)
+  if opts and not vim.tbl_isempty(opts) then
+    opts = vim.tbl_deep_extend("force", S.spinner_state[command_id] or {}, opts)
+  end
+
+  S.spinner_state[command_id] = opts
+end
+
+---@param command_id integer
+---@return Cmd.Spinner|nil
+function H.get_spinner_state(command_id)
+  return S.spinner_state[command_id]
+end
+
 ------------------------------------------------------------------
 -- UI
 ------------------------------------------------------------------
 
+-- NOTE: This is only for snacks notifier or any notifier that support replacement by `opts.id`
 ---Start a spinner.
----@param title string
----@param msg string
----@param cmd string
----@param command_id integer
-function U.start_cmd_spinner(title, msg, cmd, command_id)
-  local spinner_chars = Cmd.config.spinner_chars
+---@param opts Cmd.Config.AsyncNotifier.PreExec
+function U.pre_exec_snacks(opts)
+  local spinner_chars = opts.spinner_chars
   local timer = uv.new_timer()
   if timer then
-    S.spinner_state[command_id] = {
+    opts.set_spinner_state(opts.command_id, {
       timer = timer,
       active = true,
-      msg = string.format("[#%s] running `%s`", command_id, msg),
-      title = title,
-      cmd = cmd,
-    }
+      msg = string.format("[#%s] running `%s`", opts.command_id, opts.args),
+      title = "cmd",
+      cmd = opts.args,
+    })
   end
 
   -- local index for this spinner only
@@ -300,11 +319,8 @@ function U.start_cmd_spinner(title, msg, cmd, command_id)
   if timer then
     timer:start(0, 150, function()
       vim.schedule(function()
-        if not S.spinner_state[command_id] then
-          return
-        end
+        local st = opts.get_spinner_state(opts.command_id)
 
-        local st = S.spinner_state[command_id]
         if not st or not st.active then
           return
         end
@@ -315,38 +331,135 @@ function U.start_cmd_spinner(title, msg, cmd, command_id)
           idx = (idx % #spinner_chars) + 1
           message = string.format("%s %s", spinner_chars[idx], st.msg)
         end
-        H.notify(message, "INFO", { id = "cmd_progress_" .. command_id, title = st.title })
+        H.notify(message, "INFO", { id = "cmd_progress_" .. opts.command_id, title = st.title })
       end)
     end)
   end
 end
 
+-- NOTE: This is only for snacks notifier or any notifier that support replacement by `opts.id`
 ---Stop a spinner.
----@param command_id integer
----@param status Cmd.CommandStatus
+---@param opts Cmd.Config.AsyncNotifier.PostExec
 ---@return nil
-function U.stop_cmd_spinner(command_id, status)
-  local st = S.spinner_state[command_id]
+function U.post_exec_snacks(opts)
+  local st = opts.get_spinner_state(opts.command_id)
   if not st or not st.active then
     return
   end
-  st.active = false
   if st.timer and not st.timer:is_closing() then
     st.timer:stop()
     st.timer:close()
   end
-  S.spinner_state[command_id] = nil
+  opts.set_spinner_state(opts.command_id, nil)
 
-  local icon = icon_map[status] or " "
+  local icon = icon_map[opts.status] or " "
 
-  local msg = string.format("%s [#%s] %s `%s`", icon, command_id, status, st.cmd)
-  local level = level_map[status] or vim.log.levels.ERROR
+  local msg = string.format("%s [#%s] %s `%s`", icon, opts.command_id, opts.status, st.cmd)
+  local level = level_map[opts.status] or vim.log.levels.ERROR
 
   vim.schedule(function()
     H.notify(msg, level, {
-      id = "cmd_progress_" .. command_id,
+      id = "cmd_progress_" .. opts.command_id,
       title = "cmd",
     })
+  end)
+end
+
+-- NOTE: This is for mini notifier
+---Start a spinner.
+---@param opts Cmd.Config.AsyncNotifier.PreExec
+function U.pre_exec_mini(opts)
+  local has_mini, mini_notify = pcall(require, "mini.notify")
+  if not has_mini then
+    return
+  end
+
+  local spinner_chars = opts.spinner_chars
+  local timer = vim.uv.new_timer()
+  if timer then
+    opts.set_spinner_state(opts.command_id, {
+      timer = timer,
+      active = true,
+      msg = string.format("[#%s] running `%s`", opts.command_id, opts.args),
+      title = "cmd",
+      cmd = opts.args,
+    })
+  end
+
+  -- local index for this spinner only
+  local idx = 1
+
+  local mini_notify_id = mini_notify.add("", "INFO", nil, {})
+
+  if timer then
+    timer:start(0, 150, function()
+      vim.schedule(function()
+        local st = opts.get_spinner_state(opts.command_id)
+
+        if not st or not st.active then
+          return
+        end
+
+        local message = st.msg
+
+        if spinner_chars and #spinner_chars > 0 then
+          idx = (idx % #spinner_chars) + 1
+          message = string.format("%s %s", spinner_chars[idx], st.msg)
+        end
+
+        local notify_data = mini_notify.get(mini_notify_id)
+
+        notify_data = vim.tbl_deep_extend("force", notify_data, {
+          msg = message,
+        })
+
+        mini_notify.update(mini_notify_id, notify_data)
+      end)
+    end)
+  end
+  return mini_notify_id
+end
+
+-- NOTE: This is for mini notifier
+---Stop a spinner.
+---@param opts Cmd.Config.AsyncNotifier.PostExec
+---@return nil
+function U.post_exec_mini(opts)
+  local has_mini, mini_notify = pcall(require, "mini.notify")
+  if not has_mini then
+    return
+  end
+
+  local st = opts.get_spinner_state(opts.command_id)
+  if not st or not st.active then
+    return
+  end
+  -- st.active = false
+  if st.timer and not st.timer:is_closing() then
+    st.timer:stop()
+    st.timer:close()
+  end
+  opts.set_spinner_state(opts.command_id, nil)
+
+  local icon = icon_map[opts.status] or " "
+
+  local msg = string.format("%s [#%s] %s `%s`", icon, opts.command_id, opts.status, st.cmd)
+  local level = level_map[opts.status] or vim.log.levels.ERROR
+
+  vim.schedule(function()
+    if not opts.user_defined_notifier_id then
+      return
+    end
+    local data = mini_notify.get(opts.user_defined_notifier_id)
+    data = vim.tbl_deep_extend("force", data or {}, {
+      msg = msg,
+      level = level,
+    })
+    mini_notify.update(opts.user_defined_notifier_id, data)
+
+    vim.defer_fn(function()
+      mini_notify.remove(opts.user_defined_notifier_id)
+    end, mini_notify.config.lsp_progress.duration_last)
   end)
 end
 
@@ -712,7 +825,21 @@ function C.run_cmd(args, bang)
       status = "running",
     })
 
-    U.start_cmd_spinner("cmd", table.concat(args, " "), table.concat(args, " "), command_id)
+    local user_defined_notifier_id = nil
+
+    if Cmd.config.async_notifier.pre_exec and type(Cmd.config.async_notifier.post_exec) == "function" then
+      user_defined_notifier_id = Cmd.config.async_notifier.pre_exec({
+        command_id = command_id,
+        args_raw = args,
+        args = table.concat(args, " "),
+        get_spinner_state = H.get_spinner_state,
+        set_spinner_state = H.set_spinner_state,
+        spinner_chars = Cmd.config.async_notifier.spinner_chars,
+      })
+    else
+      local msg = string.format("? [#%s] running `%s`", command_id, table.concat(args, " "))
+      H.notify(msg, "INFO")
+    end
 
     C.exec_cli(args, command_id, function(code, out, err, is_cancelled)
       ---@type Cmd.CommandStatus
@@ -744,7 +871,23 @@ function C.run_cmd(args, bang)
         end
       end
 
-      U.stop_cmd_spinner(command_id, status)
+      if Cmd.config.async_notifier.post_exec then
+        Cmd.config.async_notifier.post_exec({
+          command_id = command_id,
+          args_raw = args,
+          args = table.concat(args, " "),
+          get_spinner_state = H.get_spinner_state,
+          set_spinner_state = H.set_spinner_state,
+          status = status,
+          user_defined_notifier_id = user_defined_notifier_id,
+        })
+      else
+        local icon = icon_map[status] or " "
+        local level = level_map[status] or vim.log.levels.ERROR
+
+        local msg = string.format("%s [#%s] %s `%s`", icon, command_id, status, table.concat(args, " "))
+        H.notify(msg, level)
+      end
 
       C.track_cmd({
         id = command_id,
@@ -775,22 +918,48 @@ Cmd.config = {}
 ---@field shell? string Shell to use for the completion. Default: vim.env.SHELL
 ---@field prompt_pattern_to_remove? string Regex pattern to remove from the output, e.g. "^"
 
+---@class Cmd.Config.AsyncNotifier.PreExec
+---@field command_id integer
+---@field args_raw string[]
+---@field args string
+---@field set_spinner_state fun(command_id: integer, opts: Cmd.Spinner|nil)
+---@field get_spinner_state fun(command_id: integer): Cmd.Spinner|nil
+---@field spinner_chars string[]
+
+---@class Cmd.Config.AsyncNotifier.PostExec
+---@field command_id integer
+---@field args_raw string[]
+---@field args string
+---@field set_spinner_state fun(command_id: integer, opts: Cmd.Spinner|nil)
+---@field get_spinner_state fun(command_id: integer): Cmd.Spinner|nil
+---@field status Cmd.CommandStatus
+---@field user_defined_notifier_id? string|integer|number|nil
+
+---@class Cmd.Config.AsyncNotifier
+---@field spinner_chars? string[] Characters to use for the spinner. Default: { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏
+---@field pre_exec? fun(opts: Cmd.Config.AsyncNotifier.PreExec): string|integer|nil
+---@field post_exec? fun(opts: Cmd.Config.AsyncNotifier.PostExec)
+
 ---@class Cmd.Config
 ---@field force_terminal? table<string, string[]> Detect any of these command to force terminal
 ---@field create_usercmd? table<string, string> Create user commands for these executables if it does'nt exists
 ---@field env? table<string, string[]> Environment variables to set for the command
 ---@field timeout? integer Job timeout in ms. Default: 30000
----@field spinner_chars? string[] Characters to use for the spinner. Default: { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏
 ---@field completion? Cmd.Config.Completion Completion configuration
+---@field async_notifier? Cmd.Config.AsyncNotifier Async notifier configuration
 Cmd.defaults = {
   force_terminal = {},
   create_usercmd = {},
   env = {},
   timeout = 30000,
-  spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
   completion = {
     enabled = false,
     shell = vim.env.SHELL or "/bin/sh",
+  },
+  async_notifier = {
+    spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
+    pre_exec = nil,
+    post_exec = nil,
   },
 }
 
@@ -1062,5 +1231,10 @@ function Cmd.setup(user_config)
   setup_usercmds()
   setup_hls()
 end
+
+Cmd.builtins.pre_exec_notifier.snacks = U.pre_exec_snacks
+Cmd.builtins.post_exec_notifier.snacks = U.post_exec_snacks
+Cmd.builtins.pre_exec_notifier.mini = U.pre_exec_mini
+Cmd.builtins.post_exec_notifier.mini = U.post_exec_mini
 
 return Cmd
