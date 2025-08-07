@@ -11,7 +11,15 @@ function M.setup()
   end
 
   ---@type Notifier.Config
-  local plugin_opts = {}
+  local plugin_opts = {
+    group_configs = {
+      important = {
+        anchor = "SW", -- South-West
+        row = vim.o.lines - 2,
+        col = 0,
+      },
+    },
+  }
 
   plugin.setup(plugin_opts)
 
