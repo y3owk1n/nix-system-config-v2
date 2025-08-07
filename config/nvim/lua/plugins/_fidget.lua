@@ -1,7 +1,7 @@
 ---@type PluginModule
 local M = {}
 
--- M.enabled = false
+M.enabled = false
 
 M.name = "fidget"
 
@@ -20,7 +20,7 @@ function M.setup()
     notification = {
       override_vim_notify = true,
       window = {
-        winblend = 0,
+        winblend = 50,
       },
     },
   }

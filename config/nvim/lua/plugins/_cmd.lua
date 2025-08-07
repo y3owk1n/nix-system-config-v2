@@ -57,7 +57,33 @@ function M.setup()
     async_notifier = {
       -- adapter = plugin.builtins.spinner_adapters.mini,
       -- adapter = plugin.builtins.spinner_adapters.snacks,
-      adapter = plugin.builtins.spinner_adapters.fidget,
+      -- adapter = plugin.builtins.spinner_adapters.fidget,
+      adapter = {
+        start = function(msg, data)
+          vim.notify(
+            msg,
+            "INFO",
+            { id = string.format("cmd_progress_%s", data.command_id), title = "cmd", group = "important" }
+          )
+          return nil -- snacks uses the id internally
+        end,
+
+        update = function(_, msg, data)
+          vim.notify(
+            msg,
+            "INFO",
+            { id = string.format("cmd_progress_%s", data.command_id), title = "cmd", group = "important" }
+          )
+        end,
+
+        finish = function(_, msg, level, data)
+          vim.notify(msg, level, {
+            id = string.format("cmd_progress_%s", data.command_id),
+            title = "cmd",
+            group = "important",
+          })
+        end,
+      },
     },
   }
 
