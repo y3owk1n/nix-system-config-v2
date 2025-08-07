@@ -425,6 +425,46 @@ U.spinner_adapters.mini = {
   end,
 }
 
+---@type Cmd.Config.AsyncNotifier.SpinnerAdapter
+U.spinner_adapters.fidget = {
+  start = function(msg, data)
+    ---@diagnostic disable-next-line: redefined-local
+    local ok, fidget = pcall(require, "fidget")
+    return ok
+        and fidget.notification.notify(msg, "INFO", {
+          key = string.format("cmd_progress_%s", data.command_id),
+          annote = "cmd",
+          ttl = Cmd.config.timeout,
+        })
+      or nil
+  end,
+
+  update = function(_, msg, data)
+    ---@diagnostic disable-next-line: redefined-local
+    local ok, fidget = pcall(require, "fidget")
+    if ok then
+      fidget.notification.notify(msg, "INFO", {
+        key = string.format("cmd_progress_%s", data.command_id),
+        annote = "cmd",
+        update_only = true,
+      })
+    end
+  end,
+
+  finish = function(_, msg, level, data)
+    ---@diagnostic disable-next-line: redefined-local
+    local ok, fidget = pcall(require, "fidget")
+    if ok then
+      fidget.notification.notify(msg, level, {
+        key = string.format("cmd_progress_%s", data.command_id),
+        annote = "cmd",
+        update_only = true,
+        ttl = 0,
+      })
+    end
+  end,
+}
+
 ---Show output in a scratch buffer (readonly, vsplit).
 ---@param lines string[]
 ---@param title string
@@ -1224,7 +1264,7 @@ end
 
 ---@class Cmd.builtins
 ---@field spinner_driver fun(adapter: Cmd.Config.AsyncNotifier.SpinnerAdapter): Cmd.SpinnerDriver
----@field spinner_adapters table<"snacks"|"mini", Cmd.Config.AsyncNotifier.SpinnerAdapter>
+---@field spinner_adapters table<"snacks"|"mini"|"fidget", Cmd.Config.AsyncNotifier.SpinnerAdapter>
 
 ---@type Cmd.builtins
 Cmd.builtins = {
