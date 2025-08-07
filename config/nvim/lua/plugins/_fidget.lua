@@ -20,7 +20,7 @@ function M.setup()
     notification = {
       override_vim_notify = true,
       window = {
-        winbled = 0,
+        winblend = 0,
       },
     },
   }
