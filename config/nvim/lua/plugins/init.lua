@@ -176,7 +176,7 @@ local function discover()
       end
 
       if mod.enabled == false then
-        log.warn(("Plugin %s is disabled"):format(path))
+        -- log.warn(("Plugin %s is disabled"):format(path))
         goto continue
       end
 
