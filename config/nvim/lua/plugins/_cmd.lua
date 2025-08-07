@@ -62,7 +62,7 @@ function M.setup()
         start = function(msg, data)
           vim.notify(
             msg,
-            "INFO",
+            vim.log.levels.INFO,
             { id = string.format("cmd_progress_%s", data.command_id), title = "cmd", group = "important" }
           )
           return nil -- snacks uses the id internally
@@ -71,13 +71,13 @@ function M.setup()
         update = function(_, msg, data)
           vim.notify(
             msg,
-            "INFO",
+            vim.log.levels.INFO,
             { id = string.format("cmd_progress_%s", data.command_id), title = "cmd", group = "important" }
           )
         end,
 
         finish = function(_, msg, level, data)
-          vim.notify(msg, level, {
+          vim.notify(msg, vim.log.levels[level], {
             id = string.format("cmd_progress_%s", data.command_id),
             title = "cmd",
             group = "important",

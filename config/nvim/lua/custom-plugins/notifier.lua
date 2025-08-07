@@ -192,6 +192,10 @@ local function render_group(group)
 
   api.nvim_buf_set_lines(group.buf, 0, -1, false, lines)
 
+  vim.bo[group.buf].filetype = "markdown"
+  vim.bo[group.buf].syntax = "markdown"
+  vim.wo[group.win].conceallevel = 3
+
   local width = 0
   for _, line in ipairs(lines) do
     width = math.max(width, vim.fn.strdisplaywidth(line))
@@ -209,11 +213,7 @@ local function render_group(group)
     zindex = 200,
   })
 
-  vim.bo[group.buf].filetype = "markdown"
-  vim.bo[group.buf].syntax = "markdown"
-  vim.wo[group.win].conceallevel = 3
-
-  local ns = vim.api.nvim_create_namespace("notifier")
+  local ns = vim.api.nvim_create_namespace("notifier-notification")
   vim.api.nvim_buf_clear_namespace(group.buf, ns, 0, -1)
 
   for i = 1, #segments do
@@ -293,7 +293,7 @@ local function start_cleanup_timer()
               goto continue
             end
 
-            local elapsed_ms = (now - (notif.created_at * 1000))
+            local elapsed_ms = (now - ((notif.updated_at or notif.created_at) * 1000))
             if elapsed_ms >= notif.timeout then
               notif._expired = true
               changed = true
