@@ -55,8 +55,8 @@ function M.setup()
       prompt_pattern_to_remove = "^",
     },
     async_notifier = {
-      pre_exec = plugin.builtins.pre_exec_notifier.snacks,
-      post_exec = plugin.builtins.post_exec_notifier.snacks,
+      -- adapter = plugin.builtins.spinner_adapters.mini,
+      adapter = plugin.builtins.spinner_adapters.snacks,
     },
   }
 
