@@ -63,6 +63,7 @@ function M.setup()
       },
       treesitter = true,
       render_markdown = true,
+      fidget = true,
       snacks = {
         enabled = true,
       },

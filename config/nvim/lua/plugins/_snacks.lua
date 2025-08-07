@@ -26,10 +26,10 @@ function M.setup()
     input = {
       enabled = true,
     },
-    notifier = {
-      enabled = true,
-      timeout = 3000,
-    },
+    -- notifier = {
+    --   enabled = true,
+    --   timeout = 3000,
+    -- },
     lazygit = {
       configure = false,
       config = {
@@ -47,13 +47,13 @@ function M.setup()
     group = augroup,
     callback = function()
       -- Setup some globals for debugging (lazy-loaded)
-      _G.dd = function(...)
-        Snacks.debug.inspect(...)
-      end
-      _G.bt = function()
-        Snacks.debug.backtrace()
-      end
-      vim.print = _G.dd -- Override print to use snacks for `:=` command
+      -- _G.dd = function(...)
+      --   Snacks.debug.inspect(...)
+      -- end
+      -- _G.bt = function()
+      --   Snacks.debug.backtrace()
+      -- end
+      -- vim.print = _G.dd -- Override print to use snacks for `:=` command
 
       -- Create some toggle mappings
       Snacks.toggle.option("spell", { name = "Spelling" }):map("<leader>us")
@@ -72,12 +72,12 @@ function M.setup()
   })
 
   ---notifier keymaps
-  vim.keymap.set("n", "<leader>N", function()
-    Snacks.notifier.show_history()
-  end, { desc = "Notification History" })
-  vim.keymap.set("n", "<leader>un", function()
-    Snacks.notifier.hide()
-  end, { desc = "Dismiss All Notifications" })
+  -- vim.keymap.set("n", "<leader>N", function()
+  --   Snacks.notifier.show_history()
+  -- end, { desc = "Notification History" })
+  -- vim.keymap.set("n", "<leader>un", function()
+  --   Snacks.notifier.hide()
+  -- end, { desc = "Dismiss All Notifications" })
 
   ---rename keymaps
   vim.keymap.set("n", "<leader>cr", function()

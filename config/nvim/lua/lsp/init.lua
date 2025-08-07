@@ -296,7 +296,7 @@ end
 function M.init()
   discover()
   setup_modules()
-  setup_progress_spinner()
+  -- setup_progress_spinner()
 end
 
 return M
