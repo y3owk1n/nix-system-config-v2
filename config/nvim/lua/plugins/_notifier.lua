@@ -13,13 +13,6 @@ function M.setup()
   ---@type Notifier.Config
   local plugin_opts = {
     padding = { top = 1, right = 1, bottom = 1, left = 1 },
-    group_configs = {
-      important = {
-        anchor = "SW", -- South-West
-        row = vim.o.lines - 2,
-        col = 0,
-      },
-    },
   }
 
   plugin.setup(plugin_opts)
@@ -30,6 +23,13 @@ function M.setup()
   vim.keymap.set("n", "<leader>un", function()
     plugin.dismiss_all()
   end, { desc = "Dismiss All Notifications" })
+
+  -- vim.schedule(function()
+  --   vim.notify("bottom-right", vim.log.levels.INFO, { group_name = "bottom-right" })
+  --   vim.notify("bottom-left", vim.log.levels.INFO, { group_name = "bottom-left" })
+  --   vim.notify("top-right", vim.log.levels.INFO, { group_name = "top-right" })
+  --   vim.notify("top-left", vim.log.levels.INFO, { group_name = "top-left" })
+  -- end)
 end
 
 return M
