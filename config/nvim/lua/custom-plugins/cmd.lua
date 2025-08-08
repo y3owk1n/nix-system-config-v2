@@ -332,6 +332,7 @@ function U.spinner_driver(adapter)
             if spinner_chars and #spinner_chars > 0 then
               idx = (idx % #spinner_chars) + 1
               msg = string.format("%s %s", spinner_chars[idx], msg)
+              opts.current_spinner_char = spinner_chars[idx]
             end
             adapter.update(notify_id, msg, opts)
           end)
@@ -927,6 +928,7 @@ Cmd.config = {}
 ---@field set_spinner_state fun(command_id: integer, opts: Cmd.Spinner|nil)
 ---@field get_spinner_state fun(command_id: integer): Cmd.Spinner|nil
 ---@field spinner_chars string[]
+---@field current_spinner_char? string
 
 ---@class Cmd.Config.AsyncNotifier.PostExec
 ---@field command_id integer

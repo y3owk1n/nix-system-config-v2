@@ -60,27 +60,102 @@ function M.setup()
       -- adapter = plugin.builtins.spinner_adapters.fidget,
       adapter = {
         start = function(msg, data)
-          vim.notify(
-            msg,
-            vim.log.levels.INFO,
-            { id = string.format("cmd_progress_%s", data.command_id), title = "cmd", group = "important" }
-          )
+          local function formatter(notif, line, config, _log_level_map, _notif_formatter_data)
+            local separator = { text = " " }
+
+            local icon = notif.icon or config.icons[notif.level]
+            local icon_hl = notif.hl_group or _log_level_map[notif.level].hl_group
+
+            local id_text = string.format("#%s", _notif_formatter_data.command_id)
+
+            return {
+              icon and { text = icon, hl_group = icon_hl },
+              icon and separator,
+              { text = id_text, hl_group = "CmdHistoryIdentifier" },
+              separator,
+              { text = "running", hl_group = icon_hl },
+              separator,
+              { text = _notif_formatter_data.args, hl_group = "Comment" },
+            }
+          end
+
+          vim.notify("", vim.log.levels.INFO, {
+            id = string.format("cmd_progress_%s", data.command_id),
+            title = "cmd",
+            group = "important",
+            icon = " ",
+            _notif_formatter = formatter,
+            _notif_formatter_data = data,
+          })
           return nil -- snacks uses the id internally
         end,
 
         update = function(_, msg, data)
-          vim.notify(
-            msg,
-            vim.log.levels.INFO,
-            { id = string.format("cmd_progress_%s", data.command_id), title = "cmd", group = "important" }
-          )
-        end,
+          local function formatter(notif, line, config, _log_level_map, _notif_formatter_data)
+            local separator = { text = " " }
 
-        finish = function(_, msg, level, data)
-          vim.notify(msg, vim.log.levels[level], {
+            local icon = notif.icon or config.icons[notif.level]
+            local icon_hl = notif.hl_group or _log_level_map[notif.level].hl_group
+
+            local id_text = string.format("#%s", _notif_formatter_data.command_id)
+
+            return {
+              icon and { text = icon, hl_group = icon_hl },
+              icon and separator,
+              { text = id_text, hl_group = "CmdHistoryIdentifier" },
+              separator,
+              { text = "running", hl_group = icon_hl },
+              separator,
+              { text = _notif_formatter_data.args, hl_group = "Comment" },
+            }
+          end
+
+          vim.notify("", vim.log.levels.INFO, {
             id = string.format("cmd_progress_%s", data.command_id),
             title = "cmd",
             group = "important",
+            icon = data.current_spinner_char,
+            _notif_formatter = formatter,
+            _notif_formatter_data = data,
+          })
+        end,
+
+        finish = function(_, msg, level, data)
+          local function formatter(notif, line, config, _log_level_map, _notif_formatter_data)
+            local separator = { text = " " }
+
+            local icon = notif.icon or config.icons[notif.level]
+            local icon_hl = notif.hl_group or _log_level_map[notif.level].hl_group
+
+            local id_text = string.format("#%s", _notif_formatter_data.command_id)
+
+            return {
+              icon and { text = icon, hl_group = icon_hl },
+              icon and separator,
+              { text = id_text, hl_group = "CmdHistoryIdentifier" },
+              separator,
+              { text = _notif_formatter_data.status, hl_group = icon_hl },
+              separator,
+              { text = _notif_formatter_data.args, hl_group = "Comment" },
+            }
+          end
+
+          ---@type table<Cmd.CommandStatus, string>
+          local icon_map = {
+            success = " ",
+            failed = " ",
+            cancelled = " ",
+          }
+
+          local icon = icon_map[data.status]
+
+          vim.notify("", vim.log.levels[level], {
+            id = string.format("cmd_progress_%s", data.command_id),
+            title = "cmd",
+            group = "important",
+            icon = icon,
+            _notif_formatter = formatter,
+            _notif_formatter_data = data,
           })
         end,
       },
