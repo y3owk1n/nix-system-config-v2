@@ -37,6 +37,9 @@ local H = {}
 ---@class Notifier.UI
 local U = {}
 
+---@class Notifier.Validator
+local V = {}
+
 local api = vim.api
 
 ------------------------------------------------------------------
@@ -81,6 +84,20 @@ local log_level_map = {
 ------------------------------------------------------------------
 -- Helpers
 ------------------------------------------------------------------
+
+-- Resolve effective padding: group > global > zero
+---@param group Notifier.Group
+---@return Notifier.Config.Padding
+function H.resolve_padding(group)
+  local g = group.config.padding -- may be nil
+  local c = Notifier.config.padding -- may be nil
+  return {
+    top = (g and g.top) or (c and c.top) or 0,
+    right = (g and g.right) or (c and c.right) or 0,
+    bottom = (g and g.bottom) or (c and c.bottom) or 0,
+    left = (g and g.left) or (c and c.left) or 0,
+  }
+end
 
 ---Return an existing group or create a new one.
 ---@param name string
@@ -260,7 +277,25 @@ function U.render_group(group)
     )
   end
 
-  pcall(api.nvim_buf_set_lines, group.buf, 0, -1, false, lines)
+  local pad = H.resolve_padding(group)
+
+  local padded_lines = {}
+  for _ = 1, pad.top do
+    table.insert(padded_lines, "")
+  end
+
+  local left_pad_str = string.rep(" ", pad.left)
+  local right_pad_str = string.rep(" ", pad.right)
+
+  for _, l in ipairs(lines) do
+    table.insert(padded_lines, left_pad_str .. l .. right_pad_str)
+  end
+
+  for _ = 1, pad.bottom do
+    table.insert(padded_lines, "")
+  end
+
+  pcall(api.nvim_buf_set_lines, group.buf, 0, -1, false, padded_lines)
 
   local width = 0
   for _, line in ipairs(lines) do
@@ -268,16 +303,18 @@ function U.render_group(group)
   end
 
   width = math.min(width, math.floor(vim.o.columns * 0.6))
-
   local height = #lines
+
+  local padded_width = width + pad.left + pad.right
+  local padded_height = height + pad.top + pad.bottom
 
   local ok_win, _ = pcall(api.nvim_win_set_config, group.win, {
     relative = "editor",
     row = group.config.row,
     col = group.config.col,
     anchor = group.config.anchor,
-    width = width,
-    height = height,
+    width = padded_width,
+    height = padded_height,
   })
 
   if not ok_win then
@@ -287,18 +324,139 @@ function U.render_group(group)
   local ns = vim.api.nvim_create_namespace("notifier-notification")
   vim.api.nvim_buf_clear_namespace(group.buf, ns, 0, -1)
 
-  for lnum, seg in ipairs(segments) do
-    local col = 0
+  local lnum_cursor = pad.top or 0 -- first real content line after top padding
+  for _, seg in ipairs(segments) do
+    local col = pad.left or 0
     for _, item in ipairs(seg) do
       if item.hl_group then
-        api.nvim_buf_set_extmark(group.buf, ns, lnum - 1, col, {
-          end_col = col + #item.text,
-          hl_group = item.hl_group,
-        })
+        local extmark_ok = pcall(
+          api.nvim_buf_set_extmark,
+          group.buf,
+          ns,
+          lnum_cursor,
+          col,
+          { end_col = col + #item.text, hl_group = item.hl_group }
+        )
+        if not extmark_ok then
+          break
+        end
       end
       col = col + #item.text
     end
+    lnum_cursor = lnum_cursor + 1
   end
+end
+
+------------------------------------------------------------------
+-- Validator
+------------------------------------------------------------------
+
+---Validate a log level number and clamp to valid range.
+---@param level any
+---@return integer
+function V.validate_level(level)
+  if type(level) ~= "number" then
+    return vim.log.levels.INFO
+  end
+
+  -- Clamp to nearest valid level
+  local min_level, max_level = vim.log.levels.TRACE, vim.log.levels.ERROR
+  if level < min_level then
+    return min_level
+  elseif level > max_level then
+    return max_level
+  end
+
+  return level
+end
+
+---Validate a message, ensuring it's a string.
+---@param msg any
+---@return string
+function V.validate_msg(msg)
+  if type(msg) ~= "string" then
+    return tostring(msg or "")
+  end
+  return msg
+end
+
+---Validate padding table, ensuring numeric and non-negative.
+---@param padding any
+---@return Notifier.Config.Padding
+function V.validate_padding(padding)
+  local function safe_num(v)
+    return (type(v) == "number" and v >= 0) and v or 0
+  end
+  if type(padding) ~= "table" then
+    return { top = 0, right = 0, bottom = 0, left = 0 }
+  end
+  return {
+    top = safe_num(padding.top),
+    right = safe_num(padding.right),
+    bottom = safe_num(padding.bottom),
+    left = safe_num(padding.left),
+  }
+end
+
+---Validate anchor value for floating windows.
+---@param anchor any
+---@return "NW"|"NE"|"SW"|"SE"
+function V.validate_anchor(anchor)
+  local valid = { NW = true, NE = true, SW = true, SE = true }
+  if type(anchor) == "string" and valid[anchor] then
+    return anchor
+  end
+  return "SE"
+end
+
+---Validate timeout, ensuring it’s positive ms.
+---@param timeout any
+---@return integer
+function V.validate_timeout(timeout)
+  if type(timeout) ~= "number" or timeout < 0 then
+    return Notifier.config.default_timeout or 3000
+  end
+  return timeout
+end
+
+---Validate a formatter function.
+---@param formatter any
+---@return fun(opts:Notifier.NotificationFormatterOpts):Notifier.FormattedNotifOpts[]
+function V.validate_formatter(formatter)
+  if type(formatter) == "function" then
+    return formatter
+  end
+  return Notifier.config.notif_formatter
+end
+
+---Validate icon string (optional).
+---@param icon any
+---@return string|nil
+function V.validate_icon(icon)
+  if type(icon) == "string" then
+    return icon
+  end
+  return nil
+end
+
+---Validate highlight group name.
+---@param hl any
+---@return string|nil
+function V.validate_hl(hl)
+  if type(hl) == "string" and #hl > 0 then
+    return hl
+  end
+  return nil
+end
+
+---Validate group name to be a non-empty string.
+---@param name any
+---@return string
+function V.validate_group_name(name)
+  if type(name) == "string" and #name > 0 then
+    return name
+  end
+  return "default"
 end
 
 ------------------------------------------------------------------
@@ -312,14 +470,16 @@ end
 function Notifier.notify(msg, level, opts)
   opts = opts or {}
   local id = opts.id
-  local timeout = opts.timeout or Notifier.config.default_timeout
-  local hl_group = opts.hl_group
-  local group_name = opts.group_name or "default"
-  local icon = opts.icon
+  local timeout = V.validate_timeout(opts.timeout)
+  local hl_group = V.validate_hl(opts.hl_group)
+  local group_name = V.validate_group_name(opts.group_name)
+  local icon = V.validate_icon(opts.icon)
   local group = H.get_group(group_name)
   local now = os.time()
-  local _notif_formatter = opts._notif_formatter
-  local _notif_formatter_data = opts._notif_formatter_data
+  local _notif_formatter = V.validate_formatter(opts._notif_formatter)
+  local _notif_formatter_data = type(opts._notif_formatter_data) == "table" and opts._notif_formatter_data or nil
+  level = V.validate_level(level)
+  msg = V.validate_msg(msg)
 
   -- Replace existing message with same ID
   if id then
@@ -536,11 +696,19 @@ end
 ---@field group_configs? table<string, Notifier.Config.GroupConfigs>
 ---@field icons? table<string, string>
 ---@field notif_formatter? fun(opts: Notifier.NotificationFormatterOpts): Notifier.FormattedNotifOpts[]
+---@field padding? Notifier.Config.Padding
+
+---@class Notifier.Config.Padding
+---@field top? integer
+---@field right? integer
+---@field bottom? integer
+---@field left? integer
 
 ---@class Notifier.Config.GroupConfigs
 ---@field anchor "NW"|"NE"|"SW"|"SE"
 ---@field row integer
 ---@field col integer
+---@field padding? Notifier.Config.Padding
 
 ---@type Notifier.Config
 Notifier.config = {}
@@ -550,6 +718,7 @@ Notifier.defaults = {
   default_timeout = 3000, -- milliseconds
   winblend = 0,
   border = "none",
+  padding = { top = 0, right = 0, bottom = 0, left = 0 },
   group_configs = {
     default = {
       anchor = "SE", -- South-East
@@ -585,6 +754,13 @@ end
 ---@param user_config? Notifier.Config
 function Notifier.setup(user_config)
   Notifier.config = vim.tbl_deep_extend("force", Notifier.defaults, user_config or {})
+
+  Notifier.config.padding = V.validate_padding(Notifier.config.padding)
+
+  for _, group_config in pairs(Notifier.config.group_configs or {}) do
+    group_config.anchor = V.validate_anchor(group_config.anchor)
+    group_config.padding = group_config.padding and V.validate_padding(group_config.padding) or nil
+  end
 
   setup_hls()
 
