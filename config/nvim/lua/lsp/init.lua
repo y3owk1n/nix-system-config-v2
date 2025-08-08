@@ -272,6 +272,9 @@ local function setup_progress_spinner()
         icon = spinner_chars[spinner_idx]
       end
 
+      -- NOTE: no need this when using snacks notifier, this is for my custom one
+      text = string.format("%s **%s** %s", icon, client.name, text)
+
       -- Always send the message; never send "" (it closes the window)
       vim.notify(text, vim.log.levels.INFO, {
         id = "lsp_progress",
