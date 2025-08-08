@@ -272,9 +272,6 @@ local function setup_progress_spinner()
         icon = spinner_chars[spinner_idx]
       end
 
-      -- NOTE: no need this when using snacks notifier, this is for my custom one
-      text = string.format("%s **%s** %s", icon, client.name, text)
-
       -- Always send the message; never send "" (it closes the window)
       vim.notify(text, vim.log.levels.INFO, {
         id = "lsp_progress",
@@ -290,6 +287,133 @@ local function setup_progress_spinner()
   })
 end
 
+---Setup a progress spinner for LSP.
+---@return nil
+local function setup_progress_spinner_custom()
+  local spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
+  local last_spinner = 0
+  local spinner_idx = 1
+
+  local active_timers = {} -- token → uv_timer_t
+
+  vim.lsp.handlers["$/progress"] = function(_, result, ctx)
+    local client = vim.lsp.get_client_by_id(ctx.client_id)
+    if not client then
+      return
+    end
+    local value = result.value
+    if type(value) ~= "table" then
+      return
+    end
+
+    local token = result.token
+    local is_last = value.kind == "end"
+    local no_percentage = value.percentage == nil
+
+    local function render()
+      local data = {
+        percentage = value.percentage or nil,
+        description = value.title or "Loading workspace",
+        file_progress = (value.message and (" **" .. value.message .. "**") or nil),
+      }
+
+      if is_last then
+        data.description = "Done"
+        data.file_progress = nil
+      end
+
+      local icon
+      if is_last then
+        icon = " "
+      else
+        local now = vim.uv.hrtime()
+        if now - last_spinner > 80e6 then
+          spinner_idx = (spinner_idx % #spinner_chars) + 1
+          last_spinner = now
+        end
+        icon = spinner_chars[spinner_idx]
+      end
+
+      local function formatter(notif, line, config, _log_level_map, _notif_formatter_data)
+        local separator = { text = " " }
+
+        local icon_hl = notif.hl_group or _log_level_map[notif.level].hl_group
+
+        local percent_text = _notif_formatter_data.percentage
+            and string.format("%3d%%", _notif_formatter_data.percentage)
+          or nil
+
+        local description_text = _notif_formatter_data.description
+
+        local file_progress_text = _notif_formatter_data.file_progress or nil
+
+        local client_name = client.name
+
+        ---@type Notifier.FormattedNotifOpts[]
+        local entries = {}
+
+        if icon then
+          table.insert(entries, { text = icon, hl_group = icon_hl })
+          table.insert(entries, separator)
+        end
+
+        if percent_text then
+          table.insert(entries, { text = percent_text, hl_group = "CmdHistoryIdentifier" })
+          table.insert(entries, separator)
+        end
+
+        table.insert(entries, { text = description_text, hl_group = icon_hl })
+
+        if file_progress_text then
+          table.insert(entries, separator)
+          table.insert(entries, { text = file_progress_text, hl_group = "Comment" })
+        end
+
+        if client_name then
+          table.insert(entries, separator)
+          table.insert(entries, { text = client_name, hl_group = "ErrorMsg" })
+        end
+
+        return entries
+      end
+
+      vim.schedule(function()
+        vim.notify("", vim.log.levels.INFO, {
+          id = string.format("lsp_progress_%s_%s", client.name, token),
+          title = client.name,
+          _notif_formatter = formatter,
+          _notif_formatter_data = data,
+        })
+      end)
+    end
+
+    render()
+
+    if no_percentage then
+      if not is_last then
+        local timer = active_timers[token]
+        if not timer or timer:is_closing() then
+          timer = vim.uv.new_timer()
+          active_timers[token] = timer
+        end
+
+        if timer then
+          timer:start(0, 150, function()
+            vim.schedule(render)
+          end)
+        end
+      else
+        local timer = active_timers[token]
+        if timer and not timer:is_closing() then
+          timer:stop()
+          timer:close()
+          active_timers[token] = nil
+        end
+      end
+    end
+  end
+end
+
 -----------------------------------------------------------------------------//
 -- Public API
 -----------------------------------------------------------------------------//
@@ -299,7 +423,8 @@ end
 function M.init()
   discover()
   setup_modules()
-  setup_progress_spinner()
+  -- setup_progress_spinner()
+  setup_progress_spinner_custom()
 end
 
 return M

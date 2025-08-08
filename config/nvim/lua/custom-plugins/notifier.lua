@@ -14,13 +14,16 @@ end
 
 ---@class Notifier.Notification
 ---@field id? string|number
----@field msg string
+---@field msg string The message to display and can contain newlines or just "" if you want to use the `_notif_formatter` to build the lines.
+---@field icon? string
 ---@field level integer
 ---@field timeout integer
 ---@field created_at number
 ---@field updated_at? number
 ---@field hl_group? string
 ---@field _expired? boolean
+---@field _notif_formatter? fun(notif: Notifier.Notification, line: string, config: Notifier.Config, log_level_map: Notifier.LogLevelMap, _notif_formatter_data?: table): Notifier.FormattedNotifOpts[]
+---@field _notif_formatter_data? table
 
 ---@class Notifier
 local Notifier = {}
@@ -47,7 +50,8 @@ local api = vim.api
 ---@type table<string, Notifier.Group>
 local groups = {}
 
----@type table<integer, {level_key: "ERROR"|"WARN"|"INFO"|"DEBUG"|"TRACE", hl_group: string}>
+---@alias Notifier.LogLevelMap table<integer, {level_key: "ERROR"|"WARN"|"INFO"|"DEBUG"|"TRACE", hl_group: string}>
+---@type Notifier.LogLevelMap
 local log_level_map = {
   [vim.log.levels.ERROR] = {
     level_key = "ERROR",
@@ -140,8 +144,6 @@ local render_timer = assert(uv.new_timer(), "uv_timer_t")
 ---@type boolean
 local dirty = false
 
-local tmp_concat = {}
-
 function U.debounce_render()
   dirty = true
   if not render_timer then
@@ -163,6 +165,29 @@ function U.debounce_render()
   )
 end
 
+---@class Notifier.FormattedNotifOpts
+---@field text string The display text
+---@field hl_group? string The highlight group of the text
+
+---@param notif Notifier.Notification
+---@param line string
+---@param config Notifier.Config
+---@param _log_level_map Notifier.LogLevelMap
+---@param _notif_formatter_data? table -- user defined data
+---@return Notifier.FormattedNotifOpts[]
+function U.notif_formatter(notif, line, config, _log_level_map, _notif_formatter_data)
+  local separator = { text = " " }
+
+  local icon = notif.icon or config.icons[notif.level]
+  local icon_hl = notif.hl_group or _log_level_map[notif.level].hl_group
+
+  return {
+    icon and { text = icon, hl_group = icon_hl },
+    icon and separator,
+    { text = line, hl_group = notif.hl_group },
+  }
+end
+
 ---Render all messages in the group.
 ---@param group Notifier.Group
 function U.render_group(group)
@@ -178,50 +203,46 @@ function U.render_group(group)
     return
   end
 
-  ---@type table<integer, { text: string, hl_group?: string }>[]
+  ---@type table<integer, Notifier.FormattedNotifOpts>[]
   local segments = {}
-
-  local separator = { text = " " }
 
   for i = #live, 1, -1 do
     local notif = live[i]
+
+    if notif._notif_formatter and type(notif._notif_formatter) == "function" then
+      local formatted = notif._notif_formatter(notif, "", Notifier.config, log_level_map, notif._notif_formatter_data)
+      table.insert(segments, formatted)
+      notif.msg = table.concat(
+        vim.tbl_map(function(s)
+          return s.text
+        end, formatted),
+        ""
+      )
+      goto continue
+    end
+
     local msg_lines = vim.split(notif.msg, "\n")
     for _, line in ipairs(msg_lines) do
-      table.insert(segments, {
-        { text = line, hl_group = notif.hl_group },
-        separator,
-        {
-          text = string.format("[%s]", log_level_map[notif.level].level_key),
-          hl_group = log_level_map[notif.level].hl_group,
-        },
-      })
+      table.insert(
+        segments,
+        Notifier.config.notif_formatter(notif, line, Notifier.config, log_level_map, notif._notif_formatter_data)
+      )
     end
+    ::continue::
   end
 
   local lines = {}
 
-  -- for _, seg in ipairs(segments) do
-  --   table.insert(
-  --     lines,
-  --     table.concat(vim.tbl_map(function(s)
-  --       return s.text
-  --     end, seg))
-  --   )
-  -- end
-
-  -- NOTE: AI said it will be faster, let's see, old code is commented out above
-  for _, seg in ipairs(segments) do
-    tmp_concat[1] = seg[1].text
-    tmp_concat[2] = seg[2].text
-    tmp_concat[3] = seg[3].text
-    lines[#lines + 1] = table.concat(tmp_concat)
+  for _, seg in pairs(segments) do
+    table.insert(
+      lines,
+      table.concat(vim.tbl_map(function(s)
+        return s.text
+      end, seg))
+    )
   end
 
   pcall(api.nvim_buf_set_lines, group.buf, 0, -1, false, lines)
-
-  vim.bo[group.buf].filetype = "markdown"
-  vim.bo[group.buf].syntax = "markdown"
-  vim.wo[group.win].conceallevel = 2
 
   local width = 0
   for _, line in ipairs(lines) do
@@ -269,24 +290,30 @@ end
 ---Override for vim.notify
 ---@param msg string
 ---@param level? integer
----@param opts? {id?: string|number, timeout?: integer, group?: string, hl_group?: string}
+---@param opts? {id?: string|number, timeout?: integer, group?: string, hl_group?: string, icon?: string, _notif_formatter_data?: table, _notif_formatter?: fun(notif: Notifier.Notification, line: string, config: Notifier.Config, log_level_map: Notifier.LogLevelMap, _notif_formatter_data: table): Notifier.FormattedNotifOpts[]}
 function Notifier.notify(msg, level, opts)
   opts = opts or {}
   local id = opts.id
   local timeout = opts.timeout or Notifier.config.default_timeout
   local hl_group = opts.hl_group
   local group_name = opts.group or "default"
+  local icon = opts.icon
   local group = H.get_group(group_name)
   local now = os.time()
+  local _notif_formatter = opts._notif_formatter
+  local _notif_formatter_data = opts._notif_formatter_data
 
   -- Replace existing message with same ID
   if id then
-    for _, notif in ipairs(group.notifications) do
+    for index, notif in ipairs(group.notifications) do
       if notif.id == id then
         notif.msg = msg
         notif.level = level or vim.log.levels.INFO
+        notif.icon = icon
         notif.updated_at = now
         notif.hl_group = hl_group
+        notif._notif_formatter = _notif_formatter
+        notif._notif_formatter_data = _notif_formatter_data
         U.debounce_render()
         return
       end
@@ -297,11 +324,14 @@ function Notifier.notify(msg, level, opts)
   table.insert(group.notifications, {
     id = id,
     msg = msg,
+    icon = icon,
     level = level or vim.log.levels.INFO,
     timeout = timeout,
     created_at = now,
     updated_at = nil,
     hl_group = hl_group,
+    _notif_formatter = _notif_formatter,
+    _notif_formatter_data = _notif_formatter_data,
   })
 
   U.debounce_render()
@@ -404,7 +434,7 @@ function Notifier.show_history()
 
   api.nvim_create_autocmd("WinLeave", { buffer = buf, once = true, callback = close })
 
-  ---@type table<integer, { text: string, hl_group?: string }>[]
+  ---@type table<integer, Notifier.FormattedNotifOpts>[]
   local segments = {}
 
   local separator = { text = " " }
@@ -438,32 +468,18 @@ function Notifier.show_history()
 
   -- Build lines
   local lines = {}
-  -- for _, seg in ipairs(segments) do
-  --   table.insert(
-  --     lines,
-  --     table.concat(vim.tbl_map(function(s)
-  --       return s.text
-  --     end, seg))
-  --   )
-  -- end
-
-  -- NOTE: AI said it will be faster, let's see, old code is commented out above
   for _, seg in ipairs(segments) do
-    tmp_concat[1] = seg[1].text
-    tmp_concat[2] = seg[2].text
-    tmp_concat[3] = seg[3].text
-    tmp_concat[4] = seg[4].text
-    tmp_concat[5] = seg[5].text
-    lines[#lines + 1] = table.concat(tmp_concat, "", 1, 5)
+    table.insert(
+      lines,
+      table.concat(vim.tbl_map(function(s)
+        return s.text
+      end, seg))
+    )
   end
 
   pcall(api.nvim_buf_set_lines, buf, 0, -1, false, lines)
 
   vim.bo[buf].modifiable = false
-  vim.bo[buf].filetype = "markdown"
-  vim.bo[buf].syntax = "markdown"
-  vim.wo[win].conceallevel = 3
-
   local ns = vim.api.nvim_create_namespace("notifier-history")
   vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
 
@@ -500,6 +516,8 @@ end
 ---@field winblend? integer
 ---@field border? string
 ---@field group_configs? table<string, Notifier.Config.GroupConfigs>
+---@field icons? table<string, string>
+---@field notif_formatter? fun(notif: Notifier.Notification, line: string, config: Notifier.Config, log_level_map: Notifier.LogLevelMap, _notif_formatter_data?: table): Notifier.FormattedNotifOpts[]
 
 ---@class Notifier.Config.GroupConfigs
 ---@field anchor "NW"|"NE"|"SW"|"SE"
@@ -521,6 +539,14 @@ Notifier.defaults = {
       col = vim.o.columns,
     },
   },
+  icons = {
+    [vim.log.levels.TRACE] = "󰔚 ",
+    [vim.log.levels.DEBUG] = " ",
+    [vim.log.levels.INFO] = " ",
+    [vim.log.levels.WARN] = " ",
+    [vim.log.levels.ERROR] = " ",
+  },
+  notif_formatter = U.notif_formatter,
 }
 
 ---Setup the default highlight groups.
