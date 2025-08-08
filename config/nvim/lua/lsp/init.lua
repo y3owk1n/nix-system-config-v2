@@ -314,7 +314,7 @@ local function setup_progress_spinner_custom()
       local data = {
         percentage = value.percentage or nil,
         description = value.title or "Loading workspace",
-        file_progress = (value.message and (" **" .. value.message .. "**") or nil),
+        file_progress = value.message or nil,
       }
 
       if is_last then
@@ -334,54 +334,59 @@ local function setup_progress_spinner_custom()
         icon = spinner_chars[spinner_idx]
       end
 
-      local function formatter(notif, line, config, _log_level_map, _notif_formatter_data)
-        local separator = { text = " " }
-
-        local icon_hl = notif.hl_group or _log_level_map[notif.level].hl_group
-
-        local percent_text = _notif_formatter_data.percentage
-            and string.format("%3d%%", _notif_formatter_data.percentage)
-          or nil
-
-        local description_text = _notif_formatter_data.description
-
-        local file_progress_text = _notif_formatter_data.file_progress or nil
-
-        local client_name = client.name
-
-        ---@type Notifier.FormattedNotifOpts[]
-        local entries = {}
-
-        if icon then
-          table.insert(entries, { text = icon, hl_group = icon_hl })
-          table.insert(entries, separator)
-        end
-
-        if percent_text then
-          table.insert(entries, { text = percent_text, hl_group = "CmdHistoryIdentifier" })
-          table.insert(entries, separator)
-        end
-
-        table.insert(entries, { text = description_text, hl_group = icon_hl })
-
-        if file_progress_text then
-          table.insert(entries, separator)
-          table.insert(entries, { text = file_progress_text, hl_group = "Comment" })
-        end
-
-        if client_name then
-          table.insert(entries, separator)
-          table.insert(entries, { text = client_name, hl_group = "ErrorMsg" })
-        end
-
-        return entries
-      end
-
       vim.schedule(function()
         vim.notify("", vim.log.levels.INFO, {
           id = string.format("lsp_progress_%s_%s", client.name, token),
           title = client.name,
-          _notif_formatter = formatter,
+          _notif_formatter = function(opts)
+            local notif = opts.notif
+            local _notif_formatter_data = notif._notif_formatter_data
+
+            if not _notif_formatter_data then
+              return {}
+            end
+
+            local separator = { text = " " }
+
+            local icon_hl = notif.hl_group or opts.log_level_map[notif.level].hl_group
+
+            local percent_text = _notif_formatter_data.percentage
+                and string.format("%3d%%", _notif_formatter_data.percentage)
+              or nil
+
+            local description_text = _notif_formatter_data.description
+
+            local file_progress_text = _notif_formatter_data.file_progress or nil
+
+            local client_name = client.name
+
+            ---@type Notifier.FormattedNotifOpts[]
+            local entries = {}
+
+            if icon then
+              table.insert(entries, { text = icon, hl_group = icon_hl })
+              table.insert(entries, separator)
+            end
+
+            if percent_text then
+              table.insert(entries, { text = percent_text, hl_group = "CmdHistoryIdentifier" })
+              table.insert(entries, separator)
+            end
+
+            table.insert(entries, { text = description_text, hl_group = icon_hl })
+
+            if file_progress_text then
+              table.insert(entries, separator)
+              table.insert(entries, { text = file_progress_text, hl_group = "Comment" })
+            end
+
+            if client_name then
+              table.insert(entries, separator)
+              table.insert(entries, { text = client_name, hl_group = "ErrorMsg" })
+            end
+
+            return entries
+          end,
           _notif_formatter_data = data,
         })
       end)
