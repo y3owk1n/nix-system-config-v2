@@ -153,6 +153,135 @@ function H.get_group(name)
   return groups[name]
 end
 
+---Parse a format result and ensure all in string
+---@param format_result Notifier.FormattedNotifOpts[] The format result
+---@param ignore_padding? boolean ignore the padding
+---@return Notifier.ComputedLineOpts[] lines raw The parsed format result
+function H.parse_format_fn_result(format_result, ignore_padding)
+  ignore_padding = ignore_padding or false
+  local pad = H.resolve_padding()
+
+  ---@type Notifier.ComputedLineOpts[]
+  local parsed = {}
+
+  ---@type number keep track of the col counts to proper compute every col position
+  local current_line_col = 0
+
+  ---Temp table to add padding start and end
+  ---@type Notifier.ComputedLineOpts[]
+  local prepare_lines = {}
+
+  -- add padding start
+  if not ignore_padding and pad.left then
+    table.insert(prepare_lines, {
+      display_text = string.rep(" ", pad.left),
+    })
+  end
+
+  for _, item in ipairs(format_result) do
+    table.insert(prepare_lines, item)
+  end
+
+  if not ignore_padding and pad.right then
+    -- add padding end
+    table.insert(prepare_lines, {
+      display_text = string.rep(" ", pad.right),
+    })
+  end
+
+  for _, item in ipairs(prepare_lines) do
+    if type(item) ~= "table" then
+      goto continue
+    end
+
+    ---@type Notifier.ComputedLineOpts
+    ---@diagnostic disable-next-line: missing-fields
+    local parsed_item = {}
+
+    -- force `is_virtual` to false just in case
+    parsed_item.is_virtual = item.is_virtual or false
+
+    if item.display_text then
+      if type(item.display_text) == "string" then
+        parsed_item.display_text = item.display_text
+      end
+
+      -- just in case user did not `tostring` the number
+      if type(item.display_text) == "number" then
+        parsed_item.display_text = tostring(item.display_text)
+      end
+
+      if not parsed_item.is_virtual then
+        ---calculate the start and end column one by one
+        parsed_item.col_start = current_line_col
+        current_line_col = parsed_item.col_start + #parsed_item.display_text
+        parsed_item.col_end = current_line_col
+      else
+        parsed_item.col_start = current_line_col
+      end
+    end
+
+    if item.hl_group then
+      if type(item.hl_group) == "string" then
+        parsed_item.hl_group = item.hl_group
+      end
+    end
+
+    table.insert(parsed, parsed_item)
+
+    ::continue::
+  end
+
+  return parsed
+end
+
+---Convert a parsed format result to string
+---@param parsed Notifier.ComputedLineOpts[] The parsed format result
+---@return string lines The formatted lines
+function H.convert_parsed_format_result_to_string(parsed)
+  local display_lines = {}
+
+  for _, item in ipairs(parsed) do
+    if item.display_text and not item.is_virtual then
+      table.insert(display_lines, item.display_text)
+    end
+  end
+
+  return table.concat(display_lines, "")
+end
+
+---Set the highlight for the list items
+---@param ns number The namespace
+---@param bufnr number The buffer number
+---@param line_data Notifier.ComputedLineOpts[][] The formatted line data
+---@return nil
+function H.set_list_item_hl_fn(ns, bufnr, line_data)
+  api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+
+  for line_number, line in ipairs(line_data) do
+    if not line or line == "" then
+      goto continue
+    end
+    for _, data in ipairs(line) do
+      if data.is_virtual then
+        -- set the virtual text in the right position with it's hl group
+        api.nvim_buf_set_extmark(bufnr, ns, line_number - 1, data.col_start, {
+          virt_text = { { data.display_text, data.hl_group } },
+          virt_text_pos = "inline",
+        })
+      else
+        if data.col_start and data.col_end then
+          api.nvim_buf_set_extmark(bufnr, ns, line_number - 1, data.col_start, {
+            end_col = data.col_end,
+            hl_group = data.hl_group,
+          })
+        end
+      end
+    end
+    ::continue::
+  end
+end
+
 ------------------------------------------------------------------
 -- UI
 ------------------------------------------------------------------
@@ -185,8 +314,13 @@ function U.debounce_render()
 end
 
 ---@class Notifier.FormattedNotifOpts
----@field text string The display text
+---@field display_text string The display text
 ---@field hl_group? string The highlight group of the text
+---@field is_virtual? boolean Whether the line is virtual
+
+---@class Notifier.ComputedLineOpts : Notifier.FormattedNotifOpts
+---@field col_start? number The start column of the text, NOTE: this is calculated and for type purpose only
+---@field col_end? number The end column of the text, NOTE: this is calculated and for type purpose only
 
 ---@class Notifier.NotificationFormatterOpts
 ---@field notif Notifier.Notification
@@ -202,15 +336,44 @@ function U.default_notif_formatter(opts)
   local config = opts.config
   local _log_level_map = opts.log_level_map
 
-  local separator = { text = " " }
+  local separator = { display_text = " " }
 
   local icon = notif.icon or config.icons[notif.level]
   local icon_hl = notif.hl_group or _log_level_map[notif.level].hl_group
 
   return {
-    icon and { text = icon, hl_group = icon_hl },
+    icon and { display_text = icon, hl_group = icon_hl },
     icon and separator,
-    { text = line, hl_group = notif.hl_group },
+    { display_text = line, hl_group = notif.hl_group },
+  }
+end
+
+---@param opts Notifier.NotificationFormatterOpts
+---@return Notifier.FormattedNotifOpts[]
+function U.default_notif_history_formatter(opts)
+  local virtual_separator = { display_text = " ", is_virtual = true }
+
+  local line = opts.line
+
+  local notif = opts.notif
+  local hl = notif.hl_group
+
+  local pretty_time = os.date("%Y-%m-%d %H:%M:%S", notif.updated_at or notif.created_at)
+
+  return {
+    {
+      display_text = pretty_time,
+      hl_group = "Comment",
+      is_virtual = true,
+    },
+    virtual_separator,
+    {
+      display_text = string.format("[%s]", log_level_map[notif.level].level_key),
+      hl_group = log_level_map[notif.level].hl_group,
+      is_virtual = true,
+    },
+    virtual_separator,
+    { display_text = line, hl_group = hl },
   }
 end
 
@@ -229,8 +392,11 @@ function U.render_group(group)
     return
   end
 
-  ---@type table<integer, Notifier.FormattedNotifOpts>[]
-  local segments = {}
+  ---@type string[]
+  local lines = {}
+
+  ---@type Notifier.FormattedNotifOpts[][]
+  local formatted_raw_data = {}
 
   for i = #live, 1, -1 do
     local notif = live[i]
@@ -238,112 +404,73 @@ function U.render_group(group)
     if notif._notif_formatter and type(notif._notif_formatter) == "function" and notif.msg == "" then
       local formatted =
         notif._notif_formatter({ notif = notif, line = "", config = Notifier.config, log_level_map = log_level_map })
-      table.insert(segments, formatted)
 
-      -- build the message and save it
-      notif.msg = table.concat(
-        vim.tbl_map(function(s)
-          return s.text
-        end, formatted),
-        ""
-      )
+      local formatted_line_data = H.parse_format_fn_result(formatted)
+
+      local formatted_line = H.convert_parsed_format_result_to_string(formatted_line_data)
+
+      table.insert(lines, formatted_line)
+      table.insert(formatted_raw_data, formatted_line_data)
       goto continue
     end
 
     local msg_lines = vim.split(notif.msg, "\n")
 
     for _, line in ipairs(msg_lines) do
-      table.insert(
-        segments,
-        Notifier.config.notif_formatter({
-          notif = notif,
-          line = line,
-          config = Notifier.config,
-          log_level_map = log_level_map,
-        })
-      )
+      local formatted = Notifier.config.notif_formatter({
+        notif = notif,
+        line = line,
+        config = Notifier.config,
+        log_level_map = log_level_map,
+      })
+
+      local formatted_line_data = H.parse_format_fn_result(formatted)
+
+      local formatted_line = H.convert_parsed_format_result_to_string(formatted_line_data)
+
+      table.insert(lines, formatted_line)
+      table.insert(formatted_raw_data, formatted_line_data)
     end
     ::continue::
   end
 
-  local lines = {}
-
-  for _, seg in pairs(segments) do
-    table.insert(
-      lines,
-      table.concat(vim.tbl_map(function(s)
-        return s.text
-      end, seg))
-    )
-  end
-
   local pad = H.resolve_padding()
 
-  local padded_lines = {}
   for _ = 1, pad.top do
-    table.insert(padded_lines, "")
-  end
-
-  local left_pad_str = string.rep(" ", pad.left)
-  local right_pad_str = string.rep(" ", pad.right)
-
-  for _, l in ipairs(lines) do
-    table.insert(padded_lines, left_pad_str .. l .. right_pad_str)
+    --- insert emtpy line into first position to `lines` table
+    table.insert(lines, 1, "")
+    table.insert(formatted_raw_data, 1, "")
   end
 
   for _ = 1, pad.bottom do
-    table.insert(padded_lines, "")
+    table.insert(lines, #lines + 1, "")
+    table.insert(formatted_raw_data, #formatted_raw_data + 1, "")
   end
 
-  pcall(api.nvim_buf_set_lines, group.buf, 0, -1, false, padded_lines)
+  pcall(api.nvim_buf_set_lines, group.buf, 0, -1, false, lines)
+
+  local ns = vim.api.nvim_create_namespace("notifier-notification")
+  H.set_list_item_hl_fn(ns, group.buf, formatted_raw_data)
 
   local width = 0
   for _, line in ipairs(lines) do
-    width = math.max(width, vim.fn.strdisplaywidth(line))
+    width = math.max(width, vim.fn.strdisplaywidth(line), 40)
   end
 
   width = math.min(width, math.floor(vim.o.columns * 0.6))
   local height = #lines
-
-  local padded_width = width + pad.left + pad.right
-  local padded_height = height + pad.top + pad.bottom
 
   local ok_win, _ = pcall(api.nvim_win_set_config, group.win, {
     relative = "editor",
     row = group.config.row,
     col = group.config.col,
     anchor = group.config.anchor,
-    width = padded_width,
-    height = padded_height,
+    width = width,
+    height = height,
   })
 
   if not ok_win then
     return
-  end
-
-  local ns = vim.api.nvim_create_namespace("notifier-notification")
-  vim.api.nvim_buf_clear_namespace(group.buf, ns, 0, -1)
-
-  local lnum_cursor = pad.top or 0 -- first real content line after top padding
-  for _, seg in ipairs(segments) do
-    local col = pad.left or 0
-    for _, item in ipairs(seg) do
-      if item.hl_group then
-        local extmark_ok = pcall(
-          api.nvim_buf_set_extmark,
-          group.buf,
-          ns,
-          lnum_cursor,
-          col,
-          { end_col = col + #item.text, hl_group = item.hl_group }
-        )
-        if not extmark_ok then
-          break
-        end
-      end
-      col = col + #item.text
-    end
-    lnum_cursor = lnum_cursor + 1
   end
 end
 
@@ -421,7 +548,7 @@ end
 ---@return integer
 function V.validate_timeout(timeout)
   if type(timeout) ~= "number" or timeout < 0 then
-    return Notifier.defaults.default_timeout or 3000
+    return Notifier.config.default_timeout or Notifier.defaults.default_timeout or 3000
   end
   return timeout
 end
@@ -516,6 +643,7 @@ function Notifier.notify(msg, level, opts)
       if notif.id == id then
         notif.msg = msg
         notif.level = level or vim.log.levels.INFO
+        notif.timeout = timeout
         notif.icon = icon
         notif.updated_at = now
         notif.hl_group = hl_group
@@ -641,67 +769,51 @@ function Notifier.show_history()
 
   api.nvim_create_autocmd("WinLeave", { buffer = buf, once = true, callback = close })
 
-  ---@type table<integer, Notifier.FormattedNotifOpts>[]
-  local segments = {}
+  ---@type string[]
+  local lines = {}
 
-  local separator = { text = " " }
+  ---@type Notifier.FormattedNotifOpts[][]
+  local formatted_raw_data = {}
 
   for i = #all, 1, -1 do
     local notif = all[i]
-    local msg = notif.msg
-    local level = notif.level
-    local hl = notif.hl_group
 
-    local splitted_msg = vim.split(msg, "\n")
+    if notif._notif_formatter and type(notif._notif_formatter) == "function" and notif.msg == "" then
+      local formatted =
+        notif._notif_formatter({ notif = notif, line = "", config = Notifier.config, log_level_map = log_level_map })
 
-    local pretty_time = os.date("%Y-%m-%d %H:%M:%S", notif.updated_at or notif.created_at)
+      local formatted_line_data = H.parse_format_fn_result(formatted, true)
 
-    for _, line in ipairs(splitted_msg) do
-      table.insert(segments, {
-        {
-          text = pretty_time,
-          hl_group = "Comment",
-        },
-        separator,
-        {
-          text = string.format("[%s]", log_level_map[level].level_key),
-          hl_group = log_level_map[level].hl_group,
-        },
-        separator,
-        { text = line, hl_group = hl },
-      })
+      local formatted_line = H.convert_parsed_format_result_to_string(formatted_line_data)
+
+      -- build the message and save it
+      notif.msg = formatted_line
     end
-  end
 
-  -- Build lines
-  local lines = {}
-  for _, seg in ipairs(segments) do
-    table.insert(
-      lines,
-      table.concat(vim.tbl_map(function(s)
-        return s.text
-      end, seg))
-    )
+    local msg_lines = vim.split(notif.msg, "\n")
+
+    for _, line in ipairs(msg_lines) do
+      local formatted = Notifier.config.notif_history_formatter({
+        notif = notif,
+        line = line,
+        config = Notifier.config,
+        log_level_map = log_level_map,
+      })
+
+      local formatted_line_data = H.parse_format_fn_result(formatted, true)
+      local formatted_line = H.convert_parsed_format_result_to_string(formatted_line_data)
+
+      table.insert(lines, formatted_line)
+      table.insert(formatted_raw_data, formatted_line_data)
+    end
   end
 
   pcall(api.nvim_buf_set_lines, buf, 0, -1, false, lines)
 
   vim.bo[buf].modifiable = false
-  local ns = vim.api.nvim_create_namespace("notifier-history")
-  vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
 
-  for lnum, seg in ipairs(segments) do
-    local col = 0
-    for _, item in ipairs(seg) do
-      if item.hl_group then
-        api.nvim_buf_set_extmark(buf, ns, lnum - 1, col, {
-          end_col = col + #item.text,
-          hl_group = item.hl_group,
-        })
-      end
-      col = col + #item.text
-    end
-  end
+  local ns = vim.api.nvim_create_namespace("notifier-history")
+  H.set_list_item_hl_fn(ns, buf, formatted_raw_data)
 
   api.nvim_set_current_win(win)
 end
@@ -726,6 +838,7 @@ end
 ---@field border? string
 ---@field icons? table<string, string>
 ---@field notif_formatter? fun(opts: Notifier.NotificationFormatterOpts): Notifier.FormattedNotifOpts[]
+---@field notif_history_formatter? fun(opts: Notifier.NotificationFormatterOpts): Notifier.FormattedNotifOpts[]
 ---@field padding? Notifier.Config.Padding
 ---@field default_group? Notifier.GroupConfigsKey
 ---@field group_configs? table<Notifier.GroupConfigsKey, Notifier.GroupConfigs>
@@ -781,6 +894,7 @@ Notifier.defaults = {
     [vim.log.levels.ERROR] = " ",
   },
   notif_formatter = U.default_notif_formatter,
+  notif_history_formatter = U.default_notif_history_formatter,
 }
 
 ---Setup the default highlight groups.
