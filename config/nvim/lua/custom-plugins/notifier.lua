@@ -166,6 +166,7 @@ end
 ---Render all messages in the group.
 ---@param group Notifier.Group
 function U.render_group(group)
+  ---@type Notifier.Notification[]
   local live = vim.tbl_filter(function(n)
     return not n._expired
   end, group.notifications)
@@ -227,7 +228,7 @@ function U.render_group(group)
     width = math.max(width, vim.fn.strdisplaywidth(line))
   end
 
-  width = math.min(width, math.floor(vim.o.columns * 0.6)) + 2
+  width = math.min(width, math.floor(vim.o.columns * 0.6))
 
   local height = #lines
 
