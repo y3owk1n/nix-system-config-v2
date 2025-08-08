@@ -63,7 +63,7 @@ function M.setup()
           vim.notify("", vim.log.levels.INFO, {
             id = string.format("cmd_progress_%s", data.command_id),
             title = "cmd",
-            group_name = "important",
+            group_name = "bottom-left",
             icon = " ",
             _notif_formatter = function(opts)
               local notif = opts.notif
@@ -99,7 +99,7 @@ function M.setup()
           vim.notify("", vim.log.levels.INFO, {
             id = string.format("cmd_progress_%s", data.command_id),
             title = "cmd",
-            group_name = "important",
+            group_name = "bottom-left",
             icon = data.current_spinner_char,
             _notif_formatter = function(opts)
               local notif = opts.notif
@@ -143,7 +143,7 @@ function M.setup()
           vim.notify("", vim.log.levels[level], {
             id = string.format("cmd_progress_%s", data.command_id),
             title = "cmd",
-            group_name = "important",
+            group_name = "bottom-left",
             icon = icon,
             _notif_formatter = function(opts)
               local notif = opts.notif

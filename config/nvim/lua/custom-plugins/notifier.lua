@@ -26,7 +26,7 @@ end
 ---@field _notif_formatter_data? table
 
 ---@class Notifier.NotificationGroup : Notifier.Notification
----@field group_name? string
+---@field group_name? Notifier.GroupConfigsKey
 
 ---@class Notifier
 local Notifier = {}
@@ -51,7 +51,7 @@ local api = vim.api
 ---@field buf integer
 ---@field win integer
 ---@field notifications Notifier.Notification[]
----@field config Notifier.Config.GroupConfigs
+---@field config Notifier.GroupConfigs
 
 ---@type table<string, Notifier.Group>
 local groups = {}
@@ -86,16 +86,14 @@ local log_level_map = {
 ------------------------------------------------------------------
 
 -- Resolve effective padding: group > global > zero
----@param group Notifier.Group
 ---@return Notifier.Config.Padding
-function H.resolve_padding(group)
-  local g = group.config.padding -- may be nil
-  local c = Notifier.config.padding -- may be nil
+function H.resolve_padding()
+  local c = Notifier.config.padding
   return {
-    top = (g and g.top) or (c and c.top) or 0,
-    right = (g and g.right) or (c and c.right) or 0,
-    bottom = (g and g.bottom) or (c and c.bottom) or 0,
-    left = (g and g.left) or (c and c.left) or 0,
+    top = (c and c.top) or 0,
+    right = (c and c.right) or 0,
+    bottom = (c and c.bottom) or 0,
+    left = (c and c.left) or 0,
   }
 end
 
@@ -130,7 +128,8 @@ function H.get_group(name)
     zindex = 200,
   })
 
-  local group_config = Notifier.config.group_configs[name] or Notifier.config.group_configs.default
+  local group_config = Notifier.config.group_configs[name]
+    or Notifier.config.group_configs[Notifier.config.default_group]
 
   api.nvim_win_set_config(win, {
     relative = "editor",
@@ -252,6 +251,7 @@ function U.render_group(group)
     end
 
     local msg_lines = vim.split(notif.msg, "\n")
+
     for _, line in ipairs(msg_lines) do
       table.insert(
         segments,
@@ -277,7 +277,7 @@ function U.render_group(group)
     )
   end
 
-  local pad = H.resolve_padding(group)
+  local pad = H.resolve_padding()
 
   local padded_lines = {}
   for _ = 1, pad.top do
@@ -409,12 +409,19 @@ function V.validate_anchor(anchor)
   return "SE"
 end
 
+function V.validate_row_col(row_col)
+  if type(row_col) == "number" and row_col >= 0 then
+    return row_col
+  end
+  return 0
+end
+
 ---Validate timeout, ensuring it’s positive ms.
 ---@param timeout any
 ---@return integer
 function V.validate_timeout(timeout)
   if type(timeout) ~= "number" or timeout < 0 then
-    return Notifier.config.default_timeout or 3000
+    return Notifier.defaults.default_timeout or 3000
   end
   return timeout
 end
@@ -426,7 +433,7 @@ function V.validate_formatter(formatter)
   if type(formatter) == "function" then
     return formatter
   end
-  return Notifier.config.notif_formatter
+  return Notifier.defaults.notif_formatter
 end
 
 ---Validate icon string (optional).
@@ -451,12 +458,34 @@ end
 
 ---Validate group name to be a non-empty string.
 ---@param name any
----@return string
+---@return Notifier.GroupConfigsKey
 function V.validate_group_name(name)
-  if type(name) == "string" and #name > 0 then
-    return name
+  if type(name) ~= "string" then
+    return Notifier.defaults.default_group
   end
-  return "default"
+
+  local valid_groups = vim.tbl_keys(Notifier.config.group_configs)
+  if not vim.tbl_contains(valid_groups, name) then
+    return Notifier.defaults.default_group
+  end
+
+  return name
+end
+
+---@param group_configs table<Notifier.GroupConfigsKey, Notifier.GroupConfigs>
+function V.validate_group_configs(group_configs)
+  if type(group_configs) ~= "table" then
+    return Notifier.defaults.group_configs
+  end
+
+  local valid_groups = vim.tbl_keys(Notifier.defaults.group_configs)
+  for group_name, _ in pairs(group_configs) do
+    if not vim.tbl_contains(valid_groups, group_name) then
+      return Notifier.defaults.group_configs
+    end
+  end
+
+  return group_configs
 end
 
 ------------------------------------------------------------------
@@ -689,14 +718,17 @@ function Notifier.dismiss_all()
   end
 end
 
+---@alias Notifier.GroupConfigsKey '"bottom-right"'|'"top-right"'|'"top-left"'|'"bottom-left"'
+
 ---@class Notifier.Config
 ---@field default_timeout? integer
 ---@field winblend? integer
 ---@field border? string
----@field group_configs? table<string, Notifier.Config.GroupConfigs>
 ---@field icons? table<string, string>
 ---@field notif_formatter? fun(opts: Notifier.NotificationFormatterOpts): Notifier.FormattedNotifOpts[]
 ---@field padding? Notifier.Config.Padding
+---@field default_group? Notifier.GroupConfigsKey
+---@field group_configs? table<Notifier.GroupConfigsKey, Notifier.GroupConfigs>
 
 ---@class Notifier.Config.Padding
 ---@field top? integer
@@ -704,11 +736,10 @@ end
 ---@field bottom? integer
 ---@field left? integer
 
----@class Notifier.Config.GroupConfigs
+---@class Notifier.GroupConfigs
 ---@field anchor "NW"|"NE"|"SW"|"SE"
 ---@field row integer
 ---@field col integer
----@field padding? Notifier.Config.Padding
 
 ---@type Notifier.Config
 Notifier.config = {}
@@ -719,11 +750,27 @@ Notifier.defaults = {
   winblend = 0,
   border = "none",
   padding = { top = 0, right = 0, bottom = 0, left = 0 },
+  default_group = "bottom-right",
   group_configs = {
-    default = {
-      anchor = "SE", -- South-East
+    ["bottom-right"] = {
+      anchor = "SE",
       row = vim.o.lines - 2,
       col = vim.o.columns,
+    },
+    ["top-right"] = {
+      anchor = "NE",
+      row = 0,
+      col = vim.o.columns,
+    },
+    ["top-left"] = {
+      anchor = "NW",
+      row = 0,
+      col = 0,
+    },
+    ["bottom-left"] = {
+      anchor = "SW",
+      row = vim.o.lines - 2,
+      col = 0,
     },
   },
   icons = {
@@ -757,10 +804,15 @@ function Notifier.setup(user_config)
 
   Notifier.config.padding = V.validate_padding(Notifier.config.padding)
 
+  Notifier.config.group_configs = V.validate_group_configs(Notifier.config.group_configs)
+
   for _, group_config in pairs(Notifier.config.group_configs or {}) do
     group_config.anchor = V.validate_anchor(group_config.anchor)
-    group_config.padding = group_config.padding and V.validate_padding(group_config.padding) or nil
+    group_config.row = V.validate_row_col(group_config.row)
+    group_config.col = V.validate_row_col(group_config.col)
   end
+
+  Notifier.config.default_group = V.validate_group_name(Notifier.config.default_group)
 
   setup_hls()
 
