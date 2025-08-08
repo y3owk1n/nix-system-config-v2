@@ -236,7 +236,7 @@ function U.render_group(group)
   for i = #live, 1, -1 do
     local notif = live[i]
 
-    if notif._notif_formatter and type(notif._notif_formatter) == "function" then
+    if notif._notif_formatter and type(notif._notif_formatter) == "function" and notif.msg == "" then
       local formatted =
         notif._notif_formatter({ notif = notif, line = "", config = Notifier.config, log_level_map = log_level_map })
       table.insert(segments, formatted)
@@ -634,12 +634,12 @@ function Notifier.show_history()
           hl_group = "Comment",
         },
         separator,
-        { text = line, hl_group = hl },
-        separator,
         {
           text = string.format("[%s]", log_level_map[level].level_key),
           hl_group = log_level_map[level].hl_group,
         },
+        separator,
+        { text = line, hl_group = hl },
       })
     end
   end
