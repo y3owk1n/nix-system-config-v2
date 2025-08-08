@@ -73,7 +73,7 @@ function M.setup()
                 return {}
               end
 
-              local separator = { text = " " }
+              local separator = { display_text = " " }
 
               local icon = notif.icon or opts.config.icons[notif.level]
               local icon_hl = notif.hl_group or opts.log_level_map[notif.level].hl_group
@@ -81,13 +81,13 @@ function M.setup()
               local id_text = string.format("#%s", _notif_formatter_data.command_id)
 
               return {
-                icon and { text = icon, hl_group = icon_hl },
+                icon and { display_text = icon, hl_group = icon_hl },
                 icon and separator,
-                { text = id_text, hl_group = "CmdHistoryIdentifier" },
+                { display_text = id_text, hl_group = "CmdHistoryIdentifier" },
                 separator,
-                { text = "running", hl_group = icon_hl },
+                { display_text = "running", hl_group = icon_hl },
                 separator,
-                { text = _notif_formatter_data.args, hl_group = "Comment" },
+                { display_text = _notif_formatter_data.args, hl_group = "Comment" },
               }
             end,
             _notif_formatter_data = data,
@@ -109,7 +109,7 @@ function M.setup()
                 return {}
               end
 
-              local separator = { text = " " }
+              local separator = { display_text = " " }
 
               local icon = notif.icon or opts.config.icons[notif.level]
               local icon_hl = notif.hl_group or opts.log_level_map[notif.level].hl_group
@@ -117,13 +117,13 @@ function M.setup()
               local id_text = string.format("#%s", _notif_formatter_data.command_id)
 
               return {
-                icon and { text = icon, hl_group = icon_hl },
+                icon and { display_text = icon, hl_group = icon_hl },
                 icon and separator,
-                { text = id_text, hl_group = "CmdHistoryIdentifier" },
+                { display_text = id_text, hl_group = "CmdHistoryIdentifier" },
                 separator,
-                { text = "running", hl_group = icon_hl },
+                { display_text = "running", hl_group = icon_hl },
                 separator,
-                { text = _notif_formatter_data.args, hl_group = "Comment" },
+                { display_text = _notif_formatter_data.args, hl_group = "Comment" },
               }
             end,
             _notif_formatter_data = data,
@@ -153,7 +153,7 @@ function M.setup()
                 return {}
               end
 
-              local separator = { text = " " }
+              local separator = { display_text = " " }
 
               local _icon = notif.icon or opts.config.icons[notif.level]
               local icon_hl = notif.hl_group or opts.log_level_map[notif.level].hl_group
@@ -161,13 +161,13 @@ function M.setup()
               local id_text = string.format("#%s", _notif_formatter_data.command_id)
 
               return {
-                icon and { text = _icon, hl_group = icon_hl },
+                icon and { display_text = _icon, hl_group = icon_hl },
                 icon and separator,
-                { text = id_text, hl_group = "CmdHistoryIdentifier" },
+                { display_text = id_text, hl_group = "CmdHistoryIdentifier" },
                 separator,
-                { text = _notif_formatter_data.status, hl_group = icon_hl },
+                { display_text = _notif_formatter_data.status, hl_group = icon_hl },
                 separator,
-                { text = _notif_formatter_data.args, hl_group = "Comment" },
+                { display_text = _notif_formatter_data.args, hl_group = "Comment" },
               }
             end,
             _notif_formatter_data = data,

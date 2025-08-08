@@ -346,7 +346,7 @@ local function setup_progress_spinner_custom()
               return {}
             end
 
-            local separator = { text = " " }
+            local separator = { display_text = " " }
 
             local icon_hl = notif.hl_group or opts.log_level_map[notif.level].hl_group
 
@@ -364,25 +364,25 @@ local function setup_progress_spinner_custom()
             local entries = {}
 
             if icon then
-              table.insert(entries, { text = icon, hl_group = icon_hl })
+              table.insert(entries, { display_text = icon, hl_group = icon_hl })
               table.insert(entries, separator)
             end
 
             if percent_text then
-              table.insert(entries, { text = percent_text, hl_group = "CmdHistoryIdentifier" })
+              table.insert(entries, { display_text = percent_text, hl_group = "CmdHistoryIdentifier" })
               table.insert(entries, separator)
             end
 
-            table.insert(entries, { text = description_text, hl_group = icon_hl })
+            table.insert(entries, { display_text = description_text, hl_group = icon_hl })
 
             if file_progress_text then
               table.insert(entries, separator)
-              table.insert(entries, { text = file_progress_text, hl_group = "Comment" })
+              table.insert(entries, { display_text = file_progress_text, hl_group = "Comment" })
             end
 
             if client_name then
               table.insert(entries, separator)
-              table.insert(entries, { text = client_name, hl_group = "ErrorMsg" })
+              table.insert(entries, { display_text = client_name, hl_group = "ErrorMsg" })
             end
 
             return entries
