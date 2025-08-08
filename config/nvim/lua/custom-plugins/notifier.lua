@@ -14,16 +14,19 @@ end
 
 ---@class Notifier.Notification
 ---@field id? string|number
----@field msg string The message to display and can contain newlines or just "" if you want to use the `_notif_formatter` to build the lines.
+---@field msg? string The message to display and can contain newlines or just "" if you want to use the `_notif_formatter` to build the lines.
 ---@field icon? string
----@field level integer
----@field timeout integer
----@field created_at number
+---@field level? integer
+---@field timeout? integer
+---@field created_at? number
 ---@field updated_at? number
 ---@field hl_group? string
 ---@field _expired? boolean
----@field _notif_formatter? fun(notif: Notifier.Notification, line: string, config: Notifier.Config, log_level_map: Notifier.LogLevelMap, _notif_formatter_data?: table): Notifier.FormattedNotifOpts[]
+---@field _notif_formatter? fun(opts: Notifier.NotificationFormatterOpts): Notifier.FormattedNotifOpts[]
 ---@field _notif_formatter_data? table
+
+---@class Notifier.NotificationGroup : Notifier.Notification
+---@field group_name? string
 
 ---@class Notifier
 local Notifier = {}
@@ -169,13 +172,20 @@ end
 ---@field text string The display text
 ---@field hl_group? string The highlight group of the text
 
----@param notif Notifier.Notification
----@param line string
----@param config Notifier.Config
----@param _log_level_map Notifier.LogLevelMap
----@param _notif_formatter_data? table -- user defined data
+---@class Notifier.NotificationFormatterOpts
+---@field notif Notifier.Notification
+---@field line string
+---@field config Notifier.Config
+---@field log_level_map Notifier.LogLevelMap
+
+---@param opts Notifier.NotificationFormatterOpts
 ---@return Notifier.FormattedNotifOpts[]
-function U.notif_formatter(notif, line, config, _log_level_map, _notif_formatter_data)
+function U.default_notif_formatter(opts)
+  local notif = opts.notif
+  local line = opts.line
+  local config = opts.config
+  local _log_level_map = opts.log_level_map
+
   local separator = { text = " " }
 
   local icon = notif.icon or config.icons[notif.level]
@@ -210,8 +220,11 @@ function U.render_group(group)
     local notif = live[i]
 
     if notif._notif_formatter and type(notif._notif_formatter) == "function" then
-      local formatted = notif._notif_formatter(notif, "", Notifier.config, log_level_map, notif._notif_formatter_data)
+      local formatted =
+        notif._notif_formatter({ notif = notif, line = "", config = Notifier.config, log_level_map = log_level_map })
       table.insert(segments, formatted)
+
+      -- build the message and save it
       notif.msg = table.concat(
         vim.tbl_map(function(s)
           return s.text
@@ -225,7 +238,12 @@ function U.render_group(group)
     for _, line in ipairs(msg_lines) do
       table.insert(
         segments,
-        Notifier.config.notif_formatter(notif, line, Notifier.config, log_level_map, notif._notif_formatter_data)
+        Notifier.config.notif_formatter({
+          notif = notif,
+          line = line,
+          config = Notifier.config,
+          log_level_map = log_level_map,
+        })
       )
     end
     ::continue::
@@ -290,13 +308,13 @@ end
 ---Override for vim.notify
 ---@param msg string
 ---@param level? integer
----@param opts? {id?: string|number, timeout?: integer, group?: string, hl_group?: string, icon?: string, _notif_formatter_data?: table, _notif_formatter?: fun(notif: Notifier.Notification, line: string, config: Notifier.Config, log_level_map: Notifier.LogLevelMap, _notif_formatter_data: table): Notifier.FormattedNotifOpts[]}
+---@param opts? Notifier.NotificationGroup
 function Notifier.notify(msg, level, opts)
   opts = opts or {}
   local id = opts.id
   local timeout = opts.timeout or Notifier.config.default_timeout
   local hl_group = opts.hl_group
-  local group_name = opts.group or "default"
+  local group_name = opts.group_name or "default"
   local icon = opts.icon
   local group = H.get_group(group_name)
   local now = os.time()
@@ -305,7 +323,7 @@ function Notifier.notify(msg, level, opts)
 
   -- Replace existing message with same ID
   if id then
-    for index, notif in ipairs(group.notifications) do
+    for _, notif in ipairs(group.notifications) do
       if notif.id == id then
         notif.msg = msg
         notif.level = level or vim.log.levels.INFO
@@ -517,7 +535,7 @@ end
 ---@field border? string
 ---@field group_configs? table<string, Notifier.Config.GroupConfigs>
 ---@field icons? table<string, string>
----@field notif_formatter? fun(notif: Notifier.Notification, line: string, config: Notifier.Config, log_level_map: Notifier.LogLevelMap, _notif_formatter_data?: table): Notifier.FormattedNotifOpts[]
+---@field notif_formatter? fun(opts: Notifier.NotificationFormatterOpts): Notifier.FormattedNotifOpts[]
 
 ---@class Notifier.Config.GroupConfigs
 ---@field anchor "NW"|"NE"|"SW"|"SE"
@@ -546,7 +564,7 @@ Notifier.defaults = {
     [vim.log.levels.WARN] = " ",
     [vim.log.levels.ERROR] = " ",
   },
-  notif_formatter = U.notif_formatter,
+  notif_formatter = U.default_notif_formatter,
 }
 
 ---Setup the default highlight groups.
