@@ -1,7 +1,7 @@
 ---@type PluginModule
 local M = {}
 
-M.name = "custom.cmd"
+M.name = "cmd"
 
 M.lazy = {
   cmd = {
@@ -15,8 +15,12 @@ M.lazy = {
   },
 }
 
+M.registry = {
+  "https://github.com/y3owk1n/cmd.nvim",
+}
+
 function M.setup()
-  local plugin_ok, plugin = pcall(require, "custom-plugins.cmd")
+  local plugin_ok, plugin = pcall(require, "cmd")
 
   if not plugin_ok then
     return
