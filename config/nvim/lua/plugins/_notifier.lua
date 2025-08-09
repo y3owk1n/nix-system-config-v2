@@ -1,10 +1,14 @@
 ---@type PluginModule
 local M = {}
 
-M.name = "custom.notifier"
+M.name = "notifier"
+
+M.registry = {
+  "https://github.com/y3owk1n/notifier.nvim",
+}
 
 function M.setup()
-  local plugin_ok, plugin = pcall(require, "custom-plugins.notifier")
+  local plugin_ok, plugin = pcall(require, "notifier")
 
   if not plugin_ok then
     return
