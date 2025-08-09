@@ -17,26 +17,33 @@ end
 ---@field msg? string The message to display and can contain newlines or just "" if you want to use the `_notif_formatter` to build the lines.
 ---@field icon? string
 ---@field level? integer
----@field timeout? integer
----@field created_at? number
----@field updated_at? number
+---@field timeout? integer Timeout in milliseconds
+---@field created_at? number Seconds since epoch
+---@field updated_at? number Seconds since epoch
 ---@field hl_group? string
----@field _expired? boolean
----@field _notif_formatter? fun(opts: Notifier.NotificationFormatterOpts): Notifier.FormattedNotifOpts[]
----@field _notif_formatter_data? table
+---@field _expired? boolean internal marker during cleanup
+---@field _notif_formatter? fun(opts: Notifier.NotificationFormatterOpts): Notifier.FormattedNotifOpts[] custom formatter per notification
+---@field _notif_formatter_data? table arbitrary data passed to the formatter
 
 ---@class Notifier.NotificationGroup : Notifier.Notification
 ---@field group_name? Notifier.GroupConfigsKey
 
+------------------------------------------------------------------
+-- Modules & internal namespaces
+------------------------------------------------------------------
+
 ---@class Notifier
 local Notifier = {}
 
+---@private
 ---@class Notifier.Helpers
 local H = {}
 
+---@private
 ---@class Notifier.UI
 local U = {}
 
+---@private
 ---@class Notifier.Validator
 local V = {}
 
@@ -56,7 +63,9 @@ local api = vim.api
 ---@type table<string, Notifier.Group>
 local groups = {}
 
----@alias Notifier.LogLevelMap table<integer, {level_key: "ERROR"|"WARN"|"INFO"|"DEBUG"|"TRACE", hl_group: string}>
+---@alias Notifier.LogLevelKey "ERROR"|"WARN"|"INFO"|"DEBUG"|"TRACE"
+---@alias Notifier.LogLevelMap table<integer, {level_key: Notifier.LogLevelKey, hl_group: string}>
+
 ---@type Notifier.LogLevelMap
 local log_level_map = {
   [vim.log.levels.ERROR] = {
@@ -85,7 +94,8 @@ local log_level_map = {
 -- Helpers
 ------------------------------------------------------------------
 
--- Resolve effective padding: group > global > zero
+---Resolve effective padding
+---@private
 ---@return Notifier.Config.Padding
 function H.resolve_padding()
   local c = Notifier.config.padding
@@ -97,10 +107,12 @@ function H.resolve_padding()
   }
 end
 
----Return an existing group or create a new one.
----@param name string
+---Return an existing group or create a new group window/buffer.
+---@private
+---@param name string key of the group in `Notifier.config.group_configs`
 ---@return Notifier.Group
 function H.get_group(name)
+  -- Reuse existing group if valid
   if groups[name] then
     local buf_valid = api.nvim_buf_is_valid(groups[name].buf)
     local win_valid = api.nvim_win_is_valid(groups[name].win)
@@ -109,6 +121,7 @@ function H.get_group(name)
       return groups[name]
     end
 
+    -- clear the buf and win, and set it up later down below
     groups[name].buf = nil
     groups[name].win = nil
   end
@@ -154,10 +167,12 @@ function H.get_group(name)
   return groups[name]
 end
 
----Parse a format result and ensure all in string
----@param format_result Notifier.FormattedNotifOpts[] The format result
----@param ignore_padding? boolean ignore the padding
----@return Notifier.ComputedLineOpts[] lines raw The parsed format result
+---Parse a format function result into computed line pieces.
+---Converts display_text to string, computes col/virtual positions and sets is_virtual default.
+---@private
+---@param format_result Notifier.FormattedNotifOpts[]
+---@param ignore_padding? boolean
+---@return Notifier.ComputedLineOpts[] parsed
 function H.parse_format_fn_result(format_result, ignore_padding)
   ignore_padding = ignore_padding or false
   local pad = H.resolve_padding()
@@ -168,6 +183,7 @@ function H.parse_format_fn_result(format_result, ignore_padding)
   ---@type number keep track of the col counts to proper compute every col position
   local current_line_col = 0
 
+  ---@type number keep track of the virtual col counts to proper compute every virtual col position
   local current_line_virtual_col = 0
 
   ---Temp table to add padding start and end
@@ -251,10 +267,11 @@ function H.parse_format_fn_result(format_result, ignore_padding)
   return parsed
 end
 
----Convert a parsed format result to string
----@param parsed Notifier.ComputedLineOpts[] The parsed format result
----@param include_virtual? boolean Whether to include virtual lines
----@return string lines The formatted lines
+---Convert parsed computed line pieces back to a concatenated string.
+---@private
+---@param parsed Notifier.ComputedLineOpts[]
+---@param include_virtual? boolean
+---@return string
 function H.convert_parsed_format_result_to_string(parsed, include_virtual)
   include_virtual = include_virtual or false
   local display_lines = {}
@@ -274,13 +291,14 @@ function H.convert_parsed_format_result_to_string(parsed, include_virtual)
   return table.concat(display_lines, "")
 end
 
----Set the highlight for the list items
----@param ns number The namespace
----@param bufnr number The buffer number
----@param line_data Notifier.ComputedLineOpts[][] The formatted line data
----@param ignore_padding? boolean ignore the padding
+---Set extmarks / virtual text highlights for each computed line piece.
+---@private
+---@param ns number @namespace returned from nvim_create_namespace
+---@param bufnr number @buffer number
+---@param line_data Notifier.ComputedLineOpts[][] @array of lines -> array of pieces
+---@param ignore_padding? boolean
 ---@return nil
-function H.set_list_item_hl_fn(ns, bufnr, line_data, ignore_padding)
+function H.setup_virtual_text_hls(ns, bufnr, line_data, ignore_padding)
   ignore_padding = ignore_padding or false
   api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
 
@@ -322,6 +340,9 @@ function H.set_list_item_hl_fn(ns, bufnr, line_data, ignore_padding)
   end
 end
 
+---Ensure every entry in `line_data` is treated as virtual.
+---Mainly used for the notification formatters
+---@private
 ---@param line_data Notifier.FormattedNotifOpts[]
 ---@return Notifier.FormattedNotifOpts[]
 function H.ensure_is_virtual(line_data)
@@ -336,12 +357,17 @@ end
 -- UI
 ------------------------------------------------------------------
 
+---@private
 ---@type uv.uv_timer_t?
 local render_timer = assert(uv.new_timer(), "uv_timer_t")
 
+---@private
 ---@type boolean
 local dirty = false
 
+---Schedule debounced render of all groups. Uses a libuv timer and vim.schedule.
+---@private
+---@return nil
 function U.debounce_render()
   dirty = true
   if not render_timer then
@@ -380,6 +406,8 @@ end
 ---@field config Notifier.Config
 ---@field log_level_map Notifier.LogLevelMap
 
+---Default notification formatter used for live notifications.
+---@private
 ---@param opts Notifier.NotificationFormatterOpts
 ---@return Notifier.FormattedNotifOpts[]
 function U.default_notif_formatter(opts)
@@ -400,6 +428,8 @@ function U.default_notif_formatter(opts)
   }
 end
 
+---Default formatter for notification history view.
+---@private
 ---@param opts Notifier.NotificationFormatterOpts
 ---@return Notifier.FormattedNotifOpts[]
 function U.default_notif_history_formatter(opts)
@@ -429,8 +459,10 @@ function U.default_notif_history_formatter(opts)
   }
 end
 
----Render all messages in the group.
+---Render a group's notifications into its buffer and update the floating window size.
+---@private
 ---@param group Notifier.Group
+---@return nil
 function U.render_group(group)
   ---@type Notifier.Notification[]
   local live = vim.tbl_filter(function(n)
@@ -506,7 +538,7 @@ function U.render_group(group)
   pcall(api.nvim_buf_set_lines, group.buf, 0, -1, false, lines)
 
   local ns = vim.api.nvim_create_namespace("notifier-notification")
-  H.set_list_item_hl_fn(ns, group.buf, formatted_raw_data)
+  H.setup_virtual_text_hls(ns, group.buf, formatted_raw_data)
 
   local width = 0
   for _, data in pairs(formatted_raw_data) do
@@ -541,6 +573,7 @@ end
 ------------------------------------------------------------------
 
 ---Validate a log level number and clamp to valid range.
+---@private
 ---@param level any
 ---@return integer
 function V.validate_level(level)
@@ -560,6 +593,7 @@ function V.validate_level(level)
 end
 
 ---Validate a message, ensuring it's a string.
+---@private
 ---@param msg any
 ---@return string
 function V.validate_msg(msg)
@@ -570,6 +604,7 @@ function V.validate_msg(msg)
 end
 
 ---Validate padding table, ensuring numeric and non-negative.
+---@private
 ---@param padding any
 ---@return Notifier.Config.Padding
 function V.validate_padding(padding)
@@ -588,6 +623,7 @@ function V.validate_padding(padding)
 end
 
 ---Validate anchor value for floating windows.
+---@private
 ---@param anchor any
 ---@return "NW"|"NE"|"SW"|"SE"
 function V.validate_anchor(anchor)
@@ -598,6 +634,10 @@ function V.validate_anchor(anchor)
   return "SE"
 end
 
+---Validate row/col values.
+---@private
+---@param row_col any
+---@return number
 function V.validate_row_col(row_col)
   if type(row_col) == "number" and row_col >= 0 then
     return row_col
@@ -606,6 +646,7 @@ function V.validate_row_col(row_col)
 end
 
 ---Validate timeout, ensuring it’s positive ms.
+---@private
 ---@param timeout any
 ---@return integer
 function V.validate_timeout(timeout)
@@ -616,6 +657,7 @@ function V.validate_timeout(timeout)
 end
 
 ---Validate a formatter function.
+---@private
 ---@param formatter any
 ---@return fun(opts:Notifier.NotificationFormatterOpts):Notifier.FormattedNotifOpts[]
 function V.validate_formatter(formatter)
@@ -626,6 +668,7 @@ function V.validate_formatter(formatter)
 end
 
 ---Validate icon string (optional).
+---@private
 ---@param icon any
 ---@return string|nil
 function V.validate_icon(icon)
@@ -636,6 +679,7 @@ function V.validate_icon(icon)
 end
 
 ---Validate highlight group name.
+---@private
 ---@param hl any
 ---@return string|nil
 function V.validate_hl(hl)
@@ -646,6 +690,7 @@ function V.validate_hl(hl)
 end
 
 ---Validate group name to be a non-empty string.
+---@private
 ---@param name any
 ---@return Notifier.GroupConfigsKey
 function V.validate_group_name(name)
@@ -661,7 +706,10 @@ function V.validate_group_name(name)
   return name
 end
 
+---Validate group configs table.
+---@private
 ---@param group_configs table<Notifier.GroupConfigsKey, Notifier.GroupConfigs>
+---@return table<Notifier.GroupConfigsKey, Notifier.GroupConfigs>
 function V.validate_group_configs(group_configs)
   if type(group_configs) ~= "table" then
     return Notifier.defaults.group_configs
@@ -677,6 +725,8 @@ function V.validate_group_configs(group_configs)
   return group_configs
 end
 
+---Validate winblend value.
+---@private
 ---@param winblend number
 ---@return number
 function V.validate_winblend(winblend)
@@ -690,10 +740,11 @@ end
 -- Public Interface
 ------------------------------------------------------------------
 
----Override for vim.notify
+---Override for vim.notify. Adds support for notification groups, IDs, and formatters.
 ---@param msg string
 ---@param level? integer
 ---@param opts? Notifier.NotificationGroup
+---@return nil
 function Notifier.notify(msg, level, opts)
   opts = opts or {}
   local id = opts.id
@@ -743,10 +794,12 @@ function Notifier.notify(msg, level, opts)
   U.debounce_render()
 end
 
+---@private
 ---@type uv.uv_timer_t?
 local cleanup_timer = nil
 
--- Setup auto-cleanup timer
+---Start the cleanup timer which marks notifications expired based on timeout.
+---@private
 local function start_cleanup_timer()
   if cleanup_timer and not cleanup_timer:is_closing() then
     cleanup_timer:stop()
@@ -790,6 +843,7 @@ local function start_cleanup_timer()
 end
 
 ---Show every notification that is currently alive in any group.
+---@return nil
 function Notifier.show_history()
   local width = math.floor(vim.o.columns * 0.6)
   local height = math.floor(vim.o.lines * 0.6)
@@ -891,12 +945,13 @@ function Notifier.show_history()
   vim.bo[buf].modifiable = false
 
   local ns = vim.api.nvim_create_namespace("notifier-history")
-  H.set_list_item_hl_fn(ns, buf, formatted_raw_data, true)
+  H.setup_virtual_text_hls(ns, buf, formatted_raw_data, true)
 
   api.nvim_set_current_win(win)
 end
 
 ---Immediately dismiss every active notification and close their windows.
+---@return nil
 function Notifier.dismiss_all()
   for _, group in pairs(groups) do
     if api.nvim_win_is_valid(group.win) then
@@ -979,6 +1034,8 @@ Notifier.defaults = {
 }
 
 ---Setup the default highlight groups.
+---@private
+---@return nil
 local function setup_hls()
   local hi = function(name, opts)
     opts.default = true
@@ -999,6 +1056,7 @@ end
 
 ---Setup the notifier plugin.
 ---@param user_config? Notifier.Config
+---@return nil
 function Notifier.setup(user_config)
   Notifier.config = vim.tbl_deep_extend("force", Notifier.defaults, user_config or {})
 
