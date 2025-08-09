@@ -4,6 +4,9 @@
     enable = true;
     interactiveShellInit = ''
       set fish_greeting # Disable greeting\n
+      if type -q nvs
+        nvs env --source | source
+      end
     '';
     shellInit = ''
       __load-em
