@@ -6,21 +6,28 @@ if not ok or uv == nil then
 end
 
 local nvim = vim.version()
-if nvim.major == 0 and nvim.minor < 10 then
+if nvim.major == 0 and (nvim.minor < 10 or (nvim.minor == 10 and nvim.patch < 0)) then
   error("Cmd.nvim requires Neovim 0.10+")
 end
+
+------------------------------------------------------------------
+-- Modules & internal namespaces
+------------------------------------------------------------------
 
 ---@class Cmd
 local Cmd = {}
 
+---@private
 ---@class Cmd.Helpers
 local H = {}
 
+---@private
 ---@class Cmd.UI
 local U = {
   spinner_adapters = {},
 }
 
+---@private
 ---@class Cmd.Core
 local C = {}
 
@@ -83,6 +90,9 @@ local hl_groups = {
 ------------------------------------------------------------------
 
 ---Safely delete a file.
+---@private
+---@param path string
+---@return nil
 function H.safe_delete(path)
   vim.defer_fn(function()
     pcall(vim.fn.delete, path)
@@ -90,6 +100,8 @@ function H.safe_delete(path)
 end
 
 ---Ensure that the current working directory is set.
+---@private
+---@return nil
 function H.ensure_cwd()
   local buf_dir = vim.fn.expand("%:p:h")
 
@@ -103,6 +115,7 @@ end
 ---@alias Cmd.LogLevel "INFO"|"WARN"|"ERROR"
 
 ---Display a notification.
+---@private
 ---@param msg string
 ---@param lvl Cmd.LogLevel
 ---@param opts? table
@@ -114,6 +127,7 @@ function H.notify(msg, lvl, opts)
 end
 
 ---Stream chunks to a string.
+---@private
 ---@param chunks string[]
 ---@return string
 function H.stream_tostring(chunks)
@@ -121,6 +135,7 @@ function H.stream_tostring(chunks)
 end
 
 ---Start reading a stream into a buffer.
+---@private
 ---@param pipe uv.uv_stream_t
 ---@param buffer string[]
 ---@return nil
@@ -136,6 +151,7 @@ function H.read_stream(pipe, buffer)
 end
 
 ---Trim empty lines from a string array.
+---@private
 ---@param lines string[]
 ---@return string[]
 function H.trim_empty_lines(lines)
@@ -145,6 +161,7 @@ function H.trim_empty_lines(lines)
 end
 
 ---Get the environment variables for a command.
+---@private
 ---@param executable string
 ---@return string[]|nil
 function H.get_cmd_env(executable)
@@ -171,6 +188,7 @@ function H.get_cmd_env(executable)
 end
 
 ---Sanitize a line.
+---@private
 ---@param line string
 ---@return string
 function H.sanitize_line(line)
@@ -186,6 +204,7 @@ function H.sanitize_line(line)
 end
 
 ---Sanitize the output of a file handle.
+---@private
 ---@param lines string[]
 ---@return string[]
 function H.sanitize_file_output(lines)
@@ -202,6 +221,7 @@ function H.sanitize_file_output(lines)
 end
 
 ---Write a temporary shell script.
+---@private
 ---@param shell string
 ---@return string|nil
 function H.write_temp_script(shell)
@@ -256,24 +276,8 @@ printf '%s\n' "${COMPREPLY[@]}"
   return path
 end
 
-function H.prepare_history()
-  -- Pull out non-nil entries
-  local list = {}
-  for _, v in pairs(S.command_history) do
-    table.insert(list, v)
-  end
-  table.sort(list, function(a, b)
-    return a.id < b.id
-  end)
-
-  -- Rebuild sparse array with contiguous ids starting at 1
-  S.command_history = {}
-  for i, v in ipairs(list) do
-    v.id = i
-    S.command_history[i] = v
-  end
-end
-
+---Set the spinner state for a command.
+---@private
 ---@param command_id integer
 ---@param opts Cmd.Spinner|nil
 function H.set_spinner_state(command_id, opts)
@@ -284,6 +288,8 @@ function H.set_spinner_state(command_id, opts)
   S.spinner_state[command_id] = opts
 end
 
+---Get the spinner state for a command.
+---@private
 ---@param command_id integer
 ---@return Cmd.Spinner|nil
 function H.get_spinner_state(command_id)
@@ -298,10 +304,13 @@ end
 ---@field pre_exec fun(opts: Cmd.Config.AsyncNotifier.PreExec): string|integer|number|nil
 ---@field post_exec fun(opts: Cmd.Config.AsyncNotifier.PostExec)
 
+---Driver for a spinner adapter.
+---@private
 ---@param adapter Cmd.Config.AsyncNotifier.SpinnerAdapter
 ---@return Cmd.SpinnerDriver
 function U.spinner_driver(adapter)
   return {
+    ---start the spinner
     ---@param opts Cmd.Config.AsyncNotifier.PreExec
     pre_exec = function(opts)
       local timer = uv.new_timer()
@@ -341,10 +350,7 @@ function U.spinner_driver(adapter)
       return notify_id
     end,
 
-    ----------------------------------------------------------------
-    -- post-exec: stop spinner and show final message
-    ----------------------------------------------------------------
-
+    ---stop spinner and show final message
     ---@param opts Cmd.Config.AsyncNotifier.PostExec
     post_exec = function(opts)
       local st = opts.get_spinner_state(opts.command_id)
@@ -368,6 +374,7 @@ function U.spinner_driver(adapter)
   }
 end
 
+---Spinner adapter for snacks.nvim.
 ---@type Cmd.Config.AsyncNotifier.SpinnerAdapter
 U.spinner_adapters.snacks = {
   start = function(msg, data)
@@ -384,6 +391,7 @@ U.spinner_adapters.snacks = {
   end,
 }
 
+---Spinner adapter for mini.notify.
 ---@type Cmd.Config.AsyncNotifier.SpinnerAdapter
 U.spinner_adapters.mini = {
   start = function(msg)
@@ -426,6 +434,7 @@ U.spinner_adapters.mini = {
   end,
 }
 
+---Spinner adapter for fidget.nvim.
 ---@type Cmd.Config.AsyncNotifier.SpinnerAdapter
 U.spinner_adapters.fidget = {
   start = function(msg, data)
@@ -467,9 +476,11 @@ U.spinner_adapters.fidget = {
 }
 
 ---Show output in a scratch buffer (readonly, vsplit).
+---@private
 ---@param lines string[]
 ---@param title string
 ---@param post_hook? fun(buf: integer, lines: string[])
+---@return nil
 function U.show_buffer(lines, title, post_hook)
   local old_buf = vim.fn.bufnr(title)
   if old_buf ~= -1 then
@@ -496,9 +507,11 @@ function U.show_buffer(lines, title, post_hook)
 end
 
 ---Show output in a terminal buffer.
+---@private
 ---@param cmd string[]
 ---@param title string
 ---@param command_id integer
+---@return nil
 function U.show_terminal(cmd, title, command_id)
   C.track_cmd({
     id = command_id,
@@ -579,6 +592,9 @@ function U.show_terminal(cmd, title, command_id)
   vim.cmd("startinsert")
 end
 
+---Refresh the UI.
+---@private
+---@return nil
 function U.refresh_ui()
   vim.schedule(function()
     vim.cmd("redraw!")
@@ -596,6 +612,7 @@ end
 ---@field err string
 
 ---Run a CLI command.
+---@private
 ---@param cmd string[]
 ---@param command_id integer
 ---@param on_done fun(code: integer, out: string, err: string, is_cancelled?: boolean)
@@ -701,8 +718,11 @@ function C.exec_cli(cmd, command_id, on_done, timeout)
   end
 end
 
+---Cancel a running command.
+---@private
 ---@param job uv.uv_process_t|nil
 ---@param command_id number
+---@return nil
 function C.cancel_with_fallback(job, command_id)
   if not job or job:is_closing() then
     return
@@ -722,6 +742,7 @@ function C.cancel_with_fallback(job, command_id)
 end
 
 ---Cancel the currently running command.
+---@private
 ---@param command_id number|nil
 ---@param all boolean
 ---@return nil
@@ -751,10 +772,12 @@ local function cancel_cmd(command_id, all)
 end
 
 ---Get the cached shell completion for the given executable.
+---@private
 ---@param executable? string
 ---@param lead_args string
 ---@param cmd_line string
 ---@param cursor_pos integer
+---@return string[]
 function C.cached_shell_complete(executable, lead_args, cmd_line, cursor_pos)
   if Cmd.config.completion.enabled == false then
     return {}
@@ -807,8 +830,10 @@ function C.cached_shell_complete(executable, lead_args, cmd_line, cursor_pos)
 end
 
 ---Run `cmd` command in terminal (interactive) or buffer (info).
+---@private
 ---@param args string[]
 ---@param bang boolean
+---@return nil
 function C.run_cmd(args, bang)
   local executable = args[1]
   if vim.fn.executable(executable) == 0 then
@@ -900,7 +925,10 @@ function C.run_cmd(args, bang)
   end
 end
 
+---Track a command into history.
+---@private
 ---@param opts Cmd.CommandHistory
+---@return nil
 function C.track_cmd(opts)
   opts = vim.tbl_deep_extend("force", S.command_history[opts.id] or {}, opts)
 
@@ -970,6 +998,7 @@ Cmd.defaults = {
   },
 }
 
+---Create user commands for executables that if the user commad does not exists.
 local function create_usercmd_if_not_exists()
   local existing_cmds = vim.api.nvim_get_commands({})
   for executable, cmd_name in pairs(Cmd.config.create_usercmd) do
@@ -1014,6 +1043,7 @@ local function create_usercmd_if_not_exists()
   end
 end
 
+---Setup user commands.
 local function setup_usercmds()
   vim.api.nvim_create_user_command("Cmd", function(opts)
     local bang = opts.bang or false
@@ -1064,6 +1094,11 @@ local function setup_usercmds()
     local bang = opts.bang or false
     local id = tonumber(opts.args) or #S.command_history
     local command_entry = S.command_history[id]
+
+    if not command_entry then
+      H.notify("No command history", "WARN")
+      return
+    end
 
     local args = command_entry.cmd
 
@@ -1225,6 +1260,7 @@ local function setup_hls()
   hi("CmdCancelled", { link = "WarningMsg" })
 end
 
+---Validate the adapter.
 ---@param adapter? Cmd.Config.AsyncNotifier.SpinnerAdapter
 local function validate_adapter(adapter)
   if adapter == nil then
@@ -1248,7 +1284,7 @@ local function validate_adapter(adapter)
   end
 end
 
----Setup the `:Cmd` command.
+---Setup function.
 ---@param user_config? Cmd.Config
 function Cmd.setup(user_config)
   Cmd.config = vim.tbl_deep_extend("force", Cmd.defaults, user_config or {})
