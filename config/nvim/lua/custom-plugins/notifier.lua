@@ -140,7 +140,8 @@ function H.get_group(name)
     height = 1,
   })
 
-  api.nvim_set_option_value("winblend", Notifier.config.winblend or 0, { scope = "local", win = win })
+  vim.wo[win].winblend = Notifier.config.group_configs[name].winblend or 0
+  vim.wo[win].winhighlight = string.format("NormalFloat:%s,FloatBorder:%s", "NotifierNormal", "NotifierBorder")
 
   groups[name] = vim.tbl_deep_extend("keep", groups[name] or {}, {
     name = name,
@@ -166,6 +167,8 @@ function H.parse_format_fn_result(format_result, ignore_padding)
 
   ---@type number keep track of the col counts to proper compute every col position
   local current_line_col = 0
+
+  local current_line_virtual_col = 0
 
   ---Temp table to add padding start and end
   ---@type Notifier.ComputedLineOpts[]
@@ -211,13 +214,26 @@ function H.parse_format_fn_result(format_result, ignore_padding)
         parsed_item.display_text = tostring(item.display_text)
       end
 
+      local text_length = parsed_item.is_virtual and vim.fn.strdisplaywidth(parsed_item.display_text)
+        or #parsed_item.display_text
+
       if not parsed_item.is_virtual then
         ---calculate the start and end column one by one
         parsed_item.col_start = current_line_col
-        current_line_col = parsed_item.col_start + #parsed_item.display_text
+        current_line_col = parsed_item.col_start + text_length
         parsed_item.col_end = current_line_col
+
+        ---always set the virtual col start to the current line virtual col for later calculation
+        parsed_item.virtual_col_start = current_line_virtual_col
+        parsed_item.virtual_col_end = current_line_virtual_col
       else
+        ---always set the col start to the current line col for later calculation
         parsed_item.col_start = current_line_col
+        parsed_item.col_end = current_line_col
+
+        parsed_item.virtual_col_start = current_line_virtual_col
+        current_line_virtual_col = parsed_item.virtual_col_start + text_length
+        parsed_item.virtual_col_end = current_line_virtual_col
       end
     end
 
@@ -237,13 +253,21 @@ end
 
 ---Convert a parsed format result to string
 ---@param parsed Notifier.ComputedLineOpts[] The parsed format result
+---@param include_virtual? boolean Whether to include virtual lines
 ---@return string lines The formatted lines
-function H.convert_parsed_format_result_to_string(parsed)
+function H.convert_parsed_format_result_to_string(parsed, include_virtual)
+  include_virtual = include_virtual or false
   local display_lines = {}
 
   for _, item in ipairs(parsed) do
-    if item.display_text and not item.is_virtual then
-      table.insert(display_lines, item.display_text)
+    if item.display_text then
+      if include_virtual then
+        table.insert(display_lines, item.display_text)
+      else
+        if not item.is_virtual then
+          table.insert(display_lines, item.display_text)
+        end
+      end
     end
   end
 
@@ -254,15 +278,31 @@ end
 ---@param ns number The namespace
 ---@param bufnr number The buffer number
 ---@param line_data Notifier.ComputedLineOpts[][] The formatted line data
+---@param ignore_padding? boolean ignore the padding
 ---@return nil
-function H.set_list_item_hl_fn(ns, bufnr, line_data)
+function H.set_list_item_hl_fn(ns, bufnr, line_data, ignore_padding)
+  ignore_padding = ignore_padding or false
   api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
 
+  ---@type Notifier.Config.Padding
+  local padding
+
+  if not ignore_padding then
+    padding = H.resolve_padding()
+  end
+
   for line_number, line in ipairs(line_data) do
-    if not line or line == "" then
+    if padding and (line_number <= padding.top or line_number > #line_data - padding.bottom) then
       goto continue
     end
-    for _, data in ipairs(line) do
+
+    --- reverse the line so that the virtual text is on the right
+    local reversed_line = {}
+    for i = #line, 1, -1 do
+      table.insert(reversed_line, line[i])
+    end
+
+    for _, data in ipairs(reversed_line) do
       if data.is_virtual then
         -- set the virtual text in the right position with it's hl group
         api.nvim_buf_set_extmark(bufnr, ns, line_number - 1, data.col_start, {
@@ -280,6 +320,16 @@ function H.set_list_item_hl_fn(ns, bufnr, line_data)
     end
     ::continue::
   end
+end
+
+---@param line_data Notifier.FormattedNotifOpts[]
+---@return Notifier.FormattedNotifOpts[]
+function H.ensure_is_virtual(line_data)
+  for i = #line_data, 1, -1 do
+    local item = line_data[i]
+    item.is_virtual = true
+  end
+  return line_data
 end
 
 ------------------------------------------------------------------
@@ -321,6 +371,8 @@ end
 ---@class Notifier.ComputedLineOpts : Notifier.FormattedNotifOpts
 ---@field col_start? number The start column of the text, NOTE: this is calculated and for type purpose only
 ---@field col_end? number The end column of the text, NOTE: this is calculated and for type purpose only
+---@field virtual_col_start? number The start virtual column of the text, NOTE: this is calculated and for type purpose only
+---@field virtual_col_end? number The end virtual column of the text, NOTE: this is calculated and for type purpose only
 
 ---@class Notifier.NotificationFormatterOpts
 ---@field notif Notifier.Notification
@@ -336,15 +388,15 @@ function U.default_notif_formatter(opts)
   local config = opts.config
   local _log_level_map = opts.log_level_map
 
-  local separator = { display_text = " " }
+  local separator = { display_text = " ", is_virtual = true }
 
   local icon = notif.icon or config.icons[notif.level]
   local icon_hl = notif.hl_group or _log_level_map[notif.level].hl_group
 
   return {
-    icon and { display_text = icon, hl_group = icon_hl },
+    icon and { display_text = icon, hl_group = icon_hl, is_virtual = true },
     icon and separator,
-    { display_text = line, hl_group = notif.hl_group },
+    { display_text = line, hl_group = notif.hl_group, is_virtual = true },
   }
 end
 
@@ -368,7 +420,7 @@ function U.default_notif_history_formatter(opts)
     },
     virtual_separator,
     {
-      display_text = string.format("[%s]", log_level_map[notif.level].level_key),
+      display_text = string.format("[%s]", string.sub(log_level_map[notif.level].level_key, 1, 3)),
       hl_group = log_level_map[notif.level].hl_group,
       is_virtual = true,
     },
@@ -395,7 +447,7 @@ function U.render_group(group)
   ---@type string[]
   local lines = {}
 
-  ---@type Notifier.FormattedNotifOpts[][]
+  ---@type Notifier.ComputedLineOpts[][]
   local formatted_raw_data = {}
 
   for i = #live, 1, -1 do
@@ -404,6 +456,8 @@ function U.render_group(group)
     if notif._notif_formatter and type(notif._notif_formatter) == "function" and notif.msg == "" then
       local formatted =
         notif._notif_formatter({ notif = notif, line = "", config = Notifier.config, log_level_map = log_level_map })
+
+      formatted = H.ensure_is_virtual(formatted)
 
       local formatted_line_data = H.parse_format_fn_result(formatted)
 
@@ -423,6 +477,8 @@ function U.render_group(group)
         config = Notifier.config,
         log_level_map = log_level_map,
       })
+
+      formatted = H.ensure_is_virtual(formatted)
 
       local formatted_line_data = H.parse_format_fn_result(formatted)
 
@@ -453,8 +509,14 @@ function U.render_group(group)
   H.set_list_item_hl_fn(ns, group.buf, formatted_raw_data)
 
   local width = 0
-  for _, line in ipairs(lines) do
-    width = math.max(width, vim.fn.strdisplaywidth(line), 40)
+  for _, data in pairs(formatted_raw_data) do
+    if data ~= "" then
+      for _, item in pairs(data) do
+        local last_width = ((item.col_end or 0) + (item.virtual_col_end or 0))
+          or vim.fn.strdisplaywidth(item.display_text)
+        width = math.max(width, last_width)
+      end
+    end
   end
 
   width = math.min(width, math.floor(vim.o.columns * 0.6))
@@ -615,6 +677,15 @@ function V.validate_group_configs(group_configs)
   return group_configs
 end
 
+---@param winblend number
+---@return number
+function V.validate_winblend(winblend)
+  if type(winblend) == "number" and winblend >= 0 and winblend <= 100 then
+    return winblend
+  end
+  return 0
+end
+
 ------------------------------------------------------------------
 -- Public Interface
 ------------------------------------------------------------------
@@ -754,6 +825,13 @@ function Notifier.show_history()
     title = "Notification History",
   })
 
+  vim.wo[win].winhighlight = string.format(
+    "NormalFloat:%s,FloatBorder:%s,FloatTitle:%s",
+    "NotifierHistoryNormal",
+    "NotifierHistoryBorder",
+    "NotifierHistoryTitle"
+  )
+
   vim.bo[buf].buftype = "nofile"
   vim.bo[buf].bufhidden = "wipe"
   vim.bo[buf].swapfile = false
@@ -784,7 +862,7 @@ function Notifier.show_history()
 
       local formatted_line_data = H.parse_format_fn_result(formatted, true)
 
-      local formatted_line = H.convert_parsed_format_result_to_string(formatted_line_data)
+      local formatted_line = H.convert_parsed_format_result_to_string(formatted_line_data, true)
 
       -- build the message and save it
       notif.msg = formatted_line
@@ -813,7 +891,7 @@ function Notifier.show_history()
   vim.bo[buf].modifiable = false
 
   local ns = vim.api.nvim_create_namespace("notifier-history")
-  H.set_list_item_hl_fn(ns, buf, formatted_raw_data)
+  H.set_list_item_hl_fn(ns, buf, formatted_raw_data, true)
 
   api.nvim_set_current_win(win)
 end
@@ -834,7 +912,6 @@ end
 
 ---@class Notifier.Config
 ---@field default_timeout? integer
----@field winblend? integer
 ---@field border? string
 ---@field icons? table<string, string>
 ---@field notif_formatter? fun(opts: Notifier.NotificationFormatterOpts): Notifier.FormattedNotifOpts[]
@@ -853,6 +930,7 @@ end
 ---@field anchor "NW"|"NE"|"SW"|"SE"
 ---@field row integer
 ---@field col integer
+---@field winblend? integer
 
 ---@type Notifier.Config
 Notifier.config = {}
@@ -860,7 +938,6 @@ Notifier.config = {}
 ---@type Notifier.Config
 Notifier.defaults = {
   default_timeout = 3000, -- milliseconds
-  winblend = 0,
   border = "none",
   padding = { top = 0, right = 0, bottom = 0, left = 0 },
   default_group = "bottom-right",
@@ -869,21 +946,25 @@ Notifier.defaults = {
       anchor = "SE",
       row = vim.o.lines - 2,
       col = vim.o.columns,
+      winblend = 0,
     },
     ["top-right"] = {
       anchor = "NE",
       row = 0,
       col = vim.o.columns,
+      winblend = 0,
     },
     ["top-left"] = {
       anchor = "NW",
       row = 0,
       col = 0,
+      winblend = 0,
     },
     ["bottom-left"] = {
       anchor = "SW",
       row = vim.o.lines - 2,
       col = 0,
+      winblend = 0,
     },
   },
   icons = {
@@ -904,11 +985,16 @@ local function setup_hls()
     vim.api.nvim_set_hl(0, name, opts)
   end
 
+  hi("NotifierNormal", { link = "Normal" })
+  hi("NotifierBorder", { link = "FloatBorder" })
   hi("NotifierError", { link = "ErrorMsg" })
   hi("NotifierWarn", { link = "WarningMsg" })
   hi("NotifierInfo", { link = "MoreMsg" })
   hi("NotifierDebug", { link = "Debug" })
   hi("NotifierTrace", { link = "Comment" })
+  hi("NotifierHistoryNormal", { link = "NormalFloat" })
+  hi("NotifierHistoryBorder", { link = "FloatBorder" })
+  hi("NotifierHistoryTitle", { link = "FloatTitle" })
 end
 
 ---Setup the notifier plugin.
@@ -924,6 +1010,7 @@ function Notifier.setup(user_config)
     group_config.anchor = V.validate_anchor(group_config.anchor)
     group_config.row = V.validate_row_col(group_config.row)
     group_config.col = V.validate_row_col(group_config.col)
+    group_config.winblend = V.validate_winblend(group_config.winblend)
   end
 
   Notifier.config.default_group = V.validate_group_name(Notifier.config.default_group)
