@@ -23,13 +23,6 @@ function M.setup()
   vim.keymap.set("n", "<leader>un", function()
     plugin.dismiss_all()
   end, { desc = "Dismiss All Notifications" })
-
-  -- vim.schedule(function()
-  --   vim.notify("bottom-right", vim.log.levels.INFO, { group_name = "bottom-right" })
-  --   vim.notify("bottom-left", vim.log.levels.INFO, { group_name = "bottom-left" })
-  --   vim.notify("top-right", vim.log.levels.INFO, { group_name = "top-right" })
-  --   vim.notify("top-left", vim.log.levels.INFO, { group_name = "top-left" })
-  -- end)
 end
 
 return M
