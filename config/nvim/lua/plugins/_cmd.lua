@@ -58,7 +58,7 @@ function M.setup()
       enabled = true,
       prompt_pattern_to_remove = "^",
     },
-    async_notifier = {
+    progress_notifier = {
       -- adapter = plugin.builtins.spinner_adapters.mini,
       -- adapter = plugin.builtins.spinner_adapters.snacks,
       -- adapter = plugin.builtins.spinner_adapters.fidget,
