@@ -16,7 +16,7 @@ function M.setup()
 
   ---@type Notifier.Config
   local plugin_opts = {
-    padding = { top = 1, right = 1, bottom = 1, left = 1 },
+    border = "solid",
   }
 
   plugin.setup(plugin_opts)
