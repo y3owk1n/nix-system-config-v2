@@ -120,6 +120,33 @@ local function remove_all_packages()
   vim.pack.del(names)
 end
 
+---Synchronize packages from registry to the vim.pack.
+local function sync_packages()
+  local plugins = vim.pack.get()
+
+  -- normalize the registry map to a list of strings src
+  ---@type string[]
+  local normalized_registry_map = {}
+  for _, p in ipairs(registry_map) do
+    if type(p) == "string" then
+      table.insert(normalized_registry_map, p)
+    end
+    table.insert(normalized_registry_map, p.src)
+  end
+
+  -- loop through all plugins and remove those that are not in the registry
+  ---@type string[]
+  local to_remove = {}
+  for _, p in ipairs(plugins) do
+    local src = p.spec.src
+    if not vim.tbl_contains(normalized_registry_map, src) then
+      table.insert(to_remove, p.spec.name)
+    end
+  end
+
+  vim.pack.del(to_remove)
+end
+
 ---Print loaded and not-loaded plugin status.
 local function print_plugin_status()
   local loaded = M.get_plugins(true)
@@ -574,6 +601,7 @@ local function setup_keymaps()
   vim.keymap.set("n", "<leader>p", "", { desc = "plugins" })
   vim.keymap.set("n", "<leader>pu", update_all_packages, { desc = "Update plugins" })
   vim.keymap.set("n", "<leader>px", remove_all_packages, { desc = "Clear all plugins" })
+  vim.keymap.set("n", "<leader>ps", sync_packages, { desc = "Sync deleted packages" })
   vim.keymap.set("n", "<leader>pi", print_plugin_status, { desc = "Plugin status" })
   vim.keymap.set("n", "<leader>pr", print_resolution_timeline, { desc = "Plugin resolution" })
 end
