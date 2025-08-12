@@ -17,6 +17,9 @@ function M.setup()
   ---@type Notifier.Config
   local plugin_opts = {
     border = "solid",
+    animation = {
+      enabled = true,
+    },
   }
 
   plugin.setup(plugin_opts)
