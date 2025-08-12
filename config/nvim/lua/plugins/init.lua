@@ -338,7 +338,9 @@ local function setup_one(mod, parent)
 
   -- install from vim.pack
   if mod.registry then
-    vim.pack.add(mod.registry)
+    vim.pack.add(mod.registry, {
+      confirm = false,
+    })
   end
 
   -- require the module
@@ -389,7 +391,9 @@ local function async_setup_one(mod, parent, on_done)
 
     -- 2. install via vim.pack (already async)
     if mod.registry then
-      vim.pack.add(mod.registry)
+      vim.pack.add(mod.registry, {
+        confirm = false,
+      })
     end
 
     -- 3. require + setup in slices
