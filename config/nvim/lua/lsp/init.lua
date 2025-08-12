@@ -366,7 +366,7 @@ local function setup_progress_spinner_custom()
           end
 
           if percent_text then
-            table.insert(entries, { display_text = percent_text, hl_group = "CmdHistoryIdentifier" })
+            table.insert(entries, { display_text = percent_text, hl_group = "Normal" })
             table.insert(entries, separator)
           end
 
