@@ -30,6 +30,24 @@ function M.setup()
   vim.keymap.set("n", "<leader>un", function()
     plugin.dismiss_all()
   end, { desc = "Dismiss All Notifications" })
+
+  local old_laststatus = vim.o.laststatus
+  local old_cmdheight = vim.o.cmdheight
+
+  vim.api.nvim_create_autocmd("OptionSet", {
+    callback = function()
+      local new_laststatus = vim.o.laststatus
+      local new_cmdheight = vim.o.cmdheight
+
+      if new_laststatus ~= old_laststatus or new_cmdheight ~= old_cmdheight then
+        old_laststatus = new_laststatus
+        old_cmdheight = new_cmdheight
+
+        -- let the plugin recalculate positions
+        plugin._internal.utils.cache_config_group_row_col()
+      end
+    end,
+  })
 end
 
 return M
