@@ -26,7 +26,7 @@ function M.setup()
   local plugin_opts = {
     float = {
       solid = false,
-      transparent = false,
+      transparent = true,
     },
     default_integrations = false,
     integrations = {
@@ -70,6 +70,9 @@ function M.setup()
       which_key = true,
     },
     custom_highlights = {
+      --- for `blink_cmp`
+      --- override to match `float.transparent` settings
+      BlinkCmpMenuBorder = { link = "FloatBorder", bg = colors.none },
       --- for time-machine.nvim
       TimeMachineCurrent = {
         bg = c_utils.darken(colors.blue, 0.18, colors.base),
