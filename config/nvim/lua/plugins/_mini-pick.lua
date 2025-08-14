@@ -98,6 +98,13 @@ function M.setup()
   local extra_ok, extra = pcall(require, "mini.extra")
 
   if extra_ok then
+    vim.keymap.set("n", "<leader>gf", function()
+      extra.pickers.git_files({
+        path = require("custom-plugins.git-head").get_root(),
+        scope = "modified",
+      })
+    end, { desc = "Git Files (Modified + Git Root)" })
+
     vim.keymap.set("n", "<leader>sH", function()
       extra.pickers.hl_groups()
     end, { desc = "Highlights" })
