@@ -288,4 +288,12 @@ function M.setup(user_config)
   })
 end
 
+---Get the root of a Git repo for a buffer
+---@param buf? integer
+---@return string?
+function M.get_root(buf)
+  buf = buf == 0 and vim.api.nvim_get_current_buf() or buf
+  return cache[buf] and cache[buf].root
+end
+
 return M
