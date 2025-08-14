@@ -81,6 +81,7 @@ in
       "whatsapp"
       "keka"
       "appcleaner"
+      "homerow"
       # "adobe-creative-cloud"
     ];
 
