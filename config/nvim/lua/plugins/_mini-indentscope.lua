@@ -34,6 +34,18 @@ function M.setup()
       vim.b.miniindentscope_disable = true
     end,
   })
+
+  vim.api.nvim_create_autocmd("TermEnter", {
+    callback = function()
+      vim.b.miniindentscope_disable = true
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("TermLeave", {
+    callback = function()
+      vim.b.miniindentscope_disable = false
+    end,
+  })
 end
 
 return M
