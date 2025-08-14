@@ -380,13 +380,13 @@
                 type = "standard";
               };
             };
-            # Window -> Move & resize left & right (control + shift + ])
+            # Window -> Move & resize left & right (control + shift + \)
             "248" = {
               enabled = 1;
               value = {
                 parameters = [
-                  93
-                  30
+                  92
+                  42
                   393216
                 ];
                 type = "standard";
