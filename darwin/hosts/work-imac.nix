@@ -79,6 +79,7 @@ in
       "keka"
       "appcleaner"
       "adobe-creative-cloud"
+      "homerow"
     ];
 
     masApps = { };
