@@ -293,7 +293,8 @@
             "Merge All Windows" = "^-";
             "Pin Tab" = "@d";
             "Unpin Tab" = "@d";
-          } // safariKeys;
+          }
+          // safariKeys;
         };
         "com.apple.AdLib" = {
           allowApplePersonalizedAdvertising = false;
@@ -317,631 +318,88 @@
         # Turn on app auto-update
         "com.apple.commerce".AutoUpdate = true;
         # Macos hotkeys
-        # Basically disable everything and only left a few that I want
-        # For keys mapping, see this https://github.com/LnL7/nix-darwin/pull/636/commits/5540307d0e02cf1ee235abf16a8111dfeae5bcde
         "com.apple.symbolichotkeys" = {
           AppleSymbolicHotKeys = {
-            # Action not defined
-            "10" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  96
-                  8650752
-                ];
-                type = "standard";
-              };
-            };
-            "11" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  97
-                  8650752
-                ];
-                type = "standard";
-              };
-            };
-            "118" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  49
-                  18
-                  1966080
-                ];
-                type = "standard";
-              };
-            };
-            "119" = {
+            # Window -> Fill (control + shift + m)
+            "237" = {
               enabled = 1;
               value = {
                 parameters = [
-                  50
-                  19
-                  1966080
+                  109
+                  46 # m
+                  393216
                 ];
                 type = "standard";
               };
             };
-            "12" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  122
-                  8650752
-                ];
-                type = "standard";
-              };
-            };
-            "120" = {
+            # Window -> Move & resize left (control + shift + h)
+            "240" = {
               enabled = 1;
               value = {
                 parameters = [
-                  51
-                  20
-                  1966080
+                  104
+                  4
+                  393216
                 ];
                 type = "standard";
               };
             };
-            "121" = {
+            # Window -> Move & resize right (control + shift + l)
+            "241" = {
               enabled = 1;
               value = {
                 parameters = [
-                  52
-                  21
-                  1966080
+                  108
+                  37
+                  393216
                 ];
                 type = "standard";
               };
             };
-            "122" = {
+            # Window -> Move & resize top (control + shift + k)
+            "242" = {
               enabled = 1;
               value = {
                 parameters = [
-                  53
-                  23
-                  1966080
-                ];
-                type = "standard";
-              };
-            };
-            "123" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  54
-                  22
-                  1966080
-                ];
-                type = "standard";
-              };
-            };
-            "124" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  55
-                  26
-                  1966080
-                ];
-                type = "standard";
-              };
-            };
-            "13" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  98
-                  8650752
-                ];
-                type = "standard";
-              };
-            };
-            # contextual menu
-            "159" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  65535
-                  36
-                  262144
-                ];
-                type = "standard";
-              };
-            };
-            "162" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  96
-                  9961472
-                ];
-                type = "standard";
-              };
-            };
-            # Action not defined
-            "175" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            # Screenshot and recording options (shift + cmd + 5)
-            "184" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  53
-                  23
-                  1179648
-                ];
-                type = "standard";
-              };
-            };
-            # quick note
-            "190" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  110
-                  45
-                  1966080
-                ];
-                type = "standard";
-              };
-            };
-            "21" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  56
-                  28
-                  1835008
-                ];
-                type = "standard";
-              };
-            };
-            "215" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "216" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "217" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "218" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "219" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "222" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "223" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "224" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "225" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "226" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "227" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "228" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "229" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "230" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "231" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "232" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  65535
-                  0
-                ];
-                type = "standard";
-              };
-            };
-            "25" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  46
-                  47
-                  1835008
-                ];
-                type = "standard";
-              };
-            };
-            "26" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  44
-                  43
-                  1835008
-                ];
-                type = "standard";
-              };
-            };
-            "27" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  96
-                  50
-                  1048576
-                ];
-                type = "standard";
-              };
-            };
-            "28" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  51
-                  20
-                  1179648
-                ];
-                type = "standard";
-              };
-            };
-            # Save picture of selected area as file (shift + cmd + 4)
-            "30" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  52
-                  21
-                  1179648
-                ];
-                type = "standard";
-              };
-            };
-            "32" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  126
-                  8650752
-                ];
-                type = "standard";
-              };
-            };
-            "33" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  125
-                  8650752
-                ];
-                type = "standard";
-              };
-            };
-            "36" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  103
-                  8388608
-                ];
-                type = "standard";
-              };
-            };
-            "52" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  100
-                  2
-                  1572864
-                ];
-                type = "standard";
-              };
-            };
-            "53" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
                   107
-                  8388608
+                  40
+                  393216
                 ];
                 type = "standard";
               };
             };
-            "54" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  113
-                  8388608
-                ];
-                type = "standard";
-              };
-            };
-            "57" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  100
-                  8650752
-                ];
-                type = "standard";
-              };
-            };
-            "59" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  96
-                  9437184
-                ];
-                type = "standard";
-              };
-            };
-            # Switch previous input (ctrl + space)
-            "60" = {
+            # Window -> Move & resize bottom (control + shift + j)
+            "243" = {
               enabled = 1;
               value = {
                 parameters = [
-                  32
-                  49
-                  262144
+                  106
+                  38
+                  393216
                 ];
                 type = "standard";
               };
             };
-            # Switch next input (ctrl + space)
-            "61" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  32
-                  49
-                  262144
-                ];
-                type = "standard";
-              };
-            };
-            # Spotlight search (hyper + enter)
-            "64" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  36
-                  1966080
-                ];
-                type = "standard";
-              };
-            };
-            "65" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  32
-                  49
-                  1572864
-                ];
-                type = "standard";
-              };
-            };
-            "7" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  120
-                  8650752
-                ];
-                type = "standard";
-              };
-            };
-            "79" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  123
-                  8650752
-                ];
-                type = "standard";
-              };
-            };
-            "8" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  99
-                  8650752
-                ];
-                type = "standard";
-              };
-            };
-            "81" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  124
-                  8650752
-                ];
-                type = "standard";
-              };
-            };
-            "9" = {
-              enabled = 0;
-              value = {
-                parameters = [
-                  65535
-                  118
-                  8650752
-                ];
-                type = "standard";
-              };
-            };
-            "98" = {
+            # Window -> Move & resize left & right (control + shift + ])
+            "248" = {
               enabled = 1;
               value = {
                 parameters = [
-                  47
-                  44
-                  1179648
+                  93
+                  30
+                  393216
+                ];
+                type = "standard";
+              };
+            };
+            # Window -> Move & resize top & bottom (control + shift + -)
+            "250" = {
+              enabled = 1;
+              value = {
+                parameters = [
+                  45
+                  27
+                  393216
                 ];
                 type = "standard";
               };
