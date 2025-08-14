@@ -292,7 +292,7 @@ end
 ---@param buf? integer
 ---@return string?
 function M.get_root(buf)
-  buf = buf == 0 and vim.api.nvim_get_current_buf() or buf
+  buf = buf or vim.api.nvim_get_current_buf()
   return cache[buf] and cache[buf].root
 end
 
