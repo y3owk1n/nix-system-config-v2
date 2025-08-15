@@ -12,9 +12,10 @@ let
 in
 {
   imports = [
-    ../modules/aerospace.nix
+    # ../modules/aerospace.nix
     ../modules/cmd.nix
     ../modules/karabiner.nix
+    ../modules/skhd.nix
     ../shared/core.nix
     (import ../shared/darwin.nix {
       inherit
@@ -72,7 +73,7 @@ in
       "brave-browser"
       "zen"
       "orbstack"
-      "raycast"
+      # "raycast"
       "onyx"
       "imageoptim"
       "whatsapp"
