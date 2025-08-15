@@ -28,6 +28,7 @@
     nixfmt-rfc-style
 
     # --- neovim language servers ---
+    tree-sitter
     shfmt
     shellcheck
     bash-language-server
