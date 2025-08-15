@@ -9,11 +9,11 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/nvim-treesitter/nvim-treesitter",
+  { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "main" },
 }
 
 function M.setup()
-  local plugin_ok, plugin = pcall(require, "nvim-treesitter.configs")
+  local plugin_ok, plugin = pcall(require, "nvim-treesitter")
 
   if not plugin_ok then
     return
@@ -59,25 +59,10 @@ function M.setup()
     "yaml",
   }
 
-  ---@type TSConfig
-  ---@diagnostic disable-next-line: missing-fields
-  local plugin_opts = {
-    highlight = { enable = true },
-    indent = { enable = true },
-    ensure_installed = ensure_installed,
-    incremental_selection = {
-      enable = true,
-      keymaps = {
-        init_selection = "<C-space>",
-        node_incremental = "<C-space>",
-        scope_incremental = false,
-        node_decremental = "<bs>",
-      },
-    },
-  }
-
   -- setup
-  plugin.setup(plugin_opts)
+  plugin.setup()
+
+  plugin.install(ensure_installed)
 
   -- add file types
   vim.filetype.add({
@@ -98,6 +83,18 @@ function M.setup()
     extension = { mdx = "markdown.mdx" },
   })
   vim.treesitter.language.register("markdown", "markdown.mdx")
+
+  vim.api.nvim_create_autocmd("FileType", {
+    pattern = ensure_installed,
+    callback = function()
+      -- syntax highlighting, provided by Neovim
+      vim.treesitter.start()
+      -- folds, provided by Neovim
+      vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+      -- indentation, provided by nvim-treesitter
+      vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+    end,
+  })
 end
 
 return M
