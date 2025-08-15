@@ -98,7 +98,8 @@ in
     casks = [
       "blender"
       "tailscale-app"
-      "ghostty"
+      # "ghostty"
+      "ghostty@tip"
       "rustdesk"
       "brave-browser"
       "zen"
