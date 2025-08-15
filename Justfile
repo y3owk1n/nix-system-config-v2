@@ -87,3 +87,8 @@ backup-ssh:
 restore-ssh:
     cp {{ ssh_backup_path }}/id_ed25519 ~/.ssh/id_ed25519
     cp {{ ssh_backup_path }}/id_ed25519.pub ~/.ssh/id_ed25519.pub
+
+[macos]
+relaunch-skhd:
+    launchctl bootout gui/$(id -u)/org.nixos.skhd
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/org.nixos.skhd.plist
