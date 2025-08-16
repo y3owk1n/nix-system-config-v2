@@ -1,4 +1,20 @@
+---@class MarkdownUtils
 local M = {}
+
+-- ------------------------------------------------------------------
+-- public
+-- ------------------------------------------------------------------
+
+---@type MarkdownUtils.Config
+M.config = {}
+
+---@class MarkdownUtils.Config
+M.defaults = {}
+
+---@param user_config? MarkdownUtils.Config
+function M.setup(user_config)
+  M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
+end
 
 function M.toggle_markdown_checkbox()
   local line_nr = vim.api.nvim_win_get_cursor(0)[1] - 1

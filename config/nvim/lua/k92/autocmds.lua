@@ -1,4 +1,6 @@
-local augroup = require("k92.utils.autocmds").augroup
+local function augroup(name)
+  return vim.api.nvim_create_augroup("k92_" .. name, { clear = true })
+end
 
 ------------------------------------------------------------
 -- Yank Highlight (Optional)
@@ -235,32 +237,6 @@ vim.api.nvim_create_autocmd("FileType", {
   pattern = "help",
   -- Move help buffers to the right side.
   command = "wincmd L",
-})
-
-------------------------------------------------------------
--- Setup markdown checkbox toggle
-------------------------------------------------------------
-
-vim.api.nvim_create_autocmd("FileType", {
-  group = augroup("toggle_markdown_checkbox"),
-  pattern = "markdown",
-  callback = function()
-    vim.api.nvim_buf_set_keymap(
-      0,
-      "n",
-      "<leader>cc",
-      ":lua require('k92.utils.markdown').toggle_markdown_checkbox()<CR>",
-      { desc = "Toggle Markdown Checkbox", noremap = true, silent = true }
-    )
-
-    vim.api.nvim_buf_set_keymap(
-      0,
-      "n",
-      "<leader>cgc",
-      ":lua require('k92.utils.markdown').insert_markdown_checkbox()<CR>",
-      { desc = "Insert Markdown Checkbox", noremap = true, silent = true }
-    )
-  end,
 })
 
 ------------------------------------------------------------
