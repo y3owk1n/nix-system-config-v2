@@ -13,20 +13,25 @@ return {
 
     vim.api.nvim_create_autocmd("FileType", {
       group = vim.api.nvim_create_augroup("toggle_markdown_checkbox", { clear = true }),
-      pattern = "markdown",
+      pattern = { "markdown" },
       callback = function()
         vim.keymap.set(
           "n",
           "<leader>cc",
           plugin.toggle_markdown_checkbox,
-          { desc = "Toggle Markdown Checkbox", silent = true, buffer = 0 }
+          { buffer = true, desc = "Toggle markdown checkbox" }
         )
-
+        vim.keymap.set(
+          "n",
+          "<leader>cgC",
+          plugin.insert_markdown_checkbox,
+          { buffer = true, desc = "Insert markdown checkbox" }
+        )
         vim.keymap.set(
           "n",
           "<leader>cgc",
-          plugin.insert_markdown_checkbox,
-          { desc = "Insert Markdown Checkbox", silent = true, buffer = 0 }
+          plugin.insert_markdown_checkbox_below,
+          { buffer = true, desc = "Insert checkbox below" }
         )
       end,
     })
