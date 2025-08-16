@@ -55,6 +55,8 @@ return {
         which_key = true,
       },
       custom_highlights = {
+        --- general
+        ["@property"] = { fg = colors.lavender }, -- For fields, like accessing `bar` property on `foo.bar`. Overriden later for data languages and CSS.
         --- for `blink_cmp`
         --- override to match `float.transparent` settings
         BlinkCmpMenu = { link = "FloatBorder", bg = colors.none },
