@@ -29,6 +29,7 @@ local function setup_progress_spinner()
       }
 
       if is_complete then
+        progress_data.percentage = 100
         progress_data.description = "Done"
         progress_data.file_progress = nil
       end
