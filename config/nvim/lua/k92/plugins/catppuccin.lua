@@ -1,12 +1,15 @@
 ---@type LazySpec
 return {
-  {
-    "catppuccin/nvim",
-    lazy = false,
-    name = "catppuccin",
-    priority = 1000,
+  "catppuccin/nvim",
+  lazy = false,
+  name = "catppuccin",
+  priority = 1000,
+  opts = function()
+    local colors = require("catppuccin.palettes").get_palette()
+    local c_utils = require("catppuccin.utils.colors")
+
     ---@type CatppuccinOptions
-    opts = {
+    local opts = {
       float = {
         solid = false,
         transparent = true,
@@ -46,18 +49,12 @@ return {
         },
         treesitter = true,
         render_markdown = true,
-        fidget = true,
         snacks = {
           enabled = true,
         },
         which_key = true,
       },
-    },
-    config = function(_, opts)
-      local colors = require("catppuccin.palettes").get_palette()
-      local c_utils = require("catppuccin.utils.colors")
-
-      opts.custom_highlights = {
+      custom_highlights = {
         --- for `blink_cmp`
         --- override to match `float.transparent` settings
         BlinkCmpMenuBorder = { link = "FloatBorder", bg = colors.none },
@@ -71,11 +68,15 @@ return {
         TimeMachineInfo = { fg = colors.subtext0, style = { "italic" } },
         TimeMachineSeq = { fg = colors.peach, style = { "bold" } },
         TimeMachineTag = { fg = colors.yellow, style = { "bold" } },
-      }
+      },
+    }
 
-      require("catppuccin").setup(opts)
+    return opts
+  end,
+  config = function(_, opts)
+    local plugin = require("catppuccin")
+    plugin.setup(opts)
 
-      vim.cmd.colorscheme("catppuccin-macchiato")
-    end,
-  },
+    vim.cmd.colorscheme("catppuccin-macchiato")
+  end,
 }

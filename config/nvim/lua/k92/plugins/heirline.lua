@@ -2,7 +2,7 @@
 return {
   "rebelot/heirline.nvim",
   lazy = false,
-  opts = function(_, opts)
+  opts = function()
     local conditions = require("heirline.conditions")
     local utils = require("heirline.utils")
 
@@ -533,10 +533,13 @@ return {
       DefaultStatusline,
     }
 
-    opts.opts = {
-      colors = C,
+    local opts = {
+      opts = {
+        colors = C,
+      },
+      statusline = StatusLines,
     }
 
-    opts.statusline = StatusLines
+    return opts
   end,
 }
