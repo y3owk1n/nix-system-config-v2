@@ -46,32 +46,4 @@ return {
       },
     },
   },
-  {
-    "catppuccin/nvim",
-    optional = true,
-    opts = function(_, opts)
-      local colors = require("catppuccin.palettes").get_palette()
-
-      local c_utils = require("catppuccin.utils.colors")
-
-      ---@type {[string]: CtpHighlight}
-      local highlights = {
-        TimeMachineCurrent = {
-          bg = c_utils.darken(colors.blue, 0.18, colors.base),
-        },
-        TimeMachineTimeline = { fg = colors.blue, style = { "bold" } },
-        TimeMachineTimelineAlt = { fg = colors.overlay2 },
-        TimeMachineKeymap = { fg = colors.teal, style = { "italic" } },
-        TimeMachineInfo = { fg = colors.subtext0, style = { "italic" } },
-        TimeMachineSeq = { fg = colors.peach, style = { "bold" } },
-        TimeMachineTag = { fg = colors.yellow, style = { "bold" } },
-      }
-
-      opts.custom_highlights = opts.custom_highlights or {}
-
-      for key, value in pairs(highlights) do
-        opts.custom_highlights[key] = value
-      end
-    end,
-  },
 }

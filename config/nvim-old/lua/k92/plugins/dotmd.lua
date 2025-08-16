@@ -3,7 +3,6 @@ return {
   {
     "y3owk1n/dotmd.nvim",
     -- dir = "~/Dev/dotmd.nvim", -- Your path
-    enabled = not vim.g.strip_personal_plugins,
     cmd = {
       "DotMdCreateNote",
       "DotMdCreateTodoToday",
@@ -27,7 +26,7 @@ return {
       {
         "<leader>n",
         "",
-        desc = "+dotmd",
+        desc = "dotmd",
       },
       {
         "<leader>nc",

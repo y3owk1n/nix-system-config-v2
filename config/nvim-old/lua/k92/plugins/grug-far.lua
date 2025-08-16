@@ -36,13 +36,4 @@ return {
       },
     },
   },
-  {
-    "catppuccin/nvim",
-    optional = true,
-    opts = {
-      integrations = {
-        grug_far = true,
-      },
-    },
-  },
 }

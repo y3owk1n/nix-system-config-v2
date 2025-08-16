@@ -23,27 +23,4 @@ return {
       },
     },
   },
-  {
-    "echasnovski/mini.pick",
-    optional = true,
-    keys = {
-      {
-        "<leader>st",
-        function()
-          require("k92.utils.lazy").plugin_load("todo-comments.nvim")
-
-          -- List of keywords we want to find
-          local keywords = { "TODO", "FIXME", "HACK", "WARN", "PERF", "NOTE", "TEST", "BUG", "ISSUE" }
-
-          -- Build a single ripgrep pattern:  \b(TODO|FIXME|...)\b
-          local rg_pattern = [[\b(]] .. table.concat(keywords, "|") .. [[)\b:]]
-
-          require("mini.pick").builtin.grep({
-            pattern = rg_pattern, -- ripgrep regex
-          })
-        end,
-        desc = "Todo",
-      },
-    },
-  },
 }

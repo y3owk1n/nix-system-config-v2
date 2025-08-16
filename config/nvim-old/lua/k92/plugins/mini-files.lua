@@ -1,0 +1,85 @@
+---@type LazySpec
+return {
+  {
+    "echasnovski/mini.files",
+    event = "VeryLazy",
+    opts = {
+      windows = {
+        preview = true,
+        width_focus = 30,
+        width_preview = 60,
+      },
+      mappings = {
+        close = "q",
+        go_in = "",
+        go_in_plus = "l",
+        go_out = "",
+        go_out_plus = "h",
+        mark_goto = "'",
+        mark_set = "m",
+        reset = "<BS>",
+        reveal_cwd = "@",
+        show_help = "g?",
+        synchronize = "=",
+        trim_left = "<",
+        trim_right = ">",
+      },
+      options = { use_as_default_explorer = true },
+    },
+    init = function()
+      local augroup = vim.api.nvim_create_augroup("MiniFilesRename", {})
+      vim.api.nvim_create_autocmd("User", {
+        group = augroup,
+        pattern = "MiniFilesActionRename",
+        callback = function(ev)
+          local from, to = ev.data.from, ev.data.to
+
+          local snacks_exists, snacks = pcall(require, "snacks")
+          if snacks_exists then
+            snacks.rename.on_rename_file(from, to)
+          end
+        end,
+      })
+      vim.api.nvim_create_autocmd("User", {
+        group = augroup,
+        pattern = { "MiniFilesActionRename", "MiniFilesActionMove" },
+        callback = function(ev)
+          local from, to = ev.data.from, ev.data.to
+
+          local warp_exists, warp = pcall(require, "warp")
+          if warp_exists then
+            warp.on_file_update(from, to)
+          end
+        end,
+      })
+    end,
+    keys = {
+      {
+        "<leader>e",
+        function()
+          local mini_files = require("mini.files")
+
+          if not mini_files.close() then
+            local buf_path = vim.api.nvim_buf_get_name(0)
+            if buf_path == "" or not vim.uv.fs_stat(buf_path) then
+              buf_path = vim.uv.cwd() or ""
+            end
+            mini_files.open(buf_path, true)
+          end
+        end,
+        desc = "Explorer (buffer path)",
+      },
+      {
+        "<leader>E",
+        function()
+          local mini_files = require("mini.files")
+
+          if not mini_files.close() then
+            mini_files.open(vim.uv.cwd(), true)
+          end
+        end,
+        desc = "Explorer (cwd)",
+      },
+    },
+  },
+}

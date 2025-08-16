@@ -1,7 +1,6 @@
 return {
   {
     "supermaven-inc/supermaven-nvim",
-    enabled = not vim.g.strip_personal_plugins,
     event = "InsertEnter",
     opts = {
       keymaps = {

@@ -2,7 +2,7 @@
 return {
   {
     "nvim-treesitter/nvim-treesitter",
-    version = false, -- last release is way too old and doesn't work on Windows
+    branch = "main",
     build = ":TSUpdate",
     event = { "VeryLazy" },
     lazy = vim.fn.argc(-1) == 0, -- load treesitter early when opening a file from the cmdline
@@ -13,20 +13,12 @@ return {
       -- Luckily, the only things that those plugins need are the custom queries, which we make available
       -- during startup.
       require("lazy.core.loader").add_to_rtp(plugin)
-      require("nvim-treesitter.query_predicates")
     end,
     cmd = { "TSUpdateSync", "TSUpdate", "TSInstall" },
-    keys = {
-      { "<c-space>", desc = "Increment Selection" },
-      { "<bs>", desc = "Decrement Selection", mode = "x" },
-    },
-    opts_extend = { "ensure_installed" },
-    ---@type TSConfig
-    ---@diagnostic disable-next-line: missing-fields
-    opts = {
-      highlight = { enable = true },
-      indent = { enable = true },
-      ensure_installed = {
+    config = function()
+      local plugin = require("nvim-treesitter")
+
+      local ensure_installed = {
         "html",
         "regex",
         "toml",
@@ -36,29 +28,69 @@ return {
         "xml",
         "css",
         "kdl",
-      },
-      incremental_selection = {
-        enable = true,
-        keymaps = {
-          init_selection = "<C-space>",
-          node_incremental = "<C-space>",
-          scope_incremental = false,
-          node_decremental = "<bs>",
+        "bash",
+        "dockerfile",
+        "fish",
+        "git_config",
+        "gitcommit",
+        "git_rebase",
+        "gitignore",
+        "gitattributes",
+        "go",
+        "gomod",
+        "gowork",
+        "gosum",
+        "json",
+        "jsonc",
+        "json5",
+        "just",
+        "lua",
+        "luadoc",
+        "luap",
+        "markdown",
+        "markdown_inline",
+        "nix",
+        "prisma",
+        "javascript",
+        "jsdoc",
+        "tsx",
+        "typescript",
+        "yaml",
+      }
+
+      plugin.install(ensure_installed)
+
+      -- add file types
+      vim.filetype.add({
+        pattern = {
+          ["docker?-compose?.ya?ml"] = "yaml.docker-compose",
         },
-      },
-    },
-    ---@param opts TSConfig
-    config = function(_, opts)
-      require("nvim-treesitter.configs").setup(opts)
+      })
+      vim.filetype.add({
+        extension = { just = "just" },
+        filename = {
+          justfile = "just",
+          Justfile = "just",
+          [".Justfile"] = "just",
+          [".justfile"] = "just",
+        },
+      })
+      vim.filetype.add({
+        extension = { mdx = "markdown.mdx" },
+      })
+      vim.treesitter.language.register("markdown", "markdown.mdx")
+
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = ensure_installed,
+        callback = function()
+          -- syntax highlighting, provided by Neovim
+          vim.treesitter.start()
+          -- folds, provided by Neovim
+          vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+          -- indentation, provided by nvim-treesitter
+          vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end,
+      })
     end,
-  },
-  {
-    "catppuccin/nvim",
-    optional = true,
-    opts = {
-      integrations = {
-        treesitter = true,
-      },
-    },
   },
 }

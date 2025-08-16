@@ -4,16 +4,17 @@ local augroup = require("k92.utils.autocmds").augroup
 -- Yank Highlight (Optional)
 ------------------------------------------------------------
 -- Currently highlight with `undo-glow.nvim`.
--- Only enable it when personal plugins are stripped.
-if vim.g.strip_personal_plugins then
-  vim.api.nvim_create_autocmd("TextYankPost", {
-    desc = "Highlight when yanking (copying) text",
-    group = augroup("highlight_yank"),
-    callback = function()
-      (vim.hl or vim.highlight).on_yank()
-    end,
-  })
-end
+vim.api.nvim_create_autocmd("TextYankPost", {
+  desc = "Highlight when yanking (copying) text",
+  group = augroup("highlight_yank"),
+  callback = function()
+    local ok = pcall(require, "undo-glow")
+    if ok then
+      return
+    end
+    (vim.hl or vim.highlight).on_yank()
+  end,
+})
 
 ------------------------------------------------------------
 -- Close Certain Filetypes with <q>
@@ -32,6 +33,8 @@ vim.api.nvim_create_autocmd("FileType", {
     "lspinfo",
     "lsplog",
     "lintinfo",
+    "cmd",
+    "nvim-pack",
   },
   callback = function(event)
     -- Prevent the buffer from appearing in the buffer list.
@@ -259,15 +262,5 @@ vim.api.nvim_create_autocmd("BufReadPost", {
     end
 
     vim.o.laststatus = 3
-  end,
-})
-
-vim.api.nvim_create_autocmd("VimEnter", {
-  group = augroup("vim_enter_laststatus"),
-  pattern = "*",
-  callback = function()
-    if vim.tbl_contains(ft_exclude_laststatus, vim.bo.filetype) then
-      vim.o.laststatus = 0
-    end
   end,
 })
