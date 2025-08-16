@@ -3,6 +3,7 @@ local augroup = require("k92.utils.autocmds").augroup
 ------------------------------------------------------------
 -- Yank Highlight (Optional)
 ------------------------------------------------------------
+
 -- Currently highlight with `undo-glow.nvim`.
 vim.api.nvim_create_autocmd("TextYankPost", {
   desc = "Highlight when yanking (copying) text",
@@ -19,6 +20,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 ------------------------------------------------------------
 -- Close Certain Filetypes with <q>
 ------------------------------------------------------------
+
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("close_with_q"),
   pattern = {
@@ -56,6 +58,7 @@ vim.api.nvim_create_autocmd("FileType", {
 ------------------------------------------------------------
 -- Open Buffer: Restore Last Cursor Location
 ------------------------------------------------------------
+
 vim.api.nvim_create_autocmd("BufReadPost", {
   group = augroup("last_loc"),
   callback = function(event)
@@ -78,6 +81,7 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 ------------------------------------------------------------
 -- Remove Trailing Whitespace on Save
 ------------------------------------------------------------
+
 vim.api.nvim_create_autocmd("BufWritePre", {
   group = augroup("remove_whitespace_on_save"),
   pattern = "",
@@ -88,6 +92,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 ------------------------------------------------------------
 -- Disable Auto-Commenting on New Lines
 ------------------------------------------------------------
+
 vim.api.nvim_create_autocmd("BufEnter", {
   group = augroup("no_auto_commeting_new_lines"),
   pattern = "",
@@ -98,6 +103,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
 ------------------------------------------------------------
 -- Turn Off Paste Mode When Leaving Insert Mode
 ------------------------------------------------------------
+
 vim.api.nvim_create_autocmd("InsertLeave", {
   group = augroup("paste_mode_off_leaving_insert"),
   pattern = "*",
@@ -108,6 +114,7 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 ------------------------------------------------------------
 -- Keep Cursor Vertically Centered
 ------------------------------------------------------------
+
 local obs = false
 local function set_scrolloff(winid)
   if obs then
@@ -130,6 +137,7 @@ vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "WinNew", "VimResized" }, 
 ------------------------------------------------------------
 -- Auto-Reload File if Changed Externally
 ------------------------------------------------------------
+
 vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
   group = augroup("checktime"),
   callback = function()
@@ -143,6 +151,7 @@ vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
 ------------------------------------------------------------
 -- Resize Splits on Vim Window Resize
 ------------------------------------------------------------
+
 vim.api.nvim_create_autocmd({ "VimResized" }, {
   group = augroup("resize_splits"),
   callback = function()
@@ -157,6 +166,7 @@ vim.api.nvim_create_autocmd({ "VimResized" }, {
 ------------------------------------------------------------
 -- Close Scratch Preview Automatically
 ------------------------------------------------------------
+
 vim.api.nvim_create_autocmd({ "CursorMovedI", "InsertLeave" }, {
   group = augroup("close_scratch_preview"),
   desc = "Close the popup-menu automatically",
@@ -168,6 +178,7 @@ vim.api.nvim_create_autocmd({ "CursorMovedI", "InsertLeave" }, {
 ------------------------------------------------------------
 -- Open Files with :line Suffix at Specific Line
 ------------------------------------------------------------
+
 vim.api.nvim_create_autocmd("BufNew", {
   group = augroup("edit_files_with_line"),
   desc = "Edit files with :line at the end",
@@ -190,6 +201,7 @@ vim.api.nvim_create_autocmd("BufNew", {
 ------------------------------------------------------------
 -- Auto Toggle Cursorline Based on Window Focus
 ------------------------------------------------------------
+
 -- Show the cursorline only in the active window.
 vim.api.nvim_create_autocmd({ "InsertLeave", "WinEnter" }, {
   group = augroup("auto_cursorline_show"),
@@ -217,6 +229,7 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "WinLeave" }, {
 ------------------------------------------------------------
 -- Automatically Split Help Buffers to the Right
 ------------------------------------------------------------
+
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("split_help_right"),
   pattern = "help",
@@ -227,6 +240,7 @@ vim.api.nvim_create_autocmd("FileType", {
 ------------------------------------------------------------
 -- Setup markdown checkbox toggle
 ------------------------------------------------------------
+
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("toggle_markdown_checkbox"),
   pattern = "markdown",
@@ -252,6 +266,7 @@ vim.api.nvim_create_autocmd("FileType", {
 ------------------------------------------------------------
 -- Disable laststatus on certain filetypes
 ------------------------------------------------------------
+
 local ft_exclude_laststatus = { "ministarter" }
 
 vim.api.nvim_create_autocmd("BufReadPost", {
@@ -262,5 +277,26 @@ vim.api.nvim_create_autocmd("BufReadPost", {
     end
 
     vim.o.laststatus = 3
+  end,
+})
+
+------------------------------------------------------------
+-- Enable treesitter
+------------------------------------------------------------
+
+vim.api.nvim_create_autocmd("FileType", {
+  -- pattern = ensure_installed,
+  callback = function()
+    -- syntax highlighting, provided by Neovim
+    local ok = pcall(vim.treesitter.start)
+
+    if not ok then
+      return
+    end
+
+    -- folds, provided by Neovim
+    vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+    -- indentation, provided by nvim-treesitter
+    vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
   end,
 })
