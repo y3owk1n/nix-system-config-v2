@@ -358,11 +358,11 @@ return {
 
     local Git = {
       condition = function()
-        local repo_info = vim.b.minigit_summary
+        local repo_info = vim.b.githead_summary
         return repo_info ~= nil and repo_info.head_name ~= nil
       end,
       init = function(self)
-        self.repo_info = vim.b.minigit_summary
+        self.repo_info = vim.b.githead_summary
         self.changes = {
           add = vim.b.minidiff_summary and vim.b.minidiff_summary.add or 0,
           delete = vim.b.minidiff_summary and vim.b.minidiff_summary.delete or 0,

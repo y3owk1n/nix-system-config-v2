@@ -23,15 +23,6 @@ return {
         group = augroup("snacks_init"),
         pattern = "VeryLazy",
         callback = function()
-          -- Setup some globals for debugging (lazy-loaded)
-          _G.dd = function(...)
-            Snacks.debug.inspect(...)
-          end
-          _G.bt = function()
-            Snacks.debug.backtrace()
-          end
-          vim.print = _G.dd -- Override print to use snacks for `:=` command
-
           -- Create some toggle mappings
           Snacks.toggle.option("spell", { name = "Spelling" }):map("<leader>us")
           Snacks.toggle.option("wrap", { name = "Wrap" }):map("<leader>uw")
@@ -48,33 +39,6 @@ return {
         end,
       })
     end,
-  },
-  --- notifier
-  {
-    "folke/snacks.nvim",
-    ---@type snacks.Config
-    opts = {
-      notifier = {
-        enabled = true,
-        timeout = 3000,
-      },
-    },
-    keys = {
-      {
-        "<leader>N",
-        function()
-          Snacks.notifier.show_history()
-        end,
-        desc = "Notification History",
-      },
-      {
-        "<leader>un",
-        function()
-          Snacks.notifier.hide()
-        end,
-        desc = "Dismiss All Notifications",
-      },
-    },
   },
   --- rename file
   {
@@ -121,17 +85,6 @@ return {
           Snacks.lazygit()
         end,
         desc = "Lazygit",
-      },
-    },
-  },
-  {
-    "catppuccin/nvim",
-    optional = true,
-    opts = {
-      integrations = {
-        snacks = {
-          enabled = true,
-        },
       },
     },
   },

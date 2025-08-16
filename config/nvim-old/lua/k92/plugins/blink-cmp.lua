@@ -30,7 +30,14 @@ return {
       },
 
       sources = {
-        default = { "lsp", "path", "snippets", "buffer" },
+        default = { "lsp", "path", "snippets", "buffer", "lazydev" },
+        providers = {
+          lazydev = {
+            name = "LazyDev",
+            module = "lazydev.integrations.blink",
+            score_offset = 100, -- show at a higher priority than lsp
+          },
+        },
       },
       cmdline = {
         enabled = false,
@@ -79,33 +86,5 @@ return {
     -- allows extending the providers array elsewhere in your config
     -- without having to redefine it
     opts_extend = { "sources.default" },
-  },
-  {
-    "catppuccin/nvim",
-    optional = true,
-    opts = function(_, opts)
-      local colors = require("catppuccin.palettes").get_palette()
-
-      local highlights = {
-        BlinkCmpLabel = { fg = colors.overlay2 },
-        BlinkCmpMenu = { fg = colors.text },
-        BlinkCmpMenuBorder = { fg = colors.blue },
-        BlinkCmpDoc = { fg = colors.overlay2 },
-        BlinkCmpDocBorder = { fg = colors.blue },
-        BlinkCmpSignatureHelpBorder = { fg = colors.blue },
-      }
-
-      opts.custom_highlights = opts.custom_highlights or {}
-
-      for key, value in pairs(highlights) do
-        opts.custom_highlights[key] = value
-      end
-
-      opts.integrations = {
-        blink_cmp = {
-          style = "bordered",
-        },
-      }
-    end,
   },
 }

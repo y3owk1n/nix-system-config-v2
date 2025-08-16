@@ -1,9 +1,6 @@
 ---@diagnostic disable: missing-fields
 require("lazy").setup({
   { import = "k92.plugins" },
-  { import = "k92.plugins.formatters" },
-  { import = "k92.plugins.languages" },
-  { import = "k92.plugins.linters" },
 }, {
   defaults = {
     lazy = true,

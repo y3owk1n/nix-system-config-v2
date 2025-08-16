@@ -26,7 +26,7 @@ vim.opt.virtualedit = "block" -- Allow cursor to move past end-of-line in visual
 vim.opt.splitkeep = "screen" -- Maintain screen view when splitting windows.
 vim.opt.splitright = true -- Open vertical splits to the right.
 vim.opt.splitbelow = true -- Open horizontal splits below.
-vim.o.laststatus = 3 -- Use a global statusline. Checkout my autocmd for more toggles on laststatus.
+vim.o.laststatus = 0 -- Use a global statusline. Checkout my autocmd for more toggles on laststatus.
 vim.opt.showtabline = 0 -- Never show the tabline.
 vim.opt.foldenable = false -- Do not enable folding by default.
 
@@ -83,21 +83,6 @@ vim.opt.undodir = os.getenv("HOME") .. "/.vim/undodir" -- Set custom undo direct
 ------------------------------------------------------------
 -- Clipboard Configuration
 ------------------------------------------------------------
-if vim.env.IS_ORBSTACK == "1" then
-  vim.g.clipboard = {
-    name = "macOS-clipboard",
-    copy = {
-      ["+"] = "mac pbcopy",
-      ["*"] = "mac pbcopy",
-    },
-    paste = {
-      ["+"] = "mac pbpaste",
-      ["*"] = "mac pbpaste",
-    },
-    cache_enabled = 0,
-  }
-end
-
 vim.schedule(function()
   vim.opt.clipboard = "unnamedplus" -- Sync system clipboard with Neovim.
 end)
