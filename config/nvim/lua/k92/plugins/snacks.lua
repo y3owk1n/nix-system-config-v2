@@ -17,10 +17,8 @@ return {
       },
     },
     init = function()
-      local augroup = require("k92.utils.autocmds").augroup
-
       vim.api.nvim_create_autocmd("User", {
-        group = augroup("snacks_init"),
+        group = vim.api.nvim_create_augroup("snacks_init", { clear = true }),
         pattern = "VeryLazy",
         callback = function()
           -- Create some toggle mappings

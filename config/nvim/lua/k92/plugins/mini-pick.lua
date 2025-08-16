@@ -83,7 +83,7 @@ return {
         "<leader>gf",
         function()
           require("mini.extra").pickers.git_files({
-            path = require("custom-plugins.git-head").get_root(),
+            path = require("git-head").get_root(),
             scope = "modified",
           })
         end,

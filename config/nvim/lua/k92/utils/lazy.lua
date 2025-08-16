@@ -17,10 +17,8 @@ end
 ---@param clients string[]
 ---@param plugin_name string
 function M.lazy_load_lsp_attach(clients, plugin_name)
-  local augroup = require("k92.utils.autocmds").augroup
-
   vim.api.nvim_create_autocmd("LspAttach", {
-    group = augroup("lsp_" .. plugin_name .. "_attach"),
+    group = vim.api.nvim_create_augroup("lsp_" .. plugin_name .. "_attach", { clear = true }),
     callback = function(args)
       local client = vim.lsp.get_client_by_id(args.data.client_id)
 

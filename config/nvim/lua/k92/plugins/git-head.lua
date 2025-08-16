@@ -1,14 +1,12 @@
+local custom_name = "git-head"
+
 ---@type LazySpec
 return {
   {
-    dir = vim.fn.stdpath("config") .. "/lua/k92/custom-plugins/git-head",
-    name = "git-head",
+    dir = vim.fn.stdpath("config") .. "/lua/k92/custom-plugins/" .. custom_name,
+    name = custom_name,
     event = "VeryLazy",
     ---@type GitHead.Config
-    ---@diagnostic disable-next-line: missing-fields
     opts = {},
-    config = function(_, opts)
-      require("git-head").setup(opts)
-    end,
   },
 }
