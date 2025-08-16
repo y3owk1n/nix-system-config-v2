@@ -57,6 +57,7 @@ return {
       custom_highlights = {
         --- for `blink_cmp`
         --- override to match `float.transparent` settings
+        BlinkCmpMenu = { link = "FloatBorder", bg = colors.none },
         BlinkCmpMenuBorder = { link = "FloatBorder", bg = colors.none },
         --- for time-machine.nvim
         TimeMachineCurrent = {
