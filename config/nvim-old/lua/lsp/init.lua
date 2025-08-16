@@ -416,6 +416,30 @@ local function setup_progress_spinner_custom()
   end
 end
 
+-- local function setup_completion()
+--   vim.api.nvim_create_autocmd("LspAttach", {
+--     callback = function(ev)
+--       local client = vim.lsp.get_client_by_id(ev.data.client_id)
+--       if not client then
+--         return
+--       end
+--
+--       if client:supports_method("textDocument/completion") then
+--         vim.opt.completeopt = { "menu", "menuone", "noinsert", "fuzzy", "popup" }
+--         vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
+--
+--         vim.keymap.set("i", "<CR>", function()
+--           if vim.fn.pumvisible() == 1 then
+--             return "<C-y>"
+--           else
+--             return "<CR>"
+--           end
+--         end, { expr = true, noremap = true })
+--       end
+--     end,
+--   })
+-- end
+--
 -----------------------------------------------------------------------------//
 -- Public API
 -----------------------------------------------------------------------------//
@@ -427,6 +451,8 @@ function M.init()
   setup_modules()
   -- setup_progress_spinner()
   setup_progress_spinner_custom()
+
+  -- setup_completion()
 end
 
 return M
