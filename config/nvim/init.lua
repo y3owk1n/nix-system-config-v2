@@ -1,60 +1,18 @@
-local function disable_builtin_plugins()
-  local plugins = {
-    "2html_plugin",
-    "getscript",
-    "getscriptPlugin",
-    "gzip",
-    "logipat",
-    "netrw",
-    "netrwPlugin",
-    "netrwSettings",
-    "netrwFileHandlers",
-    "matchit",
-    "tar",
-    "tarPlugin",
-    "rrhelper",
-    "spellfile_plugin",
-    "vimball",
-    "vimballPlugin",
-    "zip",
-    "zipPlugin",
-    "tutor",
-    "rplugin",
-    "synmenu",
-    "optwin",
-    "compiler",
-    "bugreport",
-    "ftplugin",
-  }
-  for _, name in ipairs(plugins) do
-    vim.g["loaded_" .. name] = 1
-  end
-end
-
-disable_builtin_plugins()
-
 if vim.loader then
   vim.loader.enable()
 end
 
+-- Set <space> as the leader key
+-- See `:help mapleader`
+--  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- Set options
-require("options")
-
--- Set autocmds
-require("autocmds")
-
--- Set mappings
-require("mappings")
-
--- Set diagnostics
-require("diagnostics")
-
--- Load plugins & lsp settings
--- NOTE: lsp configurations will be loaded after `lspconfig` is ensured
-require("plugins").init()
-
--- Load the restart module
-require("restart")
+require("k92.health")
+require("k92.lazy-bootstrap")
+require("k92.lazy-plugins")
+require("k92.options")
+require("k92.keymaps")
+require("k92.autocmds")
+require("k92.restart")
+require("k92.diagnostics")
