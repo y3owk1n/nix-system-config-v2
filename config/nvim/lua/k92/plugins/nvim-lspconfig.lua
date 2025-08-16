@@ -35,6 +35,7 @@ return {
     },
   },
   config = function()
+    -- setup lsp after this
     require("k92.lsp").setup()
   end,
 }

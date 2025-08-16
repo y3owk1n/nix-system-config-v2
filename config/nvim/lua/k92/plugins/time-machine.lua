@@ -1,49 +1,47 @@
 ---@type LazySpec
 return {
-  {
-    "y3owk1n/time-machine.nvim",
-    -- dir = "~/Dev/time-machine.nvim", -- Your path
-    cmd = {
-      "TimeMachineToggle",
-      "TimeMachinePurgeBuffer",
-      "TimeMachinePurgeAll",
-      "TimeMachineLogShow",
-      "TimeMachineLogClear",
+  "y3owk1n/time-machine.nvim",
+  -- dir = "~/Dev/time-machine.nvim", -- Your path
+  cmd = {
+    "TimeMachineToggle",
+    "TimeMachinePurgeBuffer",
+    "TimeMachinePurgeAll",
+    "TimeMachineLogShow",
+    "TimeMachineLogClear",
+  },
+  keys = {
+    {
+      "<leader>t",
+      "",
+      desc = "Time Machine",
     },
-    ---@module "time-machine"
-    ---@type TimeMachine.Config
-    opts = {
-      diff_tool = "difft",
-      keymaps = {
-        redo = "U",
-      },
+    {
+      "<leader>tt",
+      "<cmd>TimeMachineToggle<cr>",
+      desc = "[Time Machine] Toggle Tree",
     },
-    keys = {
-      {
-        "<leader>t",
-        "",
-        desc = "Time Machine",
-      },
-      {
-        "<leader>tt",
-        "<cmd>TimeMachineToggle<cr>",
-        desc = "[Time Machine] Toggle Tree",
-      },
-      {
-        "<leader>tx",
-        "<cmd>TimeMachinePurgeBuffer<cr>",
-        desc = "[Time Machine] Purge current",
-      },
-      {
-        "<leader>tX",
-        "<cmd>TimeMachinePurgeAll<cr>",
-        desc = "[Time Machine] Purge all",
-      },
-      {
-        "<leader>tl",
-        "<cmd>TimeMachineLogShow<cr>",
-        desc = "[Time Machine] Show log",
-      },
+    {
+      "<leader>tx",
+      "<cmd>TimeMachinePurgeBuffer<cr>",
+      desc = "[Time Machine] Purge current",
+    },
+    {
+      "<leader>tX",
+      "<cmd>TimeMachinePurgeAll<cr>",
+      desc = "[Time Machine] Purge all",
+    },
+    {
+      "<leader>tl",
+      "<cmd>TimeMachineLogShow<cr>",
+      desc = "[Time Machine] Show log",
+    },
+  },
+  ---@module "time-machine"
+  ---@type TimeMachine.Config
+  opts = {
+    diff_tool = "difft",
+    keymaps = {
+      redo = "U",
     },
   },
 }

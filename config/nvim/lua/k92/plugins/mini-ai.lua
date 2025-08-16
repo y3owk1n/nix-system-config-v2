@@ -1,10 +1,8 @@
 ---@type LazySpec
 return {
-  {
-    "echasnovski/mini.ai",
-    event = { "BufReadPre", "BufNewFile" },
-    opts = {
-      n_lines = 500,
-    },
+  "echasnovski/mini.ai",
+  event = { "BufReadPre", "BufNewFile" },
+  opts = {
+    n_lines = 500,
   },
 }
