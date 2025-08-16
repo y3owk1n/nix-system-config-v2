@@ -23,7 +23,11 @@ in
         default = ''
           # launchers
           hyper - b : open -a Safari
+          hyper - 1 : open -a Safari
+
           hyper - t : open -a Ghostty
+          hyper - 2 : open -a Ghostty
+
           hyper - n : open -a Notes
           hyper - m : open -a Mail
           hyper - w : open -a WhatsApp
