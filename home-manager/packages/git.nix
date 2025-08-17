@@ -8,9 +8,6 @@
   gpgkeyid,
   ...
 }:
-let
-  pubkeyPath = "${config.home.homeDirectory}/.ssh/id_ed25519.pub";
-in
 {
   # `programs.git` will generate the config file: ~/.config/git/config
   # to make git use this config file, `~/.gitconfig` should not exist!
