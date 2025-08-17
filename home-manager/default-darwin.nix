@@ -17,6 +17,7 @@
     ./packages/ghostty.nix
     ./packages/git.nix
     ./packages/go.nix
+    ./packages/gpg.nix
     ./packages/kanata.nix
     ./packages/lazygit.nix
     ./packages/nvim.nix
