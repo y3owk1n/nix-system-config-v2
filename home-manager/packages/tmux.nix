@@ -11,7 +11,7 @@ in
     focusEvents = true;
     historyLimit = 50000;
     keyMode = "vi";
-    mouse = true;
+    mouse = false;
     disableConfirmationPrompt = true;
     shell = fish;
     terminal = "screen-256color";
