@@ -30,6 +30,7 @@ in
       useremail = "62775956+y3owk1n@users.noreply.github.com"; # only used for git
       githubuser = "y3owk1n";
       githubname = "Kyle Wong";
+      gpgkeyid = "97A2A8C8DBBD88C3";
 
       inherit (systemConfig "aarch64-darwin") system;
     in
@@ -60,6 +61,7 @@ in
               hostname
               githubuser
               githubname
+              gpgkeyid
               ;
           };
           home-manager.users.${username} = {
@@ -108,6 +110,7 @@ in
       useremail = "140996996+mtraworld@users.noreply.github.com";
       githubuser = "mtraworld";
       githubname = "mtraworld";
+      gpgkeyid = "";
 
       inherit (systemConfig "aarch64-darwin") system;
     in
@@ -138,6 +141,7 @@ in
               hostname
               githubuser
               githubname
+              gpgkeyid
               ;
           };
           home-manager.users.${username} = {
