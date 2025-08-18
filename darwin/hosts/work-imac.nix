@@ -14,6 +14,7 @@ in
   imports = [
     # ../modules/aerospace.nix
     ../modules/cmd.nix
+    ../modules/passx.nix
     ../modules/karabiner.nix
     ../modules/skhd.nix
     ../shared/core.nix

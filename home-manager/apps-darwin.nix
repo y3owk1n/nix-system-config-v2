@@ -11,6 +11,7 @@
     cmake
     gettext
     ast-grep
+    pass
 
     # --- misc ---
     stripe-cli
@@ -83,5 +84,6 @@
   };
   home.sessionVariables = {
     RIPGREP_CONFIG_PATH = "${config.home.homeDirectory}/.config/ripgrep/ripgreprc";
+    PASSWORD_STORE_DIR = "${config.home.homeDirectory}/Library/Mobile Documents/com~apple~CloudDocs/pass-store";
   };
 }
