@@ -1,7 +1,5 @@
 {
-  config,
   pkgs,
-  lib,
   ...
 }:
 
@@ -10,7 +8,6 @@ let
 
   version = "1.10.6";
 
-  inherit (lib) mkIf;
   nvsInfo = {
     "x86_64-linux" = {
       url = "https://github.com/y3owk1n/nvs/releases/download/v${version}/nvs-linux-amd64";
