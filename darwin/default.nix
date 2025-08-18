@@ -110,7 +110,7 @@ in
       useremail = "140996996+mtraworld@users.noreply.github.com";
       githubuser = "mtraworld";
       githubname = "mtraworld";
-      gpgkeyid = "";
+      gpgkeyid = "B0C4C961630F3318";
 
       inherit (systemConfig "aarch64-darwin") system;
     in
