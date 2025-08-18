@@ -47,7 +47,7 @@
     stylua
     marksman
     markdownlint-cli2
-    nil
+    nixd
     prisma-language-server # from `nixos-npm-ls` flake
     tailwindcss-language-server
     vtsls

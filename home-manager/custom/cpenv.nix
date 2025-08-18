@@ -1,7 +1,5 @@
 {
-  config,
   pkgs,
-  lib,
   ...
 }:
 
@@ -10,7 +8,6 @@ let
 
   version = "1.15.6";
 
-  inherit (lib) mkIf;
   cpenvInfo = {
     "x86_64-linux" = {
       url = "https://github.com/y3owk1n/cpenv/releases/download/v${version}/cpenv-linux-amd64";

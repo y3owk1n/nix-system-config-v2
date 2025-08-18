@@ -49,7 +49,6 @@
   # The `@` syntax here is used to alias the attribute set of the inputs's parameter, making it convenient to use inside the function.
   outputs =
     inputs@{
-      self,
       nixpkgs,
       darwin,
       home-manager,
@@ -84,20 +83,6 @@
             homebrew-core
             homebrew-cask
             homebrew-bundle
-            nixos-npm-ls
-            ;
-        }
-      );
-
-      nixosConfigurations = (
-        import ./nixos {
-          inherit (nixpkgs) lib;
-          inherit
-            inputs
-            nixpkgs
-            home-manager
-            nix-homebrew
-            catppuccin
             nixos-npm-ls
             ;
         }
