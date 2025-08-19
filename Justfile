@@ -72,21 +72,34 @@ mirror-nvim:
     git remote add nvim-config https://github.com/y3owk1n/nvim.git
     git push nvim-config nvim-config:main
 
-time := datetime("%Y-%m-%d-%H-%M-%S")
-user := `whoami`
 icloud_drive_path := "/Users/kylewong/Library/Mobile\\ Documents/com~apple~CloudDocs"
-ssh_backup_path := icloud_drive_path + "/ssh/" + user + "/" + time
+gpg_key := ""
+gpg_file_prefix := gpg_key
+gpg_backup_path := icloud_drive_path + "/gpg/" + gpg_key + "/"
 
 [macos]
-backup-ssh:
-    mkdir -p {{ ssh_backup_path }}
-    cp ~/.ssh/id_ed25519 {{ ssh_backup_path }}/id_ed25519
-    cp ~/.ssh/id_ed25519.pub {{ ssh_backup_path }}/id_ed25519.pub
+backup-gpg:
+    mkdir -p {{ gpg_backup_path }}
+    # Export your secret key (ASCII armored)
+    # gpg --fingerprint
+    gpg --armor --export-secret-keys {{ gpg_key }} > {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc
+    # Encrypt the exported key with a passphrase
+    gpg --symmetric --cipher-algo AES256 --output {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc.gpg {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc
+    # Remove the unencrypted file
+    shred -u {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc
+    # Optionally, also backup the public key
+    gpg --armor --export {{ gpg_key }} > {{ gpg_backup_path }}/{{ gpg_file_prefix }}_pub.asc
 
 [macos]
-restore-ssh:
-    cp {{ ssh_backup_path }}/id_ed25519 ~/.ssh/id_ed25519
-    cp {{ ssh_backup_path }}/id_ed25519.pub ~/.ssh/id_ed25519.pub
+restore-gpg:
+    # Decrypt the private key
+    gpg --decrypt {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc.gpg > {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc
+    # Import back to GPG
+    gpg --import {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc
+    # Remove the decrypted file
+    shred -u {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc
+    # Import public key (optional)
+    gpg --import {{ gpg_backup_path }}/{{ gpg_file_prefix }}_pub.asc
 
 [macos]
 relaunch-skhd:
