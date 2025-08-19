@@ -72,34 +72,64 @@ mirror-nvim:
     git remote add nvim-config https://github.com/y3owk1n/nvim.git
     git push nvim-config nvim-config:main
 
+user := `uname -n`
 icloud_drive_path := "/Users/kylewong/Library/Mobile\\ Documents/com~apple~CloudDocs"
-gpg_key := ""
-gpg_file_prefix := gpg_key
-gpg_backup_path := icloud_drive_path + "/gpg/" + gpg_key + "/"
+ssh_backup_path := icloud_drive_path + "/ssh/" + user
 
 [macos]
-backup-gpg:
+backup-ssh:
+    mkdir -p {{ ssh_backup_path }}
+    for key in ~/.ssh/id_*; do \
+      case "$key" in *.pub) continue ;; esac; \
+      if [ -f "$key" ]; then \
+        name=`basename $key`; \
+        echo "Encrypting $name..."; \
+        gpg --symmetric --cipher-algo AES256 \
+          --output {{ ssh_backup_path }}/$name.gpg $key; \
+        if [ -f "$key.pub" ]; then \
+          cp "$key.pub" {{ ssh_backup_path }}/$name.pub; \
+        fi; \
+      fi; \
+    done
+
+[macos]
+restore-ssh:
+    #!/usr/bin/env bash
+    mkdir -p ~/.ssh
+    chmod 700 ~/.ssh
+    for keyfile in {{ ssh_backup_path }}/*.gpg; do
+      base=$(basename "$keyfile")
+      name="${base%.gpg}"
+      echo "Restoring $name..."
+      gpg --decrypt "$keyfile" > ~/.ssh/"$name"
+      chmod 600 ~/.ssh/"$name"
+      if [ -f {{ ssh_backup_path }}/"$name.pub" ]; then
+        cp {{ ssh_backup_path }}/"$name.pub" ~/.ssh/"$name.pub"
+      fi
+    done
+
+gpg_backup_path := icloud_drive_path + "/gpg/" + user
+
+[macos]
+backup-gpg gpg_key:
     mkdir -p {{ gpg_backup_path }}
-    # Export your secret key (ASCII armored)
-    # gpg --fingerprint
-    gpg --armor --export-secret-keys {{ gpg_key }} > {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc
-    # Encrypt the exported key with a passphrase
-    gpg --symmetric --cipher-algo AES256 --output {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc.gpg {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc
-    # Remove the unencrypted file
-    shred -u {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc
-    # Optionally, also backup the public key
-    gpg --armor --export {{ gpg_key }} > {{ gpg_backup_path }}/{{ gpg_file_prefix }}_pub.asc
+    gpg --armor --export-secret-keys "{{ gpg_key }}" > {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc
+    gpg --symmetric --cipher-algo AES256 \
+        --output {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc.gpg \
+        {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc
+    shred -u {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc
+    gpg --armor --export "{{ gpg_key }}" > {{ gpg_backup_path }}/{{ gpg_key }}_pub.asc
 
 [macos]
-restore-gpg:
+restore-gpg gpg_key:
     # Decrypt the private key
-    gpg --decrypt {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc.gpg > {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc
+    gpg --decrypt {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc.gpg > {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc
     # Import back to GPG
-    gpg --import {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc
+    gpg --import {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc
     # Remove the decrypted file
-    shred -u {{ gpg_backup_path }}/{{ gpg_file_prefix }}_sec.asc
+    shred -u {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc
     # Import public key (optional)
-    gpg --import {{ gpg_backup_path }}/{{ gpg_file_prefix }}_pub.asc
+    gpg --import {{ gpg_backup_path }}/{{ gpg_key }}_pub.asc
 
 [macos]
 relaunch-skhd:
