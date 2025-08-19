@@ -189,3 +189,38 @@ Using macos host docker in nixos
 ```bash
 mac link docker
 ```
+
+### GPG related
+
+When doing backup, always use the secret key as input
+
+```bash
+gpg --list-secret-keys --keyid-format LONG
+
+# and grab the one after rsa4096
+```
+
+### PASS related
+
+> [!note]
+> For now I am only using pass as a secret manager with my `passx` scripts that supports project scoping with different
+> environments.
+
+When doing multiple machines with single store, ensure the following
+
+- Machine A & B needs to have their own private key
+- Machine A needs to have the public key of Machine B
+- Machine B needs to have the public key of Machine A
+
+Then we can init the pass
+
+```bash
+pass init <pubkey-machine-a> <pubkey-machine-b>
+```
+
+> [!note]
+> When rotating keys, make sure to have the new pubkeys in both machines, do not delete the old private key first
+>
+> - do the init again with the new keys
+> - then ensure we can access the passwords
+> - then delete the old private key and public key
