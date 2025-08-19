@@ -240,49 +240,172 @@ cmd_get() {
 }
 
 cmd_run() {
-  local env="$1"
-  shift || true
-  local project
+  local envs=()
+  local commands=()
+  local merge_strategy="error" # error, first-wins, last-wins
 
-  validate_env "$env"
-  project=$(require_git_root)
-
-  # Check if environment has any secrets
-  local env_dir="$PASSWORD_STORE_DIR/$project/$env"
-  if [[ ! -d "$env_dir" ]]; then
-    log_error "No secrets found for environment '$env'"
-    exit 1
-  fi
-
-  mapfile -t keys < <(
-    find "$env_dir" -type f -name '*.gpg' |
-      sed -E "s#^$PASSWORD_STORE_DIR/##; s#\.gpg\$##"
-  )
-
-  if [[ ${#keys[@]} -eq 0 ]]; then
-    log_error "No secrets found for environment '$env'"
-    exit 1
-  fi
-
-  local k v name
-
-  declare -A loaded_map=()
-
-  for k in "${keys[@]}"; do
-    name="${k##*/}"
-    if v=$(pass show "$k" 2>/dev/null); then
-      export "$name"="$v"
-      loaded_map["$name"]="$v"
-    else
-      log_warn "Failed to load secret: $name"
-    fi
+  # Parse arguments to separate environments from command and flags
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --merge-strategy)
+      shift
+      if [[ -z "${1:-}" ]]; then
+        log_error "--merge-strategy requires a value: error, first-wins, or last-wins"
+        exit 1
+      fi
+      case "$1" in
+      error | first-wins | last-wins)
+        merge_strategy="$1"
+        ;;
+      *)
+        log_error "Invalid merge strategy: $1. Use error, first-wins, or last-wins"
+        exit 1
+        ;;
+      esac
+      ;;
+    --help | -h)
+      echo "Usage: passx <env> [env2 ...] run [--merge-strategy STRATEGY] [CMD...]"
+      echo ""
+      echo "Merge Strategies (when same key exists in multiple environments):"
+      echo "  error       Fail if duplicate keys found (default)"
+      echo "  first-wins  Use value from first environment that has the key"
+      echo "  last-wins   Use value from last environment that has the key"
+      echo ""
+      echo "Examples:"
+      echo "  passx dev run npm start"
+      echo "  passx dev staging run --merge-strategy last-wins ./app"
+      echo "  passx base dev run python script.py"
+      exit 0
+      ;;
+    --*)
+      log_error "Unknown flag: $1"
+      exit 1
+      ;;
+    *)
+      # Check if this looks like a command (executable file or common commands)
+      if command -v "$1" >/dev/null 2>&1 || [[ "$1" =~ ^(\./) ]] || [[ -x "$1" ]]; then
+        # This and everything after is the command
+        commands=("$@")
+        break
+      else
+        # This is an environment name
+        envs+=("$1")
+      fi
+      ;;
+    esac
+    shift
   done
 
-  log_info "Loaded ${#loaded_map[@]} secrets for environment '$env'"
+  # If no environments specified, error out
+  if [[ ${#envs[@]} -eq 0 ]]; then
+    log_error "No environment specified"
+    exit 1
+  fi
 
-  if [[ "$#" -gt 0 ]]; then
-    exec "$@"
+  local project
+  project=$(require_git_root)
+
+  declare -A all_secrets=()
+  declare -A secret_sources=() # Track which env each secret came from
+  declare -A duplicates=()     # Track duplicate keys
+  local total_envs_processed=0
+
+  log_debug "Processing ${#envs[@]} environments with merge strategy: $merge_strategy"
+
+  # Process each environment
+  for env in "${envs[@]}"; do
+    validate_env "$env"
+
+    local env_dir="$PASSWORD_STORE_DIR/$project/$env"
+    if [[ ! -d "$env_dir" ]]; then
+      log_warn "No secrets found for environment '$env'"
+      continue
+    fi
+
+    mapfile -t keys < <(
+      find "$env_dir" -maxdepth 1 -type f -name '*.gpg' |
+        sed -E "s#^$PASSWORD_STORE_DIR/##; s#\.gpg\$##"
+    )
+
+    if [[ ${#keys[@]} -eq 0 ]]; then
+      log_debug "No secrets found in environment '$env'"
+      continue
+    fi
+
+    total_envs_processed=$((total_envs_processed + 1))
+    log_debug "Processing $env with ${#keys[@]} secrets"
+
+    local env_secrets_loaded=0
+
+    for k in "${keys[@]}"; do
+      local name="${k##*/}" # Get the secret name (last part of path)
+
+      if v=$(pass show "$k" 2>/dev/null); then
+        # Check for duplicates (only between different environments)
+        if [[ -n "${all_secrets[$name]:-}" ]] && [[ "${secret_sources[$name]:-}" != "$env" ]]; then
+          duplicates["$name"]="${secret_sources[$name]:-unknown} -> $env"
+
+          case "$merge_strategy" in
+          error)
+            log_error "Duplicate key '$name' found in environments: ${secret_sources[$name]:-unknown} and $env"
+            log_error "Use --merge-strategy to handle duplicates: first-wins, last-wins"
+            exit 1
+            ;;
+          first-wins)
+            log_debug "Duplicate key '$name': keeping value from ${secret_sources[$name]:-unknown} (first-wins)"
+            continue # Skip this value, keep the existing one
+            ;;
+          last-wins)
+            log_debug "Duplicate key '$name': using value from $env (last-wins)"
+            # Fall through to set the new value
+            ;;
+          esac
+        fi
+
+        # Set/update the secret
+        export "$name"="$v"
+        all_secrets["$name"]="$v"
+        secret_sources["$name"]="$env"
+        env_secrets_loaded=$((env_secrets_loaded + 1))
+
+        log_debug "Loaded $name from $env"
+      else
+        log_warn "Failed to load secret: ${k##*/} from $env"
+      fi
+    done
+
+    log_debug "Loaded $env_secrets_loaded secrets from $env"
+  done
+
+  if [[ ${#all_secrets[@]} -eq 0 ]]; then
+    log_error "No secrets loaded from any environment"
+    exit 1
+  fi
+
+  # Report on duplicates if any were found
+  if [[ ${#duplicates[@]} -gt 0 ]] && [[ "$merge_strategy" != "error" ]]; then
+    log_info "Resolved ${#duplicates[@]} duplicate keys using strategy: $merge_strategy"
+    if [[ "${LOG_LEVEL:-}" == "DEBUG" ]]; then
+      for dup_key in "${!duplicates[@]}"; do
+        log_debug "Duplicate '$dup_key': ${duplicates[$dup_key]} -> final: ${secret_sources[$dup_key]}"
+      done
+    fi
+  fi
+
+  local env_text="environment"
+  if [[ $total_envs_processed -gt 1 ]]; then
+    env_text="environments"
+  fi
+
+  log_info "Loaded ${#all_secrets[@]} secrets from $total_envs_processed $env_text"
+
+  # Execute command
+  if [[ ${#commands[@]} -gt 0 ]]; then
+    unset name
+    log_debug "Executing: ${commands[*]}"
+    exec "${commands[@]}"
   else
+    log_debug "Starting shell: ${SHELL:-/bin/bash}"
     exec "${SHELL:-/bin/bash}"
   fi
 }
@@ -440,87 +563,173 @@ cmd_import() {
 }
 
 cmd_ls() {
-  local env="$1"
-  shift || true
   local show_values=false
   local format="simple"
+  local recursive=false
+  local envs=()
 
-  # Parse flags
+  # Parse arguments to separate environments from flags
   while [[ $# -gt 0 ]]; do
     case "$1" in
     --show | -s) show_values=true ;;
     --table | -t) format="table" ;;
+    --recursive | -r) recursive=true ;;
     --help | -h)
-      echo "Usage: passx <env> ls [--show] [--table]"
-      echo "  --show/-s     Show secret values"
-      echo "  --table/-t    Use table format"
+      echo "Usage: passx <env> [env2 ...] ls [--show] [--table] [--recursive]"
+      echo "  --show/-s       Show secret values"
+      echo "  --table/-t      Use table format"
+      echo "  --recursive/-r  Include secrets in subdirectories"
+      echo ""
+      echo "Examples:"
+      echo "  passx dev ls                    # List only direct secrets in dev"
+      echo "  passx dev/folder ls             # List only secrets in dev/folder"
+      echo "  passx dev dev/folder ls         # List secrets from both dev and dev/folder"
+      echo "  passx dev ls --recursive        # List all secrets in dev and subdirectories"
       exit 0
       ;;
-    *)
+    --*)
       log_error "Unknown flag: $1"
       exit 1
+      ;;
+    *)
+      # This is an environment name
+      envs+=("$1")
       ;;
     esac
     shift
   done
 
+  # If no environments specified, error out
+  if [[ ${#envs[@]} -eq 0 ]]; then
+    log_error "No environment specified"
+    exit 1
+  fi
+
   local project
-  validate_env "$env"
   project=$(require_git_root)
 
-  local env_dir="$PASSWORD_STORE_DIR/$project/$env"
-  if [[ ! -d "$env_dir" ]]; then
-    log_info "No secrets found for environment '$env'"
-    exit 0
-  fi
+  declare -A all_secrets=() # key -> "env:value"
+  local total_envs_processed=0
 
-  mapfile -t keys < <(
-    find "$env_dir" -type f -name '*.gpg' |
-      sed -E "s#^$PASSWORD_STORE_DIR/$project/$env/##; s#\.gpg\$##" |
-      sort
-  )
+  log_debug "Processing ${#envs[@]} environments: ${envs[*]}"
 
-  if [[ ${#keys[@]} -eq 0 ]]; then
-    log_info "No secrets found for environment '$env'"
-    exit 0
-  fi
+  # Process each environment
+  for env in "${envs[@]}"; do
+    validate_env "$env"
 
-  if [[ "$format" == "table" ]]; then
-    printf "%-20s %s\n" "KEY" "VALUE"
-    printf "%-20s %s\n" "$(printf '%*s' 20 '' | tr ' ' '-')" "$(printf '%*s' 40 '' | tr ' ' '-')"
-  fi
+    local env_dir="$PASSWORD_STORE_DIR/$project/$env"
+    if [[ ! -d "$env_dir" ]]; then
+      log_warn "No secrets found for environment '$env'"
+      continue
+    fi
 
-  declare -A displayed_map=()
+    local find_args=("$env_dir")
 
-  for key in "${keys[@]}"; do
-    if $show_values; then
-      if v=$(pass show "$project/$env/$key" 2>/dev/null); then
-        if [[ "$format" == "table" ]]; then
-          # Truncate long values in table format
-          local display_value="$v"
-          if [[ ${#display_value} -gt 50 ]]; then
-            display_value="${display_value:0:47}..."
-          fi
-          printf "%-20s %s\n" "$key" "$display_value"
-          displayed_map["$key"]="$display_value"
+    if $recursive; then
+      # Recursive: find all .gpg files in subdirectories
+      find_args+=("-type" "f" "-name" "*.gpg")
+    else
+      # Non-recursive: only direct children
+      find_args+=("-maxdepth" "1" "-type" "f" "-name" "*.gpg")
+    fi
+
+    mapfile -t keys < <(
+      find "${find_args[@]}" |
+        sed -E "s#^$PASSWORD_STORE_DIR/$project/$env/?##; s#\.gpg\$##" |
+        grep -v '^$' | # Remove empty lines
+        sort
+    )
+
+    if [[ ${#keys[@]} -eq 0 ]]; then
+      log_debug "No secrets found in environment '$env'"
+      continue
+    fi
+
+    total_envs_processed=$((total_envs_processed + 1))
+
+    # Collect secrets from this environment
+    for key in "${keys[@]}"; do
+      local full_path="$project/$env/$key"
+
+      # Create a display key that shows the source environment if multiple envs
+      local display_key="$key"
+      if [[ ${#envs[@]} -gt 1 ]]; then
+        display_key="[$env] $key"
+      fi
+
+      log_debug "Processing key: '$key' -> display_key: '$display_key'"
+
+      if $show_values; then
+        local v=""
+        if v=$(pass show "$full_path" 2>/dev/null); then
+          all_secrets["$display_key"]="$v"
+          log_debug "Successfully loaded value for: $display_key"
         else
-          printf "%s=%s\n" "$key" "$v"
-          displayed_map["$key"]="$v"
+          log_warn "Failed to read secret: $key from $env"
+          all_secrets["$display_key"]="[ERROR]"
         fi
       else
-        log_warn "Failed to read secret: $key"
+        all_secrets["$display_key"]="[hidden]"
+        log_debug "Set hidden value for: $display_key"
       fi
-    else
-      if [[ "$format" == "table" ]]; then
-        printf "%-20s %s\n" "$key" "[hidden]"
+    done
+  done
+
+  if [[ ${#all_secrets[@]} -eq 0 ]]; then
+    log_info "No secrets found in specified environments"
+    exit 0
+  fi
+
+  # Display results
+  if [[ "$format" == "table" ]]; then
+    local key_header="KEY"
+    if [[ ${#envs[@]} -gt 1 ]]; then
+      key_header="ENVIRONMENT/KEY"
+    fi
+
+    printf "%-30s %s\n" "$key_header" "VALUE"
+    printf "%-30s %s\n" "$(printf '%*s' 30 '' | tr ' ' '-')" "$(printf '%*s' 40 '' | tr ' ' '-')"
+
+    # Sort keys for consistent output - use array instead of command substitution
+    local sorted_keys=()
+    while IFS= read -r -d '' key; do
+      sorted_keys+=("$key")
+    done < <(printf '%s\0' "${!all_secrets[@]}" | sort -z)
+
+    for key in "${sorted_keys[@]}"; do
+      local value="${all_secrets[$key]}"
+
+      # Truncate long values in table format
+      if [[ ${#value} -gt 50 ]]; then
+        value="${value:0:47}..."
+      fi
+
+      printf "%-30s %s\n" "$key" "$value"
+    done
+  else
+    # Simple format - use array instead of command substitution
+    local sorted_keys=()
+    while IFS= read -r -d '' key; do
+      sorted_keys+=("$key")
+    done < <(printf '%s\0' "${!all_secrets[@]}" | sort -z)
+
+    for key in "${sorted_keys[@]}"; do
+      local value="${all_secrets[$key]}"
+
+      if $show_values; then
+        printf "%s=%s\n" "$key" "$value"
       else
         echo "$key"
       fi
-      displayed_map["$key"]="[hidden]"
-    fi
-  done
+    done
+  fi
 
-  log_info "Found ${#displayed_map[@]} secrets in environment '$env'"
+  local env_text="environment"
+  if [[ ${#envs[@]} -gt 1 ]] || [[ $total_envs_processed -gt 1 ]]; then
+    env_text="environments"
+  fi
+
+  log_info "Found ${#all_secrets[@]} secrets across $total_envs_processed $env_text"
 }
 
 cmd_del() {
@@ -764,17 +973,30 @@ passx v$SCRIPT_VERSION - Password store environment manager
 Usage: $0 <command> [args...]
 
 Commands:
-  [ENV] add <KEY> [VAL]           Add a new secret (fails if exists)
-  [ENV] update <KEY> [VAL]        Update an existing secret
-  [ENV] get <KEY>                 Retrieve a secret
-  [ENV] del <KEY> [--force]       Delete a secret
-  [ENV] ls [--show] [--table]     List secrets (--show: with values, --table: table format)
-  [ENV] run [CMD...]              Run command with secrets loaded into environment
-  [ENV] export [FILE]             Export secrets to .env file (default: .env)
-  [ENV] import FILE [MODE]        Import from .env (MODE: strict|merge|overwrite, default: strict)
-  copy <FROM_ENV> <TO_ENV> [KEY]  Copy secrets between environments
-  [ENV] validate                  Validate environment integrity
-  envs                            List all environments
+  [ENV] add <KEY> [VAL]                               Add a new secret (fails if exists)
+  [ENV] update <KEY> [VAL]                            Update an existing secret
+  [ENV] get <KEY>                                     Retrieve a secret
+  [ENV] del <KEY> [--force]                           Delete a secret
+  [ENV...] ls [--show] [--table] [--recursive]        List secrets from one or more environments
+  [ENV...] run [--merge-strategy STRATEGY] [CMD...]   Run command with secrets from one or more environments
+  [ENV] export [FILE]                                 Export secrets to .env file (default: .env)
+  [ENV] import FILE [MODE]                            Import from .env (MODE: strict|merge|overwrite, default: strict)
+  copy <FROM_ENV> <TO_ENV> [KEY]                      Copy secrets between environments
+  [ENV] validate                                      Validate environment integrity
+  envs                                                List all environments
+
+List Command Examples:
+  $0 dev ls                          # List only direct secrets in dev (non-recursive)
+  $0 dev/folder ls                   # List only secrets in dev/folder
+  $0 dev dev/folder ls               # List secrets from both dev and dev/folder
+  $0 dev ls --recursive              # List all secrets in dev and subdirectories
+  $0 dev prod ls --show --table      # Show values from dev and prod in table format
+
+Run Command Examples:
+  $0 dev run npm start               # Run with dev environment
+  $0 base dev run python app.py      # Merge base + dev (error on conflicts)
+  $0 base dev run --merge-strategy last-wins ./start.sh  # dev overrides base
+  $0 shared dev staging run          # Merge 3 environments (error on conflicts)
 
 Environment Variables:
   PASSX_AUTO_CONFIRM=true   Skip confirmation prompts
@@ -827,6 +1049,44 @@ main() {
     ;;
   esac
 
+  # For ls and run commands, we need special handling to support multiple environments
+  # Find the position of 'ls' or 'run' command in arguments
+  local cmd_pos=-1
+  local cmd_found=""
+  local i=0
+  for arg in "$@"; do
+    i=$((i + 1))
+    if [[ "$arg" == "ls" ]] || [[ "$arg" == "run" ]]; then
+      cmd_pos=$i
+      cmd_found="$arg"
+      break
+    fi
+  done
+
+  if [[ $cmd_pos -gt 0 ]]; then
+    # Extract environments (everything before the command)
+    local envs=("${@:1:$((cmd_pos - 1))}")
+    # Extract arguments (everything after the command)
+    local cmd_args=("${@:$((cmd_pos + 1))}")
+
+    if [[ ${#envs[@]} -eq 0 ]]; then
+      log_error "No environment specified for $cmd_found command"
+      usage
+    fi
+
+    # Call the appropriate command with environments and arguments
+    case "$cmd_found" in
+    ls)
+      cmd_ls "${envs[@]}" "${cmd_args[@]}"
+      ;;
+    run)
+      cmd_run "${envs[@]}" "${cmd_args[@]}"
+      ;;
+    esac
+    exit 0
+  fi
+
+  # For all other commands, use the original single-environment logic
   if [[ "$#" -lt 2 ]]; then
     usage
   fi
@@ -841,8 +1101,6 @@ main() {
   update) cmd_update "$env" "$@" ;;
   get) cmd_get "$env" "$@" ;;
   del) cmd_del "$env" "$@" ;;
-  ls) cmd_ls "$env" "$@" ;;
-  run) cmd_run "$env" "$@" ;;
   export) cmd_export "$env" "$@" ;;
   import) cmd_import "$env" "$@" ;;
   validate) cmd_validate "$env" ;;
