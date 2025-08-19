@@ -218,6 +218,16 @@ Then we can init the pass
 pass init <pubkey-machine-a> <pubkey-machine-b>
 ```
 
+Also remember to trust the another machine's public key
+
+```bash
+pass --edit-key <pubkey-machine-b>
+
+> trust
+> 5
+> quit
+```
+
 > [!note]
 > When rotating keys, make sure to have the new pubkeys in both machines, do not delete the old private key first
 >
