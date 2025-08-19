@@ -72,6 +72,7 @@
       status.branch = true;
       status.showStash = true;
       status.showUntrackedFiles = "all";
+      url."git@github.com:".insteadOf = "https://github.com/"; # Rewrite any HTTPS GitHub URL into SSH automatically
     }
     // pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
       # these should speed up vim nvim-tree and other things that watch git repos but
