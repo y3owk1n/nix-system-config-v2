@@ -7,17 +7,33 @@ set -euo pipefail
 
 SCRIPT_VERSION="1.1.0"
 DEFAULT_ENV_FILE=".env"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_LEVEL="${LOG_LEVEL:-INFO}" # DEBUG, INFO, WARN, ERROR
 
 # -------------------------------------------------------
 # Logging functions
 # -------------------------------------------------------
 
-log_debug() { [[ "$LOG_LEVEL" == "DEBUG" ]] && echo "[DEBUG] $*" >&2; }
-log_info() { [[ "$LOG_LEVEL" =~ ^(DEBUG|INFO)$ ]] && echo "[INFO] $*" >&2; }
-log_warn() { [[ "$LOG_LEVEL" =~ ^(DEBUG|INFO|WARN)$ ]] && echo "[WARN] $*" >&2; }
-log_error() { echo "[ERROR] $*" >&2; }
+log_debug() {
+  if [[ "${LOG_LEVEL:-}" == "DEBUG" ]]; then
+    echo "[DEBUG] $*" >&2
+  fi
+}
+
+log_info() {
+  if [[ "${LOG_LEVEL:-}" =~ ^(DEBUG|INFO)$ ]]; then
+    echo "[INFO] $*" >&2
+  fi
+}
+
+log_warn() {
+  if [[ "${LOG_LEVEL:-}" =~ ^(DEBUG|INFO|WARN)$ ]]; then
+    echo "[WARN] $*" >&2
+  fi
+}
+
+log_error() {
+  echo "[ERROR] $*" >&2
+}
 
 # -------------------------------------------------------
 # Utility functions
@@ -135,7 +151,7 @@ safe_pass_insert() {
   temp_file=$(mktemp)
 
   # Ensure cleanup
-  trap 'rm -f "$temp_file"' EXIT
+  trap '[[ -n "${temp_file:-}" ]] && rm -f "$temp_file"' EXIT
 
   # Read from stdin to temp file
   cat >"$temp_file"
@@ -249,18 +265,20 @@ cmd_run() {
   fi
 
   local k v name
-  local loaded_count=0
+
+  declare -A loaded_map=()
+
   for k in "${keys[@]}"; do
     name="${k##*/}"
     if v=$(pass show "$k" 2>/dev/null); then
       export "$name"="$v"
-      ((loaded_count++))
+      loaded_map["$name"]="$v"
     else
       log_warn "Failed to load secret: $name"
     fi
   done
 
-  log_info "Loaded $loaded_count secrets for environment '$env'"
+  log_info "Loaded ${#loaded_map[@]} secrets for environment '$env'"
 
   if [[ "$#" -gt 0 ]]; then
     exec "$@"
@@ -305,7 +323,7 @@ cmd_export() {
 
   local temp_file
   temp_file=$(mktemp)
-  trap 'rm -f "$temp_file"' EXIT
+  trap '[[ -n "${temp_file:-}" ]] && rm -f "$temp_file"' EXIT
 
   {
     echo "# Exported secrets for environment: $env"
@@ -313,7 +331,8 @@ cmd_export() {
     echo "# Project: $project"
     echo ""
 
-    local exported_count=0
+    declare -A exported_map=()
+
     for k in "${keys[@]}"; do
       name="${k##*/}"
       if v=$(pass show "$k" 2>/dev/null); then
@@ -323,7 +342,7 @@ cmd_export() {
 
         # Always quote values to handle spaces and special characters safely
         printf "%s=\"%s\"\n" "$name" "$escaped_value"
-        ((exported_count++))
+        exported_map["$name"]="$escaped_value"
       else
         log_warn "Failed to export secret: $name"
       fi
@@ -332,7 +351,7 @@ cmd_export() {
 
   # Atomic move
   mv "$temp_file" "$output_file"
-  log_info "Exported $exported_count secrets to $output_file"
+  log_info "Exported ${#exported_map[@]} secrets to $output_file"
 }
 
 cmd_import() {
@@ -381,6 +400,7 @@ cmd_import() {
       value="${value#\"}"
       value="${value%\'}"
       value="${value#\'}"
+      value="${value%"${value##*[![:space:]]}"}" # trim trailing spaces
 
       # Store in associative array (deduplicate)
       env_map["$key"]="$value"
@@ -404,15 +424,15 @@ cmd_import() {
         continue
         ;;
       overwrite)
-        printf "%s" "$value" | safe_pass_insert "$path" true
-        imported_map["$key"]="$value"
+        printf "%s" "$value" | safe_pass_insert "$path" true "$value"
         log_info "Overwritten $key"
+        imported_map["$key"]="$value"
         ;;
       esac
     else
       printf "%s" "$value" | safe_pass_insert "$path"
-      imported_map["$key"]="$value"
       log_info "Stored $key"
+      imported_map["$key"]="$value"
     fi
   done
 
@@ -470,7 +490,8 @@ cmd_ls() {
     printf "%-20s %s\n" "$(printf '%*s' 20 '' | tr ' ' '-')" "$(printf '%*s' 40 '' | tr ' ' '-')"
   fi
 
-  local displayed_count=0
+  declare -A displayed_map=()
+
   for key in "${keys[@]}"; do
     if $show_values; then
       if v=$(pass show "$project/$env/$key" 2>/dev/null); then
@@ -481,10 +502,11 @@ cmd_ls() {
             display_value="${display_value:0:47}..."
           fi
           printf "%-20s %s\n" "$key" "$display_value"
+          displayed_map["$key"]="$display_value"
         else
           printf "%s=%s\n" "$key" "$v"
+          displayed_map["$key"]="$v"
         fi
-        ((displayed_count++))
       else
         log_warn "Failed to read secret: $key"
       fi
@@ -494,11 +516,11 @@ cmd_ls() {
       else
         echo "$key"
       fi
-      ((displayed_count++))
+      displayed_map["$key"]="[hidden]"
     fi
   done
 
-  log_info "Found $displayed_count secrets in environment '$env'"
+  log_info "Found ${#displayed_map[@]} secrets in environment '$env'"
 }
 
 cmd_del() {
@@ -618,8 +640,8 @@ cmd_copy() {
       exit 0
     fi
 
-    local copied=0
-    local failed=0
+    declare -A copied_map=()
+    declare -A failed_map=()
 
     for key in "${keys[@]}"; do
       local from_path="$project/$from_env/$key"
@@ -631,24 +653,24 @@ cmd_copy() {
 
       if pass show "$from_path" >"$temp_file" 2>/dev/null; then
         if safe_pass_insert "$to_path" true <"$temp_file"; then
-          ((copied++))
+          copied_map["$key"]="$key"
           log_debug "Copied $key"
         else
-          ((failed++))
+          failed_map["$key"]="$key"
           log_warn "Failed to copy $key"
         fi
       else
-        ((failed++))
+        failed_map["$key"]="$key"
         log_warn "Failed to read $key"
       fi
 
       rm -f "$temp_file"
     done
 
-    if [[ $failed -eq 0 ]]; then
-      log_info "Successfully copied all $copied secrets from $from_env to $to_env"
+    if [[ ${#failed_map[@]} -eq 0 ]]; then
+      log_info "Successfully copied all ${#copied_map[@]} secrets from $from_env to $to_env"
     else
-      log_warn "Copied $copied secrets, $failed failed from $from_env to $to_env"
+      log_warn "Copied ${#copied_map[@]} secrets, ${#failed_map[@]} failed from $from_env to $to_env"
     fi
   fi
 }
@@ -702,28 +724,29 @@ cmd_validate() {
       exit 1
     fi
 
-    local total=0
-    local valid=0
-    local invalid=0
+    declare -A total_map=()
+    declare -A valid_map=()
+    declare -A invalid_map=()
 
     while IFS= read -r -d '' secret_file; do
-      ((total++))
       local secret_name
       secret_name=$(basename "$secret_file" .gpg)
       local path="$project/$env/$secret_name"
 
+      total_map["$secret_name"]="$secret_name"
+
       if secret_exists "$path" && pass show "$path" >/dev/null 2>&1; then
-        ((valid++))
+        valid_map["$secret_name"]="$secret_name"
         echo "  ✓ $secret_name"
       else
-        ((invalid++))
+        invalid_map["$secret_name"]="$secret_name"
         echo "  ✗ $secret_name (corrupted or inaccessible)"
       fi
     done < <(find "$env_dir" -name '*.gpg' -print0)
 
     echo ""
-    echo "Validation complete: $valid valid, $invalid invalid out of $total total"
-    [[ $invalid -eq 0 ]] && exit 0 || exit 1
+    echo "Validation complete: ${#valid_map[@]} valid, ${#invalid_map[@]} invalid out of ${#total_map[@]} total"
+    [[ ${#invalid_map[@]} -eq 0 ]] && exit 0 || exit 1
   else
     echo "Validating all environments..."
     cmd_envs
@@ -738,22 +761,20 @@ usage() {
   cat <<EOF
 passx v$SCRIPT_VERSION - Password store environment manager
 
-Usage: $0 <env> <command> [args...]
+Usage: $0 <command> [args...]
 
 Commands:
-  add <KEY> [VAL]           Add a new secret (fails if exists)
-  update <KEY> [VAL]        Update an existing secret
-  get <KEY>                 Retrieve a secret
-  del <KEY> [--force]       Delete a secret
-  ls [--show] [--table]         List secrets (--show: with values, --table: table format)
-  run [CMD...]              Run command with secrets loaded into environment
-  export [FILE]             Export secrets to .env file (default: .env)
-  import FILE [MODE]        Import from .env (MODE: strict|merge|overwrite, default: strict)
+  [ENV] add <KEY> [VAL]           Add a new secret (fails if exists)
+  [ENV] update <KEY> [VAL]        Update an existing secret
+  [ENV] get <KEY>                 Retrieve a secret
+  [ENV] del <KEY> [--force]       Delete a secret
+  [ENV] ls [--show] [--table]     List secrets (--show: with values, --table: table format)
+  [ENV] run [CMD...]              Run command with secrets loaded into environment
+  [ENV] export [FILE]             Export secrets to .env file (default: .env)
+  [ENV] import FILE [MODE]        Import from .env (MODE: strict|merge|overwrite, default: strict)
   copy <FROM_ENV> <TO_ENV> [KEY]  Copy secrets between environments
-  validate [ENV]            Validate environment integrity
-
-Global commands:
-  envs                      List all environments
+  [ENV] validate                  Validate environment integrity
+  envs                            List all environments
 
 Environment Variables:
   PASSX_AUTO_CONFIRM=true   Skip confirmation prompts
