@@ -61,20 +61,20 @@ in
       ''}
 
       set -g status-format[1] '#[align=centre]'
-      set -g status 2
+      # set -g status 2
       set -g status-interval 5
       set -g status-position top
       set -g status-right-length 100
       set -g status-left-length 100
-      set -g status-left "#{E:@catppuccin_status_session}"
-      set -gF  status-right "#{@catppuccin_status_directory}"
-      set -agF status-right "#{@catppuccin_status_user}"
-      set -agF status-right "#{@catppuccin_status_host}"
+      # set -g status-left "#{E:@catppuccin_status_session}"
+      # set -gF  status-right "#{@catppuccin_status_directory}"
+      # set -agF status-right "#{@catppuccin_status_user}"
+      # set -agF status-right "#{@catppuccin_status_host}"
     '';
   };
   catppuccin = {
     tmux = {
-      enable = true;
+      enable = false;
       extraConfig = ''
         set -g @catppuccin_flavor "macchiato"
         set -g @catppuccin_window_status_style "rounded"

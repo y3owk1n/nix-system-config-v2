@@ -32,6 +32,11 @@
       # mkdir -p "$app_target"
       # ${pkgs.rsync}/bin/rsync --archive --checksum --chmod=-w --copy-unsafe-links --delete "$apps_source/" "$app_target"
     '';
+    # Raise per-process file-descriptor soft limit so Nix can unpack
+    # large flakes (e.g. homebrew-cask) without “Too many open files”.
+    activationScripts.launchd.text = ''
+      launchctl limit maxfiles 8192 unlimited
+    '';
 
     defaults = {
       # universalaccess.reduceMotion = true;
