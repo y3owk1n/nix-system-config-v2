@@ -5,6 +5,7 @@
   home-manager,
   nix-homebrew,
   catppuccin,
+  stylix,
   homebrew-core,
   homebrew-cask,
   homebrew-bundle,
@@ -49,6 +50,7 @@ in
       modules = [
         ./hosts/personal-m3.nix
         ./shared/overlays.nix
+        stylix.darwinModules.stylix
         home-manager.darwinModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
@@ -67,6 +69,7 @@ in
           home-manager.users.${username} = {
             imports = [
               ../home-manager/default-darwin.nix
+              stylix.homeModules.stylix
               # catppuccin global
               catppuccin.homeModules.catppuccin
             ];
@@ -129,6 +132,7 @@ in
       modules = [
         ./hosts/work-imac.nix
         ./shared/overlays.nix
+        stylix.darwinModules.stylix
         home-manager.darwinModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
@@ -147,6 +151,7 @@ in
           home-manager.users.${username} = {
             imports = [
               ../home-manager/default-darwin.nix
+              stylix.homeModules.stylix
               # catppuccin global
               catppuccin.homeModules.catppuccin
             ];

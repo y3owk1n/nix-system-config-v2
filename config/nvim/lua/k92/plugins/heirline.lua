@@ -6,40 +6,32 @@ return {
     local conditions = require("heirline.conditions")
     local utils = require("heirline.utils")
 
-    local C = {}
+    local C = {
+      _nc = "#1f1d30",
+      base = "#232136",
+      surface = "#2a273f",
+      overlay = "#393552",
+      muted = "#6e6a86",
+      subtle = "#908caa",
+      text = "#e0def4",
+      love = "#eb6f92",
+      gold = "#f6c177",
+      rose = "#ea9a97",
+      pine = "#3e8fb0",
+      foam = "#9ccfd8",
+      iris = "#c4a7e7",
+      leaf = "#95b1ac",
+      highlight_low = "#2a283e",
+      highlight_med = "#44415a",
+      highlight_high = "#56526e",
+      none = "NONE",
+    }
 
-    local catppuccin_exists, catppuccin = pcall(require, "catppuccin.palettes")
+    require("rose-pine.palette")
+
+    local catppuccin_exists, catppuccin = pcall(require, "rose-pine.palette")
     if catppuccin_exists then
-      C = catppuccin.get_palette("mocha")
-    else
-      C = {
-        base = "#1e1e2e",
-        mantle = "#181825",
-        crust = "#11111b",
-        text = "#cdd6f4",
-        subtext0 = "#a6adc8",
-        subtext1 = "#bac2de",
-        overlay0 = "#7f849c",
-        overlay1 = "#9399b2",
-        overlay2 = "#a6adc8",
-        surface0 = "#313244",
-        surface1 = "#45475a",
-        surface2 = "#585b70",
-        blue = "#89b4fa",
-        lavender = "#b4befe",
-        sapphire = "#74c7ec",
-        sky = "#89dceb",
-        teal = "#94e2d5",
-        green = "#a6e3a1",
-        yellow = "#f9e2af",
-        peach = "#fab387",
-        maroon = "#eba0ac",
-        red = "#f38ba8",
-        mauve = "#cba6f7",
-        pink = "#f5c2e7",
-        flamingo = "#f2cdcd",
-        rosewater = "#f5e0dc",
-      }
+      C = catppuccin
     end
 
     local warp_exists, warp = pcall(require, "warp")
@@ -95,42 +87,28 @@ return {
           t = "T",
         },
         mode_colors = {
-          n = "blue",
-          i = "green",
-          v = "mauve",
-          V = "mauve",
-          ["\22"] = "mauve",
-          c = "peach",
-          s = "pink",
-          S = "pink",
-          ["\19"] = "pink",
-          R = "red",
-          r = "red",
-          ["!"] = "green",
-          t = "green",
+          n = "pine",
+          i = "foam",
+          v = "iris",
+          V = "iris",
+          ["\22"] = "iris",
+          c = "leaf",
+          s = "leaf",
+          S = "leaf",
+          ["\19"] = "leaf",
+          R = "love",
+          r = "love",
+          ["!"] = "rose",
+          t = "rose",
         },
       },
       {
-        provider = "",
-        hl = function(self)
-          local mode = self.mode:sub(1, 1) -- get only the first mode character
-          return { fg = self.mode_colors[mode], bg = "none" }
-        end,
-      },
-      {
         provider = function(self)
-          return "%2(" .. self.mode_names[self.mode] .. "%)"
+          return " %2(" .. self.mode_names[self.mode] .. "%) "
         end,
         hl = function(self)
           local mode = self.mode:sub(1, 1) -- get only the first mode character
-          return { bg = self.mode_colors[mode], fg = "base", bold = true }
-        end,
-      },
-      {
-        provider = "",
-        hl = function(self)
-          local mode = self.mode:sub(1, 1) -- get only the first mode character
-          return { fg = self.mode_colors[mode], bg = "none" }
+          return { bg = "none", fg = "love", bold = true }
         end,
       },
       update = {
@@ -156,7 +134,7 @@ return {
           self.lfilename = "[No Name]"
         end
       end,
-      hl = { fg = "text" },
+      hl = { fg = "love" },
 
       flexible = 2,
 
@@ -192,7 +170,7 @@ return {
         local cwd = vim.fn.getcwd(0)
         self.cwd = vim.fn.fnamemodify(cwd, ":~")
       end,
-      -- hl = { fg = "blue", bold = true },
+      hl = { fg = "love", bold = true },
 
       flexible = 1,
 
@@ -235,7 +213,7 @@ return {
         return self.icon and (self.icon .. " ")
       end,
       hl = function()
-        return { fg = "blue" }
+        return { fg = "love" }
       end,
     }
 
@@ -243,7 +221,7 @@ return {
       provider = function()
         return string.upper(vim.bo.filetype)
       end,
-      hl = { fg = "text", bold = true },
+      hl = { fg = "love", bold = true },
     }
 
     local FileTypeBlock = utils.insert(FileIcon, FileType)
@@ -264,20 +242,12 @@ return {
 
     local Ruler = {
       {
-        provider = "",
-        hl = { fg = "surface1", bg = "none" },
-      },
-      {
         -- %l = current line number
         -- %L = number of lines in the buffer
         -- %c = column number
         -- %P = percentage through file of displayed window
-        provider = "%7(%l/%3L%):%2c %P",
-        hl = { bg = "surface1", fg = "text" },
-      },
-      {
-        provider = "",
-        hl = { fg = "surface1", bg = "none" },
+        provider = " %7(%l/%3L%):%2c %P ",
+        hl = { fg = "love" },
       },
     }
 
@@ -300,7 +270,7 @@ return {
           end
           return " [" .. table.concat(names, " ") .. "]"
         end,
-        hl = { fg = "text", bold = true },
+        hl = { fg = "love", bold = true },
       },
     }
 
@@ -334,25 +304,25 @@ return {
           -- 0 is just another output, we can decide to print it or not!
           return self.errors > 0 and (self.error_icon .. self.errors .. " ")
         end,
-        hl = { fg = "red" },
+        hl = { fg = "love" },
       },
       {
         provider = function(self)
           return self.warnings > 0 and (self.warn_icon .. self.warnings .. " ")
         end,
-        hl = { fg = "yellow" },
+        hl = { fg = "gold" },
       },
       {
         provider = function(self)
           return self.info > 0 and (self.info_icon .. self.info .. " ")
         end,
-        hl = { fg = "blue" },
+        hl = { fg = "pine" },
       },
       {
         provider = function(self)
           return self.hints > 0 and (self.hint_icon .. self.hints)
         end,
-        hl = { fg = "teal" },
+        hl = { fg = "foam" },
       },
     }
 
@@ -372,15 +342,11 @@ return {
       {
         provider = Space.provider,
       },
-      {
-        provider = "",
-        hl = { fg = "surface0" },
-      },
       { -- git branch name
         provider = function(self)
           return " " .. self.repo_info.head_name
         end,
-        hl = { bold = true, bg = "surface0", fg = "rosewater" },
+        hl = { bold = true, fg = "love" },
       },
       -- You could handle delimiters, icons and counts similar to Diagnostics
       {
@@ -388,26 +354,21 @@ return {
           local count = self.changes.add or 0
           return count > 0 and ("  " .. count)
         end,
-        hl = { fg = "green", bg = "surface0" },
+        hl = { fg = "leaf" },
       },
       {
         provider = function(self)
           local count = self.changes.delete or 0
           return count > 0 and ("  " .. count)
         end,
-        hl = { fg = "red", bg = "surface0" },
+        hl = { fg = "love" },
       },
       {
         provider = function(self)
           local count = self.changes.change or 0
           return count > 0 and ("  " .. count)
         end,
-        hl = { fg = "yellow", bg = "surface0" },
-      },
-
-      {
-        provider = "",
-        hl = { fg = "surface0" },
+        hl = { fg = "gold" },
       },
     }
 
@@ -423,7 +384,7 @@ return {
           self.current = item and item.index or "-"
           self.total = warp.count()
         end,
-        hl = { fg = "teal", bold = true },
+        hl = { fg = "foam", bold = true },
         {
           provider = Space.provider,
         },
@@ -450,7 +411,7 @@ return {
         local filename = vim.api.nvim_buf_get_name(0)
         return vim.fn.fnamemodify(filename, ":t")
       end,
-      hl = { fg = "blue" },
+      hl = { fg = "pine" },
     }
 
     local TerminalName = {
@@ -460,7 +421,7 @@ return {
         local tname, _ = vim.api.nvim_buf_get_name(0):gsub(".*:", "")
         return " " .. tname
       end,
-      hl = { fg = "blue", bold = true },
+      hl = { fg = "pine", bold = true },
     }
 
     local DefaultStatusline = {
