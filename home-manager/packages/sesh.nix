@@ -39,9 +39,9 @@
         }
         {
           name = "sesh config";
-          path = "~/nix-system-config-v2/home";
+          path = "~/nix-system-config-v2/home-manager/packages";
           startup_command = "nvim sesh.nix";
-          preview_command = "bat --color=always ~/nix-system-config-v2/home/sesh.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/home-manager/packages/sesh.nix";
         }
         {
           name = "ghostty config";
@@ -51,15 +51,15 @@
         }
         {
           name = "tmux config";
-          path = "~/nix-system-config-v2/home";
+          path = "~/nix-system-config-v2/home-manager/packages";
           startup_command = "nvim tmux.nix";
-          preview_command = "bat --color=always ~/nix-system-config-v2/home/tmux.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/home-manager/packages/tmux.nix";
         }
         {
-          name = "aerospace config";
+          name = "skhd config";
           path = "~/nix-system-config-v2/darwin/modules";
-          startup_command = "nvim aerospace.nix";
-          preview_command = "bat --color=always ~/nix-system-config-v2/darwin/modules/aerospace.nix";
+          startup_command = "nvim skhd.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/darwin/modules/skhd.nix";
         }
         {
           name = "btop";

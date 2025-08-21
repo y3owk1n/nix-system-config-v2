@@ -4,7 +4,6 @@
   darwin,
   home-manager,
   nix-homebrew,
-  catppuccin,
   stylix,
   homebrew-core,
   homebrew-cask,
@@ -70,8 +69,6 @@ in
             imports = [
               ../home-manager/default-darwin.nix
               stylix.homeModules.stylix
-              # catppuccin global
-              catppuccin.homeModules.catppuccin
             ];
           };
         }
@@ -152,8 +149,6 @@ in
             imports = [
               ../home-manager/default-darwin.nix
               stylix.homeModules.stylix
-              # catppuccin global
-              catppuccin.homeModules.catppuccin
             ];
           };
         }

@@ -15,7 +15,7 @@ require("lazy").setup({
     backdrop = 100,
   },
   install = {
-    colorscheme = { "catppuccin" },
+    colorscheme = {},
   },
   performance = {
     rtp = {

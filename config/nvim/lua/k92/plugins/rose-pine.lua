@@ -1,6 +1,7 @@
 ---@type LazySpec
 return {
   "rose-pine/neovim",
+  enabled = true,
   lazy = false,
   name = "rose-pine",
   priority = 1000,
@@ -12,17 +13,30 @@ return {
     -- NOTE: Highlight groups are extended (merged) by default. Disable this
     -- per group via `inherit = false`
     highlight_groups = {
+      -- general
+      Normal = { bg = "base", fg = "text" },
+      NormalFloat = { bg = "base", fg = "text" },
+      -- status line colors
+      StatusLine = { fg = "rose", bg = "rose", blend = 10 },
+      StatusLineNC = { fg = "subtle", bg = "surface" },
+      -- time machine colors
       TimeMachineCurrent = {
         bg = "foam",
         blend = 15,
       },
-      TimeMachineTimeline = { fg = "pine" },
-      TimeMachineTimelineAlt = { fg = "overlay" },
+      TimeMachineTimeline = { fg = "gold" },
+      TimeMachineTimelineAlt = { fg = "muted" },
       TimeMachineKeymap = { fg = "foam" },
       TimeMachineSeq = { fg = "rose" },
-      TimeMachineTag = { fg = "gold" },
-      StatusLine = { fg = "love", bg = "love", blend = 10 },
-      StatusLineNC = { fg = "subtle", bg = "surface" },
+      TimeMachineTag = { fg = "pine" },
+      -- undo glow colors
+      UgUndo = { bg = "love", blend = 30 },
+      UgRedo = { bg = "pine", blend = 30 },
+      UgYank = { bg = "gold", blend = 30 },
+      UgPaste = { bg = "foam", blend = 30 },
+      UgSearch = { bg = "iris", blend = 30 },
+      UgComment = { bg = "rose", blend = 30 },
+      UgCursor = { bg = "highlight_high" },
     },
   },
   config = function(_, opts)

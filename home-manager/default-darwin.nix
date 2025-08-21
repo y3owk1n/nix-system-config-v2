@@ -66,12 +66,6 @@
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 
-  catppuccin = {
-    enable = false;
-    flavor = "macchiato";
-    accent = "blue";
-  };
-
   stylix = {
     enable = true;
     base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";

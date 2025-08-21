@@ -42,8 +42,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    catppuccin.url = "github:catppuccin/nix";
-
     nixos-npm-ls.url = "github:y3owk1n/nixos-npm-ls";
   };
 
@@ -58,7 +56,6 @@
       darwin,
       home-manager,
       nix-homebrew,
-      catppuccin,
       stylix,
       homebrew-core,
       homebrew-cask,
@@ -85,7 +82,6 @@
             home-manager
             darwin
             nix-homebrew
-            catppuccin
             stylix
             homebrew-core
             homebrew-cask

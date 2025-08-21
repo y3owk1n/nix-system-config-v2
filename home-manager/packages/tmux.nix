@@ -26,6 +26,7 @@ in
           };
         });
       }
+      tmuxPlugins.rose-pine
     ];
     extraConfig = ''
       bind -r j resize-pane -D 5
@@ -60,31 +61,13 @@ in
         	set-option -g default-command "${pkgs.reattach-to-user-namespace}/bin/reattach-to-user-namespace -l ${fish}"
       ''}
 
+      set -g @rose_pine_variant 'dawn' # Options are 'main', 'moon' or 'dawn'
+
       set -g status-format[1] '#[align=centre]'
-      # set -g status 2
       set -g status-interval 5
       set -g status-position top
       set -g status-right-length 100
       set -g status-left-length 100
-      # set -g status-left "#{E:@catppuccin_status_session}"
-      # set -gF  status-right "#{@catppuccin_status_directory}"
-      # set -agF status-right "#{@catppuccin_status_user}"
-      # set -agF status-right "#{@catppuccin_status_host}"
     '';
-  };
-  catppuccin = {
-    tmux = {
-      enable = false;
-      extraConfig = ''
-        set -g @catppuccin_flavor "macchiato"
-        set -g @catppuccin_window_status_style "rounded"
-        set -g @catppuccin_status_background "#{@thm_bg}"
-        set -g @catppuccin_window_number_position "right"
-        set -g @catppuccin_window_text "#W"
-        set -g @catppuccin_window_number "#I"
-        set -g @catppuccin_window_current_text "#W"
-        set -g @catppuccin_window_current_number "#I"
-      '';
-    };
   };
 }

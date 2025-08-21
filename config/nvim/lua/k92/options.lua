@@ -7,7 +7,7 @@ vim.opt.cursorline = true -- Highlight the current cursor line.
 vim.opt.wrap = false -- Disable line wrapping.
 vim.opt.linebreak = true -- Wrap long lines at a break point (requires 'wrap' enabled).
 vim.opt.showmode = false -- Don't display the mode (e.g., INSERT, NORMAL).
-vim.opt.ruler = false -- Do not show the cursor position in the command line.
+vim.opt.ruler = true -- Do not show the cursor position in the command line.
 vim.opt.pumblend = 10 -- Set blend level for pop-up menus.
 vim.opt.pumheight = 10 -- Maximum number of entries in popup menus.
 vim.opt.signcolumn = "yes" -- Always show the sign column for diagnostics or version control.
@@ -26,7 +26,7 @@ vim.opt.virtualedit = "block" -- Allow cursor to move past end-of-line in visual
 vim.opt.splitkeep = "screen" -- Maintain screen view when splitting windows.
 vim.opt.splitright = true -- Open vertical splits to the right.
 vim.opt.splitbelow = true -- Open horizontal splits below.
-vim.o.laststatus = 0 -- Use a global statusline. Checkout my autocmd for more toggles on laststatus.
+vim.o.laststatus = 2 -- Use a global statusline. Checkout my autocmd for more toggles on laststatus.
 vim.opt.showtabline = 0 -- Never show the tabline.
 vim.opt.foldenable = false -- Do not enable folding by default.
 

@@ -132,29 +132,6 @@ return {
       duration = 300,
       window_scoped = true,
     },
-    highlights = {
-      undo = {
-        hl_color = { bg = "#693232" }, -- muted red
-      },
-      redo = {
-        hl_color = { bg = "#2F4640" }, -- muted green
-      },
-      yank = {
-        hl_color = { bg = "#7A683A" }, -- muted yellow
-      },
-      paste = {
-        hl_color = { bg = "#325B5B" }, -- muted cyan
-      },
-      search = {
-        hl_color = { bg = "#5C475C" }, -- muted purple
-      },
-      comment = {
-        hl_color = { bg = "#7A5A3D" }, -- muted orange
-      },
-      cursor = {
-        hl_color = { bg = "#793D54" }, -- muted magenta
-      },
-    },
     priority = 2048 * 3,
   },
   init = function()
