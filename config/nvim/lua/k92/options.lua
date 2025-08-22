@@ -8,7 +8,6 @@ vim.opt.wrap = false -- Disable line wrapping.
 vim.opt.linebreak = true -- Wrap long lines at a break point (requires 'wrap' enabled).
 vim.opt.showmode = false -- Don't display the mode (e.g., INSERT, NORMAL).
 vim.opt.ruler = false -- Do not show the cursor position in the command line.
-vim.opt.laststatus = 3 -- Use a global statusline
 vim.opt.pumblend = 10 -- Set blend level for pop-up menus.
 vim.opt.pumheight = 10 -- Maximum number of entries in popup menus.
 vim.opt.signcolumn = "yes" -- Always show the sign column for diagnostics or version control.
