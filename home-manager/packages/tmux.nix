@@ -14,7 +14,7 @@ in
     mouse = false;
     disableConfirmationPrompt = true;
     shell = fish;
-    terminal = "screen-256color";
+    terminal = "tmux-256color";
     plugins = with pkgs; [
       {
         plugin = tmuxPlugins.vim-tmux-navigator.overrideAttrs (_: {
