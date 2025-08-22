@@ -26,7 +26,7 @@ vim.keymap.set("v", ">", ">gv", { desc = "Indent" })
 -- Plugin Launcher
 ------------------------------------------------------------
 -- Launch the Lazy window for managing plugins.
-vim.keymap.set("n", "<leader>iz", "<cmd>Lazy<cr>", { desc = "Lazy" })
+vim.keymap.set("n", "<leader>L", "<cmd>Lazy<cr>", { desc = "Lazy" })
 
 ------------------------------------------------------------
 -- Yank Behavior: Preserve Cursor Position
