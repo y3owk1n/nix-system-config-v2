@@ -62,7 +62,9 @@ in
 
       set -g status-interval 5
       set -g status-position top
+      set -g status-justify absolute-centre
       set -g status-right ""
+      set -g status-left "#S"
     '';
   };
 }
