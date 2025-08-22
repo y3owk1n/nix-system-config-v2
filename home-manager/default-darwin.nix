@@ -24,6 +24,7 @@
     ./packages/pass.nix
     ./packages/ripgrep.nix
     ./packages/sesh.nix
+    ./packages/skhd.nix
     ./packages/ssh.nix
     ./packages/starship.nix
     ./packages/tmux.nix

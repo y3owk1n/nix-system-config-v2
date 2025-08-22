@@ -16,7 +16,6 @@ in
   imports = [
     # ../modules/aerospace.nix
     ../modules/karabiner.nix
-    ../modules/skhd.nix
     ../shared/core.nix
     (import ../shared/darwin.nix {
       inherit
@@ -47,33 +46,6 @@ in
   #     })
   #   );
   # };
-
-  # This is a custom module at ./modules/skhd.nix
-  skhd = {
-    enable = true;
-    package = (
-      pkgs.stdenv.mkDerivation rec {
-        pname = "skhd-zig";
-        version = "0.0.12";
-
-        src = pkgs.fetchzip {
-          url = "https://github.com/jackielii/skhd.zig/releases/download/v${version}/skhd-arm64-macos.tar.gz";
-          sha256 = "sha256-qJt2wWfM7YYVfWPbaGJ5w2LbWDhhN2MBvs+m0PCeLqM=";
-          stripRoot = false;
-        };
-
-        phases = [ "installPhase" ];
-
-        dontBuild = true; # nothing to compile
-
-        installPhase = ''
-          mkdir -p $out/bin
-          cp $src/skhd-arm64-macos $out/bin/skhd
-          chmod +x $out/bin/skhd
-        '';
-      }
-    );
-  };
 
   homebrew = {
     enable = true;
