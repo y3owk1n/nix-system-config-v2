@@ -22,6 +22,8 @@
     ./packages/kanata.nix
     ./packages/lazygit.nix
     ./packages/nvim.nix
+    ./packages/pass.nix
+    ./packages/ripgrep.nix
     ./packages/sesh.nix
     ./packages/ssh.nix
     ./packages/starship.nix
