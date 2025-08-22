@@ -31,7 +31,7 @@ in
           hyper - n : open -a Notes
           hyper - m : open -a Mail
           hyper - w : open -a WhatsApp
-          hyper - f : open ~
+          hyper - f : open -a Finder
           hyper - s : open -a "System Settings"
 
           # spotlight
