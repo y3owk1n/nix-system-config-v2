@@ -3,11 +3,11 @@
 ------------------------------------------------------------
 vim.opt.termguicolors = true -- Enable 24-bit RGB colors in the terminal.
 vim.opt.colorcolumn = "120" -- Highlight column 120 to mark a visual guide.
-vim.opt.cursorline = true -- Highlight the current cursor line.
+vim.opt.cursorline = false -- Highlight the current cursor line.
 vim.opt.wrap = false -- Disable line wrapping.
 vim.opt.linebreak = true -- Wrap long lines at a break point (requires 'wrap' enabled).
 vim.opt.showmode = false -- Don't display the mode (e.g., INSERT, NORMAL).
-vim.opt.ruler = true -- Do not show the cursor position in the command line.
+vim.opt.ruler = false -- Do not show the cursor position in the command line.
 vim.opt.pumblend = 10 -- Set blend level for pop-up menus.
 vim.opt.pumheight = 10 -- Maximum number of entries in popup menus.
 vim.opt.signcolumn = "yes" -- Always show the sign column for diagnostics or version control.
@@ -43,7 +43,7 @@ vim.opt.viewoptions:remove("curdir") -- Do not save the current directory with v
 ------------------------------------------------------------
 -- Statusline
 ------------------------------------------------------------
-vim.o.laststatus = 2 -- Use a global statusline. Checkout my autocmd for more toggles on laststatus.
+vim.o.laststatus = 2 -- Use a global statusline
 
 function _G.git_status()
   local repo_info = vim.b.githead_summary
@@ -53,7 +53,7 @@ function _G.git_status()
     return ""
   end
 
-  return string.format("[ %s] ", repo_info.head_name)
+  return string.format("[ %s]", repo_info.head_name)
 end
 
 function _G.diff_status()
@@ -73,17 +73,47 @@ function _G.diff_status()
   local delete_str = changes.delete > 0 and string.format("-%s ", changes.delete) or ""
   local change_str = changes.change > 0 and string.format("~%s", changes.change) or ""
 
-  return string.format("%s%s%s", add_str, delete_str, change_str)
+  return string.format(" %s%s%s", add_str, delete_str, change_str)
+end
+
+function _G.warp_status()
+  local warp_exists, warp = pcall(require, "warp")
+
+  if not warp_exists or (warp and warp.count() < 1) then
+    return ""
+  end
+
+  local item = warp.get_item_by_buf(0)
+  local current = item and item.index or "-"
+  local total = warp.count()
+
+  return string.format(" 󱐋 [%s/%s]", tonumber(current) or "-", tonumber(total))
 end
 
 function _G.have_git_diff()
-  if _G.git_status() .. _G.diff_status() ~= "" then
+  if _G.git_status() .. _G.diff_status() .. _G.warp_status() ~= "" then
     return true
   end
   return false
 end
 
-vim.opt.statusline:prepend("%{%v:lua.have_git_diff() ? v:lua.git_status() .. v:lua.diff_status() .. '%=' : '' %}")
+function _G.lsp_status()
+  local names = {}
+  for _, server in pairs(vim.lsp.get_clients({ bufnr = 0 })) do
+    table.insert(names, server.name)
+  end
+
+  if #names == 0 then
+    return ""
+  end
+
+  return " [" .. table.concat(names, " ") .. "]"
+end
+
+vim.opt.statusline:prepend(
+  "%{%v:lua.have_git_diff() ? v:lua.git_status() .. v:lua.diff_status() .. v:lua.warp_status() .. '%=' : '' %}"
+)
+vim.opt.statusline:append("%{%v:lua.lsp_status() %}")
 
 ------------------------------------------------------------
 -- Text Editing Settings
