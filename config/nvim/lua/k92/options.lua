@@ -49,7 +49,7 @@ function _G.git_status()
   local repo_info = vim.b.githead_summary
   local has_git = repo_info ~= nil and repo_info.head_name ~= nil
 
-  if not has_git then
+  if not has_git or vim.bo.buftype ~= "" then
     return ""
   end
 
@@ -65,21 +65,29 @@ function _G.diff_status()
 
   local has_diff = vim.b.minidiff_summary ~= nil and changes.add + changes.delete + changes.change > 0
 
-  if not has_diff then
+  if not has_diff or vim.bo.buftype ~= "" then
     return ""
   end
 
-  local add_str = changes.add > 0 and string.format("+%s ", changes.add) or ""
-  local delete_str = changes.delete > 0 and string.format("-%s ", changes.delete) or ""
+  local add_str = changes.add > 0 and string.format("+%s", changes.add) or ""
+  local add_sep = changes.add > 0 and " " or ""
+  local delete_str = changes.delete > 0 and string.format("-%s", changes.delete) or ""
+  local delete_sep = changes.delete > 0 and " " or ""
   local change_str = changes.change > 0 and string.format("~%s", changes.change) or ""
+  local change_sep = changes.change > 0 and " " or ""
 
-  return string.format(" %s%s%s", add_str, delete_str, change_str)
+  local complete_str = string.format(" %s%s%s%s%s%s", add_str, add_sep, delete_str, delete_sep, change_str, change_sep)
+
+  -- trim trailing spaces
+  complete_str = complete_str:gsub("%s+$", "")
+
+  return complete_str
 end
 
 function _G.warp_status()
   local warp_exists, warp = pcall(require, "warp")
 
-  if not warp_exists or (warp and warp.count() < 1) then
+  if not warp_exists or (warp and warp.count() < 1) or vim.bo.buftype ~= "" then
     return ""
   end
 

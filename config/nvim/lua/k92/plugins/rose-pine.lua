@@ -29,6 +29,8 @@ return {
       NormalFloat = { bg = "base", fg = "text" },
       -- status line colors
       StatusLine = { fg = "subtle", bg = "surface" },
+      StatusLineTerm = { link = "StatusLine" },
+      StatusLineTermNC = { link = "StatusLineNC" },
       -- time machine colors
       TimeMachineCurrent = {
         bg = "foam",
