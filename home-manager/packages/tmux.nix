@@ -26,7 +26,6 @@ in
           };
         });
       }
-      tmuxPlugins.rose-pine
     ];
     extraConfig = ''
       bind -r j resize-pane -D 5
@@ -61,13 +60,9 @@ in
         	set-option -g default-command "${pkgs.reattach-to-user-namespace}/bin/reattach-to-user-namespace -l ${fish}"
       ''}
 
-      set -g @rose_pine_variant 'dawn' # Options are 'main', 'moon' or 'dawn'
-
-      set -g status-format[1] '#[align=centre]'
       set -g status-interval 5
       set -g status-position top
-      set -g status-right-length 100
-      set -g status-left-length 100
+      set -g status-right ""
     '';
   };
 }
