@@ -26,7 +26,6 @@ vim.opt.virtualedit = "block" -- Allow cursor to move past end-of-line in visual
 vim.opt.splitkeep = "screen" -- Maintain screen view when splitting windows.
 vim.opt.splitright = true -- Open vertical splits to the right.
 vim.opt.splitbelow = true -- Open horizontal splits below.
-vim.o.laststatus = 2 -- Use a global statusline. Checkout my autocmd for more toggles on laststatus.
 vim.opt.showtabline = 0 -- Never show the tabline.
 vim.opt.foldenable = false -- Do not enable folding by default.
 
@@ -40,6 +39,51 @@ vim.opt.timeoutlen = 300 -- Set key sequence timeout to 300ms.
 vim.opt.inccommand = "split" -- Show live preview of substitutions in a split.
 vim.opt.completeopt = { "menu", "menuone", "noselect" } -- Configure completion menu behavior.
 vim.opt.viewoptions:remove("curdir") -- Do not save the current directory with views.
+
+------------------------------------------------------------
+-- Statusline
+------------------------------------------------------------
+vim.o.laststatus = 2 -- Use a global statusline. Checkout my autocmd for more toggles on laststatus.
+
+function _G.git_status()
+  local repo_info = vim.b.githead_summary
+  local has_git = repo_info ~= nil and repo_info.head_name ~= nil
+
+  if not has_git then
+    return ""
+  end
+
+  return string.format("[ %s] ", repo_info.head_name)
+end
+
+function _G.diff_status()
+  local changes = {
+    add = vim.b.minidiff_summary and vim.b.minidiff_summary.add or 0,
+    delete = vim.b.minidiff_summary and vim.b.minidiff_summary.delete or 0,
+    change = vim.b.minidiff_summary and vim.b.minidiff_summary.change or 0,
+  }
+
+  local has_diff = vim.b.minidiff_summary ~= nil and changes.add + changes.delete + changes.change > 0
+
+  if not has_diff then
+    return ""
+  end
+
+  local add_str = changes.add > 0 and string.format("+%s ", changes.add) or ""
+  local delete_str = changes.delete > 0 and string.format("-%s ", changes.delete) or ""
+  local change_str = changes.change > 0 and string.format("~%s", changes.change) or ""
+
+  return string.format("%s%s%s", add_str, delete_str, change_str)
+end
+
+function _G.have_git_diff()
+  if _G.git_status() .. _G.diff_status() ~= "" then
+    return true
+  end
+  return false
+end
+
+vim.opt.statusline:prepend("%{%v:lua.have_git_diff() ? v:lua.git_status() .. v:lua.diff_status() .. '%=' : '' %}")
 
 ------------------------------------------------------------
 -- Text Editing Settings
