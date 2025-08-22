@@ -135,5 +135,5 @@ restore-gpg gpg_key:
 
 [macos]
 relaunch-skhd:
-    launchctl bootout gui/$(id -u)/org.nixos.skhd
-    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/org.nixos.skhd.plist
+    launchctl bootout gui/$(id -u)/org.nix-community.home.skhd
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/org.nix-community.home.skhd.plist
