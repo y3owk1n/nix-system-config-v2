@@ -1,19 +1,23 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  ...
+}:
+
 let
   passx = pkgs.stdenv.mkDerivation {
-    pname = "passx";
+    name = "passx";
     version = "1.0";
     src = ../../scripts/passx.sh;
-    # skip all the build phases, just install
     phases = [ "installPhase" ];
     installPhase = ''
       mkdir -p $out/bin
-      install -m755 "$src" $out/bin/passx
+      cp $src $out/bin/passx
+      chmod +x $out/bin/passx
     '';
   };
 in
 {
-  environment.systemPackages = [
+  home.packages = [
     passx
   ];
 }
