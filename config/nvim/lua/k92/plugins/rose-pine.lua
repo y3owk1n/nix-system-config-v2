@@ -6,8 +6,19 @@ return {
   name = "rose-pine",
   priority = 1000,
   opts = {
+    dim_inactive_windows = true,
+
     styles = {
       transparency = true,
+    },
+
+    groups = {
+      h1 = "love",
+      h2 = "gold",
+      h3 = "rose",
+      h4 = "pine",
+      h5 = "foam",
+      h6 = "iris",
     },
 
     -- NOTE: Highlight groups are extended (merged) by default. Disable this
@@ -17,8 +28,7 @@ return {
       Normal = { bg = "base", fg = "text" },
       NormalFloat = { bg = "base", fg = "text" },
       -- status line colors
-      StatusLine = { fg = "rose", bg = "rose", blend = 10 },
-      StatusLineNC = { fg = "subtle", bg = "surface" },
+      StatusLine = { fg = "subtle", bg = "surface" },
       -- time machine colors
       TimeMachineCurrent = {
         bg = "foam",
