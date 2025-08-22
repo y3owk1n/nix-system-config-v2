@@ -68,7 +68,6 @@ in
           home-manager.users.${username} = {
             imports = [
               ../home-manager/default-darwin.nix
-              stylix.homeModules.stylix
             ];
           };
         }
@@ -148,7 +147,6 @@ in
           home-manager.users.${username} = {
             imports = [
               ../home-manager/default-darwin.nix
-              stylix.homeModules.stylix
             ];
           };
         }
