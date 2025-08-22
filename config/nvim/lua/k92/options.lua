@@ -43,7 +43,7 @@ vim.opt.viewoptions:remove("curdir") -- Do not save the current directory with v
 ------------------------------------------------------------
 -- Statusline
 ------------------------------------------------------------
-vim.o.laststatus = 2 -- Use a global statusline
+vim.o.laststatus = 3 -- Use a global statusline
 
 function _G.git_status()
   local repo_info = vim.b.githead_summary
