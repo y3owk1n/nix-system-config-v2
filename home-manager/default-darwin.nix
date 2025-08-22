@@ -1,6 +1,5 @@
 {
   username,
-  pkgs,
   ...
 }:
 
@@ -30,6 +29,8 @@
     ./packages/tmux.nix
     ./custom/cpenv.nix
     ./custom/nvs.nix
+    ./custom/cmd.nix
+    ./custom/passx.nix
   ];
 
   # Home Manager needs a bit of information about you and the
