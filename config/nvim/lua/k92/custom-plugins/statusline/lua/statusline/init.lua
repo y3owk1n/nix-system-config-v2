@@ -926,7 +926,7 @@ end
 ---
 ---sm.register_component("time", function(cfg)
 ---  return sm.with_hl(cfg.time.icon .. cfg.time.prefix .. os.date("%H:%M") .. cfg.time.suffix, cfg.time.hl)
----end, {)
+---end, {
 ---  icon = "",
 ---  hl = "CurSearch",
 ---})
