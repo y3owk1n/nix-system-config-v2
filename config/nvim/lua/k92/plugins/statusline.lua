@@ -10,7 +10,6 @@ return {
   end,
   ---@type Statusline.Config
   opts = {
-    padding = { left = 1, right = 1 },
     layout = {
       left = { "mode", "git", "diff", "warp", "time" },
       center = { "fileinfo" },
