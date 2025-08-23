@@ -1,46 +1,66 @@
----@class Statusline
----@field config Statusline.Config
----@field defaults Statusline.Config
+---@class Barline
+---@field config Barline.Config
+---@field defaults Barline.Config
 local M = {}
 
----@class Statusline.Config
----@field padding? Statusline.Config.Padding Padding configuration for left/right sides of the statusline
----@field component_separator? string Separator between components
----@field hide_in_special_buffers? boolean Hide statusline in special buffers
----@field layout Statusline.Layout? Component layout configuration
----@field mode Statusline.ModeConfig? Mode component configuration
----@field fileinfo Statusline.FileinfoConfig? Fileinfo component configuration
----@field git Statusline.GitConfig? Git component configuration
----@field diff Statusline.DiffConfig? Diff component configuration
----@field diagnostics Statusline.DiagnosticsConfig? Diagnostics component configuration
----@field lsp Statusline.LspConfig? LSP component configuration
----@field position Statusline.PositionConfig? Position component configuration
----@field progress Statusline.ProgressConfig? Progress component configuration
----@field encoding Statusline.EncodingConfig? Encoding component configuration
----@field fileformat Statusline.FileformatConfig? Fileformat component configuration
----@field filetype Statusline.FiletypeConfig? Filetype component configuration
----@field warp Statusline.WarpConfig? Warp component configuration
----@field post_setup_fn? fun(config: Statusline.Config) Callback function to run after setup
+-- track first setup
+local did_setup = false
 
----@class Statusline.Config.Padding
+--------------------------------------------------------------------------------
+-- Types
+--------------------------------------------------------------------------------
+
+---@class Barline.Config
+---@field component_separator? string Separator between components
+---@field hide_in_special_buffers? boolean Hide lines in special buffers
+---@field mode Barline.ModeConfig? Mode component configuration
+---@field fileinfo Barline.FileinfoConfig? Fileinfo component configuration
+---@field git Barline.GitConfig? Git component configuration
+---@field diff Barline.DiffConfig? Diff component configuration
+---@field diagnostics Barline.DiagnosticsConfig? Diagnostics component configuration
+---@field lsp Barline.LspConfig? LSP component configuration
+---@field position Barline.PositionConfig? Position component configuration
+---@field progress Barline.ProgressConfig? Progress component configuration
+---@field encoding Barline.EncodingConfig? Encoding component configuration
+---@field fileformat Barline.FileformatConfig? Fileformat component configuration
+---@field filetype Barline.FiletypeConfig? Filetype component configuration
+---@field warp Barline.WarpConfig? Warp component configuration
+---@field post_setup_fn? fun(config: Barline.Config) Callback function to run after setup
+---@field statusline? Barline.DisplayConfig.Statusline
+---@field winbar? Barline.DisplayConfig.Winbar
+---@field tabline? Barline.DisplayConfig.Tabline
+
+---@class Barline.DisplayConfig.Statusline : Barline.DisplayConfig
+---@field is_global? boolean
+
+---@class Barline.DisplayConfig.Winbar : Barline.DisplayConfig
+
+---@class Barline.DisplayConfig.Tabline : Barline.DisplayConfig
+
+---@class Barline.DisplayConfig
+---@field enabled? boolean
+---@field padding? Barline.Config.Padding Padding configuration for left/right sides of the line
+---@field layout? Barline.Layout
+
+---@class Barline.Config.Padding
 ---@field left? number Padding on left side
 ---@field right? number Padding on right side
 
----@class Statusline.Config.General
----@field enabled? boolean Enable statusline
----@field prefix? string Text before statusline
----@field suffix? string Text after statusline
+---@class Barline.Config.General
+---@field enabled? boolean Enable component
+---@field prefix? string Text before component
+---@field suffix? string Text after component
 ---@field hl? string Highlight group for the whole component
 
----@class Statusline.Layout
----@field left string[] List of component names for left side
----@field center string[] List of component names for center
----@field right string[] List of component names for right side
+---@class Barline.Layout
+---@field left? string[] List of component names for left side
+---@field center? string[] List of component names for center
+---@field right? string[] List of component names for right side
 
----@class Statusline.ModeConfig : Statusline.Config.General
+---@class Barline.ModeConfig : Barline.Config.General
 ---@field mode_map? table<string, string> Mapping of mode codes to display names
 
----@class Statusline.FileinfoConfig : Statusline.Config.General
+---@class Barline.FileinfoConfig : Barline.Config.General
 ---@field color_icon? boolean Color file icon based on dev icon settings
 ---@field show_icon? boolean Show file icon
 ---@field show_filename? boolean Show filename
@@ -52,61 +72,61 @@ local M = {}
 ---@field max_length? number Maximum filename length (0 for no limit)
 ---@field path_style? '"none"'|'"relative"'|'"absolute"'|'"shortened"'|'"basename"' How to show the file path
 
----@class Statusline.GitConfig : Statusline.Config.General
+---@class Barline.GitConfig : Barline.Config.General
 ---@field icon? string Git branch icon
 ---@field max_length? number Maximum branch name length (0 for no limit)
 
----@class Statusline.DiffConfig : Statusline.Config.General
----@field icons? Statusline.DiffIcons Diff change icons
+---@class Barline.DiffConfig : Barline.Config.General
+---@field icons? Barline.DiffIcons Diff change icons
 ---@field separator? string Separator between diff stats
 
----@class Statusline.DiffIcons
+---@class Barline.DiffIcons
 ---@field add? string Icon for additions
 ---@field delete? string Icon for deletions
 ---@field change? string Icon for changes
 
----@class Statusline.DiagnosticsConfig : Statusline.Config.General
----@field icons? Statusline.DiagnosticIcons Diagnostic severity icons
+---@class Barline.DiagnosticsConfig : Barline.Config.General
+---@field icons? Barline.DiagnosticIcons Diagnostic severity icons
 ---@field separator? string Separator between diagnostic counts
 ---@field show_info? boolean Show info diagnostics
 ---@field show_hint? boolean Show hint diagnostics
 
----@class Statusline.DiagnosticIcons
+---@class Barline.DiagnosticIcons
 ---@field error? string Error diagnostic icon
 ---@field warn? string Warning diagnostic icon
 ---@field info? string Info diagnostic icon
 ---@field hint? string Hint diagnostic icon
 
----@class Statusline.LspConfig : Statusline.Config.General
+---@class Barline.LspConfig : Barline.Config.General
 ---@field icon? string LSP icon
 ---@field detail_prefix? string Text before lsp details after icon
 ---@field detail_suffix? string Text after lsp details
 ---@field separator? string Separator between server names
 ---@field max_servers? number Maximum servers to show (0 for no limit)
 
----@class Statusline.PositionConfig : Statusline.Config.General
+---@class Barline.PositionConfig : Barline.Config.General
 ---@field show_line? boolean Show line number
 ---@field show_col? boolean Show column number
 ---@field show_total? boolean Show total lines
 ---@field separator? string Separator between position parts
 
----@class Statusline.ProgressConfig : Statusline.Config.General
+---@class Barline.ProgressConfig : Barline.Config.General
 ---@field use_bar? boolean Use progress bar instead of percentage
 ---@field bar_length? number Length of progress bar
 ---@field bar_fill? string Character for filled bar sections
 ---@field bar_empty? string Character for empty bar sections
 
----@class Statusline.EncodingConfig : Statusline.Config.General
+---@class Barline.EncodingConfig : Barline.Config.General
 ---@field hide_default? boolean Hide if encoding is default (utf-8)
 
----@class Statusline.FileformatConfig : Statusline.Config.General
+---@class Barline.FileformatConfig : Barline.Config.General
 ---@field hide_default? boolean Hide if format is default (unix)
 ---@field icons? table<string, string> Icons for different formats
 
----@class Statusline.FiletypeConfig : Statusline.Config.General
+---@class Barline.FiletypeConfig : Barline.Config.General
 ---@field unnamed_text? string Text for buffers without filetype
 
----@class Statusline.WarpConfig : Statusline.Config.General
+---@class Barline.WarpConfig : Barline.Config.General
 ---@field icon? string Warp icon
 
 -- ------------------------------------------------------------------
@@ -121,8 +141,8 @@ local function safe_call(fn, default)
   return ok and result or default
 end
 
----Check if current buffer is valid for statusline display
----@return boolean valid True if buffer should show statusline components
+---Check if current buffer is valid for line display
+---@return boolean valid True if buffer should show line components
 local function is_valid_buffer()
   return vim.bo.buftype == "" and vim.fn.bufname() ~= ""
 end
@@ -146,7 +166,7 @@ local function truncate_string(str, max_len)
   return string.sub(str, 1, max_len - 1) .. "…"
 end
 
----Wrap text with statusline highlight group
+---Wrap text with line highlight group
 ---@param text string
 ---@param hl string?
 ---@return string
@@ -160,11 +180,11 @@ end
 -- ------------------------------------------------------------------
 -- Components
 -- ------------------------------------------------------------------
----@type table<string, fun(config: Statusline.Config): string>
+---@type table<string, fun(config: Barline.Config): string>
 local components = {}
 
 -- Mode component
----@param config Statusline.Config
+---@param config Barline.Config
 ---@return string mode_display
 function components.mode(config)
   if not config.mode.enabled then
@@ -195,7 +215,7 @@ function components.mode(config)
 end
 
 -- File info component
----@param config Statusline.Config
+---@param config Barline.Config
 ---@return string fileinfo_display
 function components.fileinfo(config)
   if not config.fileinfo.enabled then
@@ -256,7 +276,7 @@ function components.fileinfo(config)
 end
 
 -- Git component
----@param config Statusline.Config
+---@param config Barline.Config
 ---@return string git_display
 function components.git(config)
   if not config.git.enabled or not is_valid_buffer() then
@@ -282,7 +302,7 @@ function components.git(config)
 end
 
 -- Diff component
----@param config Statusline.Config
+---@param config Barline.Config
 ---@return string diff_display
 function components.diff(config)
   if not config.diff.enabled or not is_valid_buffer() then
@@ -307,13 +327,13 @@ function components.diff(config)
 
     local parts = {}
     if changes.add > 0 then
-      table.insert(parts, "%#StatuslineDiffAdd#" .. config.diff.icons.add .. changes.add)
+      table.insert(parts, "%#BarlineDiffAdd#" .. config.diff.icons.add .. changes.add)
     end
     if changes.delete > 0 then
-      table.insert(parts, "%#StatuslineDiffDelete#" .. config.diff.icons.delete .. changes.delete)
+      table.insert(parts, "%#BarlineDiffDelete#" .. config.diff.icons.delete .. changes.delete)
     end
     if changes.change > 0 then
-      table.insert(parts, "%#StatuslineDiffChange#" .. config.diff.icons.change .. changes.change)
+      table.insert(parts, "%#BarlineDiffChange#" .. config.diff.icons.change .. changes.change)
     end
 
     local result = table.concat(parts, config.diff.separator)
@@ -322,7 +342,7 @@ function components.diff(config)
 end
 
 -- Diagnostics component
----@param config Statusline.Config
+---@param config Barline.Config
 ---@return string diagnostics_display
 function components.diagnostics(config)
   if not config.diagnostics.enabled then
@@ -351,16 +371,16 @@ function components.diagnostics(config)
 
     local parts = {}
     if counts.error > 0 then
-      table.insert(parts, "%#StatuslineDiagnosticsError#" .. config.diagnostics.icons.error .. counts.error)
+      table.insert(parts, "%#BarlineDiagnosticsError#" .. config.diagnostics.icons.error .. counts.error)
     end
     if counts.warn > 0 then
-      table.insert(parts, "%#StatuslineDiagnosticsWarn#" .. config.diagnostics.icons.warn .. counts.warn)
+      table.insert(parts, "%#BarlineDiagnosticsWarn#" .. config.diagnostics.icons.warn .. counts.warn)
     end
     if config.diagnostics.show_info and counts.info > 0 then
-      table.insert(parts, "%#StatuslineDiagnosticsInfo#" .. config.diagnostics.icons.info .. counts.info)
+      table.insert(parts, "%#BarlineDiagnosticsInfo#" .. config.diagnostics.icons.info .. counts.info)
     end
     if config.diagnostics.show_hint and counts.hint > 0 then
-      table.insert(parts, "%#StatuslineDiagnosticsHint#" .. config.diagnostics.icons.hint .. counts.hint)
+      table.insert(parts, "%#BarlineDiagnosticsHint#" .. config.diagnostics.icons.hint .. counts.hint)
     end
 
     local result = table.concat(parts, config.diagnostics.separator)
@@ -369,7 +389,7 @@ function components.diagnostics(config)
 end
 
 -- LSP component
----@param config Statusline.Config
+---@param config Barline.Config
 ---@return string lsp_display
 function components.lsp(config)
   if not config.lsp.enabled then
@@ -419,7 +439,7 @@ function components.lsp(config)
 end
 
 -- Position component (line:col)
----@param config Statusline.Config
+---@param config Barline.Config
 ---@return string position_display
 function components.position(config)
   if not config.position.enabled then
@@ -447,7 +467,7 @@ function components.position(config)
 end
 
 -- Progress component (percentage through file)
----@param config Statusline.Config
+---@param config Barline.Config
 ---@return string progress_display
 function components.progress(config)
   if not config.progress.enabled then
@@ -473,7 +493,7 @@ function components.progress(config)
 end
 
 -- File encoding
----@param config Statusline.Config
+---@param config Barline.Config
 ---@return string encoding_display
 function components.encoding(config)
   if not config.encoding.enabled then
@@ -494,7 +514,7 @@ function components.encoding(config)
 end
 
 -- File format (unix/dos/mac)
----@param config Statusline.Config
+---@param config Barline.Config
 ---@return string fileformat_display
 function components.fileformat(config)
   if not config.fileformat.enabled then
@@ -520,7 +540,7 @@ function components.fileformat(config)
 end
 
 -- Filetype
----@param config Statusline.Config
+---@param config Barline.Config
 ---@return string filetype_display
 function components.filetype(config)
   if not config.filetype.enabled then
@@ -536,7 +556,7 @@ function components.filetype(config)
 end
 
 -- Custom component for warp
----@param config Statusline.Config
+---@param config Barline.Config
 ---@return string warp_display
 function components.warp(config)
   if not config.warp.enabled then
@@ -589,14 +609,14 @@ local function render_components(component_names)
 end
 
 ---Render the whole layout declaratively
----@param layout Statusline.Layout
----@return string statusline
+---@param layout Barline.Layout
+---@return string line
 local function render_layout(layout)
   local left = render_components(layout.left)
   local center = render_components(layout.center)
   local right = render_components(layout.right)
 
-  -- Build the final statusline with %= anchors
+  -- Build the final line with %= anchors
   local chunks = {}
 
   if left ~= "" then
@@ -613,28 +633,42 @@ local function render_layout(layout)
 end
 
 -- ------------------------------------------------------------------
--- Core Statusline Builder
+-- Core Barline Builder
 -- ------------------------------------------------------------------
----Build the complete statusline string
----@return string statusline Complete statusline string
-function M.build_statusline()
+---Build the complete line string
+---@param display "winbar"|"tabline"|"statusline" Display mode
+---@return string line Complete line string
+function M.build_line(display)
   if is_special_buffer() and M.config.hide_in_special_buffers then
     return " %f%m%r%h%w%="
   end
 
-  local statusline = render_layout(M.config.layout)
+  ---@type Barline.DisplayConfig
+  local current_display = M.config[display]
 
-  if statusline == "" then
-    return M.original_statusline
+  local line = render_layout(current_display.layout)
+
+  if line == "" then
+    if display == "statusline" then
+      return M.original_statusline
+    elseif display == "winbar" then
+      return M.original_winbar
+    elseif display == "tabline" then
+      return M.original_tabline
+    end
   end
 
-  return string.rep(" ", M.config.padding.left) .. statusline .. string.rep(" ", M.config.padding.right)
+  local left_padding = current_display.padding.left and string.rep(" ", current_display.padding.left) or ""
+  local right_padding = current_display.padding.right and string.rep(" ", current_display.padding.right) or ""
+
+  return left_padding .. line .. right_padding
 end
 
--- Function to be called by statusline
+-- Function to be called by lines
+---@param display "winbar"|"tabline"|"statusline" Display mode
 ---@return string statusline Complete statusline for vim statusline option
-function M.get_statusline()
-  return M.build_statusline()
+function M.get_line(display)
+  return M.build_line(display)
 end
 
 --------------------------------------------------------------------------------
@@ -664,19 +698,28 @@ end
 -- ------------------------------------------------------------------
 -- Event Handlers
 -- ------------------------------------------------------------------
----Set up autocmds for statusline refresh
+---Set up autocmds for lines refresh
 local function setup_autocmds()
-  local group = vim.api.nvim_create_augroup("CustomStatusline", { clear = true })
+  local group = vim.api.nvim_create_augroup("CustomBarline", { clear = true })
 
   local events = {
-    "LspAttach",
-    "LspDetach",
+    "WinEnter",
+    "WinLeave",
+    "BufEnter",
+    "BufLeave",
+    "BufWritePost",
+    "DiagnosticChanged",
   }
 
   vim.api.nvim_create_autocmd(events, {
     group = group,
     callback = function()
-      vim.cmd("redrawstatus")
+      if M.config.statusline.enabled or M.config.winbar.enabled or M.config.tabline.enabled then
+        vim.cmd("redrawstatus")
+      end
+      if M.config.tabline.enabled then
+        vim.cmd("redrawtabline")
+      end
     end,
   })
 end
@@ -684,18 +727,42 @@ end
 -- ------------------------------------------------------------------
 -- Configuration
 -- ------------------------------------------------------------------
----@type Statusline.Config
+---@type Barline.Config
 M.defaults = {
   -- Global settings
-  padding = { left = 0, right = 0 },
   component_separator = " ",
   hide_in_special_buffers = true,
 
   -- Layout configuration
-  layout = {
-    left = { "mode", "git", "diff" },
-    center = { "fileinfo" },
-    right = { "diagnostics", "lsp", "position", "progress" },
+  statusline = {
+    enabled = true,
+    is_global = true,
+    padding = { left = 0, right = 0 },
+    layout = {
+      left = { "mode", "git", "diff" },
+      center = { "fileinfo" },
+      right = { "diagnostics", "lsp", "position", "progress" },
+    },
+  },
+
+  tabline = {
+    enabled = false,
+    padding = { left = 0, right = 0 },
+    layout = {
+      left = {},
+      center = {},
+      right = {},
+    },
+  },
+
+  winbar = {
+    enabled = false,
+    padding = { left = 0, right = 0 },
+    layout = {
+      left = {},
+      center = {},
+      right = {},
+    },
   },
 
   -- Component configurations
@@ -703,7 +770,7 @@ M.defaults = {
     enabled = true,
     prefix = "",
     suffix = "",
-    hl = "StatuslineMode",
+    hl = "BarlineMode",
     mode_map = {
       n = "NORMAL",
       i = "INSERT",
@@ -725,7 +792,7 @@ M.defaults = {
     enabled = true,
     prefix = "",
     suffix = "",
-    hl = "StatuslineFileInfo",
+    hl = "BarlineFileInfo",
     show_icon = true,
     color_icon = false,
     show_filename = true,
@@ -742,7 +809,7 @@ M.defaults = {
     enabled = true,
     prefix = "",
     suffix = "",
-    hl = "StatuslineGit",
+    hl = "BarlineGit",
     icon = " ",
     max_length = 20,
   },
@@ -751,7 +818,7 @@ M.defaults = {
     enabled = true,
     prefix = "",
     suffix = "",
-    hl = "StatuslineDiff",
+    hl = "BarlineDiff",
     icons = { add = "+", delete = "-", change = "~" },
     separator = " ",
   },
@@ -760,7 +827,7 @@ M.defaults = {
     enabled = true,
     prefix = "",
     suffix = "",
-    hl = "StatuslineDiagnostics",
+    hl = "BarlineDiagnostics",
     icons = {
       error = vim.diagnostic.config().signs.text[vim.diagnostic.severity.ERROR],
       warn = vim.diagnostic.config().signs.text[vim.diagnostic.severity.WARN],
@@ -776,7 +843,7 @@ M.defaults = {
     enabled = true,
     prefix = "",
     suffix = "",
-    hl = "StatuslineLsp",
+    hl = "BarlineLsp",
     detail_prefix = "",
     detail_suffix = "",
     icon = " ",
@@ -788,7 +855,7 @@ M.defaults = {
     enabled = true,
     prefix = "",
     suffix = "",
-    hl = "StatuslinePosition",
+    hl = "BarlinePosition",
     show_line = true,
     show_col = true,
     show_total = false,
@@ -799,7 +866,7 @@ M.defaults = {
     enabled = true,
     prefix = "",
     suffix = "%",
-    hl = "StatuslineProgress",
+    hl = "BarlineProgress",
     use_bar = false,
     bar_length = 10,
     bar_fill = "█",
@@ -810,7 +877,7 @@ M.defaults = {
     enabled = false,
     prefix = "[",
     suffix = "]",
-    hl = "StatuslineEncoding",
+    hl = "BarlineEncoding",
     hide_default = false,
   },
 
@@ -818,7 +885,7 @@ M.defaults = {
     enabled = false,
     prefix = "[",
     suffix = "]",
-    hl = "StatuslineFileformat",
+    hl = "BarlineFileformat",
     hide_default = true,
     icons = { unix = "", dos = "", mac = "" },
   },
@@ -827,7 +894,7 @@ M.defaults = {
     enabled = false,
     prefix = "",
     suffix = "",
-    hl = "StatuslineFiletype",
+    hl = "BarlineFiletype",
     unnamed_text = "text",
   },
 
@@ -835,16 +902,16 @@ M.defaults = {
     enabled = false,
     prefix = "",
     suffix = "",
-    hl = "StatuslineWarp",
+    hl = "BarlineWarp",
     icon = "󱐋 ",
   },
 }
 
-local did_setup = false
-
 M.original_statusline = nil
+M.original_winbar = nil
+M.original_tabline = nil
 
----Setup the statusline with configuration
+---Setup the barline with configuration
 ---@param user_config? table User configuration to merge with defaults
 function M.setup(user_config)
   if did_setup then
@@ -853,6 +920,10 @@ function M.setup(user_config)
 
   ---@diagnostic disable-next-line: undefined-field
   M.original_statusline = vim.opt.statusline:get()
+  ---@diagnostic disable-next-line: undefined-field
+  M.original_winbar = vim.opt.winbar:get()
+  ---@diagnostic disable-next-line: undefined-field
+  M.original_tabline = vim.opt.tabline:get()
 
   M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
 
@@ -860,7 +931,23 @@ function M.setup(user_config)
   setup_highlight_groups()
 
   -- Set the statusline to use our function
-  vim.opt.statusline = "%{%luaeval('require(\"statusline\").get_statusline()')%}"
+  if M.config.statusline.enabled then
+    if M.config.statusline.is_global then
+      vim.opt.laststatus = 3
+    else
+      vim.opt.laststatus = 2
+    end
+    vim.opt.statusline = '%{%luaeval(\'require("barline").get_line("statusline")\')%}'
+  end
+
+  if M.config.winbar.enabled then
+    vim.opt.winbar = '%{%luaeval(\'require("barline").get_line("winbar")\')%}'
+  end
+
+  if M.config.tabline.enabled then
+    vim.opt.showtabline = 2
+    vim.opt.tabline = '%{%luaeval(\'require("barline").get_line("tabline")\')%}'
+  end
 
   if M.config.post_setup_fn then
     M.config.post_setup_fn(M.config)
@@ -902,14 +989,14 @@ end
 ---Register custom components
 ---Must be called before setup
 ---@param name string Component name
----@param fn fun(config: Statusline.Config): string Component function that returns display string
+---@param fn fun(config: Barline.Config): string Component function that returns display string
 ---@param default_config? table Default config for component
 ---@example
 ---```lua
----local sm = require("statusline")
+---local bm = require("barline")
 ---
----sm.register_component("time", function(cfg)
----  return sm.with_hl(cfg.time.icon .. cfg.time.prefix .. os.date("%H:%M") .. cfg.time.suffix, cfg.time.hl)
+---bm.register_component("time", function(cfg)
+---  return bm.with_hl(cfg.time.icon .. cfg.time.prefix .. os.date("%H:%M") .. cfg.time.suffix, cfg.time.hl)
 ---end, {
 ---  icon = "",
 ---  hl = "CurSearch",
@@ -923,7 +1010,7 @@ function M.register_component(name, fn, default_config)
       enabled = true,
       prefix = "",
       suffix = "",
-      hl = "Statusline" .. name:gsub("^%l", string.upper),
+      hl = "Barline" .. name:gsub("^%l", string.upper),
     }, M.defaults[name] or default_config or {})
   end
 end
