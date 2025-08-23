@@ -32,13 +32,6 @@ return {
       StatusLineNC = { fg = "subtle", bg = "_nc" },
       StatusLineTerm = { link = "StatusLine" },
       StatusLineTermNC = { link = "StatusLineNC" },
-      -- winbar colors
-      WinBar = { fg = "leaf", bg = "leaf", bold = true, blend = 10 },
-      WinBarNC = { fg = "subtle", bg = "_nc" },
-      -- tabline colors
-      TabLine = { fg = "subtle", bg = "surface", bold = true },
-      TabLineSel = { fg = "subtle", bg = "surface", bold = true },
-      TabLineFill = { fg = "subtle", bg = "surface", bold = true },
       -- time machine colors
       TimeMachineCurrent = {
         bg = "foam",

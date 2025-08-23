@@ -40,12 +40,7 @@ local did_setup = false
 ---@field enabled? boolean
 ---@field padding? Barline.Config.Padding Padding configuration for left/right sides of the line
 ---@field layout? Barline.Layout
----@field unset? Barline.DisplayConfig.Unset
 ---@field show_default? Barline.DisplayConfig.ShowDefault
-
----@class Barline.DisplayConfig.Unset
----@field ft? string[] Filetypes to unset
----@field bt? string[] Buftypes to unset
 
 ---@class Barline.DisplayConfig.ShowDefault
 ---@field ft? string[] Filetypes to show default line
@@ -159,9 +154,8 @@ local function is_valid_buffer()
 end
 
 ---@param display Barline.DisplayType
----@param type "unset"|"show_default"
-local function should_unset_or_show_default(display, type)
-  local config = M.config[display][type]
+local function should_show_default(display)
+  local config = M.config[display].show_default
 
   if not config then
     return false
@@ -204,32 +198,13 @@ local function set_statusline()
   vim.opt.statusline = '%{%luaeval(\'require("barline").get_line("statusline")\')%}'
 end
 
----@param to_default? boolean Whether to reset to default statusline
-local function unset_statusline(to_default)
-  vim.opt.laststatus = 0
-  if to_default then
-    vim.opt.statusline = M.original_statusline
-  else
-    vim.opt.statusline = ""
-  end
-end
-
 local function set_winbar()
   vim.opt.winbar = '%{%luaeval(\'require("barline").get_line("winbar")\')%}'
-end
-
-local function unset_winbar(to_default)
-  vim.opt.winbar = to_default and M.original_winbar or ""
 end
 
 local function set_tabline()
   vim.opt.showtabline = 2
   vim.opt.tabline = '%{%luaeval(\'require("barline").get_line("tabline")\')%}'
-end
-
-local function unset_tabline(to_default)
-  vim.opt.showtabline = 0
-  vim.opt.tabline = to_default and M.original_tabline or ""
 end
 
 -- ------------------------------------------------------------------
@@ -694,7 +669,7 @@ end
 ---@param display Barline.DisplayType Display mode
 ---@return string line Complete line string
 function M.build_line(display)
-  if should_unset_or_show_default(display, "show_default") then
+  if should_show_default(display) then
     if display == "statusline" then
       return M.original_statusline
     elseif display == "winbar" then
@@ -779,36 +754,6 @@ local function setup_autocmds()
       end
     end,
   })
-
-  vim.api.nvim_create_autocmd({ "BufEnter", "TermEnter" }, {
-    group = group,
-    callback = function()
-      if should_unset_or_show_default("statusline", "unset") then
-        unset_statusline()
-      end
-      if should_unset_or_show_default("winbar", "unset") then
-        unset_winbar()
-      end
-      if should_unset_or_show_default("tabline", "unset") then
-        unset_tabline()
-      end
-    end,
-  })
-
-  vim.api.nvim_create_autocmd({ "BufLeave", "TermLeave" }, {
-    group = group,
-    callback = function()
-      if M.config.statusline.enabled then
-        set_statusline()
-      end
-      if M.config.winbar.enabled then
-        set_winbar()
-      end
-      if M.config.tabline.enabled then
-        set_tabline()
-      end
-    end,
-  })
 end
 
 -- ------------------------------------------------------------------
@@ -824,10 +769,6 @@ M.defaults = {
     enabled = true,
     is_global = true,
     padding = { left = 0, right = 0 },
-    unset = {
-      ft = {},
-      bt = {},
-    },
     show_default = {
       ft = {},
       bt = {},
@@ -842,10 +783,6 @@ M.defaults = {
   tabline = {
     enabled = false,
     padding = { left = 0, right = 0 },
-    unset = {
-      ft = {},
-      bt = {},
-    },
     show_default = {
       ft = {},
       bt = {},
@@ -860,10 +797,6 @@ M.defaults = {
   winbar = {
     enabled = false,
     padding = { left = 0, right = 0 },
-    unset = {
-      ft = {},
-      bt = {},
-    },
     show_default = {
       ft = {},
       bt = {},
@@ -1072,39 +1005,6 @@ function M.toggle_component(component_name)
     vim.notify(
       string.format("Component '%s' %s", component_name, M.config[component_name].enabled and "enabled" or "disabled")
     )
-  end
-end
-
----@param display Barline.DisplayType
-function M.toggle_display(display)
-  if M.config[display].enabled then
-    M.config[display].enabled = false
-    if display == "statusline" then
-      unset_statusline()
-    end
-    if display == "winbar" then
-      unset_winbar()
-    end
-    if display == "tabline" then
-      unset_tabline()
-    end
-    vim.cmd("redrawstatus")
-    vim.cmd("redrawtabline")
-    vim.notify(string.format("Display '%s' disabled", display))
-  else
-    M.config[display].enabled = true
-    if display == "statusline" then
-      set_statusline()
-    end
-    if display == "winbar" then
-      set_winbar()
-    end
-    if display == "tabline" then
-      set_tabline()
-    end
-    vim.cmd("redrawstatus")
-    vim.cmd("redrawtabline")
-    vim.notify(string.format("Display '%s' enabled", display))
   end
 end
 
