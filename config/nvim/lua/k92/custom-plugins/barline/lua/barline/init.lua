@@ -12,7 +12,8 @@ local did_setup = false
 
 ---@class Barline.Config
 ---@field component_separator? string Separator between components
----@field hide_in_special_buffers? boolean Hide lines in special buffers
+---@field special_buftypes? string[] Hide lines in special buffer types
+---@field show_default_line_in_special_buffers? boolean Hide lines in special buffers
 ---@field mode Barline.ModeConfig? Mode component configuration
 ---@field fileinfo Barline.FileinfoConfig? Fileinfo component configuration
 ---@field git Barline.GitConfig? Git component configuration
@@ -129,6 +130,8 @@ local did_setup = false
 ---@class Barline.WarpConfig : Barline.Config.General
 ---@field icon? string Warp icon
 
+---@alias Barline.DisplayType "statusline"|"winbar"|"tabline"
+
 -- ------------------------------------------------------------------
 -- Utilities
 -- ------------------------------------------------------------------
@@ -150,9 +153,13 @@ end
 ---Check if current buffer is a special buffer type
 ---@return boolean is_special True if buffer is special (help, qf, etc.)
 local function is_special_buffer()
+  local special_ft = { "help", "qf", "man", "cmd" }
+
+  special_ft = vim.tbl_deep_extend("force", special_ft, M.config.special_buftypes or {})
+
   local bt = vim.bo.buftype
   local ft = vim.bo.filetype
-  return bt ~= "" or ft == "help" or ft == "qf" or ft == "man"
+  return bt ~= "" or vim.tbl_contains(special_ft, ft)
 end
 
 ---Truncate string to maximum length with ellipsis
@@ -175,6 +182,43 @@ function M.with_hl(text, hl)
     return text
   end
   return "%#" .. hl .. "#" .. text .. "%*"
+end
+
+local function set_statusline()
+  if M.config.statusline.is_global then
+    vim.opt.laststatus = 3
+  else
+    vim.opt.laststatus = 2
+  end
+  vim.opt.statusline = '%{%luaeval(\'require("barline").get_line("statusline")\')%}'
+end
+
+---@param to_default? boolean Whether to reset to default statusline
+local function unset_statusline(to_default)
+  vim.opt.laststatus = 0
+  if to_default then
+    vim.opt.statusline = M.original_statusline
+  else
+    vim.opt.statusline = ""
+  end
+end
+
+local function set_winbar()
+  vim.opt.winbar = '%{%luaeval(\'require("barline").get_line("winbar")\')%}'
+end
+
+local function unset_winbar(to_default)
+  vim.opt.winbar = to_default and M.original_winbar or ""
+end
+
+local function set_tabline()
+  vim.opt.showtabline = 2
+  vim.opt.tabline = '%{%luaeval(\'require("barline").get_line("tabline")\')%}'
+end
+
+local function unset_tabline(to_default)
+  vim.opt.showtabline = 0
+  vim.opt.tabline = to_default and M.original_tabline or ""
 end
 
 -- ------------------------------------------------------------------
@@ -636,11 +680,17 @@ end
 -- Core Barline Builder
 -- ------------------------------------------------------------------
 ---Build the complete line string
----@param display "winbar"|"tabline"|"statusline" Display mode
+---@param display Barline.DisplayType Display mode
 ---@return string line Complete line string
 function M.build_line(display)
-  if is_special_buffer() and M.config.hide_in_special_buffers then
-    return " %f%m%r%h%w%="
+  if is_special_buffer() and M.config.show_default_line_in_special_buffers then
+    if display == "statusline" then
+      return M.original_statusline
+    elseif display == "winbar" then
+      return M.original_winbar
+    elseif display == "tabline" then
+      return M.original_tabline
+    end
   end
 
   ---@type Barline.DisplayConfig
@@ -665,7 +715,7 @@ function M.build_line(display)
 end
 
 -- Function to be called by lines
----@param display "winbar"|"tabline"|"statusline" Display mode
+---@param display Barline.DisplayType Display mode
 ---@return string statusline Complete statusline for vim statusline option
 function M.get_line(display)
   return M.build_line(display)
@@ -714,7 +764,7 @@ local function setup_autocmds()
   vim.api.nvim_create_autocmd(events, {
     group = group,
     callback = function()
-      if M.config.statusline.enabled or M.config.winbar.enabled or M.config.tabline.enabled then
+      if M.config.statusline.enabled or M.config.winbar.enabled then
         vim.cmd("redrawstatus")
       end
       if M.config.tabline.enabled then
@@ -731,7 +781,7 @@ end
 M.defaults = {
   -- Global settings
   component_separator = " ",
-  hide_in_special_buffers = true,
+  show_default_line_in_special_buffers = true,
 
   -- Layout configuration
   statusline = {
@@ -932,21 +982,15 @@ function M.setup(user_config)
 
   -- Set the statusline to use our function
   if M.config.statusline.enabled then
-    if M.config.statusline.is_global then
-      vim.opt.laststatus = 3
-    else
-      vim.opt.laststatus = 2
-    end
-    vim.opt.statusline = '%{%luaeval(\'require("barline").get_line("statusline")\')%}'
+    set_statusline()
   end
 
   if M.config.winbar.enabled then
-    vim.opt.winbar = '%{%luaeval(\'require("barline").get_line("winbar")\')%}'
+    set_winbar()
   end
 
   if M.config.tabline.enabled then
-    vim.opt.showtabline = 2
-    vim.opt.tabline = '%{%luaeval(\'require("barline").get_line("tabline")\')%}'
+    set_tabline()
   end
 
   if M.config.post_setup_fn then
@@ -968,6 +1012,39 @@ function M.toggle_component(component_name)
     vim.notify(
       string.format("Component '%s' %s", component_name, M.config[component_name].enabled and "enabled" or "disabled")
     )
+  end
+end
+
+---@param display Barline.DisplayType
+function M.toggle_display(display)
+  if M.config[display].enabled then
+    M.config[display].enabled = false
+    if display == "statusline" then
+      unset_statusline()
+    end
+    if display == "winbar" then
+      unset_winbar()
+    end
+    if display == "tabline" then
+      unset_tabline()
+    end
+    vim.cmd("redrawstatus")
+    vim.cmd("redrawtabline")
+    vim.notify(string.format("Display '%s' disabled", display))
+  else
+    M.config[display].enabled = true
+    if display == "statusline" then
+      set_statusline()
+    end
+    if display == "winbar" then
+      set_winbar()
+    end
+    if display == "tabline" then
+      set_tabline()
+    end
+    vim.cmd("redrawstatus")
+    vim.cmd("redrawtabline")
+    vim.notify(string.format("Display '%s' enabled", display))
   end
 end
 
