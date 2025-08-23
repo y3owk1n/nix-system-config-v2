@@ -12,43 +12,14 @@ return {
   opts = {
     statusline = {
       enabled = true,
-      padding = { left = 1, right = 1 },
-      is_global = false,
-      unset = {
-        ft = {
-          "time-machine-list",
-          "cmd",
-          "help",
-          "nofile",
-        },
-        bt = { "nofile" },
-      },
+      is_global = true,
       show_default = {
-        bt = { "nofile", "terminal" },
+        bt = { "nofile", "terminal", "help" },
       },
       layout = {
         left = { "git", "diff", "warp" },
-        center = {},
+        center = { "fileinfo", "diagnostics" },
         right = { "lsp", "position", "progress" },
-      },
-    },
-
-    winbar = {
-      enabled = true,
-      padding = { left = 1, right = 1 },
-      unset = {
-        ft = {
-          "time-machine-list",
-          "help",
-        },
-        bt = { "nofile" },
-      },
-      show_default = {
-        bt = { "nofile", "terminal" },
-      },
-      layout = {
-        left = { "fileinfo" },
-        right = { "diagnostics" },
       },
     },
 
