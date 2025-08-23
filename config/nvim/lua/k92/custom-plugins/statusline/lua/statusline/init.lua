@@ -669,28 +669,12 @@ local function setup_autocmds()
   local group = vim.api.nvim_create_augroup("CustomStatusline", { clear = true })
 
   local events = {
-    "ModeChanged",
-    "BufEnter",
-    "BufWritePost",
-    "FileChangedShellPost",
     "LspAttach",
     "LspDetach",
-    "DiagnosticChanged",
-    "WinEnter",
-    "WinLeave",
   }
 
   vim.api.nvim_create_autocmd(events, {
     group = group,
-    callback = function()
-      vim.cmd("redrawstatus")
-    end,
-  })
-
-  -- Git-related events
-  vim.api.nvim_create_autocmd("User", {
-    group = group,
-    pattern = { "FugitiveChanged", "GitSignsUpdate" },
     callback = function()
       vim.cmd("redrawstatus")
     end,
