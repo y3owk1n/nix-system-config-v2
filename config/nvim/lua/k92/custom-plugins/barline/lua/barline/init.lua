@@ -12,8 +12,6 @@ local did_setup = false
 
 ---@class Barline.Config
 ---@field component_separator? string Separator between components
----@field special_buftypes? string[] Hide lines in special buffer types
----@field show_default_line_in_special_buffers? boolean Hide lines in special buffers
 ---@field mode Barline.ModeConfig? Mode component configuration
 ---@field fileinfo Barline.FileinfoConfig? Fileinfo component configuration
 ---@field git Barline.GitConfig? Git component configuration
@@ -42,6 +40,16 @@ local did_setup = false
 ---@field enabled? boolean
 ---@field padding? Barline.Config.Padding Padding configuration for left/right sides of the line
 ---@field layout? Barline.Layout
+---@field unset? Barline.DisplayConfig.Unset
+---@field show_default? Barline.DisplayConfig.ShowDefault
+
+---@class Barline.DisplayConfig.Unset
+---@field ft? string[] Filetypes to unset
+---@field bt? string[] Buftypes to unset
+
+---@class Barline.DisplayConfig.ShowDefault
+---@field ft? string[] Filetypes to show default line
+---@field bt? string[] Buftypes to show default line
 
 ---@class Barline.Config.Padding
 ---@field left? number Padding on left side
@@ -150,16 +158,19 @@ local function is_valid_buffer()
   return vim.bo.buftype == "" and vim.fn.bufname() ~= ""
 end
 
----Check if current buffer is a special buffer type
----@return boolean is_special True if buffer is special (help, qf, etc.)
-local function is_special_buffer()
-  local special_ft = { "help", "qf", "man", "cmd" }
+---@param display Barline.DisplayType
+---@param type "unset"|"show_default"
+local function should_unset_or_show_default(display, type)
+  local config = M.config[display][type]
 
-  special_ft = vim.tbl_deep_extend("force", special_ft, M.config.special_buftypes or {})
+  if not config then
+    return false
+  end
 
-  local bt = vim.bo.buftype
-  local ft = vim.bo.filetype
-  return bt ~= "" or vim.tbl_contains(special_ft, ft)
+  local has_ft = vim.tbl_contains(config.ft, vim.bo.filetype)
+  local has_bt = vim.tbl_contains(config.bt, vim.bo.buftype)
+
+  return has_bt or has_ft
 end
 
 ---Truncate string to maximum length with ellipsis
@@ -683,7 +694,7 @@ end
 ---@param display Barline.DisplayType Display mode
 ---@return string line Complete line string
 function M.build_line(display)
-  if is_special_buffer() and M.config.show_default_line_in_special_buffers then
+  if should_unset_or_show_default(display, "show_default") then
     if display == "statusline" then
       return M.original_statusline
     elseif display == "winbar" then
@@ -753,12 +764,8 @@ local function setup_autocmds()
   local group = vim.api.nvim_create_augroup("CustomBarline", { clear = true })
 
   local events = {
-    "WinEnter",
-    "WinLeave",
-    "BufEnter",
-    "BufLeave",
-    "BufWritePost",
-    "DiagnosticChanged",
+    "LspAttach",
+    "LspDetach",
   }
 
   vim.api.nvim_create_autocmd(events, {
@@ -772,6 +779,36 @@ local function setup_autocmds()
       end
     end,
   })
+
+  vim.api.nvim_create_autocmd({ "BufEnter", "TermEnter" }, {
+    group = group,
+    callback = function()
+      if should_unset_or_show_default("statusline", "unset") then
+        unset_statusline()
+      end
+      if should_unset_or_show_default("winbar", "unset") then
+        unset_winbar()
+      end
+      if should_unset_or_show_default("tabline", "unset") then
+        unset_tabline()
+      end
+    end,
+  })
+
+  vim.api.nvim_create_autocmd({ "BufLeave", "TermLeave" }, {
+    group = group,
+    callback = function()
+      if M.config.statusline.enabled then
+        set_statusline()
+      end
+      if M.config.winbar.enabled then
+        set_winbar()
+      end
+      if M.config.tabline.enabled then
+        set_tabline()
+      end
+    end,
+  })
 end
 
 -- ------------------------------------------------------------------
@@ -781,13 +818,20 @@ end
 M.defaults = {
   -- Global settings
   component_separator = " ",
-  show_default_line_in_special_buffers = true,
 
   -- Layout configuration
   statusline = {
     enabled = true,
     is_global = true,
     padding = { left = 0, right = 0 },
+    unset = {
+      ft = {},
+      bt = {},
+    },
+    show_default = {
+      ft = {},
+      bt = {},
+    },
     layout = {
       left = { "mode", "git", "diff" },
       center = { "fileinfo" },
@@ -798,6 +842,14 @@ M.defaults = {
   tabline = {
     enabled = false,
     padding = { left = 0, right = 0 },
+    unset = {
+      ft = {},
+      bt = {},
+    },
+    show_default = {
+      ft = {},
+      bt = {},
+    },
     layout = {
       left = {},
       center = {},
@@ -808,6 +860,14 @@ M.defaults = {
   winbar = {
     enabled = false,
     padding = { left = 0, right = 0 },
+    unset = {
+      ft = {},
+      bt = {},
+    },
+    show_default = {
+      ft = {},
+      bt = {},
+    },
     layout = {
       left = {},
       center = {},
