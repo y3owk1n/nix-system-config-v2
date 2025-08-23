@@ -19,7 +19,7 @@ return {
       layout = {
         left = { "git", "diff", "warp" },
         center = { "fileinfo", "diagnostics" },
-        right = { "lsp", "position", "progress" },
+        right = { "macro", "search", "lsp", "position", "progress" },
       },
     },
 
@@ -28,17 +28,20 @@ return {
       detail_suffix = "]",
     },
 
-    fileinfo = {
-      max_length = 80,
-      path_style = "relative",
-    },
-
     diagnostics = {
       show_info = true,
       show_hint = true,
     },
 
     warp = {
+      enabled = true,
+    },
+
+    macro = {
+      enabled = true,
+    },
+
+    search = {
       enabled = true,
     },
   },

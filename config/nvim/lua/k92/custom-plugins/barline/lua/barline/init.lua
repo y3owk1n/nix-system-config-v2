@@ -6,12 +6,18 @@ local M = {}
 -- track first setup
 local did_setup = false
 
+-- Cache for performance
+local cache = {
+  file_size = {},
+}
+
 --------------------------------------------------------------------------------
 -- Types
 --------------------------------------------------------------------------------
 
 ---@class Barline.Config
 ---@field component_separator? string Separator between components
+---@field conditions? Barline.Conditions Global conditions for showing statusline
 ---@field mode Barline.ModeConfig? Mode component configuration
 ---@field fileinfo Barline.FileinfoConfig? Fileinfo component configuration
 ---@field git Barline.GitConfig? Git component configuration
@@ -24,10 +30,19 @@ local did_setup = false
 ---@field fileformat Barline.FileformatConfig? Fileformat component configuration
 ---@field filetype Barline.FiletypeConfig? Filetype component configuration
 ---@field warp Barline.WarpConfig? Warp component configuration
+---@field macro Barline.MacroConfig? Macro recording component configuration
+---@field search Barline.SearchConfig? Search count component configuration
+---@field terminal Barline.TerminalConfig? Terminal info component configuration
 ---@field post_setup_fn? fun(config: Barline.Config) Callback function to run after setup
 ---@field statusline? Barline.DisplayConfig.Statusline
 ---@field winbar? Barline.DisplayConfig.Winbar
 ---@field tabline? Barline.DisplayConfig.Tabline
+
+---@class Barline.Conditions
+---@field hide_in_width? number|nil
+---@field hide_in_focus? boolean
+---@field disabled_filetypes? string[]
+---@field disabled_buftypes? string[]
 
 ---@class Barline.DisplayConfig.Statusline : Barline.DisplayConfig
 ---@field is_global? boolean
@@ -41,6 +56,7 @@ local did_setup = false
 ---@field padding? Barline.Config.Padding Padding configuration for left/right sides of the line
 ---@field layout? Barline.Layout
 ---@field show_default? Barline.DisplayConfig.ShowDefault
+---@field conditions? fun(): boolean Custom condition function for this display
 
 ---@class Barline.DisplayConfig.ShowDefault
 ---@field ft? string[] Filetypes to show default line
@@ -55,6 +71,7 @@ local did_setup = false
 ---@field prefix? string Text before component
 ---@field suffix? string Text after component
 ---@field hl? string Highlight group for the whole component
+---@field condition? fun(): boolean Custom condition function for this component
 
 ---@class Barline.Layout
 ---@field left? string[] List of component names for left side
@@ -63,6 +80,7 @@ local did_setup = false
 
 ---@class Barline.ModeConfig : Barline.Config.General
 ---@field mode_map? table<string, string> Mapping of mode codes to display names
+---@field show_mode_colors? boolean Use different colors for different modes
 
 ---@class Barline.FileinfoConfig : Barline.Config.General
 ---@field color_icon? boolean Color file icon based on dev icon settings
@@ -70,11 +88,13 @@ local did_setup = false
 ---@field show_filename? boolean Show filename
 ---@field show_modified? boolean Show modified indicator
 ---@field show_readonly? boolean Show readonly indicator
+---@field show_size? boolean Show file size
 ---@field modified_icon? string Icon for modified files
 ---@field readonly_icon? string Icon for readonly files
 ---@field unnamed_text? string Text for unnamed buffers
 ---@field max_length? number Maximum filename length (0 for no limit)
----@field path_style? '"none"'|'"relative"'|'"absolute"'|'"shortened"'|'"basename"' How to show the file path
+---@field path_style_below_max_length? '"none"'|'"relative"'|'"absolute"'|'"shortened"'|'"basename"' How to show the file path
+---@field path_style_above_max_length? '"none"'|'"relative"'|'"absolute"'|'"shortened"'|'"basename"' How to show the file path
 
 ---@class Barline.GitConfig : Barline.Config.General
 ---@field icon? string Git branch icon
@@ -133,6 +153,17 @@ local did_setup = false
 ---@class Barline.WarpConfig : Barline.Config.General
 ---@field icon? string Warp icon
 
+---@class Barline.MacroConfig : Barline.Config.General
+---@field icon? string Macro recording icon
+---@field recording_text? string Text to show when recording
+
+---@class Barline.SearchConfig : Barline.Config.General
+---@field icon? string Search icon
+
+---@class Barline.TerminalConfig : Barline.Config.General
+---@field icon? string Terminal icon
+---@field show_term_name? boolean Show terminal name/command
+
 ---@alias Barline.DisplayType "statusline"|"winbar"|"tabline"
 
 -- ------------------------------------------------------------------
@@ -151,6 +182,37 @@ end
 ---@return boolean valid True if buffer should show line components
 local function is_valid_buffer()
   return vim.bo.buftype == "" and vim.fn.bufname() ~= ""
+end
+
+---Check global conditions
+---@return boolean should_show True if statusline should be shown
+local function check_conditions()
+  local conditions = M.config.conditions
+  if not conditions then
+    return true
+  end
+
+  -- Check window width
+  if conditions.hide_in_width and vim.api.nvim_win_get_width(0) < conditions.hide_in_width then
+    return false
+  end
+
+  -- Check window focus
+  if conditions.hide_in_focus and vim.api.nvim_get_current_win() ~= vim.fn.win_getid() then
+    return false
+  end
+
+  -- Check disabled filetypes
+  if conditions.disabled_filetypes and vim.tbl_contains(conditions.disabled_filetypes, vim.bo.filetype) then
+    return false
+  end
+
+  -- Check disabled buftypes
+  if conditions.disabled_buftypes and vim.tbl_contains(conditions.disabled_buftypes, vim.bo.buftype) then
+    return false
+  end
+
+  return true
 end
 
 ---@param display Barline.DisplayType
@@ -178,12 +240,30 @@ local function truncate_string(str, max_len)
   return string.sub(str, 1, max_len - 1) .. "…"
 end
 
+---Format file size
+---@param size number Size in bytes
+---@return string formatted Formatted size string
+local function format_file_size(size)
+  if size < 1024 then
+    return size .. "B"
+  elseif size < 1024 * 1024 then
+    return string.format("%.1fK", size / 1024)
+  elseif size < 1024 * 1024 * 1024 then
+    return string.format("%.1fM", size / (1024 * 1024))
+  else
+    return string.format("%.1fG", size / (1024 * 1024 * 1024))
+  end
+end
+
 ---Wrap text with line highlight group
 ---@param text string
 ---@param hl string?
 ---@return string
 function M.with_hl(text, hl)
-  if not hl or hl == "" or text == "" then
+  if not text or text == "" then
+    return ""
+  end
+  if not hl or hl == "" then
     return text
   end
   return "%#" .. hl .. "#" .. text .. "%*"
@@ -213,11 +293,26 @@ end
 ---@type table<string, fun(config: Barline.Config): string>
 local components = {}
 
+---Check if a component should be rendered based on its condition
+---@param component_config table Component configuration
+---@return boolean should_render True if component should be rendered
+local function should_render_component(component_config)
+  if not component_config or not component_config.enabled then
+    return false
+  end
+
+  if component_config.condition and not component_config.condition() then
+    return false
+  end
+
+  return true
+end
+
 -- Mode component
 ---@param config Barline.Config
 ---@return string mode_display
 function components.mode(config)
-  if not config.mode.enabled then
+  if not should_render_component(config.mode) then
     return ""
   end
 
@@ -241,14 +336,31 @@ function components.mode(config)
   local current_mode = vim.api.nvim_get_mode().mode
   local mode_name = mode_map[current_mode] or current_mode:upper()
 
-  return M.with_hl(string.format("%s%s%s", config.mode.prefix, mode_name, config.mode.suffix), config.mode.hl)
+  local hl_group = config.mode.hl
+  if config.mode.show_mode_colors then
+    local mode_colors = {
+      n = "BarlineModeNormal",
+      i = "BarlineModeInsert",
+      v = "BarlineModeVisual",
+      V = "BarlineModeVisual",
+      ["\22"] = "BarlineModeVisual",
+      c = "BarlineModeCommand",
+      R = "BarlineModeReplace",
+      r = "BarlineModeReplace",
+      t = "BarlineModeTerminal",
+    }
+    hl_group = mode_colors[current_mode] or hl_group
+  end
+
+  local text = config.mode.prefix .. mode_name .. config.mode.suffix
+  return M.with_hl(text, hl_group)
 end
 
 -- File info component
 ---@param config Barline.Config
 ---@return string fileinfo_display
 function components.fileinfo(config)
-  if not config.fileinfo.enabled then
+  if not should_render_component(config.fileinfo) then
     return ""
   end
 
@@ -271,13 +383,13 @@ function components.fileinfo(config)
 
   if config.fileinfo.show_filename then
     local filepath
-    if config.fileinfo.path_style == "absolute" then
+    if config.fileinfo.path_style_above_max_length == "absolute" then
       filepath = vim.fn.expand("%:p")
-    elseif config.fileinfo.path_style == "relative" then
+    elseif config.fileinfo.path_style_above_max_length == "relative" then
       filepath = vim.fn.expand("%:.")
-    elseif config.fileinfo.path_style == "shortened" then
+    elseif config.fileinfo.path_style_above_max_length == "shortened" then
       filepath = vim.fn.pathshorten(vim.fn.expand("%:~:."))
-    elseif config.fileinfo.path_style == "basename" then
+    elseif config.fileinfo.path_style_above_max_length == "basename" then
       filepath = vim.fn.expand("%:t")
     else -- fallback "none" or invalid
       filepath = vim.fn.expand("%:t")
@@ -286,10 +398,37 @@ function components.fileinfo(config)
     if filepath == "" then
       filepath = config.fileinfo.unnamed_text
     else
-      filepath = truncate_string(filepath, config.fileinfo.max_length)
+      if #filepath > config.fileinfo.max_length then
+        if config.fileinfo.path_style_below_max_length == "absolute" then
+          filepath = vim.fn.expand("%:p")
+        elseif config.fileinfo.path_style_below_max_length == "relative" then
+          filepath = vim.fn.expand("%:.")
+        elseif config.fileinfo.path_style_below_max_length == "shortened" then
+          filepath = vim.fn.pathshorten(vim.fn.expand("%:~:."))
+        elseif config.fileinfo.path_style_below_max_length == "basename" then
+          filepath = vim.fn.expand("%:t")
+        end
+      end
     end
 
+    filepath = truncate_string(filepath or "", config.fileinfo.max_length)
+
     table.insert(parts, filepath)
+  end
+
+  if config.fileinfo.show_size then
+    local bufnr = vim.api.nvim_get_current_buf()
+    local size = cache.file_size[bufnr]
+    if not size then
+      local stat = vim.loop.fs_stat(vim.api.nvim_buf_get_name(bufnr))
+      if stat then
+        size = format_file_size(stat.size)
+        cache.file_size[bufnr] = size
+      end
+    end
+    if size then
+      table.insert(parts, "(" .. size .. ")")
+    end
   end
 
   if config.fileinfo.show_modified and vim.bo.modified then
@@ -300,16 +439,19 @@ function components.fileinfo(config)
     table.insert(parts, config.fileinfo.readonly_icon)
   end
 
-  local result = table.concat(parts, " ")
-  return result ~= "" and M.with_hl((config.fileinfo.prefix .. result .. config.fileinfo.suffix), config.fileinfo.hl)
-    or ""
+  if #parts == 0 then
+    return ""
+  end
+
+  local text = config.fileinfo.prefix .. table.concat(parts, " ") .. config.fileinfo.suffix
+  return M.with_hl(text, config.fileinfo.hl)
 end
 
 -- Git component
 ---@param config Barline.Config
 ---@return string git_display
 function components.git(config)
-  if not config.git.enabled or not is_valid_buffer() then
+  if not should_render_component(config.git) or not is_valid_buffer() then
     return ""
   end
 
@@ -324,10 +466,8 @@ function components.git(config)
     local branch_name = repo_info.head_name
     branch_name = truncate_string(branch_name, config.git.max_length)
 
-    return M.with_hl(
-      string.format("%s%s%s%s", config.git.prefix, config.git.icon, branch_name, config.git.suffix),
-      config.git.hl
-    )
+    local text = config.git.prefix .. config.git.icon .. branch_name .. config.git.suffix
+    return M.with_hl(text, config.git.hl)
   end, "")
 end
 
@@ -335,7 +475,7 @@ end
 ---@param config Barline.Config
 ---@return string diff_display
 function components.diff(config)
-  if not config.diff.enabled or not is_valid_buffer() then
+  if not should_render_component(config.diff) or not is_valid_buffer() then
     return ""
   end
 
@@ -367,6 +507,7 @@ function components.diff(config)
     end
 
     local result = table.concat(parts, config.diff.separator)
+
     return result ~= "" and M.with_hl((config.diff.prefix .. result .. config.diff.suffix)) or ""
   end, "")
 end
@@ -375,7 +516,7 @@ end
 ---@param config Barline.Config
 ---@return string diagnostics_display
 function components.diagnostics(config)
-  if not config.diagnostics.enabled then
+  if not should_render_component(config.diagnostics) then
     return ""
   end
 
@@ -422,7 +563,7 @@ end
 ---@param config Barline.Config
 ---@return string lsp_display
 function components.lsp(config)
-  if not config.lsp.enabled then
+  if not should_render_component(config.lsp) then
     return ""
   end
 
@@ -468,11 +609,54 @@ function components.lsp(config)
   end, "")
 end
 
+-- Macro recording component
+---@param config Barline.Config
+---@return string macro_display
+function components.macro(config)
+  if not should_render_component(config.macro) then
+    return ""
+  end
+
+  local recording = vim.fn.reg_recording()
+  if recording == "" then
+    return ""
+  end
+
+  local icon = config.macro.icon or "󰑋"
+  local text = config.macro.recording_text or "REC"
+
+  return M.with_hl(
+    config.macro.prefix .. icon .. " " .. text .. " @" .. recording .. config.macro.suffix,
+    config.macro.hl
+  )
+end
+
+-- Search count component
+---@param config Barline.Config
+---@return string search_display
+function components.search(config)
+  if not should_render_component(config.search) then
+    return ""
+  end
+
+  return safe_call(function()
+    local search_count = vim.fn.searchcount({ maxcount = 999, timeout = 250 })
+    if not search_count or search_count.current == 0 then
+      return ""
+    end
+
+    local icon = config.search.icon or "󰍉"
+    local text = string.format("%d/%d", search_count.current, search_count.total)
+
+    return M.with_hl(config.search.prefix .. icon .. " " .. text .. config.search.suffix, config.search.hl)
+  end, "")
+end
+
 -- Position component (line:col)
 ---@param config Barline.Config
 ---@return string position_display
 function components.position(config)
-  if not config.position.enabled then
+  if not should_render_component(config.position) then
     return ""
   end
 
@@ -496,11 +680,34 @@ function components.position(config)
     or ""
 end
 
+-- Terminal info component
+---@param config Barline.Config
+---@return string terminal_display
+function components.terminal(config)
+  if not should_render_component(config.terminal) then
+    return ""
+  end
+
+  if vim.bo.buftype ~= "terminal" then
+    return ""
+  end
+
+  local icon = config.terminal.icon or ""
+  local parts = { icon }
+
+  if config.terminal.show_term_name then
+    local term_name = vim.b.term_title or "Terminal"
+    table.insert(parts, term_name)
+  end
+
+  return M.with_hl(config.terminal.prefix .. table.concat(parts, " ") .. config.terminal.suffix, config.terminal.hl)
+end
+
 -- Progress component (percentage through file)
 ---@param config Barline.Config
 ---@return string progress_display
 function components.progress(config)
-  if not config.progress.enabled then
+  if not should_render_component(config.progress) then
     return ""
   end
 
@@ -526,7 +733,7 @@ end
 ---@param config Barline.Config
 ---@return string encoding_display
 function components.encoding(config)
-  if not config.encoding.enabled then
+  if not should_render_component(config.encoding) then
     return ""
   end
 
@@ -547,7 +754,7 @@ end
 ---@param config Barline.Config
 ---@return string fileformat_display
 function components.fileformat(config)
-  if not config.fileformat.enabled then
+  if not should_render_component(config.fileformat) then
     return ""
   end
 
@@ -573,7 +780,7 @@ end
 ---@param config Barline.Config
 ---@return string filetype_display
 function components.filetype(config)
-  if not config.filetype.enabled then
+  if not should_render_component(config.filetype) then
     return ""
   end
 
@@ -589,7 +796,7 @@ end
 ---@param config Barline.Config
 ---@return string warp_display
 function components.warp(config)
-  if not config.warp.enabled then
+  if not should_render_component(config.warp) then
     return ""
   end
 
@@ -630,12 +837,12 @@ local function render_components(component_names)
     local fn = components[name]
     if fn then
       local result = fn(M.config)
-      if result ~= "" then
+      if result and result ~= "" then
         table.insert(parts, result)
       end
     end
   end
-  return table.concat(parts, M.config.component_separator)
+  return #parts > 0 and table.concat(parts, M.config.component_separator) or ""
 end
 
 ---Render the whole layout declaratively
@@ -649,13 +856,13 @@ local function render_layout(layout)
   -- Build the final line with %= anchors
   local chunks = {}
 
-  if left ~= "" then
+  if left and left ~= "" then
     table.insert(chunks, left)
   end
-  if center ~= "" then
+  if center and center ~= "" then
     table.insert(chunks, "%=" .. center)
   end
-  if right ~= "" then
+  if right and right ~= "" then
     table.insert(chunks, "%=" .. right)
   end
 
@@ -669,20 +876,39 @@ end
 ---@param display Barline.DisplayType Display mode
 ---@return string line Complete line string
 function M.build_line(display)
-  if should_show_default(display) then
-    if display == "statusline" then
-      return M.original_statusline
-    elseif display == "winbar" then
-      return M.original_winbar
-    elseif display == "tabline" then
-      return M.original_tabline
+  -- Check global conditions
+  if not check_conditions() then
+    if should_show_default(display) then
+      if display == "statusline" then
+        return M.original_statusline
+      elseif display == "winbar" then
+        return M.original_winbar
+      elseif display == "tabline" then
+        return M.original_tabline
+      end
     end
+
+    return "HIDDEN"
   end
 
+  -- Check display-specific conditions
   ---@type Barline.DisplayConfig
-  local current_display = M.config[display]
+  local display_config = M.config[display]
+  if display_config and display_config.conditions and not display_config.conditions() then
+    if should_show_default(display) then
+      if display == "statusline" then
+        return M.original_statusline
+      elseif display == "winbar" then
+        return M.original_winbar
+      elseif display == "tabline" then
+        return M.original_tabline
+      end
+    end
 
-  local line = render_layout(current_display.layout)
+    return "HIDDEN"
+  end
+
+  local line = render_layout(display_config.layout)
 
   if line == "" then
     if display == "statusline" then
@@ -694,8 +920,8 @@ function M.build_line(display)
     end
   end
 
-  local left_padding = current_display.padding.left and string.rep(" ", current_display.padding.left) or ""
-  local right_padding = current_display.padding.right and string.rep(" ", current_display.padding.right) or ""
+  local left_padding = display_config.padding.left and string.rep(" ", display_config.padding.left) or ""
+  local right_padding = display_config.padding.right and string.rep(" ", display_config.padding.right) or ""
 
   return left_padding .. line .. right_padding
 end
@@ -713,14 +939,16 @@ end
 
 ---Setup default highlight groups (no colors, just links if desired)
 local function setup_highlight_groups()
-  local function ensure_hl(name)
+  ---@param name string
+  ---@param hl_opts? vim.api.keyset.highlight
+  local function ensure_hl(name, hl_opts)
     local ok = pcall(vim.api.nvim_get_hl, 0, { name = name })
     if not ok then
-      vim.api.nvim_set_hl(0, name, {}) -- only create empty if missing
+      vim.api.nvim_set_hl(0, name, hl_opts or {}) -- only create empty if missing
     end
   end
 
-  -- auto-generate groups for user-registered components
+  -- auto-generate groups for registered components
   for _, def in pairs(M.defaults) do
     if type(def) == "table" then
       local hl = def.hl
@@ -729,6 +957,22 @@ local function setup_highlight_groups()
       end
     end
   end
+
+  ensure_hl("BarlineModeNormal")
+  ensure_hl("BarlineModeInsert")
+  ensure_hl("BarlineModeVisual")
+  ensure_hl("BarlineModeCommand")
+  ensure_hl("BarlineModeReplace")
+  ensure_hl("BarlineModeTerminal")
+
+  ensure_hl("BarlineDiagnosticsError")
+  ensure_hl("BarlineDiagnosticsWarn")
+  ensure_hl("BarlineDiagnosticsInfo")
+  ensure_hl("BarlineDiagnosticsHint")
+
+  ensure_hl("BarlineDiffAdd")
+  ensure_hl("BarlineDiffDelete")
+  ensure_hl("BarlineDiffChange")
 end
 
 -- ------------------------------------------------------------------
@@ -754,6 +998,15 @@ local function setup_autocmds()
       end
     end,
   })
+
+  -- Clear file size cache when buffer changes
+  vim.api.nvim_create_autocmd({ "BufReadPost", "BufWritePost" }, {
+    group = group,
+    callback = function()
+      local bufnr = vim.api.nvim_get_current_buf()
+      cache.file_size[bufnr] = nil
+    end,
+  })
 end
 
 -- ------------------------------------------------------------------
@@ -763,6 +1016,27 @@ end
 M.defaults = {
   -- Global settings
   component_separator = " ",
+
+  -- Global conditions
+  conditions = {
+    hide_in_width = nil,
+    hide_in_focus = false,
+    disabled_filetypes = {
+      "help",
+      "startify",
+      "dashboard",
+      "packer",
+      "neogitstatus",
+      "NvimTree",
+      "Trouble",
+      "alpha",
+      "lir",
+      "Outline",
+      "spectre_panel",
+      "toggleterm",
+    },
+    disabled_buftypes = { "terminal", "prompt" },
+  },
 
   -- Layout configuration
   statusline = {
@@ -776,7 +1050,7 @@ M.defaults = {
     layout = {
       left = { "mode", "git", "diff" },
       center = { "fileinfo" },
-      right = { "diagnostics", "lsp", "position", "progress" },
+      right = { "macro", "search", "diagnostics", "lsp", "position", "progress" },
     },
   },
 
@@ -841,11 +1115,13 @@ M.defaults = {
     show_filename = true,
     show_modified = true,
     show_readonly = true,
+    show_size = false,
     modified_icon = "",
     readonly_icon = "",
     unnamed_text = "[No Name]",
-    max_length = 30,
-    path_style = "relative", -- options: "none", "relative", "absolute", "shortened", "basename"
+    max_length = 60,
+    path_style_above_max_length = "relative", -- options: "none", "relative", "absolute", "shortened", "basename"
+    path_style_below_max_length = "shortened", -- options: "none", "relative", "absolute", "shortened", "basename"
   },
 
   git = {
@@ -948,6 +1224,32 @@ M.defaults = {
     hl = "BarlineWarp",
     icon = "󱐋 ",
   },
+
+  macro = {
+    enabled = false,
+    prefix = "",
+    suffix = "",
+    hl = "BarlineMacro",
+    icon = "󰑋",
+    recording_text = "REC",
+  },
+
+  search = {
+    enabled = false,
+    prefix = "",
+    suffix = "",
+    hl = "BarlineSearch",
+    icon = "󰍉",
+  },
+
+  terminal = {
+    enabled = false,
+    prefix = "",
+    suffix = "",
+    hl = "BarlineTerminal",
+    icon = "",
+    show_term_name = true,
+  },
 }
 
 M.original_statusline = nil
@@ -1002,21 +1304,60 @@ function M.toggle_component(component_name)
   if M.config[component_name] then
     M.config[component_name].enabled = not M.config[component_name].enabled
     vim.cmd("redrawstatus")
+    if M.config.tabline.enabled then
+      vim.cmd("redrawtabline")
+    end
     vim.notify(
       string.format("Component '%s' %s", component_name, M.config[component_name].enabled and "enabled" or "disabled")
     )
+  else
+    vim.notify(string.format("Component '%s' not found", component_name), vim.log.levels.ERROR)
   end
 end
 
+---Toggle statusline visibility
+function M.toggle_statusline()
+  M.config.statusline.enabled = not M.config.statusline.enabled
+  if M.config.statusline.enabled then
+    set_statusline()
+  else
+    vim.opt.statusline = M.original_statusline
+  end
+  vim.notify(string.format("Statusline %s", M.config.statusline.enabled and "enabled" or "disabled"))
+end
+
+---Reload configuration and refresh
+function M.reload()
+  setup_highlight_groups()
+  vim.cmd("redrawstatus")
+  if M.config.tabline.enabled then
+    vim.cmd("redrawtabline")
+  end
+  vim.notify("Barline reloaded")
+end
+
+---Clear all caches
+function M.clear_cache()
+  cache.file_size = {}
+  vim.notify("Barline cache cleared")
+end
+
 ---Get debug information about all components
----@return table<string, {enabled: boolean, output: string}> debug_info
+---@return table<string, {enabled: boolean, output: string, condition?: boolean}> debug_info
 function M.debug_info()
   local info = {}
   for name, _ in pairs(components) do
     if M.config[name] then
+      local component_config = M.config[name]
+      local condition_result = true
+      if component_config.condition then
+        condition_result = component_config.condition()
+      end
+
       info[name] = {
-        enabled = M.config[name].enabled,
-        output = components[name](M.config),
+        enabled = component_config.enabled,
+        condition = condition_result,
+        output = condition_result and components[name](M.config) or "[condition failed]",
       }
     end
   end
@@ -1030,17 +1371,26 @@ end
 ---@param default_config? table Default config for component
 ---@example
 ---```lua
----local bm = require("barline")
+---local barline = require("barline")
 ---
----bm.register_component("time", function(cfg)
----  return bm.with_hl(cfg.time.icon .. cfg.time.prefix .. os.date("%H:%M") .. cfg.time.suffix, cfg.time.hl)
+---barline.register_component("time", function(cfg)
+---  return barline.with_hl(cfg.time.icon .. cfg.time.prefix .. os.date("%H:%M") .. cfg.time.suffix, cfg.time.hl)
 ---end, {
----  icon = "",
+---  icon = "",
 ---  hl = "CurSearch",
 ---})
 ---```
 function M.register_component(name, fn, default_config)
-  components[name] = fn
+  -- Wrap function with condition checking
+  local wrapped_fn = function(config)
+    local component_config = config[name]
+    if component_config and component_config.condition and not component_config.condition() then
+      return ""
+    end
+    return fn(config)
+  end
+
+  components[name] = wrapped_fn
 
   if not M.defaults[name] then
     M.defaults[name] = vim.tbl_deep_extend("force", {
@@ -1048,8 +1398,14 @@ function M.register_component(name, fn, default_config)
       prefix = "",
       suffix = "",
       hl = "Barline" .. name:gsub("^%l", string.upper),
-    }, M.defaults[name] or default_config or {})
+    }, default_config or {})
   end
+end
+
+---Get current configuration
+---@return Barline.Config config Current configuration
+function M.get_config()
+  return M.config
 end
 
 return M
