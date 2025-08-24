@@ -49,7 +49,7 @@ return {
     {
       "<leader>st",
       function()
-        local keywords = { "TODO", "FIXME", "HACK", "WARN", "PERF", "NOTE", "TEST", "BUG", "ISSUE" }
+        local keywords = { "TODO", "FIXME", "HACK", "NOTE" }
         local rg_pattern = [[\b(]] .. table.concat(keywords, "|") .. [[)\b:]]
         require("mini.pick").builtin.grep({ pattern = rg_pattern })
       end,
@@ -64,7 +64,7 @@ return {
           scope = "modified",
         })
       end,
-      desc = "Highlights",
+      desc = "Git modified files",
     },
     {
       "<leader>sH",
