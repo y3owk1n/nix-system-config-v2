@@ -36,12 +36,15 @@ in
 
       bind -N "last-session (via sesh) " L run-shell "sesh last" # overwrite last-session with sesh last
 
+      bind C-g display-popup -T "Lazygit" -w 90% -h 80% -d "#{pane_current_path}" -E "lazygit"
+      bind C-t display-popup -T "Terminal" -w 90% -h 80% -d "#{pane_current_path}" -E
+
       bind-key C-n switch-client -T dotmd
-      bind-key -T dotmd t run-shell "tmux popup -E -w 90% -h 80% -T 'Dotmd Todo' 'sh -c \"cd /Users/kylewong/Library/Mobile\\ Documents/com~apple~CloudDocs/Cloud\\ Notes && nvim +\\\"DotMdCreateTodoToday split=none\\\"\"'"
-      bind-key -T dotmd n run-shell "tmux popup -E -w 90% -h 80% -T 'Dotmd Note' 'sh -c \"cd /Users/kylewong/Library/Mobile\\ Documents/com~apple~CloudDocs/Cloud\\ Notes && nvim +\\\"DotMdCreateNote split=none\\\"\"'"
-      bind-key -T dotmd i run-shell "tmux popup -E -w 90% -h 80% -T 'Dotmd Inbox' 'sh -c \"cd /Users/kylewong/Library/Mobile\\ Documents/com~apple~CloudDocs/Cloud\\ Notes && nvim +\\\"DotMdInbox split=none\\\"\"'"
-      bind-key -T dotmd p run-shell "tmux popup -E -w 90% -h 80% -T 'Dotmd Pick' 'sh -c \"cd /Users/kylewong/Library/Mobile\\ Documents/com~apple~CloudDocs/Cloud\\ Notes && nvim +\\\"DotMdPick\\\"\"'"
-      bind-key -T dotmd r run-shell "tmux popup -E -w 90% -h 80% -T 'Dotmd Root' 'sh -c \"cd /Users/kylewong/Library/Mobile\\ Documents/com~apple~CloudDocs/Cloud\\ Notes && nvim\"'"
+      bind-key -T dotmd t display-popup -w 90% -h 80% -T "Dotmd Todo" -d ~/Library/Mobile\ Documents/com~apple~CloudDocs/Cloud\ Notes -E "nvim +\'DotMdCreateTodoToday split=none\'"
+      bind-key -T dotmd n display-popup -w 90% -h 80% -T "Dotmd Note" -d ~/Library/Mobile\ Documents/com~apple~CloudDocs/Cloud\ Notes -E "nvim +\'DotMdCreateNote split=none\'"
+      bind-key -T dotmd i display-popup -w 90% -h 80% -T "Dotmd Inbox" -d ~/Library/Mobile\ Documents/com~apple~CloudDocs/Cloud\ Notes -E "nvim +\'DotMdInbox split=none\'"
+      bind-key -T dotmd p display-popup -w 90% -h 80% -T "Dotmd Pick" -d ~/Library/Mobile\ Documents/com~apple~CloudDocs/Cloud\ Notes -E "nvim +DotMdPick"
+      bind-key -T dotmd r display-popup -w 90% -h 80% -T "Dotmd Root" -d ~/Library/Mobile\ Documents/com~apple~CloudDocs/Cloud\ Notes -E "nvim"
       bind-key -T dotmd Escape switch-client -T root
 
       bind-key -T copy-mode-vi 'v' send -X begin-selection # start selecting text with "v"
