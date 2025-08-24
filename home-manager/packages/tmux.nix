@@ -37,7 +37,7 @@ in
       bind -N "last-session (via sesh) " L run-shell "sesh last" # overwrite last-session with sesh last
 
       bind C-g display-popup -T "Lazygit" -w 90% -h 80% -d "#{pane_current_path}" -E "lazygit"
-      bind C-t display-popup -T "Terminal" -w 90% -h 80% -d "#{pane_current_path}" -E
+      bind C-t display-popup -T "Terminal" -w 90% -h 80% -d "#{pane_current_path}" -E $SHELL
 
       bind-key C-n switch-client -T dotmd
       bind-key -T dotmd t display-popup -w 90% -h 80% -T "Dotmd Todo" -d ~/Library/Mobile\ Documents/com~apple~CloudDocs/Cloud\ Notes -E "nvim +\'DotMdCreateTodoToday split=none\'"
