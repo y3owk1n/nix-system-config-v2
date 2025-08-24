@@ -4,7 +4,7 @@
     enable = true;
     enableAlias = true;
     enableTmuxIntegration = true;
-    tmuxKey = "b";
+    tmuxKey = "C-b";
     settings = {
       default_session = {
         startup_command = "ls";
