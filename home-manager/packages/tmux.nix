@@ -7,7 +7,7 @@ in
     enable = true;
     aggressiveResize = true;
     baseIndex = 1;
-    escapeTime = 10;
+    escapeTime = 0;
     focusEvents = true;
     historyLimit = 50000;
     keyMode = "vi";
@@ -62,6 +62,8 @@ in
       ${lib.optionalString pkgs.stdenv.isDarwin ''
         	set-option -g default-command "${pkgs.reattach-to-user-namespace}/bin/reattach-to-user-namespace -l ${fish}"
       ''}
+
+      set -g popup-border-lines rounded
 
       set -g status-interval 5
       set -g status-position top

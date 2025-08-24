@@ -4,6 +4,7 @@ local custom_name = "lazygit"
 return {
   dir = vim.fn.stdpath("config") .. "/lua/k92/custom-plugins/" .. custom_name,
   name = custom_name,
+  enabled = false,
   lazy = false,
   ---@type Lazygit.Config
   opts = {},

@@ -1,6 +1,7 @@
 ---@type LazySpec
 return {
   "y3owk1n/cmd.nvim",
+  enabled = false,
   event = { "CmdlineEnter" },
   cmd = { "Cmd", "CmdCancel", "CmdHistory", "CmdRerun" },
   opts = function()
