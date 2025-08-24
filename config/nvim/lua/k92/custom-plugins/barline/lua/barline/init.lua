@@ -32,7 +32,6 @@ local cache = {
 ---@field warp Barline.WarpConfig? Warp component configuration
 ---@field macro Barline.MacroConfig? Macro recording component configuration
 ---@field search Barline.SearchConfig? Search count component configuration
----@field terminal Barline.TerminalConfig? Terminal info component configuration
 ---@field post_setup_fn? fun(config: Barline.Config) Callback function to run after setup
 ---@field statusline? Barline.DisplayConfig.Statusline
 ---@field winbar? Barline.DisplayConfig.Winbar
@@ -55,12 +54,7 @@ local cache = {
 ---@field enabled? boolean
 ---@field padding? Barline.Config.Padding Padding configuration for left/right sides of the line
 ---@field layout? Barline.Layout
----@field show_default? Barline.DisplayConfig.ShowDefault
 ---@field conditions? fun(): boolean Custom condition function for this display
-
----@class Barline.DisplayConfig.ShowDefault
----@field ft? string[] Filetypes to show default line
----@field bt? string[] Buftypes to show default line
 
 ---@class Barline.Config.Padding
 ---@field left? number Padding on left side
@@ -160,10 +154,6 @@ local cache = {
 ---@class Barline.SearchConfig : Barline.Config.General
 ---@field icon? string Search icon
 
----@class Barline.TerminalConfig : Barline.Config.General
----@field icon? string Terminal icon
----@field show_term_name? boolean Show terminal name/command
-
 ---@alias Barline.DisplayType "statusline"|"winbar"|"tabline"
 
 -- ------------------------------------------------------------------
@@ -213,20 +203,6 @@ local function check_conditions()
   end
 
   return true
-end
-
----@param display Barline.DisplayType
-local function should_show_default(display)
-  local config = M.config[display].show_default
-
-  if not config then
-    return false
-  end
-
-  local has_ft = vim.tbl_contains(config.ft, vim.bo.filetype)
-  local has_bt = vim.tbl_contains(config.bt, vim.bo.buftype)
-
-  return has_bt or has_ft
 end
 
 ---Truncate string to maximum length with ellipsis
@@ -316,22 +292,7 @@ function components.mode(config)
     return ""
   end
 
-  local mode_map = config.mode.mode_map
-    or {
-      n = "NORMAL",
-      i = "INSERT",
-      v = "VISUAL",
-      V = "V-LINE",
-      ["\22"] = "V-BLOCK", -- Ctrl-V
-      c = "COMMAND",
-      s = "SELECT",
-      S = "S-LINE",
-      ["\19"] = "S-BLOCK", -- Ctrl-S
-      R = "REPLACE",
-      r = "REPLACE",
-      ["!"] = "SHELL",
-      t = "TERMINAL",
-    }
+  local mode_map = config.mode.mode_map or {}
 
   local current_mode = vim.api.nvim_get_mode().mode
   local mode_name = mode_map[current_mode] or current_mode:upper()
@@ -348,6 +309,7 @@ function components.mode(config)
       R = "BarlineModeReplace",
       r = "BarlineModeReplace",
       t = "BarlineModeTerminal",
+      nt = "BarlineModeNTerminal",
     }
     hl_group = mode_colors[current_mode] or hl_group
   end
@@ -680,29 +642,6 @@ function components.position(config)
     or ""
 end
 
--- Terminal info component
----@param config Barline.Config
----@return string terminal_display
-function components.terminal(config)
-  if not should_render_component(config.terminal) then
-    return ""
-  end
-
-  if vim.bo.buftype ~= "terminal" then
-    return ""
-  end
-
-  local icon = config.terminal.icon or ""
-  local parts = { icon }
-
-  if config.terminal.show_term_name then
-    local term_name = vim.b.term_title or "Terminal"
-    table.insert(parts, term_name)
-  end
-
-  return M.with_hl(config.terminal.prefix .. table.concat(parts, " ") .. config.terminal.suffix, config.terminal.hl)
-end
-
 -- Progress component (percentage through file)
 ---@param config Barline.Config
 ---@return string progress_display
@@ -720,7 +659,7 @@ function components.progress(config)
     local filled = math.floor((percent / 100) * bar_length)
     local empty = bar_length - filled
     local bar = string.rep(config.progress.bar_fill, filled) .. string.rep(config.progress.bar_empty, empty)
-    return config.progress.prefix .. bar .. config.progress.suffix
+    return bar
   else
     return M.with_hl(
       string.format("%s%d%%%s", config.progress.prefix, percent, config.progress.suffix),
@@ -878,16 +817,6 @@ end
 function M.build_line(display)
   -- Check global conditions
   if not check_conditions() then
-    if should_show_default(display) then
-      if display == "statusline" then
-        return M.original_statusline
-      elseif display == "winbar" then
-        return M.original_winbar
-      elseif display == "tabline" then
-        return M.original_tabline
-      end
-    end
-
     return "HIDDEN"
   end
 
@@ -895,16 +824,6 @@ function M.build_line(display)
   ---@type Barline.DisplayConfig
   local display_config = M.config[display]
   if display_config and display_config.conditions and not display_config.conditions() then
-    if should_show_default(display) then
-      if display == "statusline" then
-        return M.original_statusline
-      elseif display == "winbar" then
-        return M.original_winbar
-      elseif display == "tabline" then
-        return M.original_tabline
-      end
-    end
-
     return "HIDDEN"
   end
 
@@ -964,6 +883,7 @@ local function setup_highlight_groups()
   ensure_hl("BarlineModeCommand")
   ensure_hl("BarlineModeReplace")
   ensure_hl("BarlineModeTerminal")
+  ensure_hl("BarlineModeNTerminal")
 
   ensure_hl("BarlineDiagnosticsError")
   ensure_hl("BarlineDiagnosticsWarn")
@@ -1021,21 +941,8 @@ M.defaults = {
   conditions = {
     hide_in_width = nil,
     hide_in_focus = false,
-    disabled_filetypes = {
-      "help",
-      "startify",
-      "dashboard",
-      "packer",
-      "neogitstatus",
-      "NvimTree",
-      "Trouble",
-      "alpha",
-      "lir",
-      "Outline",
-      "spectre_panel",
-      "toggleterm",
-    },
-    disabled_buftypes = { "terminal", "prompt" },
+    disabled_filetypes = {},
+    disabled_buftypes = {},
   },
 
   -- Layout configuration
@@ -1043,10 +950,6 @@ M.defaults = {
     enabled = true,
     is_global = true,
     padding = { left = 0, right = 0 },
-    show_default = {
-      ft = {},
-      bt = {},
-    },
     layout = {
       left = { "mode", "git", "diff" },
       center = { "fileinfo" },
@@ -1057,10 +960,6 @@ M.defaults = {
   tabline = {
     enabled = false,
     padding = { left = 0, right = 0 },
-    show_default = {
-      ft = {},
-      bt = {},
-    },
     layout = {
       left = {},
       center = {},
@@ -1071,10 +970,6 @@ M.defaults = {
   winbar = {
     enabled = false,
     padding = { left = 0, right = 0 },
-    show_default = {
-      ft = {},
-      bt = {},
-    },
     layout = {
       left = {},
       center = {},
@@ -1088,21 +983,6 @@ M.defaults = {
     prefix = "",
     suffix = "",
     hl = "BarlineMode",
-    mode_map = {
-      n = "NORMAL",
-      i = "INSERT",
-      v = "VISUAL",
-      V = "V-LINE",
-      ["\22"] = "V-BLOCK",
-      c = "COMMAND",
-      s = "SELECT",
-      S = "S-LINE",
-      ["\19"] = "S-BLOCK",
-      R = "REPLACE",
-      r = "REPLACE",
-      ["!"] = "SHELL",
-      t = "TERMINAL",
-    },
   },
 
   fileinfo = {
@@ -1240,15 +1120,6 @@ M.defaults = {
     suffix = "",
     hl = "BarlineSearch",
     icon = "󰍉",
-  },
-
-  terminal = {
-    enabled = false,
-    prefix = "",
-    suffix = "",
-    hl = "BarlineTerminal",
-    icon = "",
-    show_term_name = true,
   },
 }
 
