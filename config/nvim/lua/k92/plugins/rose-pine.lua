@@ -28,7 +28,7 @@ return {
       Normal = { bg = "base", fg = "text" },
       NormalFloat = { bg = "base", fg = "text" },
       -- status line colors
-      StatusLine = { fg = "leaf", bg = "leaf", bold = true, blend = 10 },
+      StatusLine = { fg = "subtle", bg = "surface", bold = true },
       StatusLineNC = { fg = "subtle", bg = "_nc" },
       StatusLineTerm = { link = "StatusLine" },
       StatusLineTermNC = { link = "StatusLineNC" },

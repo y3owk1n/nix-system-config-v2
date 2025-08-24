@@ -13,14 +13,28 @@ return {
     statusline = {
       enabled = true,
       is_global = true,
-      show_default = {
-        bt = { "nofile", "terminal", "help" },
-      },
       layout = {
-        left = { "git", "diff", "warp" },
+        left = { "mode", "git", "diff", "warp" },
         center = { "fileinfo", "diagnostics" },
         right = { "macro", "search", "lsp", "position", "progress" },
       },
+    },
+
+    mode = {
+      prefix = "[",
+      suffix = "]",
+    },
+
+    git = {
+      condition = function()
+        return vim.bo.filetype ~= ""
+      end,
+    },
+
+    diff = {
+      condition = function()
+        return vim.bo.filetype ~= ""
+      end,
     },
 
     lsp = {
@@ -31,6 +45,9 @@ return {
     diagnostics = {
       show_info = true,
       show_hint = true,
+      condition = function()
+        return vim.bo.filetype ~= ""
+      end,
     },
 
     warp = {
@@ -43,6 +60,10 @@ return {
 
     search = {
       enabled = true,
+    },
+
+    progress = {
+      use_bar = true,
     },
   },
 }
