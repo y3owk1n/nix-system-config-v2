@@ -125,4 +125,3 @@ vim.opt.wildignore:append({ -- Ignore certain file patterns in file navigation.
 ------------------------------------------------------------
 vim.opt.modelines = 0 -- Disable modelines for security reasons.
 vim.opt.modeline = false -- Disable modeline for security reasons.
-vim.opt.secure = true -- disallow autocmds in local dirs
