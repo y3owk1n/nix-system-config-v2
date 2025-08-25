@@ -124,18 +124,5 @@ vim.opt.wildignore:append({ -- Ignore certain file patterns in file navigation.
 ------------------------------------------------------------
 -- Security
 ------------------------------------------------------------
--- vim.opt.modelines = 0 -- Disable modelines for security reasons.
-
-------------------------------------------------------------
--- Syntax & Filetype Settings
-------------------------------------------------------------
-vim.cmd("filetype plugin indent on") -- Enable filetype-specific plugins and indentation.
-if vim.fn.exists("syntax_on") ~= 1 then
-  vim.cmd("syntax enable") -- Enable syntax highlighting if not already enabled.
-end
-
-------------------------------------------------------------
--- Special Text Effects (Undercurl)
-------------------------------------------------------------
-vim.cmd([[let &t_Cs = "\e[4:3m]"]]) -- Start undercurl effect.
-vim.cmd([[let &t_Ce = "\e[4:0m]"]]) -- End undercurl effect.
+vim.opt.modelines = 0 -- Disable modelines for security reasons.
+vim.opt.modeline = false -- Disable modeline for security reasons.
