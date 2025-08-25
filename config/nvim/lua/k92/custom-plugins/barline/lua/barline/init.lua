@@ -245,6 +245,18 @@ function M.with_hl(text, hl)
   return "%#" .. hl .. "#" .. text .. "%*"
 end
 
+---Calculate display width of a string (strips vim highlight codes)
+---@param str string String to measure
+---@return number width Display width in characters
+local function get_display_width(str)
+  if not str or str == "" then
+    return 0
+  end
+  -- Remove vim highlight groups %#Group#...%* and other vim codes
+  local clean = str:gsub("%%#[^#]*#", ""):gsub("%%%-?%*", ""):gsub("%%=", "")
+  return vim.fn.strdisplaywidth(clean)
+end
+
 local function set_statusline()
   if M.config.statusline.is_global then
     vim.opt.laststatus = 3
@@ -637,6 +649,10 @@ function components.position(config)
     table.insert(parts, tostring(total_lines))
   end
 
+  if line == 1 and total_lines == 1 then
+    return ""
+  end
+
   local result = table.concat(parts, config.position.separator)
   return result ~= "" and M.with_hl((config.position.prefix .. result .. config.position.suffix), config.position.hl)
     or ""
@@ -654,15 +670,19 @@ function components.progress(config)
   local total = vim.fn.line("$")
   local percent = total > 0 and math.floor((line / total) * 100) or 0
 
+  if line == 1 and total == 1 then
+    return ""
+  end
+
   if config.progress.use_bar then
     local bar_length = config.progress.bar_length
     local filled = math.floor((percent / 100) * bar_length)
     local empty = bar_length - filled
     local bar = string.rep(config.progress.bar_fill, filled) .. string.rep(config.progress.bar_empty, empty)
-    return bar
+    return string.format("%s%s%s", config.progress.prefix, bar, config.progress.suffix)
   else
     return M.with_hl(
-      string.format("%s%d%%%s", config.progress.prefix, percent, config.progress.suffix),
+      string.format("%s%s%s", config.progress.prefix, tostring(percent) .. "%%", config.progress.suffix),
       config.progress.hl
     )
   end
@@ -792,20 +812,26 @@ local function render_layout(layout)
   local center = render_components(layout.center)
   local right = render_components(layout.right)
 
-  -- Build the final line with %= anchors
-  local chunks = {}
-
-  if left and left ~= "" then
-    table.insert(chunks, left)
-  end
-  if center and center ~= "" then
-    table.insert(chunks, "%=" .. center)
-  end
-  if right and right ~= "" then
-    table.insert(chunks, "%=" .. right)
+  if center == "" then
+    return left .. "%=" .. right
   end
 
-  return table.concat(chunks)
+  -- Calculate if we have enough space for proper centering
+  local term_width = vim.o.columns
+  local total_content = get_display_width(left) + get_display_width(center) + get_display_width(right)
+  local min_spacing = 4 -- minimum 2 spaces on each side of center
+
+  if total_content + min_spacing > term_width then
+    -- Fallback to simple layout when space is tight
+    return left .. " " .. center .. "%=" .. right
+  end
+
+  -- Use absolute positioning for center
+  local center_pos = math.floor((term_width - get_display_width(center)) / 2)
+  local left_width = get_display_width(left)
+
+  local spacing = math.max(1, center_pos - left_width)
+  return left .. string.rep(" ", spacing) .. center .. "%=" .. right
 end
 
 -- ------------------------------------------------------------------
@@ -1064,7 +1090,7 @@ M.defaults = {
   progress = {
     enabled = true,
     prefix = "",
-    suffix = "%",
+    suffix = "",
     hl = "BarlineProgress",
     use_bar = false,
     bar_length = 10,
