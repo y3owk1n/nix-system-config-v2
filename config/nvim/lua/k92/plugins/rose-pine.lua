@@ -28,10 +28,12 @@ return {
       Normal = { bg = "base", fg = "text" },
       NormalFloat = { bg = "base", fg = "text" },
       -- status line colors
-      StatusLine = { fg = "subtle", bg = "surface", bold = true },
+      StatusLine = { fg = "subtle", bg = "surface" },
       StatusLineNC = { fg = "subtle", bg = "_nc" },
       StatusLineTerm = { link = "StatusLine" },
       StatusLineTermNC = { link = "StatusLineNC" },
+      -- barline
+      BarlineFileInfo = { fg = "rose" }, -- match my tmux layout
       -- time machine colors
       TimeMachineCurrent = {
         bg = "foam",
