@@ -516,16 +516,16 @@ function components.diagnostics(config)
 
     local parts = {}
     if counts.error > 0 then
-      table.insert(parts, "%#BarlineDiagnosticsError#" .. config.diagnostics.icons.error .. counts.error)
+      table.insert(parts, "%#BarlineDiagnosticError#" .. config.diagnostics.icons.error .. counts.error)
     end
     if counts.warn > 0 then
-      table.insert(parts, "%#BarlineDiagnosticsWarn#" .. config.diagnostics.icons.warn .. counts.warn)
+      table.insert(parts, "%#BarlineDiagnosticWarn#" .. config.diagnostics.icons.warn .. counts.warn)
     end
     if config.diagnostics.show_info and counts.info > 0 then
-      table.insert(parts, "%#BarlineDiagnosticsInfo#" .. config.diagnostics.icons.info .. counts.info)
+      table.insert(parts, "%#BarlineDiagnosticInfo#" .. config.diagnostics.icons.info .. counts.info)
     end
     if config.diagnostics.show_hint and counts.hint > 0 then
-      table.insert(parts, "%#BarlineDiagnosticsHint#" .. config.diagnostics.icons.hint .. counts.hint)
+      table.insert(parts, "%#BarlineDiagnosticHint#" .. config.diagnostics.icons.hint .. counts.hint)
     end
 
     local result = table.concat(parts, config.diagnostics.separator)
