@@ -7,6 +7,7 @@
   # import sub modules
   imports = [
     ./apps-darwin.nix
+    ./packages/atuin.nix
     ./packages/bat.nix
     ./packages/direnv.nix
     ./packages/editorconfig.nix

@@ -21,16 +21,7 @@
       tx = "tmux kill-server";
       vim = "nvim";
     };
-    plugins = [
-      {
-        name = "pisces"; # auto pair brackets
-        src = pkgs.fishPlugins.pisces.src;
-      }
-      {
-        name = "sponge"; # clean history from typo
-        src = pkgs.fishPlugins.sponge.src;
-      }
-    ];
+    plugins = [ ];
     functions = {
       __load-em = {
         description = "Loads Fish shell function descriptions.";
