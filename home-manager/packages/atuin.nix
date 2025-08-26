@@ -5,6 +5,9 @@
     daemon = {
       enable = true;
     };
+    flags = [
+      "--disable-up-arrow"
+    ];
     settings = {
       enter_accept = true;
       prefers_reduced_motion = true;
@@ -26,16 +29,18 @@
         "^cd"
         "^pwd$"
         "^clear$"
-        "^c$"
         "^exit$"
-        "^x$"
         "^fg$"
         "^vim$"
         "^vi$"
         "^nvim$"
         "^nvim$"
+        # aliases
         "^gg$"
         "^s$"
+        "^tx$"
+        "^x$"
+        "^c$"
         # anything with password
         ".*password.*"
         ".*passwd.*"
