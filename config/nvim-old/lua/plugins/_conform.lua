@@ -9,7 +9,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/stevearc/conform.nvim",
+  { src = "https://github.com/stevearc/conform.nvim", name = "conform" },
 }
 
 function M.setup()

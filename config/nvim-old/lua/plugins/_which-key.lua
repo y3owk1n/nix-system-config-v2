@@ -8,7 +8,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/folke/which-key.nvim",
+  { src = "https://github.com/folke/which-key.nvim", name = "which-key" },
 }
 
 function M.setup()

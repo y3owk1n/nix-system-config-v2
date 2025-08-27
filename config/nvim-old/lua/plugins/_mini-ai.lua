@@ -8,7 +8,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/echasnovski/mini.ai",
+  { src = "https://github.com/echasnovski/mini.ai", name = "mini.ai" },
 }
 
 function M.setup()

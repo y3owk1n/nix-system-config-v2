@@ -8,7 +8,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/dmmulroy/ts-error-translator.nvim",
+  { src = "https://github.com/dmmulroy/ts-error-translator.nvim", name = "ts-error-translator" },
 }
 
 function M.setup()

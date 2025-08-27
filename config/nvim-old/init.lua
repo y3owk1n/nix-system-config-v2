@@ -55,6 +55,3 @@ require("diagnostics")
 -- Load plugins & lsp settings
 -- NOTE: lsp configurations will be loaded after `lspconfig` is ensured
 require("plugins").init()
-
--- Load the restart module
-require("restart")

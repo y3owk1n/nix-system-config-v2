@@ -9,7 +9,7 @@ M.lazy = {
 }
 
 M.registry = {
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "main" },
+  { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "main", name = "nvim-treesitter" },
 }
 
 function M.setup()
@@ -83,18 +83,6 @@ function M.setup()
     extension = { mdx = "markdown.mdx" },
   })
   vim.treesitter.language.register("markdown", "markdown.mdx")
-
-  vim.api.nvim_create_autocmd("FileType", {
-    pattern = ensure_installed,
-    callback = function()
-      -- syntax highlighting, provided by Neovim
-      vim.treesitter.start()
-      -- folds, provided by Neovim
-      vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-      -- indentation, provided by nvim-treesitter
-      vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-    end,
-  })
 end
 
 return M

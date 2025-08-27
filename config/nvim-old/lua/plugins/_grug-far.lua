@@ -9,7 +9,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/MagicDuck/grug-far.nvim",
+  { src = "https://github.com/MagicDuck/grug-far.nvim", name = "grug-far" },
 }
 
 function M.setup()

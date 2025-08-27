@@ -4,7 +4,7 @@ local M = {}
 M.name = "notifier"
 
 M.registry = {
-  "https://github.com/y3owk1n/notifier.nvim",
+  { src = "https://github.com/y3owk1n/notifier.nvim", name = "notifier" },
 }
 
 function M.setup()

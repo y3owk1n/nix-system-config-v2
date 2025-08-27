@@ -3,6 +3,8 @@ local M = {}
 
 M.name = "cmd"
 
+M.enabled = false
+
 M.lazy = {
   cmd = {
     "Cmd",
@@ -16,7 +18,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/y3owk1n/cmd.nvim",
+  { src = "https://github.com/y3owk1n/cmd.nvim", name = "cmd" },
 }
 
 function M.setup()

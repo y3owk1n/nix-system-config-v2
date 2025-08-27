@@ -228,42 +228,22 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 ------------------------------------------------------------
--- Setup markdown checkbox toggle
+-- Enable treesitter
 ------------------------------------------------------------
+
 vim.api.nvim_create_autocmd("FileType", {
-  group = augroup("toggle_markdown_checkbox"),
-  pattern = "markdown",
+  -- pattern = ensure_installed,
   callback = function()
-    vim.api.nvim_buf_set_keymap(
-      0,
-      "n",
-      "<leader>cc",
-      ":lua require('utils.markdown').toggle_markdown_checkbox()<CR>",
-      { desc = "Toggle Markdown Checkbox", noremap = true, silent = true }
-    )
+    -- syntax highlighting, provided by Neovim
+    local ok = pcall(vim.treesitter.start)
 
-    vim.api.nvim_buf_set_keymap(
-      0,
-      "n",
-      "<leader>cgc",
-      ":lua require('utils.markdown').insert_markdown_checkbox()<CR>",
-      { desc = "Insert Markdown Checkbox", noremap = true, silent = true }
-    )
-  end,
-})
-
-------------------------------------------------------------
--- Disable laststatus on certain filetypes
-------------------------------------------------------------
-local ft_exclude_laststatus = { "ministarter" }
-
-vim.api.nvim_create_autocmd("BufReadPost", {
-  group = augroup("buf_read_post_laststatus"),
-  callback = function(ev)
-    if vim.tbl_contains(ft_exclude_laststatus, vim.bo[ev.buf].filetype) then
+    if not ok then
       return
     end
 
-    vim.o.laststatus = 3
+    -- folds, provided by Neovim
+    vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+    -- indentation, provided by nvim-treesitter
+    vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
   end,
 })

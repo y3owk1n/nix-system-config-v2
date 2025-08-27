@@ -11,8 +11,9 @@ M.registry = {
   {
     src = "https://github.com/saghen/blink.cmp",
     version = vim.version.range("*"),
+    name = "blink.cmp",
   },
-  "https://github.com/rafamadriz/friendly-snippets",
+  { src = "https://github.com/rafamadriz/friendly-snippets", name = "friendly-snippets" },
 }
 
 function M.setup()

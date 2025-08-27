@@ -14,7 +14,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/windwp/nvim-ts-autotag",
+  { src = "https://github.com/windwp/nvim-ts-autotag", name = "nvim-ts-autotag" },
 }
 
 function M.setup()

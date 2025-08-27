@@ -8,7 +8,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/folke/lazydev.nvim",
+  { src = "https://github.com/folke/lazydev.nvim", name = "lazydev" },
 }
 
 function M.setup()
@@ -22,8 +22,6 @@ function M.setup()
   local plugin_opts = {
     library = {
       { path = "${3rd}/luv/library", words = { "vim%.uv" } },
-      { path = "snacks.nvim", words = { "Snacks" } },
-      { path = "lazy.nvim", words = { "Lazy" } },
     },
   }
 
