@@ -8,7 +8,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/folke/ts-comments.nvim",
+  { src = "https://github.com/folke/ts-comments.nvim", name = "ts-comments" },
 }
 
 function M.setup()

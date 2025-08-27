@@ -8,7 +8,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/mfussenegger/nvim-lint",
+  { src = "https://github.com/mfussenegger/nvim-lint", name = "lint" },
 }
 
 function M.setup()

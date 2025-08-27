@@ -8,7 +8,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/y3owk1n/warp.nvim",
+  { src = "https://github.com/y3owk1n/warp.nvim", name = "warp" },
 }
 
 function M.setup()

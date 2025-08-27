@@ -11,7 +11,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/echasnovski/mini.diff",
+  { src = "https://github.com/echasnovski/mini.diff", name = "mini.diff" },
 }
 
 function M.setup()

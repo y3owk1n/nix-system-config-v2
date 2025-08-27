@@ -14,7 +14,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/alexghergh/nvim-tmux-navigation",
+  { src = "https://github.com/alexghergh/nvim-tmux-navigation", name = "nvim-tmux-navigation" },
 }
 
 function M.setup()

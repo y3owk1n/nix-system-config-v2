@@ -8,7 +8,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/MeanderingProgrammer/render-markdown.nvim",
+  { src = "https://github.com/MeanderingProgrammer/render-markdown.nvim", name = "render-markdown" },
 }
 
 function M.setup()

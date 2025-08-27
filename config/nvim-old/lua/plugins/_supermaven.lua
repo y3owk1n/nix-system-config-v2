@@ -8,7 +8,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/supermaven-inc/supermaven-nvim",
+  { src = "https://github.com/supermaven-inc/supermaven-nvim", name = "supermaven-nvim" },
 }
 
 function M.setup()

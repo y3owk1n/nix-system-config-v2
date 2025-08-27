@@ -8,7 +8,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/y3owk1n/undo-glow.nvim",
+  { src = "https://github.com/y3owk1n/undo-glow.nvim", name = "undo-glow" },
 }
 
 function M.setup()

@@ -8,7 +8,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/echasnovski/mini.indentscope",
+  { src = "https://github.com/echasnovski/mini.indentscope", name = "mini.indentscope" },
 }
 
 function M.setup()

@@ -5,7 +5,7 @@
 ---@field setup? fun()
 ---@field priority? integer
 ---@field lazy? string | PluginModule.Lazy
----@field registry? (string|vim.pack.Spec)[]
+---@field registry? vim.pack.Spec[]
 ---@field async? boolean -- whether to run setup asynchronously, true by default
 
 ---@class PluginModule.Resolved
@@ -16,7 +16,7 @@
 ---@field requires? string[]
 ---@field lazy? string | PluginModule.Lazy | false
 ---@field loaded? boolean
----@field registry? (string|vim.pack.Spec)[]
+---@field registry? vim.pack.Spec[]
 ---@field async? boolean -- whether to run setup asynchronously, true by default
 
 ---@class PluginModule.ResolutionEntry

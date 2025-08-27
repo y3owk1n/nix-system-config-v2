@@ -3,9 +3,8 @@
 ------------------------------------------------------------
 vim.opt.termguicolors = true -- Enable 24-bit RGB colors in the terminal.
 vim.opt.colorcolumn = "120" -- Highlight column 120 to mark a visual guide.
-vim.opt.cursorline = true -- Highlight the current cursor line.
+vim.opt.cursorline = false -- Highlight the current cursor line.
 vim.opt.wrap = false -- Disable line wrapping.
-vim.opt.linebreak = true -- Wrap long lines at a break point (requires 'wrap' enabled).
 vim.opt.showmode = false -- Don't display the mode (e.g., INSERT, NORMAL).
 vim.opt.ruler = false -- Do not show the cursor position in the command line.
 vim.opt.pumblend = 10 -- Set blend level for pop-up menus.
@@ -26,7 +25,6 @@ vim.opt.virtualedit = "block" -- Allow cursor to move past end-of-line in visual
 vim.opt.splitkeep = "screen" -- Maintain screen view when splitting windows.
 vim.opt.splitright = true -- Open vertical splits to the right.
 vim.opt.splitbelow = true -- Open horizontal splits below.
-vim.o.laststatus = 0 -- Use a global statusline. Checkout my autocmd for more toggles on laststatus.
 vim.opt.showtabline = 0 -- Never show the tabline.
 vim.opt.foldenable = false -- Do not enable folding by default.
 
@@ -52,12 +50,12 @@ vim.opt.formatoptions:append({ "r" }) -- Automatically insert comment leader aft
 -- Tabs & Indentation
 ------------------------------------------------------------
 --- these should be from my root editorconfig ---
-vim.opt.tabstop = 2 -- Set tab width to 4 spaces.
-vim.opt.shiftwidth = 2 -- Set indentation width to 4 spaces.
-vim.opt.softtabstop = -1 -- Configure soft tab stop to 4 spaces.
+-- vim.opt.tabstop = 2 -- Set tab width to 4 spaces.
+-- vim.opt.shiftwidth = 2 -- Set indentation width to 4 spaces.
+-- vim.opt.softtabstop = -1 -- Configure soft tab stop to 4 spaces.
 --- these should be from my root editorconfig ---
 
-vim.opt.expandtab = true -- Use literal tab characters, not spaces.
+vim.opt.expandtab = true -- Convert tabs into spaces.
 vim.opt.shiftround = true -- Round indent to multiple of 'shiftwidth'.
 vim.opt.smartindent = true -- Enable smart indentation.
 vim.opt.breakindent = true -- Maintain indent on wrapped lines.
@@ -125,18 +123,5 @@ vim.opt.wildignore:append({ -- Ignore certain file patterns in file navigation.
 ------------------------------------------------------------
 -- Security
 ------------------------------------------------------------
--- vim.opt.modelines = 0 -- Disable modelines for security reasons.
-
-------------------------------------------------------------
--- Syntax & Filetype Settings
-------------------------------------------------------------
-vim.cmd("filetype plugin indent on") -- Enable filetype-specific plugins and indentation.
-if vim.fn.exists("syntax_on") ~= 1 then
-  vim.cmd("syntax enable") -- Enable syntax highlighting if not already enabled.
-end
-
-------------------------------------------------------------
--- Special Text Effects (Undercurl)
-------------------------------------------------------------
-vim.cmd([[let &t_Cs = "\e[4:3m]"]]) -- Start undercurl effect.
-vim.cmd([[let &t_Ce = "\e[4:0m]"]]) -- End undercurl effect.
+vim.opt.modelines = 0 -- Disable modelines for security reasons.
+vim.opt.modeline = false -- Disable modeline for security reasons.

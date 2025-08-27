@@ -19,7 +19,7 @@ M.lazy = {
 }
 
 M.registry = {
-  "https://github.com/y3owk1n/time-machine.nvim",
+  { src = "https://github.com/y3owk1n/time-machine.nvim", name = "time-machine" },
 }
 
 function M.setup()
