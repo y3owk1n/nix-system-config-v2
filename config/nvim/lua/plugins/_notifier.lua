@@ -3,6 +3,10 @@ local M = {}
 
 M.name = "notifier"
 
+M.lazy = {
+  event = "VeryLazy",
+}
+
 M.registry = {
   -- { src = "local:notifier.nvim", name = "notifier" },
   { src = "https://github.com/y3owk1n/notifier.nvim", name = "notifier" },

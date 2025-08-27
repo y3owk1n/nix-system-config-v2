@@ -3,8 +3,6 @@ local M = {}
 
 M.name = "custom.restart"
 
-M.priority = 1
-
 function M.setup()
   local plugin_ok, plugin = pcall(require, "custom-plugins.restart")
 
