@@ -7,6 +7,7 @@
 ---@field lazy? string | PluginModule.Lazy
 ---@field registry? vim.pack.Spec[]
 ---@field async? boolean -- whether to run setup asynchronously, true by default
+---@field post_pack_changed? fun() -- for "install" and "update"
 
 ---@class PluginModule.Resolved
 ---@field name? string
@@ -18,6 +19,7 @@
 ---@field loaded? boolean
 ---@field registry? vim.pack.Spec[]
 ---@field async? boolean -- whether to run setup asynchronously, true by default
+---@field post_pack_changed? fun() -- for "install" and "update"
 
 ---@class PluginModule.ResolutionEntry
 ---@field name string
@@ -25,8 +27,10 @@
 ---@field parent? PluginModule.Resolved
 ---@field async boolean
 
+---@alias PluginModule.Lazy.Event "VeryLazy"|vim.api.keyset.events
+
 ---@class PluginModule.Lazy
----@field event? vim.api.keyset.events|vim.api.keyset.events[]
+---@field event? PluginModule.Lazy.Event|PluginModule.Lazy.Event[]
 ---@field ft? string|string[]
 ---@field keys? string|string[]
 ---@field cmd? string|string[]

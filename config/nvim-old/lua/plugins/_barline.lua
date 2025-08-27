@@ -5,7 +5,7 @@ M.name = "custom.barline"
 
 M.lazy = {
   event = {
-    "UIEnter",
+    "VeryLazy",
   },
 }
 

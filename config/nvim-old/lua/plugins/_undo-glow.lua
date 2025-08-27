@@ -4,7 +4,7 @@ local M = {}
 M.name = "undo-glow"
 
 M.lazy = {
-  event = { "UIEnter" },
+  event = { "VeryLazy" },
 }
 
 M.registry = {
