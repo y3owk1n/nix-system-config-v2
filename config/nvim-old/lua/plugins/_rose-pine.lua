@@ -5,8 +5,6 @@ M.name = "rose-pine"
 
 M.priority = 1
 
-M.async = false
-
 M.registry = {
   { src = "https://github.com/rose-pine/neovim", name = "rose-pine" },
 }

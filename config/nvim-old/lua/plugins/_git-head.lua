@@ -5,7 +5,7 @@ M.name = "custom.git-head"
 
 M.lazy = {
   event = {
-    "UIEnter",
+    "VeryLazy",
   },
 }
 

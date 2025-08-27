@@ -4,12 +4,20 @@ local M = {}
 M.name = "nvim-treesitter"
 
 M.lazy = {
-  event = "UIEnter",
+  event = "VeryLazy",
   cmd = { "TSUpdateSync", "TSUpdate", "TSInstall" },
 }
 
+M.post_pack_changed = function()
+  vim.cmd("TSUpdate")
+end
+
 M.registry = {
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "main", name = "nvim-treesitter" },
+  {
+    src = "https://github.com/nvim-treesitter/nvim-treesitter",
+    version = "main",
+    name = "nvim-treesitter",
+  },
 }
 
 function M.setup()

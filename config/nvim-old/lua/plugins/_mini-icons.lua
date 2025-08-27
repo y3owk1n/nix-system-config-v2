@@ -4,7 +4,7 @@ local M = {}
 M.name = "mini.icons"
 
 M.lazy = {
-  event = { "UIEnter" },
+  event = { "VeryLazy" },
 }
 
 M.registry = {

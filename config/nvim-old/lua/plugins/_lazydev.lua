@@ -5,6 +5,7 @@ M.name = "lazydev"
 
 M.lazy = {
   ft = "lua",
+  cmd = "LazyDev",
 }
 
 M.registry = {

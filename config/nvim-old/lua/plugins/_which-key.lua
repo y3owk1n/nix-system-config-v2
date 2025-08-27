@@ -4,7 +4,7 @@ local M = {}
 M.name = "which-key"
 
 M.lazy = {
-  event = { "UIEnter" },
+  event = { "VeryLazy" },
 }
 
 M.registry = {
