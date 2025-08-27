@@ -223,8 +223,6 @@ local function update_all_packages()
       vim.pack.update(names)
     end
   end
-
-  vim.notify("Update complete (local dev plugins skipped)")
 end
 
 ---Remove all packages from vim.pack
@@ -247,7 +245,10 @@ local function sync_packages()
   ---@type string[]
   local normalized_registry_map = {}
   for _, p in ipairs(registry_map) do
-    table.insert(normalized_registry_map, p.name)
+    local is_local, _ = is_local_dev_plugin(p)
+    if not is_local then
+      table.insert(normalized_registry_map, p.name)
+    end
   end
 
   -- loop through all plugins and remove those that are not in the registry
@@ -953,13 +954,9 @@ local function setup_post_update_autocmd()
         vim.schedule(function()
           local name = data.spec.name
 
-          vim.notify(data.kind .. " " .. name)
-
           for _, mod in ipairs(sorted_modules) do
             if mod.name == name and mod.post_pack_changed then
-              vim.notify("Running post_pack_changed for " .. mod.name)
               mod.post_pack_changed()
-              vim.notify("Done running post_pack_changed for " .. mod.name)
               break
             end
           end
