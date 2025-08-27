@@ -2,11 +2,11 @@
 let
   skhd = pkgs.stdenv.mkDerivation rec {
     pname = "skhd-zig";
-    version = "0.0.12";
+    version = "0.0.13";
 
     src = pkgs.fetchzip {
       url = "https://github.com/jackielii/skhd.zig/releases/download/v${version}/skhd-arm64-macos.tar.gz";
-      sha256 = "sha256-qJt2wWfM7YYVfWPbaGJ5w2LbWDhhN2MBvs+m0PCeLqM=";
+      sha256 = "sha256-ZT8upVH8XDcBGniwuM/Wrj+zlFlwXdsi3bcRPWqTmok=";
       stripRoot = false;
     };
 
