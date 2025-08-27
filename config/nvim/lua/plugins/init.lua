@@ -231,8 +231,8 @@ local function remove_all_packages()
   local names = vim.tbl_map(function(p)
     return p.spec.name
   end, plugins)
-  local answer = vim.fn.input("Remove all packages from vim.pack? [y/N]: ")
-  if answer == "y" then
+  local choice = vim.fn.confirm("Remove all packages from vim.pack?", "&Yes\n&No", 2)
+  if choice == 1 then
     vim.pack.del(names)
   end
 end
@@ -261,19 +261,25 @@ local function sync_packages()
     end
   end
 
-  if #to_remove > 0 then
-    --- show more info about what to be removed
-    local lines = {}
-    for _, p in ipairs(to_remove) do
-      table.insert(lines, string.format("%s", p))
-    end
-    local answer = vim.fn.input(table.concat(lines, "\n") .. "\nRemove these plugins? (y/N): ")
-    if answer ~= "y" then
-      return
-    end
+  if #to_remove <= 0 then
+    vim.notify("No plugins to remove")
+    return
   end
 
-  vim.pack.del(to_remove)
+  --- show more info about what to be removed
+  local lines = {}
+  for _, p in ipairs(to_remove) do
+    table.insert(lines, string.format("%s", p))
+  end
+
+  local choice = vim.fn.confirm(
+    "To be removed plugins:\n\n" .. table.concat(lines, "\n") .. "\nRemove these plugins? (y/N): ",
+    "&Yes\n&No",
+    2
+  )
+  if choice == 1 then
+    vim.pack.del(to_remove)
+  end
 end
 
 ---Print loaded and not-loaded plugin status.
