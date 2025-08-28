@@ -4,6 +4,10 @@
     enable = true;
     interactiveShellInit = ''
       set fish_greeting # Disable greeting\n
+
+      # Disable Fish's native history by using a dummy session
+      set -x fish_history ""
+
       if type -q nvs
         nvs env --source | source
       end
