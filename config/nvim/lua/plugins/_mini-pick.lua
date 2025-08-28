@@ -28,7 +28,7 @@ M.lazy = {
 }
 
 M.registry = {
-  { src = "https://github.com/echasnovski/mini.pick", name = "mini.pick" },
+  { src = "https://github.com/nvim-mini/mini.pick", name = "mini.pick" },
 }
 
 function M.setup()
