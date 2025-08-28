@@ -8,7 +8,7 @@ M.lazy = {
 }
 
 M.registry = {
-  { src = "https://github.com/echasnovski/mini.surround", name = "mini.surround" },
+  { src = "https://github.com/nvim-mini/mini.surround", name = "mini.surround" },
 }
 
 function M.setup()

@@ -8,11 +8,11 @@ M.lazy = {
 }
 
 M.registry = {
-  { src = "https://github.com/echasnovski/mini.pairs", name = "mini.pairs" },
+  { src = "https://github.com/nvim-mini/mini.pairs", name = "mini.pairs" },
 }
 
 function M.setup()
-  vim.pack.add({ "https://github.com/echasnovski/mini.pairs" })
+  vim.pack.add({ "https://github.com/nvim-mini/mini.pairs" })
 
   local plugin_ok, plugin = pcall(require, "mini.pairs")
 
