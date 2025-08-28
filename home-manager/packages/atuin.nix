@@ -9,7 +9,9 @@
       "--disable-up-arrow"
     ];
     settings = {
+      auto_sync = true;
       enter_accept = true;
+      sync_frequency = "1h";
       prefers_reduced_motion = true;
       workspaces = true;
       invert = true;
@@ -41,23 +43,13 @@
         "^tx$"
         "^x$"
         "^c$"
-        # anything with password
-        ".*password.*"
-        ".*passwd.*"
-        ".*secret.*"
-        ".*token.*"
-        ".*apikey.*"
-        ".*api-key.*"
-        ".*key=.*"
-        ".*--password.*"
-        ".*--secret.*"
-        ".*--token.*"
         # ssh and keys
         ".*ssh .*@.*"
         ".*scp .*"
         ".*rsync .*@.*"
         ".*sshpass.*"
       ];
+      sync.records = true;
     };
   };
 }
