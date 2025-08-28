@@ -6,26 +6,26 @@
 let
   system = pkgs.system;
 
-  version = "1.10.6";
+  version = "1.10.7";
 
   nvsInfo = {
     "x86_64-linux" = {
       url = "https://github.com/y3owk1n/nvs/releases/download/v${version}/nvs-linux-amd64";
       # use `nix hash convert --hash-algo sha256 <checksum>`
       # even better "awk '{print $1}' <checksum> | xargs nix hash convert --hash-algo sha256"
-      sha256 = "sha256-pmhsRaXmaTvk4Ecxc0StCaQHWS6oAx1z+PEA/qMUJpo=";
+      sha256 = "sha256-oxR8eVtCr8RGyDy8w63xxrpsvEQnk78ll3N0I7eAgsA=";
     };
     "aarch64-linux" = {
       url = "https://github.com/y3owk1n/nvs/releases/download/v${version}/nvs-linux-arm64";
-      sha256 = "sha256-P3Kd84QJMx6BstMbpYIyUj6W6MZl/QOpI1BSVwz5PEE=";
+      sha256 = "sha256-z9GBFC/h2EyimEDeJ1TdaL48R/myppp2wDus2vTpSt0=";
     };
     "x86_64-darwin" = {
       url = "https://github.com/y3owk1n/nvs/releases/download/v${version}/nvs-darwin-amd64";
-      sha256 = "sha256-MKV7teliGfCKUGyUt+78NTa97+2lVZ5g8u/1EhG/cqY=";
+      sha256 = "sha256-jGEllbTI69Uvqw2fix9381RnXs7xlUVTi8o6+cAbHXg=";
     };
     "aarch64-darwin" = {
       url = "https://github.com/y3owk1n/nvs/releases/download/v${version}/nvs-darwin-arm64";
-      sha256 = "sha256-LzUVm0kyaG5N8HKlBUF1MxjH/o99zRIeM4ZBFGtvw4Y=";
+      sha256 = "sha256-qGv0DzXDVu/UAhHEFrKLNzVRxB4hucdYJkOQOefoJ50=";
     };
   };
 
