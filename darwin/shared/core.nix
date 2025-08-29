@@ -12,8 +12,10 @@
     computerName = hostname;
     applicationFirewall = {
       enable = true;
-      blockAllIncoming = true;
+      blockAllIncoming = false;
       enableStealthMode = true;
+      allowSignedApp = true;
+      allowSigned = true;
     };
   };
 
