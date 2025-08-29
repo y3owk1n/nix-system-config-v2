@@ -1,38 +1,3 @@
-local function disable_builtin_plugins()
-  local plugins = {
-    "2html_plugin",
-    "getscript",
-    "getscriptPlugin",
-    "gzip",
-    "logipat",
-    "netrw",
-    "netrwPlugin",
-    "netrwSettings",
-    "netrwFileHandlers",
-    "matchit",
-    "tar",
-    "tarPlugin",
-    "rrhelper",
-    "spellfile_plugin",
-    "vimball",
-    "vimballPlugin",
-    "zip",
-    "zipPlugin",
-    "tutor",
-    "rplugin",
-    "synmenu",
-    "optwin",
-    "compiler",
-    "bugreport",
-    "ftplugin",
-  }
-  for _, name in ipairs(plugins) do
-    vim.g["loaded_" .. name] = 1
-  end
-end
-
-disable_builtin_plugins()
-
 if vim.loader then
   vim.loader.enable()
 end
@@ -40,17 +5,20 @@ end
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
+-- Disable default plugins and providers
+require("disables").init()
+
 -- Set options
-require("options")
+require("options").init()
 
 -- Set autocmds
-require("autocmds")
+require("autocmds").init()
 
 -- Set mappings
-require("mappings")
+require("mappings").init()
 
 -- Set diagnostics
-require("diagnostics")
+require("diagnostics").init()
 
 -- Load plugins & lsp settings
 -- NOTE: lsp configurations will be loaded after `lspconfig` is ensured
