@@ -42,6 +42,7 @@ in
       hyper - w : open -a WhatsApp
       hyper - f : open -a Finder
       hyper - s : open -a "System Settings"
+      hyper - p : open -a Passwords
 
       # spotlight
       hyper - return : skhd --key "cmd - space"
