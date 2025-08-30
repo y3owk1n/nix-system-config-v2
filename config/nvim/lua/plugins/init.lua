@@ -620,22 +620,17 @@ local function setup_one(mod, parent)
   -- start measuring
   local t0 = vim.uv.hrtime()
 
-  -- install from vim.pack
+  -- setup for local dev or just packadd
   if mod.registry then
-    local remote_registry = {}
     for _, reg in ipairs(mod.registry) do
       local is_local, local_path = is_local_dev_plugin(reg)
       if is_local and local_path then
         setup_local_dev_plugin(reg, local_path)
       else
-        table.insert(remote_registry, reg)
+        pcall(function()
+          vim.cmd.packadd(reg.name)
+        end)
       end
-    end
-
-    if #remote_registry > 0 then
-      vim.pack.add(remote_registry, {
-        confirm = false,
-      })
     end
   end
 
@@ -685,22 +680,17 @@ local function async_setup_one(mod, parent, on_done)
       end
     end
 
-    -- 2. install via vim.pack (already async)
+    -- 2. setup for local dev or just packadd
     if mod.registry then
-      local remote_registry = {}
       for _, reg in ipairs(mod.registry) do
         local is_local, local_path = is_local_dev_plugin(reg)
         if is_local and local_path then
           setup_local_dev_plugin(reg, local_path)
         else
-          table.insert(remote_registry, reg)
+          pcall(function()
+            vim.cmd.packadd(reg.name)
+          end)
         end
-      end
-
-      if #remote_registry > 0 then
-        vim.pack.add(remote_registry, {
-          confirm = false,
-        })
       end
     end
 
@@ -906,6 +896,34 @@ local function lazy_handlers(mod)
 end
 
 -----------------------------------------------------------------------------//
+-- Install (vim.pack.add)
+-----------------------------------------------------------------------------//
+
+---Install all installable (vim.pack) discovered modules so that we don't have to install one by one.
+---@return nil
+local function install_modules()
+  local remote_registry = {}
+
+  for _, mod in ipairs(sorted_modules) do
+    if mod.registry then
+      for _, reg in ipairs(mod.registry) do
+        local is_local = is_local_dev_plugin(reg)
+        if not is_local then
+          table.insert(remote_registry, reg)
+        end
+      end
+    end
+  end
+
+  if #remote_registry > 0 then
+    vim.pack.add(remote_registry, {
+      confirm = false,
+      load = function() end,
+    })
+  end
+end
+
+-----------------------------------------------------------------------------//
 -- Setup
 -----------------------------------------------------------------------------//
 
@@ -995,6 +1013,7 @@ function M.init()
   sort_modules(modules)
   setup_deferred_autocmd()
   setup_post_update_autocmd()
+  install_modules()
   setup_modules()
   setup_keymaps()
 end
