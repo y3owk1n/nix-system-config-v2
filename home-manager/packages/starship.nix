@@ -1,7 +1,7 @@
 { ... }:
 {
   programs.starship = {
-    enable = true;
+    enable = false;
     enableTransience = true;
     settings = {
       command_timeout = 1000;
