@@ -1,10 +1,14 @@
 ---@type PluginModule
 local M = {}
 
-M.name = "custom.restart"
+M.name = "restart"
+
+M.registry = {
+  { src = vim.fn.stdpath("config") .. "/lua/custom-plugins/restart", name = "restart" },
+}
 
 function M.setup()
-  local plugin_ok, plugin = pcall(require, "custom-plugins.restart")
+  local plugin_ok, plugin = pcall(require, "restart")
 
   if not plugin_ok then
     return

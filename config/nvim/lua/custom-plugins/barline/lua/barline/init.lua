@@ -263,16 +263,16 @@ local function set_statusline()
   else
     vim.opt.laststatus = 2
   end
-  vim.opt.statusline = '%{%luaeval(\'require("custom-plugins.barline").get_line("statusline")\')%}'
+  vim.opt.statusline = '%{%luaeval(\'require("barline").get_line("statusline")\')%}'
 end
 
 local function set_winbar()
-  vim.opt.winbar = '%{%luaeval(\'require("custom-plugins.barline").get_line("winbar")\')%}'
+  vim.opt.winbar = '%{%luaeval(\'require("barline").get_line("winbar")\')%}'
 end
 
 local function set_tabline()
   vim.opt.showtabline = 2
-  vim.opt.tabline = '%{%luaeval(\'require("custom-plugins.barline").get_line("tabline")\')%}'
+  vim.opt.tabline = '%{%luaeval(\'require("barline").get_line("tabline")\')%}'
 end
 
 -- ------------------------------------------------------------------
