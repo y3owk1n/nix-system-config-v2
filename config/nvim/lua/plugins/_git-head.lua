@@ -1,7 +1,7 @@
 ---@type PluginModule
 local M = {}
 
-M.name = "custom.git-head"
+M.name = "git-head"
 
 M.lazy = {
   event = {
@@ -9,8 +9,12 @@ M.lazy = {
   },
 }
 
+M.registry = {
+  { src = vim.fn.stdpath("config") .. "/lua/custom-plugins/git-head", name = "git-head" },
+}
+
 function M.setup()
-  local plugin_ok, plugin = pcall(require, "custom-plugins.git-head")
+  local plugin_ok, plugin = pcall(require, "git-head")
 
   if not plugin_ok then
     return

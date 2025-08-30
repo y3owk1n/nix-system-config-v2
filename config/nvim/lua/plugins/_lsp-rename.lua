@@ -1,7 +1,7 @@
 ---@type PluginModule
 local M = {}
 
-M.name = "custom.lsp-rename"
+M.name = "lsp-rename"
 
 M.lazy = {
   keys = {
@@ -9,8 +9,12 @@ M.lazy = {
   },
 }
 
+M.registry = {
+  { src = vim.fn.stdpath("config") .. "/lua/custom-plugins/lsp-rename", name = "lsp-rename" },
+}
+
 function M.setup()
-  local plugin_ok, plugin = pcall(require, "custom-plugins.lsp-rename")
+  local plugin_ok, plugin = pcall(require, "lsp-rename")
 
   if not plugin_ok then
     return

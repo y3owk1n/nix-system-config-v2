@@ -1,7 +1,7 @@
 ---@type PluginModule
 local M = {}
 
-M.name = "custom.lazygit"
+M.name = "lazygit"
 
 M.enabled = false
 
@@ -11,8 +11,12 @@ M.lazy = {
   },
 }
 
+M.registry = {
+  { src = vim.fn.stdpath("config") .. "/lua/custom-plugins/lazygit", name = "lazygit" },
+}
+
 function M.setup()
-  local plugin_ok, plugin = pcall(require, "custom-plugins.lazygit")
+  local plugin_ok, plugin = pcall(require, "lazygit")
 
   if not plugin_ok then
     return

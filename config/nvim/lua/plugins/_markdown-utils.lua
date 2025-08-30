@@ -1,14 +1,18 @@
 ---@type PluginModule
 local M = {}
 
-M.name = "custom.markdown-utils"
+M.name = "markdown-utils"
 
 M.lazy = {
   ft = { "markdown", "markdown.mdx", "norg", "rmd", "org" },
 }
 
+M.registry = {
+  { src = vim.fn.stdpath("config") .. "/lua/custom-plugins/markdown-utils", name = "markdown-utils" },
+}
+
 function M.setup()
-  local plugin_ok, plugin = pcall(require, "custom-plugins.markdown-utils")
+  local plugin_ok, plugin = pcall(require, "markdown-utils")
 
   if not plugin_ok then
     return

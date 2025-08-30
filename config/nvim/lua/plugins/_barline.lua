@@ -1,7 +1,7 @@
 ---@type PluginModule
 local M = {}
 
-M.name = "custom.barline"
+M.name = "barline"
 
 M.lazy = {
   event = {
@@ -9,8 +9,12 @@ M.lazy = {
   },
 }
 
+M.registry = {
+  { src = vim.fn.stdpath("config") .. "/lua/custom-plugins/barline", name = "barline" },
+}
+
 function M.setup()
-  local plugin_ok, plugin = pcall(require, "custom-plugins.barline")
+  local plugin_ok, plugin = pcall(require, "barline")
 
   if not plugin_ok then
     return
