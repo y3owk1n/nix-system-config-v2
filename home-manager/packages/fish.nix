@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ pkgs, ... }:
 {
   programs.fish = {
     enable = true;
@@ -92,6 +92,8 @@
           set -U tide_character_vi_icon_visual 
           set -U tide_git_icon 
           set -U tide_git_color_branch magenta
+          set -U tide_status_icon 
+          set -U tide_status_icon_failure 
         '';
       };
     };
