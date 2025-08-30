@@ -166,16 +166,16 @@ function M.on_rename_file(from, to, rename)
   }
 
   -- Get active LSP clients (compatible with both old and new API)
-  local get_clients = vim.lsp.get_clients or vim.lsp.get_active_clients
+  local get_clients = vim.lsp.get_clients
   local clients = get_clients()
 
   -- Send willRenameFiles requests
   local will_rename_responses = {}
   for _, client in ipairs(clients) do
-    if client.supports_method("workspace/willRenameFiles") then
+    if client:supports_method("workspace/willRenameFiles") then
       notify_info("Requesting rename permission from " .. client.name)
       local success, resp = pcall(function()
-        return client.request_sync("workspace/willRenameFiles", changes, M.config.lsp_timeout, 0)
+        return client:request_sync("workspace/willRenameFiles", changes, M.config.lsp_timeout, 0)
       end)
 
       if success and resp and resp.result then
@@ -211,9 +211,9 @@ function M.on_rename_file(from, to, rename)
 
   -- Send didRenameFiles notifications
   for _, client in ipairs(clients) do
-    if client.supports_method("workspace/didRenameFiles") then
+    if client:supports_method("workspace/didRenameFiles") then
       local success, err = pcall(function()
-        client.notify("workspace/didRenameFiles", changes)
+        client:notify("workspace/didRenameFiles", changes)
       end)
 
       if not success then
@@ -231,7 +231,7 @@ function M.rename_file(opts)
   opts = opts or {}
 
   -- Determine source file
-  local from = opts.from or opts.file or vim.api.nvim_buf_get_name(0)
+  local from = opts.from or vim.api.nvim_buf_get_name(0)
   if from == "" then
     notify_error("No file to rename (current buffer has no associated file)")
     return
