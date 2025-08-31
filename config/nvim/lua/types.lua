@@ -13,6 +13,8 @@
 ---@field mod_root? string
 ---@field path_to_mod_root? string -- "/lua/abc/def/", starts and end with "/", excludes `mod_root`
 ---@field local_dev_config? PluginModule.Config.LocalDevConfig
+---@field setup_timeout number? -- timeout for setup functions in milliseconds
+---@field max_retries number? -- maximum retry attempts for failed modules
 
 ---@class PluginModule.Config.LocalDevConfig
 ---@field base_dir? string
@@ -29,12 +31,17 @@
 ---@field registry? vim.pack.Spec[]
 ---@field async? boolean -- whether to run setup asynchronously, true by default
 ---@field post_pack_changed? fun() -- for "install" and "update"
+---@field failed boolean? -- indicates if module failed to load
+---@field failure_reason string? -- reason for failure
+---@field load_time_ms number? -- time taken to load
+---@field retry_count number? -- number of retry attempts
 
 ---@class PluginModule.ResolutionEntry
 ---@field name string
 ---@field ms number
 ---@field parent? PluginModule.Resolved
 ---@field async boolean
+---@field errors string[]? -- any non-fatal errors during loading
 
 ---@alias PluginModule.Lazy.Event "VeryLazy"|vim.api.keyset.events
 
