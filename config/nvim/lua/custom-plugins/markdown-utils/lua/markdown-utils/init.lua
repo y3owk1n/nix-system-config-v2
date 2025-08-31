@@ -69,7 +69,7 @@ end
 ---@field auto_insert_mode? boolean Enter insert mode after inserting checkbox
 ---@field checkbox_style? string Style of checkbox to insert ("- [ ]" or "* [ ]")
 ---@field check_filetype? boolean Only work in markdown files
-M.defaults = {
+local default_config = {
   auto_insert_mode = true,
   checkbox_style = "- [ ]",
   check_filetype = true,
@@ -85,7 +85,7 @@ function M.setup(user_config)
     return
   end
 
-  M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
+  M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
 
   did_setup = true
 end

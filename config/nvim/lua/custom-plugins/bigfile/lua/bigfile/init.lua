@@ -395,7 +395,7 @@ end
 M.config = {}
 
 ---@type BigFile.Config
-M.defaults = {
+local default_config = {
   enabled = true,
   notify = true,
   size = 3 * 1024 * 1024, -- 1.5MB
@@ -427,7 +427,7 @@ function M.setup(user_config)
     return
   end
 
-  M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
+  M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
 
   if not M.config.enabled then
     return
