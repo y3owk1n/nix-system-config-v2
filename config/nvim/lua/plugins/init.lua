@@ -1151,7 +1151,7 @@ local function install_modules()
   if #remote_registry > 0 then
     vim.pack.add(remote_registry, {
       confirm = false,
-      load = false,
+      load = function() end,
     })
   end
 end
