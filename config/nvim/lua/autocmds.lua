@@ -1,5 +1,8 @@
 local M = {}
 
+---@type boolean
+local did_setup = false
+
 local function augroup(name)
   return vim.api.nvim_create_augroup("k92_" .. name, { clear = true })
 end
@@ -252,8 +255,14 @@ local function setup_autocmds()
   })
 end
 
-function M.init()
+function M.setup()
+  if did_setup then
+    return
+  end
+
   setup_autocmds()
+
+  did_setup = true
 end
 
 return M

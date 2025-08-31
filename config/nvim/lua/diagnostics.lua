@@ -1,5 +1,8 @@
 local M = {}
 
+---@type boolean
+local did_setup = false
+
 local function setup_diagnostics()
   vim.diagnostic.config({
     underline = true,
@@ -25,8 +28,14 @@ local function setup_diagnostics()
   })
 end
 
-function M.init()
+function M.setup()
+  if did_setup then
+    return
+  end
+
   setup_diagnostics()
+
+  did_setup = true
 end
 
 return M

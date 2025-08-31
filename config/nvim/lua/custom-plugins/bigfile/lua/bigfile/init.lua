@@ -1,7 +1,7 @@
 ---@class BigFile
 local M = {}
 
-local is_setup = false
+local did_setup = false
 local augroup_id = nil
 
 -- ------------------------------------------------------------------
@@ -422,7 +422,7 @@ M.defaults = {
 ---Setup the bigfile plugin
 ---@param user_config? BigFile.Config
 function M.setup(user_config)
-  if is_setup then
+  if did_setup then
     vim.notify("BigFile: Plugin already set up", vim.log.levels.WARN)
     return
   end
@@ -439,18 +439,12 @@ function M.setup(user_config)
   -- Set up autocmd for when bigfile filetype is detected
   setup_autocmds()
 
-  is_setup = true
-end
-
----Check if plugin is set up
----@return boolean
-function M.is_setup()
-  return is_setup
+  did_setup = true
 end
 
 ---Manually apply big file optimizations to current buffer
 function M.optimize_current_buffer()
-  if not is_setup then
+  if not did_setup then
     vim.notify("BigFile: Plugin not set up", vim.log.levels.ERROR)
     return
   end

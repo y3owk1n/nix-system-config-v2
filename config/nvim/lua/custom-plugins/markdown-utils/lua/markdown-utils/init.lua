@@ -1,6 +1,9 @@
 ---@class MarkdownUtils
 local M = {}
 
+---@type boolean
+local did_setup = false
+
 -- ------------------------------------------------------------------
 -- Private helpers
 -- ------------------------------------------------------------------
@@ -78,7 +81,13 @@ M.config = {}
 ---Setup the plugin with user configuration
 ---@param user_config? MarkdownUtils.Config
 function M.setup(user_config)
+  if did_setup then
+    return
+  end
+
   M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
+
+  did_setup = true
 end
 
 ---Toggle markdown checkbox on current line

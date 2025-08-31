@@ -1,5 +1,8 @@
 local M = {}
 
+---@type boolean
+local did_setup = false
+
 local function setup_options()
   ------------------------------------------------------------
   -- UI & Visuals
@@ -122,8 +125,14 @@ local function setup_options()
   vim.opt.modeline = false -- Disable modeline for security reasons.
 end
 
-function M.init()
+function M.setup()
+  if did_setup then
+    return
+  end
+
   setup_options()
+
+  did_setup = true
 end
 
 return M

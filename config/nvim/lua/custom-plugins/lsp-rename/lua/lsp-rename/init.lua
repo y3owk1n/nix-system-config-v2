@@ -1,6 +1,9 @@
 ---@class LspRename
 local M = {}
 
+---@type boolean
+local did_setup = false
+
 -- ------------------------------------------------------------------
 -- Private variables and functions
 -- ------------------------------------------------------------------
@@ -368,9 +371,15 @@ M.defaults = {
 -- Setup function for configuration
 ---@param user_config? LspRename.Config
 function M.setup(user_config)
+  if did_setup then
+    return
+  end
+
   M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
 
   create_commands()
+
+  did_setup = true
 end
 
 -- Convenience function for current buffer

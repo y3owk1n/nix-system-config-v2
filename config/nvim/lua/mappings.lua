@@ -1,5 +1,8 @@
 local M = {}
 
+---@type boolean
+local did_setup = false
+
 local function setup_keymaps()
   ------------------------------------------------------------
   -- Navigation: Start & End of Line
@@ -86,8 +89,14 @@ local function setup_keymaps()
   vim.keymap.del("i", "<C-S>") -- macos stealed the key, use `grs` instead
 end
 
-function M.init()
+function M.setup()
+  if did_setup then
+    return
+  end
+
   setup_keymaps()
+
+  did_setup = true
 end
 
 return M

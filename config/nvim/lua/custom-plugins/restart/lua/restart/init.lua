@@ -1,6 +1,9 @@
 ---@class Restart
 local M = {}
 
+---@type boolean
+local did_setup = false
+
 -- ------------------------------------------------------------------
 -- Private variables and functions
 -- ------------------------------------------------------------------
@@ -78,6 +81,10 @@ M.defaults = {
 ---Setup the plugin
 ---@param user_config? Restart.Config
 function M.setup(user_config)
+  if did_setup then
+    return
+  end
+
   M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
 
   -- Use custom session file if provided
@@ -111,6 +118,8 @@ function M.setup(user_config)
   vim.api.nvim_create_user_command("RestartVimForce", function()
     M.save_restart(true)
   end, { desc = "Force restart without confirmation" })
+
+  did_setup = true
 end
 
 ---Internal function to restore session

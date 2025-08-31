@@ -7,6 +7,9 @@ local M = {}
 ---@type string
 local mod_base_path
 
+---@type boolean
+local did_setup = false
+
 -----------------------------------------------------------------------------//
 -- State & caches
 -----------------------------------------------------------------------------//
@@ -1001,6 +1004,7 @@ end
 ---@type PluginModule.Config
 local default_config = {
   mod_root = "plugins",
+  path_to_mod_root = "/lua/",
   local_dev_config = {
     base_dir = vim.fn.expand("~/Dev"), -- customize this path
     use_symlinks = true,
@@ -1011,11 +1015,15 @@ local default_config = {
 M.config = {}
 
 ---Initialize the plugin manager.
----@param user_config PluginModule.Config
+---@param user_config? PluginModule.Config
 ---@return nil
-function M.init(user_config)
+function M.setup(user_config)
+  if did_setup then
+    return
+  end
+
   M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
-  mod_base_path = vim.fn.stdpath("config") .. "/lua/" .. M.config.mod_root
+  mod_base_path = vim.fn.stdpath("config") .. M.config.path_to_mod_root .. M.config.mod_root
 
   local modules = discover()
   sort_modules(modules)
@@ -1024,6 +1032,8 @@ function M.init(user_config)
   install_modules()
   setup_modules()
   setup_keymaps()
+
+  did_setup = true
 end
 
 ---@return PluginModule.Resolved[]

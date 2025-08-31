@@ -4,8 +4,11 @@ local M = {}
 -- Configuration
 -----------------------------------------------------------------------------//
 
-local mod_root = "lsp"
-local mad_base_path = vim.fn.stdpath("config") .. "/lua/" .. mod_root
+---@type string
+local mad_base_path
+
+---@type boolean
+local did_setup = false
 
 -----------------------------------------------------------------------------//
 -- State & caches
@@ -49,7 +52,7 @@ local function discover()
   for _, file in ipairs(files) do
     local rel = file:sub(#mad_base_path + 2, -5):gsub("/", ".")
     if rel ~= "init" then
-      local path = mod_root .. "." .. rel
+      local path = M.config.mod_root .. "." .. rel
       local ok, chunk = pcall(loadfile, file)
 
       if not ok or type(chunk) ~= "function" then
@@ -199,97 +202,6 @@ end
 ---Setup a progress spinner for LSP.
 ---@return nil
 local function setup_progress_spinner()
-  local augroup = vim.api.nvim_create_augroup("LspProgress", { clear = true })
-
-  ---@type table<integer, table>
-  local client_progress = setmetatable({}, { __mode = "k" })
-
-  local spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
-  local last_spinner = 0
-  local spinner_idx = 1
-
-  vim.api.nvim_create_autocmd("LspProgress", {
-    group = augroup,
-    ---@param ev {data: {client_id: integer, params: lsp.ProgressParams}}
-    callback = function(ev)
-      local client = vim.lsp.get_client_by_id(ev.data.client_id)
-      local value = ev.data.params.value
-      if not client or type(value) ~= "table" then
-        return
-      end
-
-      -- client list
-      local p = client_progress[client.id] or {}
-      client_progress[client.id] = p
-
-      -- update / create token
-      local token = ev.data.params.token
-      local is_last = value.kind == "end"
-      local found
-      for _, item in ipairs(p) do
-        if item.token == token then
-          item.msg = string.format(
-            "[%3d%%] %s%s",
-            value.percentage or 100,
-            is_last and "Done" or value.title or "Loading workspace",
-            is_last and "" or (value.message and (" **" .. value.message .. "**") or "")
-          )
-          item.done = is_last
-          found = true
-          break
-        end
-      end
-      if not found then
-        table.insert(p, {
-          token = token,
-          msg = string.format("[100%%] %s%s", value.title or "Loading workspace", is_last and " – done" or ""),
-          done = is_last,
-        })
-      end
-
-      -- Build message (include finished tokens)
-      local msg = {}
-      for _, v in ipairs(p) do
-        table.insert(msg, v.msg)
-      end
-      local text = table.concat(msg, "\n")
-
-      -- Are we completely done?
-      local all_done = #vim.tbl_filter(function(v)
-        return not v.done
-      end, p) == 0
-
-      -- Choose icon
-      local icon
-      if all_done then
-        icon = " "
-      else
-        local now = vim.uv.hrtime()
-        if now - last_spinner > 80e6 then
-          spinner_idx = (spinner_idx % #spinner_chars) + 1
-          last_spinner = now
-        end
-        icon = spinner_chars[spinner_idx]
-      end
-
-      -- Always send the message; never send "" (it closes the window)
-      vim.notify(text, vim.log.levels.INFO, {
-        id = "lsp_progress",
-        title = client.name,
-        icon = icon,
-      })
-
-      -- GC finished tokens *after* display
-      client_progress[client.id] = vim.tbl_filter(function(v)
-        return not v.done
-      end, p)
-    end,
-  })
-end
-
----Setup a progress spinner for LSP.
----@return nil
-local function setup_progress_spinner_custom()
   local spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
   local last_spinner = 0
   local spinner_idx = 1
@@ -444,15 +356,32 @@ end
 -- Public API
 -----------------------------------------------------------------------------//
 
+---@type LspModule.Config
+local default_config = {
+  mod_root = "lsp",
+  path_to_mod_root = "/lua/",
+}
+
+---@type LspModule.Config
+M.config = {}
+
 ---Initialize the plugin manager.
+---@param user_config? LspModule.Config
 ---@return nil
-function M.init()
+function M.setup(user_config)
+  if did_setup then
+    return
+  end
+
+  M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
+  mad_base_path = vim.fn.stdpath("config") .. M.config.path_to_mod_root .. M.config.mod_root
+
   discover()
   setup_modules()
-  -- setup_progress_spinner()
-  setup_progress_spinner_custom()
-
+  setup_progress_spinner()
   -- setup_completion()
+
+  did_setup = true
 end
 
 return M
