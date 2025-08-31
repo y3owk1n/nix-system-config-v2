@@ -82,7 +82,7 @@
               tide configure --auto --style=Lean --prompt_colors='16 colors' --show_time=No --lean_prompt_height='Two lines' --prompt_connection=Disconnected --prompt_spacing=Sparse --icons='Many icons' --transient=Yes
 
               # Set a universal flag so we don't run again
-              # use `set -e tide_configured` to reset
+              # use `set -eU tide_configured` to reset
               set -U tide_configured true
           end
 
