@@ -18,6 +18,8 @@ local did_setup = false
 ---@type LspModule.Resolved[]
 local _discovered_modules = nil
 
+local ASYNC_SLICE_MS = 16
+
 -----------------------------------------------------------------------------//
 -- Utilities
 -----------------------------------------------------------------------------//
@@ -96,6 +98,8 @@ local function discover()
         setup = mod.setup,
         loaded = false,
         async = parse_boolean(mod.async, true),
+        failed = false,
+        retry_count = 0,
       }
 
       table.insert(modules, entry)
@@ -113,67 +117,181 @@ end
 
 ---Safely setup a plugin module.
 ---@param mod LspModule.Resolved
----@return boolean
+---@return boolean success, string? error_message
 local function setup_one(mod)
   if mod.loaded then
     return true
   end
 
-  local ok, data = pcall(require, mod.path)
-  if not ok then
-    log.error(("Failed to require %s: %s"):format(mod.name, data))
-    return false
-  end
-  local setup_ok, err = pcall(data.setup)
-  if not setup_ok then
-    log.error(("Setup failed for %s: %s"):format(mod.name, err))
-    return false
+  if mod.failed then
+    return false, "Lsp Module previously failed"
   end
 
+  local t0 = vim.uv.hrtime()
+
+  local ok, data = pcall(require, mod.path)
+  if not ok then
+    local error_msg = string.format("Failed to require: %s", data)
+    log.error(string.format("Lsp Module %s: %s", mod.name, error_msg))
+    mod.failed = true
+    mod.failure_reason = error_msg
+    return false, error_msg
+  end
+
+  -- Validate that the module has a setup function
+  if type(data.setup) ~= "function" then
+    local error_msg = "Lsp Module does not export a setup function"
+    log.error(string.format("Lsp Module %s: %s", mod.name, error_msg))
+    mod.failed = true
+    mod.failure_reason = error_msg
+    return false, error_msg
+  end
+
+  -- run setup with timeout protection
+  local setup_ok, setup_err
+  if M.config.setup_timeout and M.config.setup_timeout > 0 then
+    -- Add timeout protection if configured
+    local timeout_ms = M.config.setup_timeout
+    local timed_out = false
+
+    local timer = vim.uv.new_timer()
+    if timer and timeout_ms then
+      timer:start(timeout_ms, 0, function()
+        timed_out = true
+        timer:stop()
+        timer:close()
+      end)
+    end
+
+    setup_ok, setup_err = pcall(data.setup)
+
+    if timer and not timer:is_closing() then
+      timer:stop()
+      timer:close()
+    end
+
+    if timed_out then
+      setup_ok = false
+      setup_err = string.format("Setup timed out after %dms", timeout_ms)
+    end
+  else
+    setup_ok, setup_err = pcall(data.setup)
+  end
+
+  if not setup_ok then
+    local error_msg = string.format("Setup failed: %s", setup_err)
+    log.error(string.format("Module %s: %s", mod.name, error_msg))
+    mod.failed = true
+    mod.failure_reason = error_msg
+
+    return false, error_msg
+  end
+
+  local ms = (vim.uv.hrtime() - t0) / 1e6
+
   mod.loaded = true
+  mod.load_time_ms = ms
+
   return true
 end
 
-local ASYNC_SLICE_MS = 16
-
 ---Safely setup a module asynchronously.
 ---@param mod LspModule.Resolved
-local function async_setup_one(mod)
+---@param on_done? fun(success: boolean, error?: string)
+local function async_setup_one(mod, on_done)
   if mod.loaded then
+    if on_done then
+      on_done(true)
+    end
     return true
+  end
+
+  if mod.failed then
+    if on_done then
+      on_done(false, mod.failure_reason)
+    end
+    return false
   end
 
   local co = coroutine.create(function()
     local ok, data = pcall(require, mod.path)
     if not ok then
-      log.error(("require failed %s: %s"):format(mod.name, data))
-      return false
+      local error_msg = string.format("Failed to require: %s", data)
+      mod.failed = true
+      mod.failure_reason = error_msg
+      log.error(string.format("Async module %s: %s", mod.name, error_msg))
+      return false, error_msg
     end
 
+    -- start measuring
     local t0 = vim.uv.hrtime()
 
-    if type(data.setup) == "function" then
-      local setup_ok, err = pcall(data.setup)
-      if not setup_ok then
-        log.error(("setup failed %s: %s"):format(mod.name, err))
-        return false
-      end
-      if (vim.uv.hrtime() - t0) / 1e6 > ASYNC_SLICE_MS then
-        coroutine.yield() -- yield to UI
-      end
+    -- Validate setup function
+    if type(data.setup) ~= "function" then
+      local error_msg = "Module does not export a setup function"
+      mod.failed = true
+      mod.failure_reason = error_msg
+      log.error(string.format("Async module %s: %s", mod.name, error_msg))
+      return false, error_msg
     end
 
+    -- Run setup with slice yielding
+    local setup_start = vim.uv.hrtime()
+    local setup_ok, setup_err = pcall(data.setup)
+
+    if not setup_ok then
+      local error_msg = string.format("Async setup failed: %s", setup_err)
+      mod.failed = true
+      mod.failure_reason = error_msg
+      log.error(string.format("Async module %s: %s", mod.name, error_msg))
+
+      return false, error_msg
+    end
+
+    -- Check if we should yield after setup (if it took too long)
+    local setup_duration = (vim.uv.hrtime() - setup_start) / 1e6
+    if setup_duration > ASYNC_SLICE_MS then
+      coroutine.yield() -- yield to UI
+    end
+
+    local ms = (vim.uv.hrtime() - t0) / 1e6
+
     mod.loaded = true
+    mod.load_time_ms = ms
+
     return true
   end)
 
   local function tick()
-    local ok, err = coroutine.resume(co)
-    if coroutine.status(co) ~= "dead" then
+    local co_ok, success_or_err, error_msg = coroutine.resume(co)
+
+    if not co_ok then
+      -- Coroutine itself failed (programming error)
+      local full_error = string.format("Coroutine error in %s: %s", mod.name, debug.traceback(co, success_or_err))
+      log.error(full_error)
+      mod.failed = true
+      mod.failure_reason = success_or_err
+      if on_done then
+        on_done(false, success_or_err)
+      end
+      return
+    end
+
+    if coroutine.status(co) == "dead" then
+      -- Coroutine completed
+      local success = success_or_err
+      if success then
+        if on_done then
+          on_done(true)
+        end
+      else
+        if on_done then
+          on_done(false, error_msg)
+        end
+      end
+    else
+      -- Coroutine yielded, schedule next tick
       vim.defer_fn(tick, 0)
-    elseif not ok then
-      -- full traceback to the error
-      log.error(("Async setup error %s:\n%s"):format(mod.name, debug.traceback(co, err)))
     end
   end
   tick()
@@ -360,6 +478,8 @@ end
 local default_config = {
   mod_root = "lsp",
   path_to_mod_root = "/lua/",
+  setup_timeout = nil, -- No timeout by default, set to number of ms to enable
+  max_retries = 1, -- Number of retry attempts for failed modules
 }
 
 ---@type LspModule.Config

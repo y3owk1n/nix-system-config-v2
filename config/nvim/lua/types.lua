@@ -60,6 +60,8 @@
 ---@class LspModule.Config
 ---@field mod_root? string
 ---@field path_to_mod_root? string -- "/lua/abc/def/", starts and end with "/", excludes `mod_root`
+---@field setup_timeout number? -- timeout for setup functions in milliseconds
+---@field max_retries number? -- maximum retry attempts for failed modules
 
 ---@class LspModule.Resolved
 ---@field name? string
@@ -68,3 +70,7 @@
 ---@field setup? fun()
 ---@field loaded? boolean
 ---@field async? boolean -- whether to run setup asynchronously, true by default
+---@field failed boolean? -- indicates if module failed to load
+---@field retry_count number? -- number of retry attempts
+---@field failure_reason string? -- reason for failure
+---@field load_time_ms number? -- time taken to load
