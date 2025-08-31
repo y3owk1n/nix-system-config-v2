@@ -357,7 +357,7 @@ end
 M.config = {}
 
 ---@type LspRename.Config
-M.defaults = {
+local default_config = {
   -- Show confirmation dialog before renaming
   confirm = true,
   -- Auto-save all buffers before renaming
@@ -375,7 +375,7 @@ function M.setup(user_config)
     return
   end
 
-  M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
+  M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
 
   create_commands()
 

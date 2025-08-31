@@ -398,7 +398,7 @@ M.config = {}
 ---@field timeout? integer Job timeout in ms. Default: 3000
 ---@field poll_interval? integer Poll interval in ms. Default: 1000
 ---@field debug? boolean Enable debug logging. Default: false
-M.defaults = {
+local default_config = {
   git_executable = "git",
   timeout = 3000,
   poll_interval = 1000,
@@ -411,7 +411,7 @@ function M.setup(user_config)
     return
   end
 
-  M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
+  M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
 
   -- Start cleanup timer
   start_cleanup_timer()

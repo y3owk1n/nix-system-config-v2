@@ -881,20 +881,19 @@ end
 --------------------------------------------------------------------------------
 -- Highlight Groups
 --------------------------------------------------------------------------------
+---@param name string
+---@param hl_opts? vim.api.keyset.highlight
+local function ensure_hl(name, hl_opts)
+  local ok = pcall(vim.api.nvim_get_hl, 0, { name = name })
+  if not ok then
+    vim.api.nvim_set_hl(0, name, hl_opts or {}) -- only create empty if missing
+  end
+end
 
 ---Setup default highlight groups (no colors, just links if desired)
 local function setup_highlight_groups()
-  ---@param name string
-  ---@param hl_opts? vim.api.keyset.highlight
-  local function ensure_hl(name, hl_opts)
-    local ok = pcall(vim.api.nvim_get_hl, 0, { name = name })
-    if not ok then
-      vim.api.nvim_set_hl(0, name, hl_opts or {}) -- only create empty if missing
-    end
-  end
-
   -- auto-generate groups for registered components
-  for _, def in pairs(M.defaults) do
+  for _, def in pairs(M.config) do
     if type(def) == "table" then
       local hl = def.hl
       if hl then
@@ -959,7 +958,7 @@ end
 -- Configuration
 -- ------------------------------------------------------------------
 ---@type Barline.Config
-M.defaults = {
+local default_config = {
   -- Global settings
   component_separator = " ",
 
@@ -1167,7 +1166,7 @@ function M.setup(user_config)
   ---@diagnostic disable-next-line: undefined-field
   M.original_tabline = vim.opt.tabline:get()
 
-  M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
+  M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
 
   setup_autocmds()
   setup_highlight_groups()
@@ -1262,10 +1261,10 @@ function M.debug_info()
 end
 
 ---Register custom components
----Must be called before setup
+---Must be called after setup
 ---@param name string Component name
 ---@param fn fun(config: Barline.Config): string Component function that returns display string
----@param default_config? table Default config for component
+---@param _default_config? table Default config for component
 ---@example
 ---```lua
 ---local barline = require("barline")
@@ -1277,7 +1276,7 @@ end
 ---  hl = "CurSearch",
 ---})
 ---```
-function M.register_component(name, fn, default_config)
+function M.register_component(name, fn, _default_config)
   -- Wrap function with condition checking
   local wrapped_fn = function(config)
     local component_config = config[name]
@@ -1289,14 +1288,16 @@ function M.register_component(name, fn, default_config)
 
   components[name] = wrapped_fn
 
-  if not M.defaults[name] then
-    M.defaults[name] = vim.tbl_deep_extend("force", {
+  if not M.config[name] then
+    M.config[name] = vim.tbl_deep_extend("force", {
       enabled = true,
       prefix = "",
       suffix = "",
       hl = "Barline" .. name:gsub("^%l", string.upper),
-    }, default_config or {})
+    }, _default_config or {})
   end
+
+  ensure_hl(M.config[name].hl)
 end
 
 ---Get current configuration

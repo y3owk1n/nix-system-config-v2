@@ -69,7 +69,7 @@ end
 M.config = {}
 
 ---@type Restart.Config
-M.defaults = {
+local default_config = {
   session_file = nil, -- Uses default if nil
   auto_save = true,
   confirm_restart = false,
@@ -85,7 +85,7 @@ function M.setup(user_config)
     return
   end
 
-  M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
+  M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
 
   -- Use custom session file if provided
   if M.config.session_file then

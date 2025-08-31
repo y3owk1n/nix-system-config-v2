@@ -90,7 +90,7 @@ end
 -- ------------------------------------------------------------------
 
 ---@class Lazygit.Config
-M.defaults = {
+local default_config = {
   width_ratio = 0.8, -- Window width as ratio of editor width
   height_ratio = 0.8, -- Window height as ratio of editor height
   border = "rounded", -- Border style: "none", "single", "double", "rounded", "solid", "shadow"
@@ -113,7 +113,7 @@ function M.setup(user_config)
     return
   end
 
-  M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
+  M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
 
   did_setup = true
 end
