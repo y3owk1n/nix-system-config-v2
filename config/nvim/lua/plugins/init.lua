@@ -83,8 +83,28 @@ local function path_exists(path)
 end
 
 ---Check if a registry entry is a local development plugin
----@param registry_entry string|table
+---@param registry_entry string|vim.pack.Spec
 ---@return boolean, string?
+---@usage [[
+---Eligible formats for local dev plugins:
+---1. A string path starting with:
+---   - `./` (relative path in current dir)
+---   - `/`  (absolute path)
+---   - `~`  (home-relative path)
+---   Example: "./my-plugin", "~/projects/my-plugin", "/Users/me/dev/my-plugin"
+---
+---2. A string in the format:
+---   - `"local:<plugin-name>"`
+---   This will be resolved into a path:
+---   `M.config.local_dev_config.base_dir .. "/" .. plugin_name`
+---   Example: "local:my-plugin"
+---
+---3. A table spec (`vim.pack.Spec`) with a `src` field
+---   - Same rules as above apply to `src`
+---   Example:
+---     { src = "./my-plugin" }
+---     { src = "local:my-plugin" }
+---@usage ]]
 local function is_local_dev_plugin(registry_entry)
   local src
   if type(registry_entry) == "string" then
@@ -111,7 +131,7 @@ local function is_local_dev_plugin(registry_entry)
 end
 
 ---Setup a local development plugin
----@param registry_entry string|table
+---@param registry_entry string|vim.pack.Spec
 ---@param local_path string
 ---@return boolean success
 local function setup_local_dev_plugin(registry_entry, local_path)
@@ -142,7 +162,7 @@ local function setup_local_dev_plugin(registry_entry, local_path)
   -- Create symlink or copy
   if M.config.local_dev_config.use_symlinks then
     -- Create symlink (faster for development)
-    local success = vim.loop.fs_symlink(local_path, pack_path)
+    local success = vim.uv.fs_symlink(local_path, pack_path)
     if not success then
       log.error(("Failed to create symlink from %s to %s"):format(local_path, pack_path))
       return false
@@ -381,17 +401,17 @@ local function cleanup_orphaned_local_dev_plugins()
   -- Check both start and opt directories
   for _, dir_path in ipairs({ start_path, opt_path }) do
     if path_exists(dir_path) then
-      local handle = vim.loop.fs_scandir(dir_path)
+      local handle = vim.uv.fs_scandir(dir_path)
       if handle then
         while true do
-          local name, type = vim.loop.fs_scandir_next(handle)
+          local name, type = vim.uv.fs_scandir_next(handle)
           if not name then
             break
           end
 
           if type == "directory" or type == "link" then
             local plugin_path = dir_path .. "/" .. name
-            local stat = vim.loop.fs_lstat(plugin_path)
+            local stat = vim.uv.fs_lstat(plugin_path)
 
             -- Check if it's a symlink (our local dev plugins) or if it's not in active list
             local is_symlink = stat and stat.type == "link"
