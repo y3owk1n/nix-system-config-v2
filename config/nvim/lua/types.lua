@@ -11,6 +11,7 @@
 
 ---@class PluginModule.Config
 ---@field mod_root? string
+---@field path_to_mod_root? string -- "/lua/abc/def/", starts and end with "/", excludes `mod_root`
 ---@field local_dev_config? PluginModule.Config.LocalDevConfig
 
 ---@class PluginModule.Config.LocalDevConfig
@@ -48,6 +49,10 @@
 ---@field enabled? boolean
 ---@field setup? fun()
 ---@field async? boolean -- whether to run setup asynchronously, true by default
+
+---@class LspModule.Config
+---@field mod_root? string
+---@field path_to_mod_root? string -- "/lua/abc/def/", starts and end with "/", excludes `mod_root`
 
 ---@class LspModule.Resolved
 ---@field name? string

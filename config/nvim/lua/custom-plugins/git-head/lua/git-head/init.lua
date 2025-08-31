@@ -29,6 +29,9 @@ local cache = {}
 -- Cleanup tracker for orphaned timers
 local cleanup_timer = nil
 
+---@type boolean
+local did_setup = false
+
 -- ------------------------------------------------------------------
 -- low-level helpers
 -- ------------------------------------------------------------------
@@ -404,6 +407,10 @@ M.defaults = {
 
 ---@param user_config? GitHead.Config
 function M.setup(user_config)
+  if did_setup then
+    return
+  end
+
   M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
 
   -- Start cleanup timer
@@ -440,6 +447,8 @@ function M.setup(user_config)
       M.cleanup()
     end,
   })
+
+  did_setup = true
 end
 
 ---Get the root of a Git repo for a buffer

@@ -4,6 +4,10 @@ local M = {}
 -- ------------------------------------------------------------------
 -- State management
 -- ------------------------------------------------------------------
+
+---@type boolean
+local did_setup = false
+
 local state = {
   term_buf = nil,
   win_id = nil,
@@ -105,7 +109,13 @@ M.config = {}
 ---Setup the plugin with user configuration
 ---@param user_config? Lazygit.Config
 function M.setup(user_config)
+  if did_setup then
+    return
+  end
+
   M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
+
+  did_setup = true
 end
 
 ---Check if lazygit terminal is currently open

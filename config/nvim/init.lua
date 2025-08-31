@@ -6,20 +6,20 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 -- Disable default plugins and providers
-require("disables").init()
+require("disables").setup()
 
 -- Set options
-require("options").init()
+require("options").setup()
 
 -- Set autocmds
-require("autocmds").init()
+require("autocmds").setup()
 
 -- Set mappings
-require("mappings").init()
+require("mappings").setup()
 
 -- Set diagnostics
-require("diagnostics").init()
+require("diagnostics").setup()
 
 -- Load plugins & lsp settings
 -- NOTE: lsp configurations will be loaded after `lspconfig` is ensured
-require("plugins").init()
+require("plugins").setup()

@@ -1,5 +1,8 @@
 local M = {}
 
+---@type boolean
+local did_setup = false
+
 local function disable_builtin_plugins()
   local plugins = {
     "2html_plugin",
@@ -45,9 +48,15 @@ local function disable_builtin_providers()
   end
 end
 
-function M.init()
+function M.setup()
+  if did_setup then
+    return
+  end
+
   disable_builtin_plugins()
   disable_builtin_providers()
+
+  did_setup = true
 end
 
 return M
