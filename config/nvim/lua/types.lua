@@ -9,6 +9,14 @@
 ---@field async? boolean -- whether to run setup asynchronously, true by default
 ---@field post_pack_changed? fun() -- for "install" and "update"
 
+---@class PluginModule.Config
+---@field mod_root? string
+---@field local_dev_config? PluginModule.Config.LocalDevConfig
+
+---@class PluginModule.Config.LocalDevConfig
+---@field base_dir? string
+---@field use_symlinks? boolean
+
 ---@class PluginModule.Resolved
 ---@field name? string
 ---@field path? string

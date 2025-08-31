@@ -4,16 +4,8 @@ local M = {}
 -- Configuration
 -----------------------------------------------------------------------------//
 
-local mod_root = "plugins"
-local mod_base_path = vim.fn.stdpath("config") .. "/lua/" .. mod_root
-
--- Configuration for local development plugins
-local local_dev_config = {
-  -- Base directory where your local plugins are located
-  base_dir = vim.fn.expand("~/Dev"), -- customize this path
-  -- Whether to use symlinks or copy files (symlinks are faster for dev)
-  use_symlinks = true,
-}
+---@type string
+local mod_base_path
 
 -----------------------------------------------------------------------------//
 -- State & caches
@@ -108,7 +100,7 @@ local function is_local_dev_plugin(registry_entry)
   -- Check if it's in the format "local:plugin-name"
   local plugin_name = src:match("^local:(.+)")
   if plugin_name then
-    local local_path = local_dev_config.base_dir .. "/" .. plugin_name
+    local local_path = M.config.local_dev_config.base_dir .. "/" .. plugin_name
     return true, vim.fn.expand(local_path)
   end
 
@@ -145,7 +137,7 @@ local function setup_local_dev_plugin(registry_entry, local_path)
   vim.fn.mkdir(vim.fn.fnamemodify(pack_path, ":h"), "p")
 
   -- Create symlink or copy
-  if local_dev_config.use_symlinks then
+  if M.config.local_dev_config.use_symlinks then
     -- Create symlink (faster for development)
     local success = vim.loop.fs_symlink(local_path, pack_path)
     if not success then
@@ -470,7 +462,7 @@ local function discover()
   for _, file in ipairs(files) do
     local rel = file:sub(#mod_base_path + 2, -5):gsub("/", ".")
     if rel ~= "init" then
-      local path = mod_root .. "." .. rel
+      local path = M.config.mod_root .. "." .. rel
       local ok, chunk = pcall(loadfile, file)
       if not ok or type(chunk) ~= "function" then
         log.error(("Bad file %s: %s"):format(file, chunk))
@@ -550,7 +542,7 @@ local function sort_modules(mods)
   end
   for _, m in ipairs(mods) do
     for _, req in ipairs(m.requires) do
-      local dep = mod_map[req] or mod_map[mod_root .. "." .. req]
+      local dep = mod_map[req] or mod_map[M.config.mod_root .. "." .. req]
       if dep then
         in_degree[m.name] = in_degree[m.name] + 1
         rev[dep.name] = rev[dep.name] or {}
@@ -607,7 +599,7 @@ local function setup_one(mod, parent)
 
   -- ensure every declared dependency is loaded first
   for _, dep_name in ipairs(mod.requires) do
-    local dep = mod_map[dep_name] or mod_map[mod_root .. "." .. dep_name]
+    local dep = mod_map[dep_name] or mod_map[M.config.mod_root .. "." .. dep_name]
     if not dep then
       log.warn(("Missing dependency %s for %s"):format(dep_name, mod.name))
       return false
@@ -670,7 +662,7 @@ local function async_setup_one(mod, parent, on_done)
   local co = coroutine.create(function()
     -- 1. synchronous deps (tiny & safe)
     for _, dep_name in ipairs(mod.requires) do
-      local dep = mod_map[dep_name] or mod_map[mod_root .. "." .. dep_name]
+      local dep = mod_map[dep_name] or mod_map[M.config.mod_root .. "." .. dep_name]
       if dep and not dep.loaded then
         -- recurse synchronously (dependencies are cheap)
         local ok = setup_one(dep, mod)
@@ -1006,9 +998,25 @@ end
 -- Public API
 -----------------------------------------------------------------------------//
 
+---@type PluginModule.Config
+local default_config = {
+  mod_root = "plugins",
+  local_dev_config = {
+    base_dir = vim.fn.expand("~/Dev"), -- customize this path
+    use_symlinks = true,
+  },
+}
+
+---@type PluginModule.Config
+M.config = {}
+
 ---Initialize the plugin manager.
+---@param user_config PluginModule.Config
 ---@return nil
-function M.init()
+function M.init(user_config)
+  M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
+  mod_base_path = vim.fn.stdpath("config") .. "/lua/" .. M.config.mod_root
+
   local modules = discover()
   sort_modules(modules)
   setup_deferred_autocmd()
