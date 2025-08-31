@@ -783,11 +783,6 @@ local function setup_one(mod, parent)
     mod.failed = true
     mod.failure_reason = error_msg
 
-    -- Try to clean up any partial state
-    if data.cleanup and type(data.cleanup) == "function" then
-      pcall(data.cleanup)
-    end
-
     return false, error_msg
   end
 
@@ -913,11 +908,6 @@ local function async_setup_one(mod, parent, on_done)
       mod.failed = true
       mod.failure_reason = error_msg
       log.error(string.format("Async module %s: %s", mod.name, error_msg))
-
-      -- Try cleanup
-      if data.cleanup and type(data.cleanup) == "function" then
-        pcall(data.cleanup)
-      end
 
       return false, error_msg
     end
