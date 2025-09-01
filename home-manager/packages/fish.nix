@@ -16,7 +16,6 @@
     shellInit = ''
       __load-em
       __autols_hook
-      # starship_transient_prompt_func
     '';
     shellAliases = {
       gg = "lazygit";
@@ -57,13 +56,6 @@
           end
         '';
       };
-      starship_transient_prompt_func = {
-        description = "Starship transient prompt";
-        body = ''
-          starship module character
-        '';
-      };
-      # Add your custom fish_prompt here
       fish_prompt = {
         description = "Custom prompt with async git status";
         body = ''
