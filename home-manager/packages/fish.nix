@@ -17,7 +17,6 @@
       __load-em
       __autols_hook
       # starship_transient_prompt_func
-      # setup_tide
     '';
     shellAliases = {
       gg = "lazygit";
@@ -27,17 +26,6 @@
       tx = "tmux kill-server";
       vim = "nvim";
     };
-    plugins = [
-      {
-        name = "tide";
-        src = pkgs.fetchFromGitHub {
-          owner = "IlanCosman";
-          repo = "tide";
-          rev = "v6.2.0";
-          sha256 = "sha256-1ApDjBUZ1o5UyfQijv9a3uQJ/ZuQFfpNmHiDWzoHyuw=";
-        };
-      }
-    ];
     functions = {
       __load-em = {
         description = "Loads Fish shell function descriptions.";
@@ -73,27 +61,6 @@
         description = "Starship transient prompt";
         body = ''
           starship module character
-        '';
-      };
-      setup_tide = {
-        description = "Setup tide";
-        body = ''
-          if not set -q tide_configured
-              tide configure --auto --style=Lean --prompt_colors='16 colors' --show_time=No --lean_prompt_height='Two lines' --prompt_connection=Disconnected --prompt_spacing=Sparse --icons='Many icons' --transient=Yes
-
-              # Set a universal flag so we don't run again
-              # use `set -eU tide_configured` to reset
-              set -U tide_configured true
-          end
-
-          set -U tide_character_icon 
-          set -U tide_character_vi_icon_default 
-          set -U tide_character_vi_icon_replace 
-          set -U tide_character_vi_icon_visual 
-          set -U tide_git_icon 
-          set -U tide_git_color_branch magenta
-          set -U tide_status_icon 
-          set -U tide_status_icon_failure 
         '';
       };
       # Add your custom fish_prompt here
