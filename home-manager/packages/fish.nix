@@ -100,24 +100,6 @@
       fish_prompt = {
         description = "Custom prompt with async git status";
         body = ''
-          # git configuration
-          set -g __fish_git_prompt_show_informative_status 1
-          set -g __fish_git_prompt_showdirtystate 1
-          set -g __fish_git_prompt_showstashstate 1
-          set -g __fish_git_prompt_showupstream auto
-          set -g __fish_git_prompt_showuntrackedfiles 1
-          set -g __fish_git_prompt_showcolorhints 1
-
-          # git char configurations
-          set -g __fish_git_prompt_char_stateseparator ' '
-          set -g __fish_git_prompt_char_dirtystate '!' # modified files
-          set -g __fish_git_prompt_char_stagedstate '+' # staged files
-          set -g __fish_git_prompt_char_untrackedfiles '?' # untracked files
-          set -g __fish_git_prompt_char_stashstate '$' # stashed files
-          set -g __fish_git_prompt_char_upstream_ahead '⇡' # ahead of upstream
-          set -g __fish_git_prompt_char_upstream_behind '⇣' # behind upstream
-          set -g __fish_git_prompt_char_upstream_diverged '⇕' # diverged from upstream
-
           # async git state
           set -g __git_info ""
           set -g __git_pid ""
@@ -161,6 +143,25 @@
               set -g __git_tmpfile "/tmp/fish_git_$fish_pid"_(random)
               # start background job
               fish -c "
+                  set __fish_git_prompt_char_dirtystate '!'
+                  set __fish_git_prompt_char_stagedstate '+'
+                  set __fish_git_prompt_char_untrackedfiles '?'
+                  set __fish_git_prompt_char_upstream_ahead '⇡'
+                  set __fish_git_prompt_char_upstream_behind '⇣'
+                  set __fish_git_prompt_char_upstream_diverged '⇕'
+                  set __fish_git_prompt_char_stateseparator ' '
+
+                  # Configure fish_git_prompt behavior
+                  set __fish_git_prompt_showdirtystate 1
+                  set __fish_git_prompt_showstagedstate 1
+                  set __fish_git_prompt_showstashstate 1
+                  set __fish_git_prompt_showuntrackedfiles 1
+                  set __fish_git_prompt_showupstream auto
+                  set __fish_git_prompt_show_informative_status 1
+
+                  set __fish_git_prompt_color_stagedstate green
+                  set __fish_git_prompt_color_untrackedfiles blue
+
                   fish_git_prompt > \"$__git_tmpfile\" 2>/dev/null
                   # Signal fish to refresh by sending SIGUSR1 to parent
                   kill -USR1 $fish_pid 2>/dev/null
@@ -193,7 +194,7 @@
               # get exit status before anything else
               set -l last_status $status
               set -l cwd (prompt_pwd)
-              set -l prompt_char ' '
+              set -l prompt_char ''
 
               # change prompt char color based on exit status
               set -l prompt_color green
@@ -201,17 +202,9 @@
                   set prompt_color red
               end
 
-              show execution time for long commands
-              set -l duration_str ""
-              if test -n "$CMD_DURATION"
-                  and test $CMD_DURATION -gt 5000 # 5+ seconds
-                  set duration_str (set_color brwhite)" ["(math $CMD_DURATION / 1000)"s]"(set_color normal)
-              end
-
-              # First line: directory, git info, and optional duration
+              # First line: directory, git info
               echo -s (set_color cyan) $cwd \
-                  (set_color normal) $__git_info \
-                  $duration_str (set_color normal)
+                  (set_color normal) $__git_info
 
               # Second line: prompt character with status-based coloring
               echo -n -s (set_color $prompt_color) $prompt_char " " (set_color normal)
