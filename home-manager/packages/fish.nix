@@ -56,6 +56,10 @@
           end
         '';
       };
+      fish_mode_prompt = {
+        description = "Custom fish mode prompt (disable it)";
+        body = '''';
+      };
       fish_prompt = {
         description = "Custom prompt with async git status";
         body = ''
