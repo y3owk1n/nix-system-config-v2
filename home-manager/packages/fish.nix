@@ -112,6 +112,7 @@
                   set __fish_git_prompt_char_upstream_ahead '⇡'
                   set __fish_git_prompt_char_upstream_behind '⇣'
                   set __fish_git_prompt_char_upstream_diverged '⇕'
+                  set __fish_git_prompt_char_stashstate '\$'
                   set __fish_git_prompt_char_stateseparator ' '
 
                   # Configure fish_git_prompt behavior
@@ -124,6 +125,7 @@
 
                   set __fish_git_prompt_color_stagedstate green
                   set __fish_git_prompt_color_untrackedfiles blue
+                  set __fish_git_prompt_color_stashstate red
 
                   fish_git_prompt > \"$__git_tmpfile\" 2>/dev/null
                   # Signal fish to refresh by sending SIGUSR1 to parent
