@@ -45,6 +45,10 @@ function M.setup()
       StatusLineTermNC = { link = "StatusLineNC" },
       -- barline
       BarlineFileInfo = { fg = "rose" }, -- match my tmux layout
+      BarlineDiagnosticError = { link = "DiagnosticError" },
+      BarlineDiagnosticWarn = { link = "DiagnosticWarn" },
+      BarlineDiagnosticInfo = { link = "DiagnosticInfo" },
+      BarlineDiagnosticHint = { link = "DiagnosticHint" },
       -- time machine colors
       TimeMachineCurrent = {
         bg = "foam",

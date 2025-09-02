@@ -59,6 +59,7 @@ function M.setup()
     diagnostics = {
       show_info = true,
       show_hint = true,
+      prefix = " ",
       condition = function()
         return vim.bo.filetype ~= ""
       end,
