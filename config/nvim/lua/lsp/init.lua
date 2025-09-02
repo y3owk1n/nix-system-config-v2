@@ -5,7 +5,7 @@ local M = {}
 -----------------------------------------------------------------------------//
 
 ---@type string
-local mad_base_path
+local mod_base_path
 
 ---@type boolean
 local did_setup = false
@@ -49,10 +49,10 @@ local function discover()
 
   local files = vim.fs.find(function(name)
     return name:sub(-4) == ".lua"
-  end, { type = "file", limit = math.huge, path = mad_base_path })
+  end, { type = "file", limit = math.huge, path = mod_base_path })
 
   for _, file in ipairs(files) do
-    local rel = file:sub(#mad_base_path + 2, -5):gsub("/", ".")
+    local rel = file:sub(#mod_base_path + 2, -5):gsub("/", ".")
     if rel ~= "init" then
       local path = M.config.mod_root .. "." .. rel
       local ok, chunk = pcall(loadfile, file)
@@ -494,7 +494,7 @@ function M.setup(user_config)
   end
 
   M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
-  mad_base_path = vim.fn.stdpath("config") .. M.config.path_to_mod_root .. M.config.mod_root
+  mod_base_path = vim.fn.stdpath("config") .. M.config.path_to_mod_root .. M.config.mod_root
 
   discover()
   setup_modules()
