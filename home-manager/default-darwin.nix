@@ -27,6 +27,7 @@
     ./packages/sesh.nix
     ./packages/skhd.nix
     ./packages/ssh.nix
+    ./packages/starship.nix
     ./packages/tmux.nix
     ./custom/cpenv.nix
     ./custom/nvs.nix

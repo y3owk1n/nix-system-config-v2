@@ -10,7 +10,7 @@ This is a project to help me to manage my Nix system configuration, mainly with 
 - Terminal: [ghostty](https://ghostty.org/)
 - Editor: [neovim](https://neovim.io/)
 - Multiplexer: [tmux](https://github.com/tmux/tmux/wiki)
-- Prompt: Custom async fish prompt with git support only
+- Prompt: [starship](https://starship.rs/)
 - Browser: Safari
 - Docker: [orbstack](https://orbstack.dev/)
 - Network: [tailscale](https://tailscale.com/)
