@@ -4,7 +4,7 @@
     enable = true;
     enableTransience = true;
     settings = {
-      command_timeout = 1000;
+      command_timeout = 3000; # set longer to give it some time to warmup
       character = {
         error_symbol = "[](bold red)";
         success_symbol = "[](bold green)";
@@ -12,10 +12,6 @@
         vimcmd_replace_symbol = "[](bold purple)";
         vimcmd_symbol = "[](bold green)";
         vimcmd_visual_symbol = "[](bold yellow)";
-
-      };
-      git_branch = {
-        format = "[$symbol$branch(:$remote_branch)]($style) ";
       };
       git_status = {
         ahead = "⇡$count";
@@ -29,12 +25,20 @@
         untracked = "?$count";
         ignore_submodules = true;
       };
-      git_metrics = {
-        disabled = false;
-        ignore_submodules = true;
-      };
+
+      # symbols
+      directory.read_only = " 󰌾";
+      docker_context.symbol = " ";
+      git_branch.symbol = " ";
+      git_commit.tag_symbol = "  ";
+      golang.symbol = "󰟓 ";
+      lua.symbol = " ";
+      nix_shell.symbol = " ";
+      nodejs.symbol = " ";
+
       # enable
       direnv.disabled = false;
+
       # disable
       aws.disabled = true;
       azure.disabled = true;
@@ -57,6 +61,7 @@
       fossil_branch.disabled = true;
       fossil_metrics.disabled = true;
       gcloud.disabled = true;
+      git_metrics.disabled = true;
       gleam.disabled = true;
       guix_shell.disabled = true;
       gradle.disabled = true;
@@ -112,5 +117,11 @@
       vcsh.disabled = true;
       zig.disabled = true;
     };
+  };
+  programs.fish.functions.starship_transient_prompt_func = {
+    description = "Starship transient prompt";
+    body = ''
+      starship module character
+    '';
   };
 }
