@@ -56,12 +56,6 @@
           end
         '';
       };
-      starship_transient_prompt_func = {
-        description = "Starship transient prompt";
-        body = ''
-          starship module character
-        '';
-      };
       # fish_mode_prompt = {
       #   description = "Custom fish mode prompt (disable it)";
       #   body = '''';
