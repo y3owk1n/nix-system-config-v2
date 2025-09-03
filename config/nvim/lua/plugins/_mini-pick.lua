@@ -19,6 +19,7 @@ M.lazy = {
     "<leader>sk",
     "<leader>sd",
     "<leader>so",
+    "<leader>gf",
     "grd",
     "grr",
     "gri",
@@ -100,7 +101,7 @@ function M.setup()
   if extra_ok then
     vim.keymap.set("n", "<leader>gf", function()
       extra.pickers.git_files({
-        path = require("custom-plugins.git-head").get_root(),
+        path = require("git-head").get_root(),
         scope = "modified",
       })
     end, { desc = "Git Files (Modified + Git Root)" })
