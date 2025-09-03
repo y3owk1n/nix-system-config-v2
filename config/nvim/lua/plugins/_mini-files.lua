@@ -22,7 +22,6 @@ function M.setup()
   end
 
   local plugin_opts = {
-
     windows = {
       preview = true,
       width_focus = 30,
