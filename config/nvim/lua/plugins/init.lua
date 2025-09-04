@@ -38,24 +38,57 @@ local _discovered_modules = nil
 ---@type table<string, boolean>
 local _argv_cmds = nil
 
+---Cache expanded paths to avoid repeated fs calls
+---@type table<string, {expanded: string, exists: boolean}>
+local _path_cache = {}
+
 -- keeps the order in which modules were successfully resolved
 ---@type PluginModule.ResolutionEntry[]
 local resolution_order = {}
 
 local waiting_for = {}
 
-local ASYNC_SLICE_MS = 16
+-- Configuration constants
+local DEFAULT_ASYNC_SLICE_MS = 16
+local DEFAULT_SETUP_TIMEOUT = 5000
+local DEFAULT_MAX_RETRIES = 2
+
+local LOG_LEVELS = {
+  DEBUG = 1,
+  INFO = 2,
+  WARN = 3,
+  ERROR = 4,
+}
 
 -----------------------------------------------------------------------------//
 -- Utilities
 -----------------------------------------------------------------------------//
 
 Utils.log = {
-  warn = function(msg)
-    vim.notify(msg, vim.log.levels.WARN)
+  level = LOG_LEVELS.INFO, -- Default log level
+
+  debug = function(msg)
+    if Utils.log.level <= LOG_LEVELS.DEBUG then
+      vim.notify("[PLUGIN MOD] " .. msg, vim.log.levels.DEBUG)
+    end
   end,
+
+  info = function(msg)
+    if Utils.log.level <= LOG_LEVELS.INFO then
+      vim.notify("[PLUGIN MOD] " .. msg, vim.log.levels.INFO)
+    end
+  end,
+
+  warn = function(msg)
+    if Utils.log.level <= LOG_LEVELS.WARN then
+      vim.notify("[PLUGIN MOD] " .. msg, vim.log.levels.WARN)
+    end
+  end,
+
   error = function(msg)
-    vim.notify(msg, vim.log.levels.ERROR)
+    if Utils.log.level <= LOG_LEVELS.ERROR then
+      vim.notify("[PLUGIN MOD] " .. msg, vim.log.levels.ERROR)
+    end
   end,
 }
 
@@ -90,8 +123,52 @@ end
 ---@param path string
 ---@return boolean
 function Utils.path_exists(path)
+  local cached = _path_cache[path]
+  if cached ~= nil then
+    return cached.exists
+  end
+
   local stat = vim.uv.fs_stat(path)
-  return stat ~= nil
+  local exists = stat ~= nil
+  vim.tbl_deep_extend("force", _path_cache, { [path] = { exists = exists } })
+  return exists
+end
+
+---Get expanded path with caching
+---@param path string
+---@return string
+function Utils.expand_path(path)
+  local cached = _path_cache[path]
+  if cached then
+    return cached.expanded
+  end
+
+  local expanded = vim.fn.expand(path)
+  vim.tbl_deep_extend("force", _path_cache, { [path] = { expanded = expanded } })
+  return expanded
+end
+
+---Validate configuration on setup
+---@param config PluginModule.Config
+---@return boolean valid, string? error_message
+function Utils.validate_config(config)
+  if not config.mod_root or type(config.mod_root) ~= "string" then
+    return false, "mod_root must be a non-empty string"
+  end
+
+  if config.setup_timeout and (type(config.setup_timeout) ~= "number" or config.setup_timeout <= 0) then
+    return false, "setup_timeout must be a positive number"
+  end
+
+  if config.max_retries and (type(config.max_retries) ~= "number" or config.max_retries < 0) then
+    return false, "max_retries must be a non-negative number"
+  end
+
+  if config.async_slice_ms and (type(config.async_slice_ms) ~= "number" or config.async_slice_ms <= 0) then
+    return false, "async_slice_ms must be a positive number"
+  end
+
+  return true
 end
 
 ---Check if a registry entry is a local development plugin
@@ -109,17 +186,89 @@ function Utils.is_local_dev_plugin(registry_entry)
 
   -- Check if it's a local path (starts with ./, /, or ~)
   if src:match("^[./~]") then
-    return true, vim.fn.expand(src)
+    return true, Utils.expand_path(src)
   end
 
   -- Check if it's in the format "local:plugin-name"
   local plugin_name = src:match("^local:(.+)")
   if plugin_name then
-    local local_path = M.config.local_dev_config.base_dir .. "/" .. plugin_name
-    return true, vim.fn.expand(local_path)
+    local local_path = string.format("%s/%s", M.config.local_dev_config.base_dir, plugin_name)
+    return true, Utils.expand_path(local_path)
   end
 
   return false
+end
+
+---Simple min-heap implementation for priority queue
+---@class PriorityQueue
+---@field private heap PluginModule.Resolved[]
+---@field private size number
+local PriorityQueue = {}
+PriorityQueue.__index = PriorityQueue
+
+function PriorityQueue.new()
+  return setmetatable({
+    heap = {},
+    size = 0,
+  }, PriorityQueue)
+end
+
+function PriorityQueue:push(item)
+  self.size = self.size + 1
+  self.heap[self.size] = item
+  self:bubble_up(self.size)
+end
+
+function PriorityQueue:pop()
+  if self.size == 0 then
+    return nil
+  end
+
+  local min = self.heap[1]
+  self.heap[1] = self.heap[self.size]
+  self.heap[self.size] = nil
+  self.size = self.size - 1
+
+  if self.size > 0 then
+    self:bubble_down(1)
+  end
+
+  return min
+end
+
+function PriorityQueue:bubble_up(index)
+  if index <= 1 then
+    return
+  end
+
+  local parent_index = math.floor(index / 2)
+  if self.heap[parent_index].priority > self.heap[index].priority then
+    self.heap[parent_index], self.heap[index] = self.heap[index], self.heap[parent_index]
+    self:bubble_up(parent_index)
+  end
+end
+
+function PriorityQueue:bubble_down(index)
+  local left_child = 2 * index
+  local right_child = 2 * index + 1
+  local smallest = index
+
+  if left_child <= self.size and self.heap[left_child].priority < self.heap[smallest].priority then
+    smallest = left_child
+  end
+
+  if right_child <= self.size and self.heap[right_child].priority < self.heap[smallest].priority then
+    smallest = right_child
+  end
+
+  if smallest ~= index then
+    self.heap[index], self.heap[smallest] = self.heap[smallest], self.heap[index]
+    self:bubble_down(smallest)
+  end
+end
+
+function PriorityQueue:is_empty()
+  return self.size == 0
 end
 
 -- Show a visual timeline of plugin resolution.
@@ -148,7 +297,7 @@ function Utils.print_resolution_timeline()
       )
     )
   end
-  vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
+  Utils.log.info(table.concat(lines, "\n"))
 end
 
 -- Hacky way to update vim.pack all at once
@@ -215,7 +364,7 @@ function Utils.sync_packages()
   end
 
   if #to_remove <= 0 then
-    vim.notify("No plugins to remove")
+    Utils.log.info("No plugins to remove")
     return
   end
 
@@ -240,7 +389,7 @@ function Utils.print_plugin_status()
   local loaded = M.get_plugins(true)
   local not_loaded = M.get_plugins(false)
 
-  local lines = { "Plugin status:" }
+  local lines = { string.format("Plugin status (Total: %d):", #sorted_modules) }
   table.insert(lines, string.format("Loaded [%s]:", #loaded))
   for i, entry in ipairs(loaded) do
     local dev_status = ""
@@ -263,6 +412,8 @@ function Utils.print_plugin_status()
     local status_suffix = ""
     if entry.failed then
       status_suffix = " [FAILED]"
+    elseif entry.lazy then
+      status_suffix = " [LAZY]"
     end
     if entry.registry then
       for _, reg in ipairs(entry.registry) do
@@ -273,15 +424,17 @@ function Utils.print_plugin_status()
         end
       end
     end
-    table.insert(lines, string.format("%2d. %s%s%s", i, entry.name, dev_status, status_suffix))
+    table.insert(lines, string.format("  %2d. %s%s%s", i, entry.name, dev_status, status_suffix))
   end
 
-  vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
+  Utils.log.info(table.concat(lines, "\n"))
 end
 
 ---Refresh all local development plugins
 function Utils.refresh_local_dev_plugins()
   local refreshed = 0
+  local failed = 0
+
   for _, mod in ipairs(sorted_modules) do
     if mod.registry then
       for _, reg in ipairs(mod.registry) do
@@ -289,12 +442,19 @@ function Utils.refresh_local_dev_plugins()
         if is_local and local_path then
           if Utils.setup_local_dev_plugin(reg, local_path) then
             refreshed = refreshed + 1
+          else
+            failed = failed + 1
           end
         end
       end
     end
   end
-  vim.notify(("Refreshed %d local development plugins"):format(refreshed))
+
+  if failed > 0 then
+    Utils.log.warn(string.format("Refreshed %d local development plugins (%d failed)", refreshed, failed))
+  else
+    Utils.log.info(string.format("Refreshed %d local development plugins", refreshed))
+  end
 end
 
 ---Get all currently active local dev plugins from the registry
@@ -328,12 +488,12 @@ end
 
 ---Clean up orphaned local development plugins
 function Utils.cleanup_orphaned_local_dev_plugins()
-  local pack_path = vim.fn.stdpath("data") .. "/site/pack/local"
-  local start_path = pack_path .. "/start"
-  local opt_path = pack_path .. "/opt"
+  local pack_path = string.format("%s/site/pack/local", vim.fn.stdpath("data"))
+  local start_path = string.format("%s/start", pack_path)
+  local opt_path = string.format("%s/opt", pack_path)
 
   if not Utils.path_exists(pack_path) then
-    vim.notify("No local pack directory found, nothing to clean up")
+    Utils.log.info("No local pack directory found, nothing to clean up")
     return
   end
 
@@ -353,7 +513,7 @@ function Utils.cleanup_orphaned_local_dev_plugins()
           end
 
           if type == "directory" or type == "link" then
-            local plugin_path = dir_path .. "/" .. name
+            local plugin_path = string.format("%s/%s", dir_path, name)
             local stat = vim.uv.fs_lstat(plugin_path)
 
             -- Check if it's a symlink (our local dev plugins) or if it's not in active list
@@ -366,7 +526,7 @@ function Utils.cleanup_orphaned_local_dev_plugins()
               if success == 0 then
                 removed_count = removed_count + 1
                 table.insert(removed_plugins, name)
-                vim.notify(("Removed orphaned local dev plugin: %s"):format(name))
+                Utils.log.info(string.format("Removed orphaned local dev plugin: %s", name))
               else
                 Utils.log.error(("Failed to remove: %s"):format(plugin_path))
               end
@@ -382,7 +542,7 @@ function Utils.cleanup_orphaned_local_dev_plugins()
                 if success == 0 then
                   removed_count = removed_count + 1
                   table.insert(removed_plugins, name)
-                  vim.notify(("Removed orphaned plugin directory: %s"):format(name))
+                  Utils.log.info(string.format("Removed orphaned plugin directory: %s", name))
                 else
                   Utils.log.error(("Failed to remove: %s"):format(plugin_path))
                 end
@@ -397,13 +557,13 @@ function Utils.cleanup_orphaned_local_dev_plugins()
   end
 
   if removed_count > 0 then
-    vim.notify(("Cleanup complete: removed %d orphaned plugins"):format(removed_count))
+    Utils.log.info(string.format("Cleanup complete: removed %d orphaned plugins", removed_count))
     if #removed_plugins > 0 then
-      vim.notify(("Removed plugins: %s"):format(table.concat(removed_plugins, ", ")))
+      Utils.log.info(string.format("Removed plugins: %s", table.concat(removed_plugins, ", ")))
     end
-    vim.notify("Restart Neovim to ensure clean state")
+    Utils.log.info("Restart Neovim to ensure clean state")
   else
-    vim.notify("No orphaned local dev plugins found")
+    Utils.log.info("No orphaned local dev plugins found")
   end
 end
 
@@ -412,33 +572,37 @@ function Utils.print_failed_plugins()
     return m.failed
   end, sorted_modules)
   if #failed == 0 then
-    vim.notify("No failed plugins ✓")
+    Utils.log.info("No failed plugins ✓")
     return
   end
 
   local lines = { string.format("Failed plugins (%d):", #failed) }
   for i, mod in ipairs(failed) do
-    table.insert(lines, string.format("%2d. %s: %s", i, mod.name, mod.failure_reason or "unknown"))
+    local retry_info = ""
     if mod.retry_count and mod.retry_count > 0 then
-      table.insert(lines, string.format("     (retried %d times)", mod.retry_count))
+      retry_info = string.format(" (retried %d times)", mod.retry_count)
     end
+    table.insert(lines, string.format("  %2d. %s: %s%s", i, mod.name, mod.failure_reason or "unknown", retry_info))
   end
-  vim.notify(table.concat(lines, "\n"), vim.log.levels.WARN)
+  Utils.log.warn(table.concat(lines, "\n"))
 end
 
 function Utils.print_plugin_health()
   -- Health check
   local issues = {}
   local warnings = 0
+  local slow_threshold = M.config.slow_load_threshold or 100
 
   -- Check for failed modules
+  local failed_count = 0
   for _, mod in ipairs(sorted_modules) do
     if mod.failed then
+      failed_count = failed_count + 1
       table.insert(issues, string.format("✗ %s: %s", mod.name, mod.failure_reason or "unknown error"))
     end
 
     -- Check load times
-    if mod.loaded and mod.load_time_ms and mod.load_time_ms > 100 then
+    if mod.loaded and mod.load_time_ms and mod.load_time_ms > slow_threshold then
       warnings = warnings + 1
       if warnings <= 5 then -- Don't spam too many warnings
         table.insert(issues, string.format("⚠ %s: slow load time (%.2fms)", mod.name, mod.load_time_ms))
@@ -447,26 +611,38 @@ function Utils.print_plugin_health()
   end
 
   -- Check for missing local dev plugins
+  local missing_local = 0
   for _, mod in ipairs(sorted_modules) do
     if mod.registry then
       for _, reg in ipairs(mod.registry) do
         local is_local, local_path = Utils.is_local_dev_plugin(reg)
         if is_local and local_path and not Utils.path_exists(local_path) then
+          missing_local = missing_local + 1
           table.insert(issues, string.format("✗ Local plugin path missing: %s", local_path))
         end
       end
     end
   end
 
+  -- Health summary
+  local health_lines = {
+    string.format("Plugin Health Summary (Total: %d plugins)", #sorted_modules),
+    string.format("  ✓ Loaded: %d", #M.get_plugins(true)),
+    string.format("  ✗ Failed: %d", failed_count),
+    string.format("  ⚠ Slow loading (>%dms): %d", slow_threshold, warnings),
+    string.format("  📁 Missing local paths: %d", missing_local),
+  }
+
   if #issues == 0 then
-    vim.notify("All plugins healthy ✓", vim.log.levels.INFO)
+    table.insert(health_lines, "All plugins healthy ✓")
+    Utils.log.info(table.concat(health_lines, "\n"))
   else
-    local lines = { "Plugin health issues found:" }
-    vim.list_extend(lines, issues)
+    table.insert(health_lines, "\nIssues found:")
+    vim.list_extend(health_lines, issues)
     if warnings > 5 then
-      table.insert(lines, string.format("... and %d more performance warnings", warnings - 5))
+      table.insert(health_lines, string.format("... and %d more performance warnings", warnings - 5))
     end
-    vim.notify(table.concat(lines, "\n"), vim.log.levels.WARN)
+    Utils.log.warn(table.concat(health_lines, "\n"))
   end
 end
 
@@ -484,14 +660,18 @@ function Modules.discover()
   ---@type PluginModule.Resolved
   local modules = {}
 
+  local discovery_start = vim.uv.hrtime()
+
   local files = vim.fs.find(function(name)
     return name:sub(-4) == ".lua"
   end, { type = "file", limit = math.huge, path = mod_base_path })
 
+  Utils.log.debug(string.format("Found %d Lua files in %s", #files, mod_base_path))
+
   for _, file in ipairs(files) do
     local rel = file:sub(#mod_base_path + 2, -5):gsub("/", ".")
     if rel ~= "init" then
-      local path = M.config.mod_root .. "." .. rel
+      local path = string.format("%s.%s", M.config.mod_root, rel)
       local ok, chunk = pcall(loadfile, file)
       if not ok or type(chunk) ~= "function" then
         Utils.log.error(("Bad file %s: %s"):format(file, chunk))
@@ -507,13 +687,14 @@ function Modules.discover()
       end
 
       if mod.enabled == false then
-        -- log.warn(("Plugin %s is disabled"):format(path))
+        Utils.log.debug(string.format("Plugin %s is disabled", path))
         goto continue
       end
 
       local name = mod.name or path
       if Utils.argv_cmds()[name:lower()] then
         mod.lazy = false
+        Utils.log.debug(string.format("Plugin %s forced to load via CLI", name))
       end
 
       ---@param x boolean|nil
@@ -563,66 +744,115 @@ function Modules.discover()
     end
   end
 
+  local discovery_ms = (vim.uv.hrtime() - discovery_start) / 1e6
+  Utils.log.debug(string.format("Plugin discovery completed in %.2fms, found %d modules", discovery_ms, #modules))
+
   _discovered_modules = modules
   return modules
 end
 
 -----------------------------------------------------------------------------//
--- Topological sort  (Kahn's algorithm – O(n+m))
+-- Topological sort with cycle detection
 -----------------------------------------------------------------------------//
 
----Topologically sort plugin modules (Kahn's algorithm).
+---Topologically sort plugin modules with cycle detection.
 ---@param mods PluginModule.Resolved[]
+---@return boolean success
+---@return string? error_message
 function Modules.sort(mods)
-  -- Build adjacency
+  -- Build adjacency and detect cycles
   local in_degree, rev = {}, {}
+  local visiting, visited = {}, {}
+
+  -- Initialize in_degree
   for _, m in ipairs(mods) do
     in_degree[m.name] = 0
+    visited[m.name] = false
   end
 
-  -- Handle `requires`
+  -- Cycle detection DFS
+  local function has_cycle(node_name, path)
+    if visiting[node_name] then
+      return true, path -- Found cycle
+    end
+    if visited[node_name] then
+      return false
+    end
+
+    visiting[node_name] = true
+    table.insert(path, node_name)
+
+    local node = mod_map[node_name]
+    if node then
+      for _, dep_name in ipairs(node.requires) do
+        local dep_node = mod_map[dep_name] or mod_map[string.format("%s.%s", M.config.mod_root, dep_name)]
+        if dep_node then
+          local cycle_found, cycle_path = has_cycle(dep_node.name, vim.deepcopy(path))
+          if cycle_found then
+            return true, cycle_path
+          end
+        end
+      end
+    end
+
+    visiting[node_name] = false
+    visited[node_name] = true
+    table.remove(path)
+    return false
+  end
+
+  -- Check for cycles
+  for _, m in ipairs(mods) do
+    if not visited[m.name] then
+      local cycle_found, cycle_path = has_cycle(m.name, {})
+      if cycle_found and cycle_path then
+        return false, string.format("Dependency cycle detected: %s", table.concat(cycle_path, " -> "))
+      end
+    end
+  end
+
+  -- Build dependency graph
   for _, m in ipairs(mods) do
     for _, req in ipairs(m.requires) do
-      local dep = mod_map[req] or mod_map[M.config.mod_root .. "." .. req]
+      local dep = mod_map[req] or mod_map[string.format("%s.%s", M.config.mod_root, req)]
       if dep then
         in_degree[m.name] = in_degree[m.name] + 1
         rev[dep.name] = rev[dep.name] or {}
         table.insert(rev[dep.name], m)
       else
-        Utils.log.warn(("Missing dependency %s for %s"):format(req, m.name))
+        Utils.log.warn(string.format("Missing dependency %s for %s", req, m.name))
       end
     end
   end
 
-  -- Priority queue (min-heap on priority)
-  ---@type PluginModule.Resolved[]
-  local pq = {}
+  -- Use priority queue for efficient sorting
+  local pq = PriorityQueue.new()
   for _, m in ipairs(mods) do
     if in_degree[m.name] == 0 then
-      table.insert(pq, m)
+      pq:push(m)
     end
   end
-  table.sort(pq, function(a, b)
-    return a.priority < b.priority
-  end)
 
-  ---@type PluginModule.Resolved[]
   local out = {}
-  while #pq > 0 do
-    local cur = table.remove(pq, 1)
+  while not pq:is_empty() do
+    local cur = pq:pop()
     table.insert(out, cur)
-    for _, next_mod in ipairs(rev[cur.name] or {}) do
-      in_degree[next_mod.name] = in_degree[next_mod.name] - 1
-      if in_degree[next_mod.name] == 0 then
-        table.insert(pq, next_mod)
-        table.sort(pq, function(a, b)
-          return a.priority < b.priority
-        end)
+    if cur and cur.name then
+      for _, next_mod in ipairs(rev[cur.name] or {}) do
+        in_degree[next_mod.name] = in_degree[next_mod.name] - 1
+        if in_degree[next_mod.name] == 0 then
+          pq:push(next_mod)
+        end
       end
     end
+  end
+
+  if #out ~= #mods then
+    return false, string.format("Topological sort failed: expected %d modules, got %d", #mods, #out)
   end
 
   sorted_modules = out
+  return true
 end
 
 -----------------------------------------------------------------------------//
@@ -639,13 +869,13 @@ function Modules.setup_one(mod, parent)
   end
 
   if mod.failed then
-    return false, "Module previously failed"
+    return false, string.format("Module previously failed: %s", mod.failure_reason or "unknown")
   end
 
   -- Only check "requires" dependencies for startup
   local failed_deps = {}
   for _, dep_name in ipairs(mod.requires) do
-    local dep = mod_map[dep_name] or mod_map[M.config.mod_root .. "." .. dep_name]
+    local dep = mod_map[dep_name] or mod_map[string.format("%s.%s", M.config.mod_root, dep_name)]
     if not dep then
       table.insert(failed_deps, dep_name)
     else
@@ -716,13 +946,13 @@ function Modules.setup_one(mod, parent)
 
   -- run setup with timeout protection
   local setup_ok, setup_err
-  if M.config.setup_timeout and M.config.setup_timeout > 0 then
-    -- Add timeout protection if configured
-    local timeout_ms = M.config.setup_timeout
-    local timed_out = false
+  local timeout_ms = M.config.setup_timeout
 
+  if timeout_ms and timeout_ms > 0 then
+    local timed_out = false
     local timer = vim.uv.new_timer()
-    if timer and timeout_ms then
+
+    if timer then
       timer:start(timeout_ms, 0, function()
         timed_out = true
         timer:stop()
@@ -774,29 +1004,48 @@ function Modules.setup_one(mod, parent)
   -- Log success with any warnings
   if #errors > 0 then
     Utils.log.warn(string.format("Module %s loaded with warnings (%.2fms)", mod.name, ms))
+  else
+    Utils.log.debug(string.format("Module %s loaded successfully (%.2fms)", mod.name, ms))
   end
 
   return true
+end
+
+---Cleanup resources for a coroutine
+---@param co thread
+---@param mod PluginModule.Resolved
+local function cleanup_coroutine_resources(co, mod)
+  -- Mark coroutine as cleaned up
+  if co and coroutine.status(co) ~= "dead" then
+    Utils.log.debug(string.format("Cleaning up coroutine for module %s", mod.name))
+  end
 end
 
 ---Safely setup a module asynchronously with improved error recovery.
 ---@param mod PluginModule.Resolved
 ---@param parent? PluginModule.Resolved|nil nil if this is the root module, this is just to visualize the timeline
 ---@param on_done? fun(success: boolean, error?: string)
+---@return boolean success
 function Modules.async_setup_one(mod, parent, on_done)
   if mod.loaded then
     if on_done then
-      on_done(true)
+      vim.schedule(function()
+        on_done(true)
+      end)
     end
     return true
   end
 
   if mod.failed then
     if on_done then
-      on_done(false, mod.failure_reason)
+      vim.schedule(function()
+        on_done(false, mod.failure_reason)
+      end)
     end
     return false
   end
+
+  local async_slice_ms = M.config.async_slice_ms or DEFAULT_ASYNC_SLICE_MS
 
   local co = coroutine.create(function()
     local errors = {}
@@ -804,7 +1053,7 @@ function Modules.async_setup_one(mod, parent, on_done)
     -- Handle hard dependencies (requires) - must succeed
     local failed_deps = {}
     for _, dep_name in ipairs(mod.requires) do
-      local dep = mod_map[dep_name] or mod_map[M.config.mod_root .. "." .. dep_name]
+      local dep = mod_map[dep_name] or mod_map[string.format("%s.%s", M.config.mod_root, dep_name)]
       if not dep then
         table.insert(failed_deps, dep_name)
       elseif not dep.loaded then
@@ -819,7 +1068,7 @@ function Modules.async_setup_one(mod, parent, on_done)
     -- Handle soft dependencies (after) - don't fail if they fail
     local after_warnings = {}
     for _, after_name in ipairs(mod.after) do
-      local after_mod = mod_map[after_name] or mod_map[M.config.mod_root .. "." .. after_name]
+      local after_mod = mod_map[after_name] or mod_map[string.format("%s.%s", M.config.mod_root, after_name)]
       if after_mod then
         local after_ok, after_err = Modules.setup_one(after_mod, mod)
         if not after_ok then
@@ -834,6 +1083,10 @@ function Modules.async_setup_one(mod, parent, on_done)
       mod.failure_reason = error_msg
       Utils.log.error(string.format("Cannot async load %s: %s", mod.name, error_msg))
       return false, error_msg
+    end
+
+    if #after_warnings > 0 then
+      Utils.log.warn(string.format("Soft dependency warnings for %s: %s", mod.name, table.concat(after_warnings, "; ")))
     end
 
     -- 2. setup for local dev or just packadd
@@ -898,7 +1151,7 @@ function Modules.async_setup_one(mod, parent, on_done)
 
     -- Check if we should yield after setup (if it took too long)
     local setup_duration = (vim.uv.hrtime() - setup_start) / 1e6
-    if setup_duration > ASYNC_SLICE_MS then
+    if setup_duration > async_slice_ms then
       coroutine.yield() -- yield to UI
     end
 
@@ -921,45 +1174,65 @@ function Modules.async_setup_one(mod, parent, on_done)
     -- Log with any warnings
     if #errors > 0 then
       Utils.log.warn(string.format("Async module %s loaded with warnings (%.2fms)", mod.name, ms))
+    else
+      Utils.log.debug(string.format("Async module %s loaded successfully (%.2fms)", mod.name, ms))
     end
 
     return true
   end)
 
+  -- Track active coroutine for potential cleanup
+  local cleanup_done = false
+
   local function tick()
+    if cleanup_done then
+      return
+    end
+
     local co_ok, success_or_err, error_msg = coroutine.resume(co)
 
     if not co_ok then
       -- Coroutine itself failed (programming error)
+      cleanup_done = true
       local full_error = string.format("Coroutine error in %s: %s", mod.name, debug.traceback(co, success_or_err))
       Utils.log.error(full_error)
       mod.failed = true
       mod.failure_reason = success_or_err
+      cleanup_coroutine_resources(co, mod)
       if on_done then
-        on_done(false, success_or_err)
+        vim.schedule(function()
+          on_done(false, success_or_err)
+        end)
       end
       return
     end
 
     if coroutine.status(co) == "dead" then
       -- Coroutine completed
+      cleanup_done = true
       local success = success_or_err
+      cleanup_coroutine_resources(co, mod)
       if success then
         if on_done then
-          on_done(true)
+          vim.schedule(function()
+            on_done(true)
+          end)
         end
       else
         if on_done then
-          on_done(false, error_msg)
+          vim.schedule(function()
+            on_done(false, error_msg)
+          end)
         end
       end
     else
       -- Coroutine yielded, schedule next tick
-      vim.defer_fn(tick, 0)
+      vim.defer_fn(tick, 1)
     end
   end
 
   tick()
+  return true
 end
 
 ---Setup a local development plugin
@@ -974,22 +1247,31 @@ function Utils.setup_local_dev_plugin(registry_entry, local_path)
 
   local plugin_name
   if type(registry_entry) == "string" then
-    plugin_name = vim.fn.fnamemodify(local_path, ":t")
+    if registry_entry:match("^local:(.+)") then
+      plugin_name = registry_entry:match("^local:(.+)")
+    else
+      plugin_name = vim.fn.fnamemodify(local_path, ":t")
+    end
   elseif registry_entry.name then
     plugin_name = registry_entry.name
   else
     plugin_name = vim.fn.fnamemodify(local_path, ":t")
   end
 
-  local pack_path = vim.fn.stdpath("data") .. "/site/pack/local/start/" .. plugin_name
+  local pack_path = string.format("%s/site/pack/local/start/%s", vim.fn.stdpath("data"), plugin_name)
 
   -- Remove existing installation if it exists
   if Utils.path_exists(pack_path) then
-    vim.fn.delete(pack_path, "rf")
+    local success = vim.fn.delete(pack_path, "rf")
+    if success ~= 0 then
+      Utils.log.error(string.format("Failed to remove existing plugin path: %s", pack_path))
+      return false
+    end
   end
 
   -- Create parent directory
-  vim.fn.mkdir(vim.fn.fnamemodify(pack_path, ":h"), "p")
+  local parent_dir = vim.fn.fnamemodify(pack_path, ":h")
+  vim.fn.mkdir(parent_dir, "p")
 
   -- Create symlink or copy
   if M.config.local_dev_config.use_symlinks then
@@ -999,6 +1281,7 @@ function Utils.setup_local_dev_plugin(registry_entry, local_path)
       Utils.log.error(("Failed to create symlink from %s to %s"):format(local_path, pack_path))
       return false
     end
+    Utils.log.debug(string.format("Created symlink: %s -> %s", pack_path, local_path))
   else
     -- Copy directory (safer but slower)
     local cmd = string.format("cp -r %s %s", vim.fn.shellescape(local_path), vim.fn.shellescape(pack_path))
@@ -1007,6 +1290,7 @@ function Utils.setup_local_dev_plugin(registry_entry, local_path)
       Utils.log.error(("Failed to copy local plugin: %s\nError: %s"):format(cmd, result))
       return false
     end
+    Utils.log.debug(string.format("Copied local plugin: %s -> %s", local_path, pack_path))
   end
 
   -- Add to runtimepath immediately so it can be loaded
@@ -1026,19 +1310,24 @@ function Modules.trigger_after_modules(loaded_module_name)
     return
   end
 
+  Utils.log.debug(string.format("Triggering %d modules waiting for %s", #waiters, loaded_module_name))
+
   for _, waiter in ipairs(waiters) do
     if not waiter.loaded and not waiter.failed then
       -- Check if ALL "after" dependencies are now satisfied
       local all_after_loaded = true
+      local missing_after = {}
+
       for _, after_name in ipairs(waiter.after) do
-        local after_mod = mod_map[after_name] or mod_map[M.config.mod_root .. "." .. after_name]
+        local after_mod = mod_map[after_name] or mod_map[string.format("%s.%s", M.config.mod_root, after_name)]
         if after_mod and not after_mod.loaded then
           all_after_loaded = false
-          break
+          table.insert(missing_after, after_name)
         end
       end
 
       if all_after_loaded then
+        Utils.log.debug(string.format("All after dependencies satisfied for %s, loading now", waiter.name))
         vim.schedule(function()
           if waiter.async then
             Modules.async_setup_one(waiter)
@@ -1046,6 +1335,10 @@ function Modules.trigger_after_modules(loaded_module_name)
             Modules.setup_one(waiter)
           end
         end)
+      else
+        Utils.log.debug(
+          string.format("Module %s still waiting for: %s", waiter.name, table.concat(missing_after, ", "))
+        )
       end
     end
   end
@@ -1072,6 +1365,7 @@ function Lazy.setup_event_handler(mod)
     vim.api.nvim_create_autocmd("User", {
       pattern = "VeryLazy",
       callback = function()
+        Utils.log.debug(string.format("VeryLazy event triggered for %s", mod.name))
         if mod.async then
           Modules.async_setup_one(mod)
         else
@@ -1082,7 +1376,8 @@ function Lazy.setup_event_handler(mod)
   else
     vim.api.nvim_create_autocmd(events, {
       once = true,
-      callback = function()
+      callback = function(args)
+        Utils.log.debug(string.format("Event %s triggered for %s", args.event, mod.name))
         if mod.async then
           Modules.async_setup_one(mod)
         else
@@ -1100,7 +1395,8 @@ function Lazy.setup_ft_handler(mod)
   vim.api.nvim_create_autocmd("FileType", {
     pattern = fts,
     once = true,
-    callback = function()
+    callback = function(args)
+      Utils.log.debug(string.format("FileType %s triggered for %s", args.match, mod.name))
       if mod.async then
         Modules.async_setup_one(mod)
       else
@@ -1118,6 +1414,8 @@ function Lazy.setup_keymap_handler(mod)
 
   for _, key in ipairs(keys) do
     vim.keymap.set(potential_keys, key, function()
+      Utils.log.debug(string.format("Key %s pressed for %s", key, mod.name))
+
       pcall(vim.keymap.del, potential_keys, key)
 
       local success_fn = function()
@@ -1127,10 +1425,19 @@ function Lazy.setup_keymap_handler(mod)
       end
 
       if mod.async then
-        Modules.async_setup_one(mod, nil, success_fn)
+        Modules.async_setup_one(mod, nil, function(success, err)
+          if success then
+            success_fn()
+          else
+            Utils.log.error(string.format("Failed to load %s on key press: %s", mod.name, err or "unknown"))
+          end
+        end)
       else
-        if Modules.setup_one(mod) then
+        local ok, err = Modules.setup_one(mod)
+        if ok then
           success_fn()
+        else
+          Utils.log.error(string.format("Failed to load %s on key press: %s", mod.name, err or "unknown"))
         end
       end
     end, { noremap = true, silent = true, desc = "Lazy: " .. mod.name })
@@ -1143,17 +1450,30 @@ function Lazy.setup_cmd_handler(mod)
   local cmds = Utils.string_or_table(mod.lazy.cmd)
   for _, name in ipairs(cmds) do
     vim.api.nvim_create_user_command(name, function(opts)
+      Utils.log.debug(string.format("Command %s executed for %s", name, mod.name))
+
       local success_fn = function()
         vim.schedule(function()
-          vim.cmd((opts.bang and "%s! %s" or "%s %s"):format(name, opts.args))
+          local cmd_str = opts.bang and string.format("%s! %s", name, opts.args)
+            or string.format("%s %s", name, opts.args)
+          vim.cmd(cmd_str)
         end)
       end
 
       if mod.async then
-        Modules.async_setup_one(mod, nil, success_fn)
+        Modules.async_setup_one(mod, nil, function(success, err)
+          if success then
+            success_fn()
+          else
+            Utils.log.error(string.format("Failed to load %s on command: %s", mod.name, err or "unknown"))
+          end
+        end)
       else
-        if Modules.setup_one(mod) then
+        local ok, err = Modules.setup_one(mod)
+        if ok then
           success_fn()
+        else
+          Utils.log.error(string.format("Failed to load %s on command: %s", mod.name, err or "unknown"))
         end
       end
     end, { bang = true, nargs = "*" })
@@ -1166,6 +1486,7 @@ function Lazy.setup_on_lsp_attach_handler(mod)
     callback = function(args)
       local client = vim.lsp.get_client_by_id(args.data.client_id)
       if client and vim.tbl_contains(allowed, client.name) then
+        Utils.log.debug(string.format("LSP %s attached, loading %s", client.name, mod.name))
         if mod.async then
           Modules.async_setup_one(mod)
         else
@@ -1184,24 +1505,34 @@ function Lazy.lazy_handlers(mod)
     return
   end
 
+  local handlers_set = 0
   if l.event then
     Lazy.setup_event_handler(mod)
+    handlers_set = handlers_set + 1
   end
 
   if l.ft then
     Lazy.setup_ft_handler(mod)
+    handlers_set = handlers_set + 1
   end
 
   if l.keys then
     Lazy.setup_keymap_handler(mod)
+    handlers_set = handlers_set + 1
   end
 
   if l.cmd then
     Lazy.setup_cmd_handler(mod)
+    handlers_set = handlers_set + 1
   end
 
   if l.on_lsp_attach then
     Lazy.setup_on_lsp_attach_handler(mod)
+    handlers_set = handlers_set + 1
+  end
+
+  if handlers_set == 0 then
+    Utils.log.warn(string.format("Module %s has lazy=true but no lazy handlers configured", mod.name))
   end
 end
 
@@ -1213,6 +1544,7 @@ end
 ---@return nil
 function Modules.install_modules()
   local remote_registry = {}
+  local local_count = 0
 
   for _, mod in ipairs(sorted_modules) do
     if mod.registry then
@@ -1220,16 +1552,23 @@ function Modules.install_modules()
         local is_local = Utils.is_local_dev_plugin(reg)
         if not is_local then
           table.insert(remote_registry, reg)
+        else
+          local_count = local_count + 1
         end
       end
     end
   end
 
+  Utils.log.debug(string.format("Found %d remote plugins, %d local plugins", #remote_registry, local_count))
+
   if #remote_registry > 0 then
+    local install_start = vim.uv.hrtime()
     vim.pack.add(remote_registry, {
       confirm = false,
       load = function() end,
     })
+    local install_ms = (vim.uv.hrtime() - install_start) / 1e6
+    Utils.log.debug(string.format("Added %d remote plugins to pack in %.2fms", #remote_registry, install_ms))
   end
 end
 
@@ -1240,6 +1579,10 @@ end
 ---Setup all discovered modules
 ---@return nil
 function Modules.setup_modules()
+  local immediate_count = 0
+  local lazy_count = 0
+  local after_count = 0
+
   for _, mod in ipairs(sorted_modules) do
     -- Skip modules that have "after" dependencies - they'll be triggered later
     local has_after_deps = #mod.after > 0
@@ -1247,18 +1590,20 @@ function Modules.setup_modules()
     if not has_after_deps then
       if mod.lazy then
         Lazy.lazy_handlers(mod)
+        lazy_count = lazy_count + 1
       else
         if mod.async then
           Modules.async_setup_one(mod)
         else
           Modules.setup_one(mod)
         end
+        immediate_count = immediate_count + 1
       end
     else
       -- For modules with "after" dependencies, check if all are already loaded
       local all_after_loaded = true
       for _, after_name in ipairs(mod.after) do
-        local after_mod = mod_map[after_name] or mod_map[M.config.mod_root .. "." .. after_name]
+        local after_mod = mod_map[after_name] or mod_map[string.format("%s.%s", M.config.mod_root, after_name)]
         if not after_mod or not after_mod.loaded then
           all_after_loaded = false
           break
@@ -1269,17 +1614,25 @@ function Modules.setup_modules()
         -- All "after" deps are already loaded, load immediately
         if mod.lazy then
           Lazy.lazy_handlers(mod)
+          lazy_count = lazy_count + 1
         else
           if mod.async then
             Modules.async_setup_one(mod)
           else
             Modules.setup_one(mod)
           end
+          immediate_count = immediate_count + 1
         end
+      else
+        after_count = after_count + 1
       end
       -- Otherwise, the module will be triggered when its dependencies load
     end
   end
+
+  Utils.log.debug(
+    string.format("Module setup: %d immediate, %d lazy, %d waiting for deps", immediate_count, lazy_count, after_count)
+  )
 end
 
 -----------------------------------------------------------------------------//
@@ -1303,7 +1656,7 @@ local function setup_keymaps()
   vim.keymap.set("n", "<leader>pr", function()
     local retried = M.retry_failed_modules()
     if retried > 0 then
-      vim.notify(string.format("Retried %d modules", retried))
+      Utils.log.info(string.format("Retried %d modules", retried))
     end
   end, { desc = "Retry failed plugins" })
   vim.keymap.set("n", "<leader>pi", "", { desc = "info" })
@@ -1311,6 +1664,10 @@ local function setup_keymaps()
   vim.keymap.set("n", "<leader>pir", Utils.print_resolution_timeline, { desc = "Plugin resolution" })
   vim.keymap.set("n", "<leader>pif", Utils.print_failed_plugins, { desc = "Show failed plugins" })
   vim.keymap.set("n", "<leader>pih", Utils.print_plugin_health, { desc = "Plugin health check" })
+  vim.keymap.set("n", "<leader>pl", function()
+    Utils.log.level = Utils.log.level == LOG_LEVELS.DEBUG and LOG_LEVELS.INFO or LOG_LEVELS.DEBUG
+    Utils.log.info(string.format("Debug logging %s", Utils.log.level == LOG_LEVELS.DEBUG and "enabled" or "disabled"))
+  end, { desc = "Toggle debug logging" })
 end
 
 -----------------------------------------------------------------------------//
@@ -1325,10 +1682,15 @@ local function setup_post_update_autocmd()
       if data.kind == "update" or data.kind == "install" then
         vim.schedule(function()
           local name = data.spec.name
+          Utils.log.debug(string.format("Pack changed event for %s (%s)", name, data.kind))
 
           for _, mod in ipairs(sorted_modules) do
             if mod.name == name and mod.post_pack_changed then
-              mod.post_pack_changed()
+              Utils.log.debug(string.format("Running post_pack_changed for %s", name))
+              local ok, err = pcall(mod.post_pack_changed)
+              if not ok then
+                Utils.log.error(string.format("post_pack_changed failed for %s: %s", name, err))
+              end
               break
             end
           end
@@ -1343,6 +1705,7 @@ local function setup_deferred_autocmd()
     once = true,
     callback = function()
       -- Schedule so it runs after all VimEnter autocommands
+      Utils.log.debug("Triggering VeryLazy event")
       vim.schedule(function()
         vim.api.nvim_exec_autocmds("User", { pattern = "VeryLazy" })
       end)
@@ -1358,8 +1721,11 @@ end
 local default_config = {
   mod_root = "plugins",
   path_to_mod_root = "/lua/",
-  setup_timeout = nil, -- No timeout by default, set to number of ms to enable
-  max_retries = 1, -- Number of retry attempts for failed modules
+  setup_timeout = DEFAULT_SETUP_TIMEOUT,
+  max_retries = DEFAULT_MAX_RETRIES,
+  async_slice_ms = DEFAULT_ASYNC_SLICE_MS,
+  slow_load_threshold = 100,
+  log_level = "INFO", -- DEBUG, INFO, WARN, ERROR
   local_dev_config = {
     base_dir = vim.fn.expand("~/Dev"),
     use_symlinks = true,
@@ -1371,24 +1737,64 @@ M.config = {}
 
 ---Initialize the plugin manager.
 ---@param user_config? PluginModule.Config
----@return nil
+---@return boolean success, string? error_message
 function M.setup(user_config)
   if did_setup then
-    return
+    return true
   end
 
-  M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
-  mod_base_path = vim.fn.stdpath("config") .. M.config.path_to_mod_root .. M.config.mod_root
+  -- Validate and merge config
+  local config = vim.tbl_deep_extend("force", default_config, user_config or {})
+  local config_ok, config_err = Utils.validate_config(config)
+  if not config_ok then
+    Utils.log.error(string.format("Invalid configuration: %s", config_err))
+    return false, config_err
+  end
+
+  M.config = config
+
+  -- Set log level
+  if config.log_level then
+    local level_map = {
+      DEBUG = LOG_LEVELS.DEBUG,
+      INFO = LOG_LEVELS.INFO,
+      WARN = LOG_LEVELS.WARN,
+      ERROR = LOG_LEVELS.ERROR,
+    }
+    Utils.log.level = level_map[config.log_level:upper()] or LOG_LEVELS.INFO
+  end
+
+  mod_base_path = string.format("%s%s%s", vim.fn.stdpath("config"), M.config.path_to_mod_root, M.config.mod_root)
+
+  Utils.log.debug(string.format("Plugin manager setup starting, mod_base_path: %s", mod_base_path))
+
+  local setup_start = vim.uv.hrtime()
 
   local modules = Modules.discover()
-  Modules.sort(modules)
+
+  if #modules == 0 then
+    Utils.log.warn("No plugin modules discovered")
+    did_setup = true
+    return true
+  end
+
+  local sort_ok, sort_err = Modules.sort(modules)
+  if not sort_ok then
+    Utils.log.error(string.format("Failed to sort modules: %s", sort_err))
+    return false, sort_err
+  end
+
   setup_deferred_autocmd()
   setup_post_update_autocmd()
   Modules.install_modules()
   Modules.setup_modules()
   setup_keymaps()
 
+  local setup_ms = (vim.uv.hrtime() - setup_start) / 1e6
+  Utils.log.debug(string.format("Plugin manager setup completed in %.2fms", setup_ms))
+
   did_setup = true
+  return true
 end
 
 ---@return PluginModule.Resolved[]
@@ -1396,13 +1802,70 @@ function M.get_plugins(query)
   if query == nil then
     return sorted_modules
   end
-  local out = {}
-  for _, m in ipairs(sorted_modules) do
-    if m.loaded == query then
-      table.insert(out, m)
+  if type(query) == "boolean" then
+    return vim.tbl_filter(function(m)
+      return m.loaded == query
+    end, sorted_modules)
+  end
+
+  if type(query) == "function" then
+    return vim.tbl_filter(query, sorted_modules)
+  end
+
+  return sorted_modules
+end
+
+---Get plugin statistics
+---@return table stats
+function M.get_stats()
+  local stats = {
+    total = #sorted_modules,
+    loaded = 0,
+    failed = 0,
+    lazy = 0,
+    local_dev = 0,
+    avg_load_time = 0,
+    slowest_plugin = nil,
+    total_load_time = 0,
+  }
+
+  local load_times = {}
+
+  for _, mod in ipairs(sorted_modules) do
+    if mod.loaded then
+      stats.loaded = stats.loaded + 1
+      if mod.load_time_ms then
+        table.insert(load_times, mod.load_time_ms)
+        stats.total_load_time = stats.total_load_time + mod.load_time_ms
+        if not stats.slowest_plugin or mod.load_time_ms > stats.slowest_plugin.load_time_ms then
+          stats.slowest_plugin = mod
+        end
+      end
+    end
+
+    if mod.failed then
+      stats.failed = stats.failed + 1
+    end
+
+    if mod.lazy then
+      stats.lazy = stats.lazy + 1
+    end
+
+    if mod.registry then
+      for _, reg in ipairs(mod.registry) do
+        if Utils.is_local_dev_plugin(reg) then
+          stats.local_dev = stats.local_dev + 1
+          break
+        end
+      end
     end
   end
-  return out
+
+  if #load_times > 0 then
+    stats.avg_load_time = stats.total_load_time / #load_times
+  end
+
+  return stats
 end
 
 ---Retry loading a failed module
@@ -1431,27 +1894,42 @@ function M.retry_module(mod_name)
   mod.failure_reason = nil
   mod.loaded = false
 
-  Utils.log.warn(("Retrying module %s (attempt %d/%d)"):format(mod_name, mod.retry_count, M.config.max_retries))
+  -- Exponential backoff delay
+  local delay_ms = math.min(100 * (2 ^ (mod.retry_count - 1)), 2000)
 
-  local success, error_msg
-  if mod.async then
-    Modules.async_setup_one(mod, nil, function(ok, err)
-      if ok then
-        Utils.log.warn(("Module %s loaded successfully on retry"):format(mod_name))
-      else
-        Utils.log.error(("Module %s failed again: %s"):format(mod_name, err))
-      end
-    end)
-    return true -- async, so we return true for now
-  else
-    success, error_msg = Modules.setup_one(mod)
-    if success then
-      Utils.log.warn(("Module %s loaded successfully on retry"):format(mod_name))
+  Utils.log.warn(
+    string.format(
+      "Retrying module %s (attempt %d/%d) after %dms delay",
+      mod_name,
+      mod.retry_count,
+      M.config.max_retries,
+      delay_ms
+    )
+  )
+
+  vim.defer_fn(function()
+    local success, error_msg
+    if mod.async then
+      Modules.async_setup_one(mod, nil, function(ok, err)
+        if ok then
+          Utils.log.debug(string.format("Module %s loaded successfully on retry %d", mod_name, mod.retry_count))
+        else
+          Utils.log.error(string.format("Module %s failed again on retry %d: %s", mod_name, mod.retry_count, err))
+        end
+      end)
+      return true -- async, so we return true for now
     else
-      Utils.log.error(("Module %s failed again: %s"):format(mod_name, error_msg))
+      success, error_msg = Modules.setup_one(mod)
+      if success then
+        Utils.log.debug(string.format("Module %s loaded successfully on retry %d", mod_name, mod.retry_count))
+      else
+        Utils.log.error(string.format("Module %s failed again on retry %d: %s", mod_name, mod.retry_count, error_msg))
+      end
+      return success
     end
-    return success
-  end
+  end, delay_ms)
+
+  return true
 end
 
 ---Retry all failed modules
@@ -1465,11 +1943,11 @@ function M.retry_failed_modules()
   end
 
   if #failed_modules == 0 then
-    vim.notify("No failed modules to retry")
+    Utils.log.info("No failed modules to retry")
     return 0
   end
 
-  vim.notify(("Retrying %d failed modules..."):format(#failed_modules))
+  Utils.log.info(string.format("Retrying %d failed modules...", #failed_modules))
 
   local retried = 0
   for _, mod_name in ipairs(failed_modules) do
@@ -1479,6 +1957,42 @@ function M.retry_failed_modules()
   end
 
   return retried
+end
+
+---Force reload a specific module
+---@param mod_name string
+---@return boolean success, string? error_message
+function M.reload_module(mod_name)
+  local mod = mod_map[mod_name]
+  if not mod then
+    Utils.log.error(string.format("Module not found: %s", mod_name))
+    return false, "Module not found"
+  end
+
+  Utils.log.info(string.format("Force reloading module: %s", mod_name))
+
+  -- Clear package cache
+  package.loaded[mod.path] = nil
+
+  -- Reset module state
+  mod.loaded = false
+  mod.failed = false
+  mod.failure_reason = nil
+  mod.load_time_ms = nil
+
+  -- Attempt reload
+  if mod.async then
+    Modules.async_setup_one(mod, nil, function(ok, err)
+      if ok then
+        Utils.log.info(string.format("Module %s reloaded successfully", mod_name))
+      else
+        Utils.log.error(string.format("Module %s reload failed: %s", mod_name, err))
+      end
+    end)
+    return true
+  else
+    return Modules.setup_one(mod)
+  end
 end
 
 return M
