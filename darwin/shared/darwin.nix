@@ -262,7 +262,7 @@
           ShowStandaloneTabBar = 0;
           SidebarSplitViewDividerPosition = 240;
           SidebarTabGroupHeaderExpansionState = 1;
-          UseHTTPSOnly = 1;
+          UseHTTPSOnly = 0;
           SuppressSearchSuggestions = 1;
           UserStyleSheetEnabled = 0;
           WebKitDeveloperExtrasEnabledPreferenceKey = 1;
