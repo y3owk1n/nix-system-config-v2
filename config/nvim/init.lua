@@ -22,4 +22,6 @@ require("diagnostics").setup()
 
 -- Load plugins & lsp settings
 -- NOTE: lsp configurations will be loaded after `lspconfig` is ensured
-require("plugins").setup()
+require("plugins").setup({
+  log_level = "INFO",
+})

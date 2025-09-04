@@ -26,7 +26,9 @@ function M.setup()
   vim.keymap.set("n", "<leader>ll", "<cmd>LspLog<cr>", { desc = "lsp log" })
 
   vim.schedule(function()
-    require("lsp.init").setup()
+    require("lsp.init").setup({
+      log_level = "INFO",
+    })
   end)
 end
 

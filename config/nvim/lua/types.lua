@@ -14,8 +14,11 @@
 ---@field mod_root? string
 ---@field path_to_mod_root? string -- "/lua/abc/def/", starts and end with "/", excludes `mod_root`
 ---@field local_dev_config? PluginModule.Config.LocalDevConfig
----@field setup_timeout number? -- timeout for setup functions in milliseconds
----@field max_retries number? -- maximum retry attempts for failed modules
+---@field setup_timeout? number -- timeout for setup functions in milliseconds
+---@field max_retries? number -- maximum retry attempts for failed modules
+---@field async_slice_ms? number -- time slice for asynchronous setup in milliseconds
+---@field slow_load_threshold? number -- threshold for slow load warning
+---@field log_level? "DEBUG"|"INFO"|"WARN"|"ERROR" -- log level
 
 ---@class PluginModule.Config.LocalDevConfig
 ---@field base_dir? string
@@ -34,17 +37,17 @@
 ---@field async? boolean -- whether to run setup asynchronously, true by default
 ---@field post_pack_changed? fun() -- for "install" and "update"
 ---@field failed boolean? -- indicates if module failed to load
----@field failure_reason string? -- reason for failure
----@field load_time_ms number? -- time taken to load
----@field retry_count number? -- number of retry attempts
+---@field failure_reason? string -- reason for failure
+---@field load_time_ms? number -- time taken to load
+---@field retry_count? number -- number of retry attempts
 
 ---@class PluginModule.ResolutionEntry
 ---@field name string
 ---@field ms number
 ---@field parent? PluginModule.Resolved
 ---@field async boolean
----@field errors string[]? -- any non-fatal errors during loading
----@field after string[]? -- names of modules that were triggered after this one
+---@field errors? string[] -- any non-fatal errors during loading
+---@field after? string[] -- names of modules that were triggered after this one
 
 ---@alias PluginModule.Lazy.Event "VeryLazy"|vim.api.keyset.events
 
@@ -63,8 +66,10 @@
 ---@class LspModule.Config
 ---@field mod_root? string
 ---@field path_to_mod_root? string -- "/lua/abc/def/", starts and end with "/", excludes `mod_root`
----@field setup_timeout number? -- timeout for setup functions in milliseconds
----@field max_retries number? -- maximum retry attempts for failed modules
+---@field setup_timeout? number -- timeout for setup functions in milliseconds
+---@field max_retries? number -- maximum retry attempts for failed modules
+---@field async_slice_ms? number -- time slice for asynchronous setup in milliseconds
+---@field log_level? "DEBUG"|"INFO"|"WARN"|"ERROR" -- log level
 
 ---@class LspModule.Resolved
 ---@field name? string
@@ -73,7 +78,7 @@
 ---@field setup? fun()
 ---@field loaded? boolean
 ---@field async? boolean -- whether to run setup asynchronously, true by default
----@field failed boolean? -- indicates if module failed to load
----@field retry_count number? -- number of retry attempts
----@field failure_reason string? -- reason for failure
----@field load_time_ms number? -- time taken to load
+---@field failed? boolean -- indicates if module failed to load
+---@field retry_count? number -- number of retry attempts
+---@field failure_reason? string -- reason for failure
+---@field load_time_ms? number -- time taken to load
