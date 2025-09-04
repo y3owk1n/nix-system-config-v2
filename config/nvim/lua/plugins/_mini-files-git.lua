@@ -3,11 +3,7 @@ local M = {}
 
 M.name = "mini-files-git"
 
-M.lazy = {
-  event = "VeryLazy",
-}
-
-M.requires = {
+M.after = {
   "mini.files",
 }
 

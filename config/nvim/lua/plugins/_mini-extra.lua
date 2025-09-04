@@ -3,8 +3,8 @@ local M = {}
 
 M.name = "mini.extra"
 
-M.lazy = {
-  event = { "VeryLazy" },
+M.after = {
+  "mini.pick",
 }
 
 M.registry = {

@@ -2,6 +2,7 @@
 ---@field name? string
 ---@field enabled? boolean
 ---@field requires? string[]
+---@field after? string[]
 ---@field setup? fun()
 ---@field priority? integer
 ---@field lazy? string | PluginModule.Lazy
@@ -26,6 +27,7 @@
 ---@field setup? fun()
 ---@field priority? integer
 ---@field requires? string[]
+---@field after? string[]
 ---@field lazy? string | PluginModule.Lazy | false
 ---@field loaded? boolean
 ---@field registry? vim.pack.Spec[]
@@ -42,6 +44,7 @@
 ---@field parent? PluginModule.Resolved
 ---@field async boolean
 ---@field errors string[]? -- any non-fatal errors during loading
+---@field after string[]? -- names of modules that were triggered after this one
 
 ---@alias PluginModule.Lazy.Event "VeryLazy"|vim.api.keyset.events
 
