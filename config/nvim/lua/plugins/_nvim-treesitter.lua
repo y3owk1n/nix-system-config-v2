@@ -31,9 +31,6 @@ function M.setup()
     "html",
     "regex",
     "toml",
-    "query",
-    "vim",
-    "vimdoc",
     "xml",
     "css",
     "kdl",
@@ -53,11 +50,8 @@ function M.setup()
     "jsonc",
     "json5",
     "just",
-    "lua",
     "luadoc",
     "luap",
-    "markdown",
-    "markdown_inline",
     "nix",
     "prisma",
     "javascript",
@@ -65,10 +59,16 @@ function M.setup()
     "tsx",
     "typescript",
     "yaml",
+    -- these are already included by neovim default
+    -- "query",
+    -- "vim",
+    -- "vimdoc",
+    -- "lua",
+    -- "markdown",
+    -- "markdown_inline",
   }
 
-  -- setup
-  plugin.setup()
+  -- no need to call setup(), see `https://github.com/nvim-treesitter/nvim-treesitter/blob/main/README.md#setup`
 
   plugin.install(ensure_installed)
 
@@ -91,6 +91,20 @@ function M.setup()
     extension = { mdx = "markdown.mdx" },
   })
   vim.treesitter.language.register("markdown", "markdown.mdx")
+
+  vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("nvim-treesitter-ft", { clear = true }),
+    callback = function()
+      pcall(vim.treesitter.start)
+
+      vim.bo.syntax = "ON"
+
+      -- folds, provided by Neovim
+      vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+      -- indentation, provided by nvim-treesitter
+      vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+    end,
+  })
 end
 
 return M

@@ -38,6 +38,7 @@ function M.setup()
       -- general
       Normal = { bg = "base", fg = "text" },
       NormalFloat = { bg = "base", fg = "text" },
+      ["@constructor"] = { fg = "muted" },
       -- status line colors
       StatusLine = { fg = "subtle", bg = "surface" },
       StatusLineNC = { fg = "subtle", bg = "_nc" },
@@ -67,6 +68,8 @@ function M.setup()
       UgSearch = { bg = "iris", blend = 30 },
       UgComment = { bg = "rose", blend = 30 },
       UgCursor = { bg = "highlight_high" },
+      -- mini.nvim
+      MiniIndentscopeSymbol = { fg = "rose" },
     },
   }
 
