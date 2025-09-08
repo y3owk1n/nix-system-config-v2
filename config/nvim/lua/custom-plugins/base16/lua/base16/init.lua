@@ -245,7 +245,7 @@ local function apply_highlights()
   highlights.Statement = { fg = c.purple }
   highlights.Conditional = { fg = c.purple }
   highlights.Repeat = { fg = c.purple }
-  highlights.Label = { fg = c.yellow }
+  highlights.Label = { fg = c.cyan }
   highlights.Operator = { fg = c.fg }
   highlights.Keyword = {
     fg = c.purple,
@@ -288,10 +288,11 @@ local function apply_highlights()
 
   highlights["@constant"] = { fg = c.orange }
   highlights["@constant.builtin"] = { fg = c.orange }
-  highlights["@constant.macro"] = { fg = c.red }
+  highlights["@constant.macro"] = { fg = c.orange }
 
-  highlights["@module"] = { fg = c.red }
-  highlights["@module.builtin"] = { fg = c.orange }
+  highlights["@module"] = { fg = c.fg }
+  highlights["@module.builtin"] = { fg = c.fg }
+  highlights["@label"] = { link = "Label" }
 
   highlights["@string"] = { link = "String" }
   highlights["@string.regexp"] = { fg = c.cyan }
@@ -320,7 +321,7 @@ local function apply_highlights()
   }
   highlights["@function.builtin"] = { fg = c.blue }
   highlights["@function.call"] = { fg = c.blue }
-  highlights["@function.macro"] = { fg = c.red }
+  highlights["@function.macro"] = { link = "Function" }
 
   highlights["@function.method"] = { fg = c.blue }
   highlights["@function.method.call"] = { fg = c.blue }
@@ -332,13 +333,16 @@ local function apply_highlights()
     link = "Keyword",
     italic = M.config.italic_keywords,
   }
-  highlights["@keyword.function"] = { fg = c.purple }
-  highlights["@keyword.operator"] = { fg = c.purple }
-  highlights["@keyword.return"] = { fg = c.purple }
-  highlights["@keyword.conditional"] = { fg = c.purple }
-  highlights["@keyword.repeat"] = { fg = c.purple }
-  highlights["@keyword.import"] = { fg = c.purple }
+  highlights["@keyword.function"] = { link = "Function" }
+  highlights["@keyword.operator"] = { fg = c.fg }
+  highlights["@keyword.import"] = { fg = c.blue }
+  highlights["@keyword.storage"] = { fg = c.cyan }
+  highlights["@keyword.repeat"] = { fg = c.blue }
+  highlights["@keyword.return"] = { fg = c.blue }
+  highlights["@keyword.debug"] = { fg = c.red }
+  highlights["@keyword.conditional"] = { fg = c.blue }
   highlights["@keyword.exception"] = { fg = c.red }
+  highlights["@keyword.directive"] = { fg = c.purple }
 
   highlights["@punctuation.delimiter"] = { fg = c.brown }
   highlights["@punctuation.bracket"] = { fg = c.brown }
