@@ -47,7 +47,7 @@ function M.setup()
       -- status line colors
       StatusLine = { fg = "fg_dark", bg = "bg_dim" },
       -- barline
-      BarlineFileInfo = { fg = "orange" }, -- match my tmux layout
+      BarlineFileInfo = { fg = "yellow" }, -- match my tmux layout
       BarlineDiagnosticError = { link = "DiagnosticError" },
       BarlineDiagnosticWarn = { link = "DiagnosticWarn" },
       BarlineDiagnosticInfo = { link = "DiagnosticInfo" },
