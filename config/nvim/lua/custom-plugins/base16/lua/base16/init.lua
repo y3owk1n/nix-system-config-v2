@@ -12,13 +12,9 @@ local did_setup = false
 ---@field disable_background? boolean Disable background color
 ---@field disable_float_background? boolean Disable floating window background color
 ---@field bold_vert_split? boolean Bold vertical splits
----@field dim_nc_background? boolean Dim non-current window background
----@field italic_comments? boolean Italicize comments
----@field italic_keywords? boolean Italicize keywords
----@field italic_booleans? boolean Italicize booleans
----@field italic_functions? boolean Italicize functions
----@field italic_variables? boolean Italicize variables
----@field transparent? boolean Transparent background
+---@field enable_bold? boolean Enable bold text
+---@field enable_italics? boolean Enable italics
+---@field enable_transparency? boolean Transparent background
 ---@field highlight_groups? table<string, vim.api.keyset.highlight> Additional highlight groups to set
 ---@field before_highlight? fun(group: string, opts: table, c: table<Base16.Group.Alias, string>): nil Callback to run before setting highlight groups
 
@@ -143,183 +139,246 @@ local function apply_highlights()
 
   local highlights = {}
 
-  -- Editor highlights
-  highlights.Normal = { fg = c.fg, bg = M.config.transparent and c.bg or c.bg }
+  ------------------------------------------------------------
+  -- Core Editor UI
+  ------------------------------------------------------------
+
+  -- Normal/Float/NC
+  highlights.Normal = { fg = c.fg, bg = M.config.enable_transparency and c.bg or c.bg }
   highlights.NormalFloat = {
     fg = c.fg,
-    bg = (M.config.disable_float_background or M.config.transparent) and c.bg or c.bg_dim,
+    bg = (M.config.disable_float_background or M.config.enable_transparency) and c.bg or c.bg_dim,
   }
   highlights.NormalNC = {
     fg = c.fg,
-    bg = M.config.dim_nc_background and c.bg_dim or (M.config.transparent and c.bg or c.bg),
+    bg = M.config.enable_transparency and c.bg or c.bg,
   }
 
-  highlights.FloatBorder = { fg = c.fg_dim }
-
+  -- Cursor & Lines
   highlights.Cursor = { fg = c.bg, bg = c.fg }
   highlights.CursorLine = { bg = c.bg_light }
-  highlights.CursorColumn = { bg = M.config.transparent and c.bg or c.bg_dim }
-  highlights.CursorLineNr = { fg = c.fg_dark, bg = M.config.transparent and c.bg or c.bg_dim }
+  highlights.CursorColumn = { bg = M.config.enable_transparency and c.bg or c.bg_dim }
+  highlights.CursorLineNr =
+    { fg = c.fg_dark, bg = M.config.enable_transparency and c.bg or c.bg_dim, bold = M.config.enable_bold }
   highlights.LineNr = { fg = c.fg_dim }
-  highlights.SignColumn = { fg = c.fg_dim, bg = M.config.transparent and c.bg or c.bg }
+  highlights.SignColumn = { fg = c.fg_dim, bg = M.config.enable_transparency and c.bg or c.bg }
   highlights.ColorColumn = { bg = c.bg_dim }
 
+  -- Split & Windows
   highlights.VertSplit = {
     fg = M.config.bold_vert_split and c.fg or c.bg_light,
     bold = M.config.bold_vert_split,
   }
   highlights.WinSeparator = { link = "VertSplit" }
+  highlights.WinBar = { fg = c.fg_dark, bg = c.bg_light }
+  highlights.WinBarNC = { fg = c.fg_dim, bg = c.bg_dim }
 
+  -- Fold & Conceals
   highlights.Folded = { fg = c.fg_dim, bg = c.bg_dim }
   highlights.FoldColumn = { fg = c.fg_dim }
   highlights.Conceal = { fg = c.fg_dim }
 
+  -- Visual & Selection
   highlights.Visual = { bg = c.bg_light }
   highlights.VisualNOS = { bg = c.bg_light }
-  highlights.Search = { fg = c.bg_dim, bg = c.yellow }
-  highlights.IncSearch = { fg = c.bg_dim, bg = c.orange }
-  highlights.CurSearch = { link = "IncSearch" }
-  highlights.Substitute = { link = "Search" }
-
   highlights.MatchParen = { bg = c.bg_light, bold = true }
 
+  -- Search
+  highlights.Search = { fg = c.bg_dim, bg = c.yellow }
+  highlights.IncSearch = { link = "CurSearch" }
+  highlights.CurSearch = { fg = c.bg_dim, bg = c.orange }
+  highlights.Substitute = { link = "IncSearch" }
+
+  -- Popup Menu
   highlights.Pmenu = { fg = c.fg, bg = c.bg_dim }
   highlights.PmenuSel = { fg = c.bg_dim, bg = c.fg }
   highlights.PmenuSbar = { bg = c.bg_light }
   highlights.PmenuThumb = { bg = c.fg_dark }
 
+  -- Tabline
   highlights.TabLine = { fg = c.fg_dim, bg = c.bg_dim }
   highlights.TabLineFill = { bg = c.bg_dim }
-  highlights.TabLineSel = { fg = c.fg, bg = c.bg_light }
+  highlights.TabLineSel = { fg = c.fg, bg = c.bg_light, bold = M.config.enable_bold }
 
+  -- Statusline
   highlights.StatusLine = { fg = c.fg_dark, bg = c.bg_light }
   highlights.StatusLineNC = { fg = c.fg_dim, bg = c.bg_dim }
 
-  highlights.Directory = { fg = c.cyan }
-  highlights.Title = { fg = c.cyan }
+  -- Misc UI
+  highlights.FloatBorder = { fg = c.fg_dim }
+  highlights.WildMenu = { link = "IncSearch" }
+  highlights.Directory = { fg = c.cyan, bold = M.config.enable_bold }
+  highlights.Title = { fg = c.cyan, bold = M.config.enable_bold }
 
-  -- Messages
-  highlights.ErrorMsg = { fg = c.red }
-  highlights.WarningMsg = { fg = c.orange }
+  ------------------------------------------------------------
+  -- Messages & Prompts
+  ------------------------------------------------------------
+
+  highlights.ErrorMsg = { fg = c.red, bold = M.config.enable_bold }
+  highlights.WarningMsg = { fg = c.orange, bold = M.config.enable_bold }
   highlights.MoreMsg = { fg = c.green }
   highlights.ModeMsg = { fg = c.green }
   highlights.Question = { fg = c.blue }
+  highlights.NvimInternalError = { link = "ErrorMsg" }
 
-  -- Diff
-  highlights.DiffAdd = { fg = c.green, bg = c.bg_dim }
-  highlights.DiffChange = { fg = c.orange, bg = c.bg_dim }
-  highlights.DiffDelete = { fg = c.red, bg = c.bg_dim }
-  highlights.DiffText = { fg = c.blue, bg = c.bg_dim }
+  ------------------------------------------------------------
+  -- Diff & Git
+  ------------------------------------------------------------
 
+  highlights.DiffAdd = { fg = c.green, bg = c.bg_dim, blend = 20 }
+  highlights.DiffChange = { fg = c.orange, bg = c.bg_dim, blend = 20 }
+  highlights.DiffDelete = { fg = c.red, bg = c.bg_dim, blend = 20 }
+  highlights.DiffText = { fg = c.blue, bg = c.bg_dim, blend = 40 }
+
+  ------------------------------------------------------------
   -- Spelling
+  ------------------------------------------------------------
+
   highlights.SpellBad = { sp = c.red, undercurl = true }
   highlights.SpellCap = { sp = c.blue, undercurl = true }
   highlights.SpellLocal = { sp = c.cyan, undercurl = true }
   highlights.SpellRare = { sp = c.purple, undercurl = true }
 
-  -- Syntax highlighting
+  ------------------------------------------------------------
+  -- Spelling
+  ------------------------------------------------------------
+
+  -- Comments
   highlights.Comment = {
-    fg = c.fg_dim,
-    italic = M.config.italic_comments,
+    fg = c.fg_dark,
+    italic = M.config.enable_italics,
   }
 
+  -- Constants
   highlights.Constant = { fg = c.orange }
   highlights.String = { fg = c.yellow }
   highlights.Character = { fg = c.orange }
   highlights.Number = { fg = c.orange }
   highlights.Boolean = {
     fg = c.orange,
-    italic = M.config.italic_booleans,
+    italic = M.config.enable_italics,
   }
   highlights.Float = { fg = c.orange }
+  highlights.FloatTitle = { fg = c.cyan, bg = c.bg, bold = M.config.enable_bold }
 
+  -- Identifiers
   highlights.Identifier = {
     fg = c.fg,
-    italic = M.config.italic_variables,
+    italic = M.config.enable_italics,
   }
   highlights.Function = {
     fg = c.orange,
-    italic = M.config.italic_functions,
+    italic = M.config.enable_italics,
   }
 
-  highlights.Statement = { fg = c.purple }
+  -- Statement & Keywords
+  highlights.Statement = { fg = c.blue, bold = M.config.enable_bold }
   highlights.Conditional = { fg = c.purple }
   highlights.Repeat = { fg = c.purple }
   highlights.Label = { fg = c.cyan }
   highlights.Operator = { fg = c.fg }
   highlights.Keyword = {
     fg = c.purple,
-    italic = M.config.italic_keywords,
+    italic = M.config.enable_italics,
   }
   highlights.Exception = { fg = c.red }
 
-  highlights.PreProc = { fg = c.yellow }
+  -- Preprocessor
+  highlights.PreProc = { link = "PreCondit" }
   highlights.Include = { fg = c.blue }
   highlights.Define = { fg = c.purple }
   highlights.Macro = { fg = c.red }
-  highlights.PreCondit = { fg = c.yellow }
+  highlights.PreCondit = { fg = c.purple }
 
-  highlights.Type = { fg = c.yellow }
+  -- Types
+  highlights.Type = { fg = c.cyan }
   highlights.StorageClass = { fg = c.yellow }
-  highlights.Structure = { fg = c.purple }
-  highlights.Typedef = { fg = c.yellow }
+  highlights.Structure = { fg = c.cyan }
+  highlights.Typedef = { link = "Type" }
 
+  -- Specials
   highlights.Special = { fg = c.cyan }
-  highlights.SpecialChar = { fg = c.brown }
+  highlights.SpecialChar = { link = "Special" }
   highlights.Tag = { fg = c.cyan }
   highlights.Delimiter = { fg = c.brown }
   highlights.SpecialComment = { fg = c.cyan }
   highlights.Debug = { fg = c.red }
 
+  -- Markdown
+  highlights.markdownH1 = { fg = c.purple, bold = M.config.enable_bold }
+  highlights.markdownH1Delimiter = { link = "markdownH1" }
+  highlights.markdownH2 = { fg = c.blue, bold = M.config.enable_bold }
+  highlights.markdownH2Delimiter = { link = "markdownH2" }
+  highlights.markdownH3 = { fg = c.green, bold = M.config.enable_bold }
+  highlights.markdownH3Delimiter = { link = "markdownH3" }
+  highlights.markdownH4 = { fg = c.orange, bold = M.config.enable_bold }
+  highlights.markdownH4Delimiter = { link = "markdownH4" }
+  highlights.markdownH5 = { fg = c.cyan, bold = M.config.enable_bold }
+  highlights.markdownH5Delimiter = { link = "markdownH5" }
+  highlights.markdownH6 = { fg = c.yellow, bold = M.config.enable_bold }
+  highlights.markdownH6Delimiter = { link = "markdownH6" }
+  highlights.markdownLinkText = { link = "markdownUrl" }
+  highlights.markdownUrl = { fg = c.purple, sp = c.purple, underline = true }
+
+  -- Misc
   highlights.Underlined = { fg = c.blue, underline = true }
   highlights.Ignore = { fg = c.fg_dim }
   highlights.Error = { fg = c.red, bg = c.bg }
   highlights.Todo = { fg = c.yellow, bg = c.bg_dim }
 
-  -- Treesitter highlights
+  ------------------------------------------------------------
+  -- Treesitter Highlights
+  ------------------------------------------------------------
+
   highlights["@variable"] = {
     fg = c.fg,
-    italic = M.config.italic_variables,
+    italic = M.config.enable_italics,
   }
-  highlights["@variable.builtin"] = { fg = c.orange }
+  highlights["@variable.builtin"] = { fg = c.orange, bold = M.config.enable_bold }
   highlights["@variable.parameter"] = { fg = c.purple }
-  highlights["@variable.parameter.builtin"] = { fg = c.purple }
+  highlights["@variable.parameter.builtin"] = { fg = c.purple, bold = M.config.enable_bold }
   highlights["@variable.member"] = { fg = c.cyan }
 
   highlights["@constant"] = { fg = c.orange }
-  highlights["@constant.builtin"] = { fg = c.orange }
+  highlights["@constant.builtin"] = { fg = c.orange, bold = M.config.enable_bold }
   highlights["@constant.macro"] = { fg = c.orange }
 
   highlights["@module"] = { fg = c.fg }
-  highlights["@module.builtin"] = { fg = c.fg }
+  highlights["@module.builtin"] = { fg = c.fg, bold = M.config.enable_bold }
   highlights["@label"] = { link = "Label" }
 
   highlights["@string"] = { link = "String" }
-  highlights["@string.regexp"] = { fg = c.cyan }
-  highlights["@string.escape"] = { fg = c.cyan }
-  highlights["@string.special"] = { fg = c.cyan }
+  highlights["@string.regexp"] = { fg = c.purple }
+  highlights["@string.escape"] = { fg = c.blue }
+  highlights["@string.special"] = { link = "String" }
+  highlights["@string.special.symbol"] = { link = "Identifier" }
+  highlights["@string.special.url"] = { fg = c.purple }
 
   highlights["@character"] = { link = "Character" }
-  highlights["@character.special"] = { fg = c.cyan }
+  highlights["@character.special"] = { link = "Character" }
 
   highlights["@boolean"] = {
-    fg = c.orange,
-    italic = M.config.italic_booleans,
+    link = "Boolean",
+    italic = M.config.enable_italics,
   }
-  highlights["@number"] = { fg = c.orange }
-  highlights["@number.float"] = { fg = c.orange }
+  highlights["@number"] = { link = "Number" }
+  highlights["@number.float"] = { link = "Number" }
+  highlights["@float"] = { link = "Number" }
 
   highlights["@type"] = { fg = c.cyan }
-  highlights["@type.builtin"] = { fg = c.cyan }
+  highlights["@type.builtin"] = { fg = c.cyan, bold = M.config.enable_bold }
 
   highlights["@attribute"] = { fg = c.yellow }
+  highlights["@attribute.builtin"] = { fg = c.yellow, bold = M.config.enable_bold }
+
   highlights["@property"] = { fg = c.cyan }
 
   highlights["@function"] = {
     fg = c.blue,
-    italic = M.config.italic_functions,
+    italic = M.config.enable_italics,
   }
-  highlights["@function.builtin"] = { fg = c.blue }
+  highlights["@function.builtin"] = { fg = c.blue, bold = M.config.enable_bold }
+
   highlights["@function.call"] = { fg = c.blue }
   highlights["@function.macro"] = { link = "Function" }
 
@@ -327,11 +386,11 @@ local function apply_highlights()
   highlights["@function.method.call"] = { fg = c.blue }
 
   highlights["@constructor"] = { fg = c.fg_dim }
-  highlights["@operator"] = { fg = c.fg }
+  highlights["@operator"] = { link = "Operator" }
 
   highlights["@keyword"] = {
     link = "Keyword",
-    italic = M.config.italic_keywords,
+    italic = M.config.enable_italics,
   }
   highlights["@keyword.function"] = { link = "Function" }
   highlights["@keyword.operator"] = { fg = c.fg }
@@ -349,20 +408,33 @@ local function apply_highlights()
   highlights["@punctuation.special"] = { fg = c.brown }
 
   highlights["@comment"] = {
-    fg = c.fg_dim,
-    italic = M.config.italic_comments,
+    link = "Comment",
+    italic = M.config.enable_italics,
   }
   highlights["@comment.documentation"] = { fg = c.fg_dark }
 
-  highlights["@markup.strong"] = { bold = true }
-  highlights["@markup.italic"] = { italic = true }
+  highlights["@markup.heading.1.markdown"] = { link = "markdownH1" }
+  highlights["@markup.heading.2.markdown"] = { link = "markdownH2" }
+  highlights["@markup.heading.3.markdown"] = { link = "markdownH3" }
+  highlights["@markup.heading.4.markdown"] = { link = "markdownH4" }
+  highlights["@markup.heading.5.markdown"] = { link = "markdownH5" }
+  highlights["@markup.heading.6.markdown"] = { link = "markdownH6" }
+  highlights["@markup.heading.1.marker.markdown"] = { link = "markdownH1Delimiter" }
+  highlights["@markup.heading.2.marker.markdown"] = { link = "markdownH2Delimiter" }
+  highlights["@markup.heading.3.marker.markdown"] = { link = "markdownH3Delimiter" }
+  highlights["@markup.heading.4.marker.markdown"] = { link = "markdownH4Delimiter" }
+  highlights["@markup.heading.5.marker.markdown"] = { link = "markdownH5Delimiter" }
+  highlights["@markup.heading.6.marker.markdown"] = { link = "markdownH6Delimiter" }
+
+  highlights["@markup.strong"] = { bold = M.config.enable_bold }
+  highlights["@markup.italic"] = { italic = M.config.enable_italics }
   highlights["@markup.strikethrough"] = { strikethrough = true }
   highlights["@markup.underline"] = { underline = true }
 
-  highlights["@markup.heading"] = { fg = c.blue, bold = true }
+  highlights["@markup.heading"] = { fg = c.cyan, bold = M.config.enable_bold }
   highlights["@markup.quote"] = { fg = c.fg_dim }
   highlights["@markup.list"] = { fg = c.red }
-  highlights["@markup.link"] = { fg = c.blue, underline = true }
+  highlights["@markup.link"] = { fg = c.purple, underline = true }
   highlights["@markup.raw"] = { fg = c.green }
 
   highlights["@diff.plus"] = { fg = c.green }
@@ -373,25 +445,52 @@ local function apply_highlights()
   highlights["@tag.attribute"] = { fg = c.purple }
   highlights["@tag.delimiter"] = { fg = c.brown }
 
-  -- Diagnostic highlights
+  --- Semantic
+  highlights["@lsp.type.comment"] = {}
+  highlights["@lsp.type.comment.c"] = { link = "@comment" }
+  highlights["@lsp.type.comment.cpp"] = { link = "@comment" }
+  highlights["@lsp.type.enum"] = { link = "@type" }
+  highlights["@lsp.type.interface"] = { link = "@interface" }
+  highlights["@lsp.type.keyword"] = { link = "@keyword" }
+  highlights["@lsp.type.namespace"] = { link = "@namespace" }
+  highlights["@lsp.type.namespace.python"] = { link = "@variable" }
+  highlights["@lsp.type.parameter"] = { link = "@parameter" }
+  highlights["@lsp.type.property"] = { link = "@property" }
+  highlights["@lsp.type.variable"] = {} -- defer to treesitter for regular variables
+  highlights["@lsp.type.variable.svelte"] = { link = "@variable" }
+  highlights["@lsp.typemod.function.defaultLibrary"] = { link = "@function.builtin" }
+  highlights["@lsp.typemod.operator.injected"] = { link = "@operator" }
+  highlights["@lsp.typemod.string.injected"] = { link = "@string" }
+  highlights["@lsp.typemod.variable.constant"] = { link = "@constant" }
+  highlights["@lsp.typemod.variable.defaultLibrary"] = { link = "@variable.builtin" }
+  highlights["@lsp.typemod.variable.injected"] = { link = "@variable" }
+
+  ------------------------------------------------------------
+  -- Diagnostic Highlights
+  ------------------------------------------------------------
+
   highlights.DiagnosticError = { fg = c.red }
   highlights.DiagnosticWarn = { fg = c.orange }
   highlights.DiagnosticInfo = { fg = c.blue }
   highlights.DiagnosticHint = { fg = c.cyan }
-
   highlights.DiagnosticUnderlineError = { sp = c.red, undercurl = true }
   highlights.DiagnosticUnderlineWarn = { sp = c.orange, undercurl = true }
   highlights.DiagnosticUnderlineInfo = { sp = c.blue, undercurl = true }
   highlights.DiagnosticUnderlineHint = { sp = c.cyan, undercurl = true }
 
-  -- LSP highlights
+  ------------------------------------------------------------
+  -- LSP Highlights
+  ------------------------------------------------------------
+
   highlights.LspReferenceText = { bg = c.bg_light }
   highlights.LspReferenceRead = { bg = c.bg_light }
   highlights.LspReferenceWrite = { bg = c.bg_light }
 
-  -- Plugin highlights
+  ------------------------------------------------------------
+  -- Plugins Highlights
+  ------------------------------------------------------------
 
-  --Mini Icons
+  -- Mini Icons
   highlights.MiniIconsAzure = { fg = c.cyan }
   highlights.MiniIconsBlue = { fg = c.blue }
   highlights.MiniIconsCyan = { fg = c.cyan }
@@ -401,6 +500,46 @@ local function apply_highlights()
   highlights.MiniIconsPurple = { fg = c.purple }
   highlights.MiniIconsRed = { fg = c.red }
   highlights.MiniIconsYellow = { fg = c.yellow }
+
+  -- Mini Diff
+  highlights.MiniDiffAdd = { link = "DiffAdd" }
+  highlights.MiniDiffChange = { link = "DiffChange" }
+  highlights.MiniDiffDelete = { link = "DiffDelete" }
+  highlights.MiniDiffSignAdd = { link = "DiffAdd" }
+  highlights.MiniDiffSignChange = { link = "DiffChange" }
+  highlights.MiniDiffSignDelete = { link = "DiffDelete" }
+
+  -- Render Markdown
+  highlights.RenderMarkdownH1Bg = { bg = c.purple, blend = 20 }
+  highlights.RenderMarkdownH2Bg = { bg = c.blue, blend = 20 }
+  highlights.RenderMarkdownH3Bg = { bg = c.green, blend = 20 }
+  highlights.RenderMarkdownH4Bg = { bg = c.orange, blend = 20 }
+  highlights.RenderMarkdownH5Bg = { bg = c.red, blend = 20 }
+  highlights.RenderMarkdownH6Bg = { bg = c.yellow, blend = 20 }
+  highlights.RenderMarkdownBullet = { fg = c.orange }
+  highlights.RenderMarkdownChecked = { fg = c.cyan }
+  highlights.RenderMarkdownUnchecked = { fg = c.fg_dim }
+  highlights.RenderMarkdownCode = { bg = c.bg_light }
+  highlights.RenderMarkdownCodeInline = { bg = c.bg_light, fg = c.fg }
+  highlights.RenderMarkdownQuote = { fg = c.fg_dim }
+  highlights.RenderMarkdownTableFill = { link = "Conceal" }
+  highlights.RenderMarkdownTableHead = { fg = c.fg_dim }
+  highlights.RenderMarkdownTableRow = { fg = c.fg_dim }
+
+  -- Undoglow
+  highlights.UgUndo = { bg = c.red, blend = 30 }
+  highlights.UgRedo = { bg = c.green, blend = 30 }
+  highlights.UgYank = { bg = c.orange, blend = 30 }
+  highlights.UgPaste = { bg = c.cyan, blend = 30 }
+  highlights.UgSearch = { bg = c.blue, blend = 30 }
+  highlights.UgComment = { bg = c.yellow, blend = 30 }
+  highlights.UgCursor = { bg = c.brown }
+
+  -- Blink Cmp
+  highlights.BlinkCmpMenu = { bg = c.bg }
+  highlights.BlinkCmpMenuSelection = { link = "CursorLine" }
+  highlights.BlinkCmpMenuBorder = { link = "FloatBorder", bg = c.bg }
+  highlights.BlinkCmpDocBorder = { fg = c.brown }
 
   -- Apply custom highlights from user M.configuration
   if M.config.highlight_groups and next(M.config.highlight_groups) then
@@ -471,13 +610,9 @@ local default_config = {
   disable_background = false,
   disable_float_background = false,
   bold_vert_split = false,
-  dim_nc_background = false,
-  italic_comments = false,
-  italic_keywords = false,
-  italic_booleans = false,
-  italic_functions = false,
-  italic_variables = false,
-  transparent = false,
+  enable_bold = false,
+  enable_italics = false,
+  enable_transparency = false,
 }
 
 ---Setup the base16 plugin

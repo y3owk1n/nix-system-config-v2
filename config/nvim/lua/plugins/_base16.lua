@@ -40,12 +40,9 @@ function M.setup()
   ---@type Base16.Config
   local plugin_opts = {
     colors = rose_pine_moon,
-    italic_keywords = true,
-    italic_booleans = true,
-    italic_functions = true,
-    italic_variables = true,
-    italic_comments = true,
-    transparent = true,
+    enable_bold = true,
+    enable_italics = true,
+    enable_transparency = true,
     highlight_groups = {
       -- status line colors
       StatusLine = { fg = "fg_dark", bg = "bg_dim" },
@@ -65,14 +62,6 @@ function M.setup()
       TimeMachineKeymap = { fg = "cyan" },
       TimeMachineSeq = { fg = "yellow" },
       TimeMachineTag = { fg = "green" },
-      -- undo glow colors
-      UgUndo = { bg = "red", blend = 30 },
-      UgRedo = { bg = "green", blend = 30 },
-      UgYank = { bg = "orange", blend = 30 },
-      UgPaste = { bg = "cyan", blend = 30 },
-      UgSearch = { bg = "blue", blend = 30 },
-      UgComment = { bg = "yellow", blend = 30 },
-      UgCursor = { bg = "brown" },
       -- mini.nvim
       MiniIndentscopeSymbol = { fg = "orange" },
     },
