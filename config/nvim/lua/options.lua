@@ -123,6 +123,12 @@ local function setup_options()
   ------------------------------------------------------------
   vim.opt.modelines = 0 -- Disable modelines for security reasons.
   vim.opt.modeline = false -- Disable modeline for security reasons.
+
+  ------------------------------------------------------------
+  -- Undercurl
+  ------------------------------------------------------------
+  vim.cmd([[let &t_Cs = "\e[4:3m"]])
+  vim.cmd([[let &t_Ce = "\e[4:0m"]])
 end
 
 function M.setup()
