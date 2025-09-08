@@ -14,7 +14,6 @@ in
     mouse = false;
     disableConfirmationPrompt = true;
     shell = fish;
-    terminal = "tmux-256color";
     plugins = with pkgs; [
       {
         plugin = tmuxPlugins.vim-tmux-navigator.overrideAttrs (_: {
@@ -28,6 +27,11 @@ in
       }
     ];
     extraConfig = ''
+      # Set the default terminal for tmux to a modern variant
+      set -g default-terminal "tmux-256color"
+      # Append necessary features for true color (RGB) and modern underline styles (undercurl)
+      set -ga terminal-features ",*:usstyle,*:RGB"
+
       bind -r j resize-pane -D 5
       bind -r k resize-pane -U 5
       bind -r l resize-pane -R 5
@@ -52,7 +56,7 @@ in
 
       set -g allow-passthrough on
 
-      set-option -ga terminal-overrides ',*:Tc'
+      set -ga terminal-overrides ",xterm-256color:Tc"
       set -g repeat-time 1000
       set -g detach-on-destroy off
       set -g renumber-windows on
