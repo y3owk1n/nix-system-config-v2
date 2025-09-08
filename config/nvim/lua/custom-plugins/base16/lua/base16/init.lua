@@ -374,7 +374,7 @@ local function apply_highlights()
   highlights["@property"] = { fg = c.cyan }
 
   highlights["@function"] = {
-    fg = c.blue,
+    fg = c.cyan,
     italic = M.config.enable_italics,
   }
   highlights["@function.builtin"] = { fg = c.blue, bold = M.config.enable_bold }
