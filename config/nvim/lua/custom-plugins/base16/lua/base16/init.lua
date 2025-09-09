@@ -191,7 +191,7 @@ local function apply_highlights()
 
   -- Popup Menu
   highlights.Pmenu = { fg = c.fg, bg = c.bg_dim }
-  highlights.PmenuSel = { fg = c.bg_dim, bg = c.fg }
+  highlights.PmenuSel = { bg = c.bg_light, bold = true }
   highlights.PmenuSbar = { bg = c.bg_light }
   highlights.PmenuThumb = { bg = c.fg_dark }
 
@@ -206,6 +206,8 @@ local function apply_highlights()
 
   -- Misc UI
   highlights.FloatBorder = { fg = c.fg_dim }
+  highlights.FloatShadow = { bg = c.bg_light }
+  highlights.FloatShadowThrough = { link = "FloatShadow" }
   highlights.WildMenu = { link = "IncSearch" }
   highlights.Directory = { fg = c.cyan, bold = M.config.enable_bold }
   highlights.Title = { fg = c.cyan, bold = M.config.enable_bold }
@@ -240,7 +242,7 @@ local function apply_highlights()
   highlights.SpellRare = { sp = c.purple, undercurl = true }
 
   ------------------------------------------------------------
-  -- Spelling
+  -- Syntax
   ------------------------------------------------------------
 
   -- Comments
@@ -248,7 +250,6 @@ local function apply_highlights()
     fg = c.fg_dark,
     italic = M.config.enable_italics,
   }
-
   -- Constants
   highlights.Constant = { fg = c.orange }
   highlights.String = { fg = c.yellow }
@@ -301,7 +302,7 @@ local function apply_highlights()
   highlights.SpecialChar = { link = "Special" }
   highlights.Tag = { fg = c.cyan }
   highlights.Delimiter = { fg = c.brown }
-  highlights.SpecialComment = { fg = c.cyan }
+  highlights.SpecialComment = { link = "Special" }
   highlights.Debug = { fg = c.red }
 
   -- Markdown
@@ -321,10 +322,15 @@ local function apply_highlights()
   highlights.markdownUrl = { fg = c.purple, sp = c.purple, underline = true }
 
   -- Misc
-  highlights.Underlined = { fg = c.blue, underline = true }
+  highlights.Underlined = { underline = true }
+  highlights.Bold = { bold = true }
+  highlights.Italic = { italic = true }
   highlights.Ignore = { fg = c.fg_dim }
   highlights.Error = { fg = c.red, bg = c.bg }
   highlights.Todo = { fg = c.yellow, bg = c.bg_dim }
+  highlights.healthError = { fg = c.red }
+  highlights.healthSuccess = { fg = c.green }
+  highlights.healthWarning = { fg = c.orange }
 
   ------------------------------------------------------------
   -- Treesitter Highlights
@@ -354,6 +360,8 @@ local function apply_highlights()
   highlights["@string.special.symbol"] = { link = "Identifier" }
   highlights["@string.special.url"] = { fg = c.purple }
 
+  highlights["@punctuation.delimiter.regex"] = { link = "@string.regexp" }
+
   highlights["@character"] = { link = "Character" }
   highlights["@character.special"] = { link = "Character" }
 
@@ -367,6 +375,7 @@ local function apply_highlights()
 
   highlights["@type"] = { fg = c.cyan }
   highlights["@type.builtin"] = { fg = c.cyan, bold = M.config.enable_bold }
+  highlights["@type.definition"] = { link = "Type" }
 
   highlights["@attribute"] = { fg = c.yellow }
   highlights["@attribute.builtin"] = { fg = c.yellow, bold = M.config.enable_bold }
@@ -374,16 +383,15 @@ local function apply_highlights()
   highlights["@property"] = { fg = c.cyan }
 
   highlights["@function"] = {
-    fg = c.cyan,
+    link = "Function",
     italic = M.config.enable_italics,
   }
   highlights["@function.builtin"] = { fg = c.blue, bold = M.config.enable_bold }
 
-  highlights["@function.call"] = { fg = c.blue }
+  highlights["@function.call"] = { link = "Function" }
   highlights["@function.macro"] = { link = "Function" }
-
-  highlights["@function.method"] = { fg = c.blue }
-  highlights["@function.method.call"] = { fg = c.blue }
+  highlights["@function.method"] = { link = "Function" }
+  highlights["@function.method.call"] = { link = "Function" }
 
   highlights["@constructor"] = { fg = c.fg_dim }
   highlights["@operator"] = { link = "Operator" }
@@ -392,26 +400,31 @@ local function apply_highlights()
     link = "Keyword",
     italic = M.config.enable_italics,
   }
-  highlights["@keyword.function"] = { link = "Function" }
-  highlights["@keyword.operator"] = { fg = c.fg }
-  highlights["@keyword.import"] = { fg = c.blue }
-  highlights["@keyword.storage"] = { fg = c.cyan }
-  highlights["@keyword.repeat"] = { fg = c.blue }
+  highlights["@keyword.modifier"] = { link = "Function" }
+  highlights["@keyword.type"] = { link = "Function" }
+  highlights["@keyword.coroutine"] = { link = "Function" }
+  highlights["@keyword.function"] = { fg = c.blue }
+  highlights["@keyword.operator"] = { fg = c.blue }
+  highlights["@keyword.import"] = { link = "Include" }
+  highlights["@keyword.repeat"] = { link = "Repeat" }
   highlights["@keyword.return"] = { fg = c.blue }
-  highlights["@keyword.debug"] = { fg = c.red }
-  highlights["@keyword.conditional"] = { fg = c.blue }
-  highlights["@keyword.exception"] = { fg = c.red }
-  highlights["@keyword.directive"] = { fg = c.purple }
+  highlights["@keyword.debug"] = { link = "Exception" }
+  highlights["@keyword.exception"] = { link = "Exception" }
+  highlights["@keyword.conditional"] = { link = "Conditional" }
+  highlights["@keyword.conditional.ternary"] = { link = "Operator" }
+  highlights["@keyword.directive"] = { link = "PreProc" }
+  highlights["@keyword.directive.define"] = { link = "Define" }
+  highlights["@keyword.export"] = { fg = c.blue, italic = M.config.enable_italics }
 
-  highlights["@punctuation.delimiter"] = { fg = c.brown }
+  highlights["@punctuation.delimiter"] = { link = "Delimiter" }
   highlights["@punctuation.bracket"] = { fg = c.brown }
-  highlights["@punctuation.special"] = { fg = c.brown }
+  highlights["@punctuation.special"] = { link = "Special" }
 
   highlights["@comment"] = {
     link = "Comment",
     italic = M.config.enable_italics,
   }
-  highlights["@comment.documentation"] = { fg = c.fg_dark }
+  highlights["@comment.documentation"] = { link = "Comment" }
 
   highlights["@markup.heading.1.markdown"] = { link = "markdownH1" }
   highlights["@markup.heading.2.markdown"] = { link = "markdownH2" }
@@ -537,9 +550,11 @@ local function apply_highlights()
 
   -- Blink Cmp
   highlights.BlinkCmpMenu = { bg = c.bg }
-  highlights.BlinkCmpMenuSelection = { link = "CursorLine" }
-  highlights.BlinkCmpMenuBorder = { link = "FloatBorder", bg = c.bg }
-  highlights.BlinkCmpDocBorder = { fg = c.brown }
+  highlights.BlinkCmpMenuBorder = { link = "FloatBorder" }
+  highlights.BlinkCmpDocBorder = { link = "FloatBorder" }
+
+  -- Grugfar
+  highlights.GrugFarResultsMatch = { link = "IncSearch" }
 
   -- Apply custom highlights from user M.configuration
   if M.config.highlight_groups and next(M.config.highlight_groups) then
