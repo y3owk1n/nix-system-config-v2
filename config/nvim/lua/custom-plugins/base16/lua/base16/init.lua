@@ -126,7 +126,11 @@ local function setup_editor_hl(highlights, c)
   -- Normal/Float/NC
   highlights.Normal = { fg = c.fg, bg = get_bg(c.bg) }
   highlights.NormalFloat = { fg = c.fg, bg = get_bg(c.bg) }
-  highlights.NormalNC = { fg = c.fg, bg = M.config.dim_inactive_windows and c.bg_dim or get_bg(c.bg) }
+  highlights.NormalNC = {
+    fg = c.fg,
+    bg = (M.config.dim_inactive_windows and c.bg_dim) or get_bg(c.bg),
+    blend = M.config.dim_inactive_windows and 50,
+  }
 
   -- Cursor & Lines
   highlights.Cursor = { fg = c.bg, bg = c.fg }
