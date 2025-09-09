@@ -125,15 +125,21 @@ end
 local function setup_editor_hl(highlights, c)
   -- Normal/Float/NC
   highlights.Normal = { fg = c.fg, bg = get_bg(c.bg) }
-  highlights.NormalFloat = { fg = c.fg, bg = get_bg(c.bg) }
+  highlights.NormalFloat = {
+    fg = c.fg,
+    bg = get_bg(c.bg),
+  }
   highlights.NormalNC = {
     fg = c.fg,
     bg = (M.config.dim_inactive_windows and c.bg_dim) or get_bg(c.bg),
-    blend = M.config.dim_inactive_windows and 50 or 0,
+    blend = M.config.dim_inactive_windows and 50 or nil,
   }
+  highlights.NormalSB = { fg = c.fg, bg = c.bg }
 
   -- Cursor & Lines
   highlights.Cursor = { fg = c.bg, bg = c.fg, bold = M.config.enable_bold }
+  highlights.lCursor = { fg = c.bg, bg = c.fg, bold = M.config.enable_bold }
+  highlights.CursorIM = { fg = c.bg, bg = c.fg, bold = M.config.enable_bold }
   highlights.CursorLine = { bg = blend(c.bg_light, c.bg, 0.6) }
   highlights.CursorColumn = { bg = get_bg(blend(c.bg_dim, c.bg, 0.3)) }
   highlights.CursorLineNr = {
@@ -141,8 +147,9 @@ local function setup_editor_hl(highlights, c)
     bg = get_bg(blend(c.bg_light, c.bg, 0.6)),
     bold = M.config.enable_bold,
   }
-  highlights.LineNr = { fg = blend(c.fg_dim, c.bg, 0.7), bg = get_bg(c.bg) }
-  highlights.SignColumn = { fg = c.fg_dim, bg = get_bg(c.bg) }
+  highlights.LineNr = { fg = blend(c.fg_dim, c.bg, 0.7) }
+  highlights.SignColumn = { fg = c.fg_dim }
+  highlights.SignColumnSB = { fg = c.fg_dim, bg = get_bg(c.bg) }
   highlights.ColorColumn = { bg = get_bg(c.bg_dim) }
 
   -- Split & Windows
@@ -195,10 +202,17 @@ local function setup_editor_hl(highlights, c)
   highlights.TermCursorNC = { fg = c.bg, bg = c.fg_dim }
 
   -- Misc UI
-  highlights.FloatBorder = { fg = c.fg_dim }
+  highlights.FloatBorder = {
+    fg = c.fg_dim,
+    bg = get_bg(c.bg),
+  }
   highlights.FloatShadow = { bg = c.bg_light }
-  highlights.FloatTitle =
-    { fg = c.cyan, bg = get_bg(c.bg), bold = M.config.enable_bold, italic = M.config.enable_italics }
+  highlights.FloatTitle = {
+    fg = c.cyan,
+    bg = get_bg(c.bg),
+    bold = M.config.enable_bold,
+    italic = M.config.enable_italics,
+  }
   highlights.FloatShadowThrough = { link = "FloatShadow" }
   highlights.WildMenu = { link = "IncSearch" }
   highlights.Directory = { fg = c.cyan, bold = M.config.enable_bold }
@@ -529,6 +543,24 @@ local function setup_integration_hl(highlights, c)
   highlights.MiniFilesNormal = { link = "NormalFloat" }
   highlights.MiniFilesTitle = { link = "FloatTitle" }
 
+  -- Mini Pick
+  highlights.MiniPickBorder = { link = "FloatBorder" }
+  highlights.MiniPickBorderBusy = { link = "DiagnosticFloatingWarn" }
+  highlights.MiniPickBorderText = { bg = c.fg_dim }
+  highlights.MiniPickIconDirectory = { link = "Directory" }
+  highlights.MiniPickIconFile = { link = "MiniPickNormal" }
+  highlights.MiniPickHeader = { link = "DiagnosticFloatingHint" }
+  highlights.MiniPickMatchCurrent = { link = "CursorLine" }
+  highlights.MiniPickMatchMarked = { link = "Visual" }
+  highlights.MiniPickMatchRanges = { fg = c.cyan }
+  highlights.MiniPickNormal = { link = "NormalFloat" }
+  highlights.MiniPickPreviewLine = { link = "CursorLine" }
+  highlights.MiniPickPreviewRegion = { link = "IncSearch" }
+  highlights.MiniPickPrompt = {
+    bg = get_bg(c.bg),
+    bold = M.config.enable_bold,
+  }
+
   -- Render Markdown
   highlights.RenderMarkdownH1Bg = { bg = c.red, blend = BLEND.medium }
   highlights.RenderMarkdownH2Bg = { bg = c.orange, blend = BLEND.medium }
@@ -556,17 +588,84 @@ local function setup_integration_hl(highlights, c)
   highlights.UgCursor = { bg = c.bg_light }
 
   -- Blink Cmp
-  highlights.BlinkCmpMenuBorder = { link = "FloatBorder" }
+  highlights.BlinkCmpDoc = { link = "Normal" }
+  highlights.BlinkCmpDocSeparator = { fg = c.fg_dim }
   highlights.BlinkCmpDocBorder = { link = "FloatBorder" }
+  highlights.BlinkCmpGhostText = { link = "Comment" }
+  highlights.BlinkCmpLabel = { link = "Comment" }
+  highlights.BlinkCmpLabelDeprecated = { link = "Comment", strikethrough = true }
+  highlights.BlinkCmpLabelMatch = { fg = c.fg, bold = M.config.enable_bold }
+  highlights.BlinkCmpDefault = { link = "Normal" }
+  highlights.BlinkCmpKindText = { fg = c.blue }
+  highlights.BlinkCmpKindMethod = { fg = c.cyan }
+  highlights.BlinkCmpKindFunction = { fg = c.cyan }
+  highlights.BlinkCmpKindConstructor = { fg = c.cyan }
+  highlights.BlinkCmpKindField = { fg = c.blue }
+  highlights.BlinkCmpKindVariable = { fg = c.orange }
+  highlights.BlinkCmpKindClass = { fg = c.yellow }
+  highlights.BlinkCmpKindInterface = { fg = c.yellow }
+  highlights.BlinkCmpKindModule = { fg = c.cyan }
+  highlights.BlinkCmpKindProperty = { fg = c.cyan }
+  highlights.BlinkCmpKindUnit = { fg = c.blue }
+  highlights.BlinkCmpKindValue = { fg = c.red }
+  highlights.BlinkCmpKindKeyword = { fg = c.purple }
+  highlights.BlinkCmpKindSnippet = { fg = c.orange }
+  highlights.BlinkCmpKindColor = { fg = c.red }
+  highlights.BlinkCmpKindFile = { fg = c.cyan }
+  highlights.BlinkCmpKindReference = { fg = c.red }
+  highlights.BlinkCmpKindFolder = { fg = c.cyan }
+  highlights.BlinkCmpKindEnum = { fg = c.cyan }
+  highlights.BlinkCmpKindEnumMember = { fg = c.cyan }
+  highlights.BlinkCmpKindConstant = { fg = c.orange }
+  highlights.BlinkCmpKindStruct = { fg = c.cyan }
+  highlights.BlinkCmpKindEvent = { fg = c.cyan }
+  highlights.BlinkCmpKindOperator = { fg = c.cyan }
+  highlights.BlinkCmpKindTypeParameter = { fg = c.purple }
+  highlights.BlinkCmpMenuBorder = { link = "FloatBorder" }
 
   -- Grugfar
+  highlights.GrugFarHelpHeader = { fg = c.blue }
+  highlights.GrugFarHelpHeaderKey = { fg = c.orange }
+  highlights.GrugFarHelpWinActionKey = { fg = c.orange }
+  highlights.GrugFarHelpWinActionPrefix = { fg = c.cyan }
+  highlights.GrugFarHelpWinActionText = { fg = c.blue }
+  highlights.GrugFarHelpWinHeader = { link = "FloatTitle" }
+  highlights.GrugFarInputLabel = { fg = c.cyan }
+  highlights.GrugFarInputPlaceholder = { link = "Comment" }
+  highlights.GrugFarResultsActionMessage = { fg = c.cyan }
+  highlights.GrugFarResultsChangeIndicator = { fg = c.orange }
+  highlights.GrugFarResultsRemoveIndicator = { fg = c.red }
+  highlights.GrugFarResultsAddIndicator = { fg = c.green }
+  highlights.GrugFarResultsHeader = { fg = c.blue }
+  highlights.GrugFarResultsLineNo = { fg = c.purple }
+  highlights.GrugFarResultsLineColumn = { link = "GrugFarResultsLineNo" }
   highlights.GrugFarResultsMatch = { link = "IncSearch" }
+  highlights.GrugFarResultsPath = { fg = c.cyan }
+  highlights.GrugFarResultsStats = { fg = c.purple }
 
   -- Whichkey
   highlights.WhichKey = { fg = c.blue, bold = true }
+  highlights.WhichKeyBorder = { link = "FloatBorder" }
   highlights.WhichKeyDesc = { fg = c.fg, italic = M.config.enable_italics }
-  highlights.WhichKeyGroup = { fg = c.purple, bold = true }
+  highlights.WhichKeyFloat = { link = "NormalFloat" }
+  highlights.WhichKeyGroup = { fg = c.purple, bold = M.config.enable_bold }
+  highlights.WhichKeyIcon = { fg = c.blue }
+  highlights.WhichKeyIconAzure = { link = "MiniIconsAzure" }
+  highlights.WhichKeyIconBlue = { link = "MiniIconsBlue" }
+  highlights.WhichKeyIconCyan = { link = "MiniIconsCyan" }
+  highlights.WhichKeyIconGreen = { link = "MiniIconsGreen" }
+  highlights.WhichKeyIconGrey = { link = "MiniIconsGrey" }
+  highlights.WhichKeyIconOrange = { link = "MiniIconsOrange" }
+  highlights.WhichKeyIconPurple = { link = "MiniIconsPurple" }
+  highlights.WhichKeyIconRed = { link = "MiniIconsRed" }
+  highlights.WhichKeyIconYellow = { link = "MiniIconsYellow" }
+  highlights.WhichKeyNormal = { link = "Normal" }
   highlights.WhichKeySeparator = { fg = c.fg_dim }
+  highlights.WhichKeyTitle = { link = "FloatTitle" }
+  highlights.WhichKeyValue = { fg = c.orange }
+
+  -- Flash
+  highlights.FlashLabel = { fg = c.bg, bg = c.red }
 end
 
 local function apply_highlights()
