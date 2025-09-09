@@ -85,6 +85,7 @@ local BLEND = {
   subtle = 10, -- barely visible backgrounds
   medium = 15, -- noticeable but not distracting
   strong = 25, -- prominent highlights
+  super = 50, -- very prominent highlights
 }
 
 ---@private
@@ -132,7 +133,7 @@ local function setup_editor_hl(highlights, c)
   highlights.NormalNC = {
     fg = c.fg,
     bg = (M.config.dim_inactive_windows and c.bg_dim) or get_bg(c.bg),
-    blend = M.config.dim_inactive_windows and 50 or nil,
+    blend = M.config.dim_inactive_windows and BLEND.super or nil,
   }
   highlights.NormalSB = { fg = c.fg, bg = c.bg }
 
@@ -182,8 +183,8 @@ local function setup_editor_hl(highlights, c)
   highlights.PmenuSel = { bg = c.bg_light, bold = M.config.enable_bold }
   highlights.PmenuSbar = { bg = c.bg_light }
   highlights.PmenuThumb = { bg = c.fg_dark }
-  highlights.PmenuKind = { fg = c.purple, bold = true }
-  highlights.PmenuKindSel = { fg = c.purple, bg = blend(c.blue, c.bg, 0.3), bold = true }
+  highlights.PmenuKind = { fg = c.purple, bold = M.config.enable_bold }
+  highlights.PmenuKindSel = { fg = c.purple, bg = blend(c.blue, c.bg, 0.3), bold = M.config.enable_bold }
   highlights.PmenuExtra = { fg = c.fg_dim }
   highlights.PmenuExtraSel = { fg = c.fg_dim, bg = blend(c.blue, c.bg, 0.3) }
 
@@ -644,7 +645,7 @@ local function setup_integration_hl(highlights, c)
   highlights.GrugFarResultsStats = { fg = c.purple }
 
   -- Whichkey
-  highlights.WhichKey = { fg = c.blue, bold = true }
+  highlights.WhichKey = { fg = c.blue, bold = M.config.enable_bold }
   highlights.WhichKeyBorder = { link = "FloatBorder" }
   highlights.WhichKeyDesc = { fg = c.fg, italic = M.config.enable_italics }
   highlights.WhichKeyFloat = { link = "NormalFloat" }
