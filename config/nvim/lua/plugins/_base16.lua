@@ -5,8 +5,6 @@ M.name = "base16"
 
 M.priority = 1
 
--- M.enabled = false
-
 M.registry = {
   { src = vim.fn.stdpath("config") .. "/lua/custom-plugins/base16", name = "base16" },
 }
@@ -18,28 +16,12 @@ function M.setup()
     return
   end
 
-  local rose_pine_moon = {
-    base00 = "#232136",
-    base01 = "#2a273f",
-    base02 = "#393552",
-    base03 = "#6e6a86",
-    base04 = "#908caa",
-    base05 = "#e0def4",
-    base06 = "#e0def4",
-    base07 = "#56526e",
-    base08 = "#eb6f92",
-    base09 = "#ea9a97",
-    base0A = "#f6c177",
-    base0B = "#95b1ac",
-    base0C = "#9ccfd8",
-    base0D = "#3e8fb0",
-    base0E = "#c4a7e7",
-    base0F = "#56526e",
-  }
+  local pastel_twilight =
+    require("utils.base-16-colors").get_base16_colors("~/nix-system-config-v2/config/base16/pastel-twilight.yml")
 
   ---@type Base16.Config
   local plugin_opts = {
-    colors = rose_pine_moon,
+    colors = pastel_twilight,
     enable_bold = true,
     enable_italics = true,
     enable_transparency = true,

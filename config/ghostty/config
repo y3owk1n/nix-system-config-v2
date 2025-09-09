@@ -1,4 +1,25 @@
-theme = rose-pine-moon
+palette = 0=#1f1d2e
+palette = 1=#f28fad
+palette = 2=#abe9b3
+palette = 3=#f9e2af
+palette = 4=#96cdfb
+palette = 5=#96cdfb
+palette = 6=#b5e8e0
+palette = 7=#e0def4
+palette = 8=#5a5672
+palette = 9=#f28fad
+palette = 10=#abe9b3
+palette = 11=#f9e2af
+palette = 12=#96cdfb
+palette = 13=#ddb6f2
+palette = 14=#b5e8e0
+palette = 15=#f2cdcd
+background = #1f1d2e
+foreground = #e0def4
+cursor-color = #e0def4
+cursor-text = #1f1d2e
+selection-background = #3a364d
+selection-foreground = #e0def4
 
 font-family = JetBrainsMonoL Nerd Font Mono
 font-size = 16

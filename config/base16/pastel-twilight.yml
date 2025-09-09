@@ -1,0 +1,36 @@
+# Backgrounds (base00–base02):
+#   A deep muted violet (#1f1d2e) forms the canvas, like twilight just after sunset.
+#   The dimmer layers (#2a2738, #3a364d) are there to give depth without being harsh, resembling silhouettes in the distance.
+# Midtones & Foregrounds (base03–base07):
+#   Rather than cold grays, I leaned into lavender-gray pastels. They feel softer, more human, while keeping enough contrast.
+#   Text (#e0def4) is a pale moonlight glow, bright enough to read comfortably but not glaring.
+# Accents (base08–base0F):
+#   All accents are pastel shades—colors you’d find in a watercolor painting.
+#     Red (#f28fad) is a gentle blush, emotional but not aggressive.
+#     Orange/Yellow (#f8bd96, #f9e2af) bring warmth, like lanterns against the night.
+#     Green/Cyan (#abe9b3, #b5e8e0) bring calmness, evoking growth and flowing water.
+#     Blue/Purple (#96cdfb, #ddb6f2) are dreamy and contemplative, fitting for twilight.
+#     Pink (#f2cdcd) is tender, almost nostalgic, like petals carried on the breeze.
+
+system: "base16"
+name: "Pastel Twilight"
+author: "Kyle <me@kylewong.my>"
+slug: "pastel-twilight"
+variant: "dark"
+palette:
+  base00: "#1f1d2e" # background (deep violet twilight sky)
+  base01: "#2a2738" # dim background (horizon shadows)
+  base02: "#3a364d" # subtle highlights (distant hills)
+  base03: "#5a5672" # muted gray (gentle twilight haze)
+  base04: "#7e7a9a" # faded midtone (moonlit clouds)
+  base05: "#e0def4" # foreground text (moonlight glow)
+  base06: "#f0ecf9" # brighter text (stars shimmer)
+  base07: "#ffffff" # highest contrast (rare highlights)
+  base08: "#f28fad" # red (blush pink, soft warmth of sunset)
+  base09: "#f8bd96" # orange (amber glow on horizon)
+  base0A: "#f9e2af" # yellow (gentle lantern light)
+  base0B: "#abe9b3" # green (pastel mint, calm renewal)
+  base0C: "#b5e8e0" # cyan (misty teal, serene rivers)
+  base0D: "#96cdfb" # blue (dusk blue, quiet skies)
+  base0E: "#ddb6f2" # purple (lavender dreams)
+  base0F: "#f2cdcd" # pink (whisper of fading flowers)
