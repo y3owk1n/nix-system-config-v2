@@ -25,7 +25,6 @@ function M.setup()
     enable_bold = true,
     enable_italics = true,
     enable_transparency = true,
-    dim_inactive_windows = true,
     highlight_groups = {
       -- barline
       BarlineFileInfo = { fg = "yellow" }, -- match my tmux layout
