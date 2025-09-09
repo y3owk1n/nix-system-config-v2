@@ -25,9 +25,8 @@ function M.setup()
     enable_bold = true,
     enable_italics = true,
     enable_transparency = true,
+    dim_inactive_windows = true,
     highlight_groups = {
-      -- status line colors
-      StatusLine = { fg = "fg_dark", bg = "bg_dim" },
       -- barline
       BarlineFileInfo = { fg = "yellow" }, -- match my tmux layout
       BarlineDiagnosticError = { link = "DiagnosticError" },
