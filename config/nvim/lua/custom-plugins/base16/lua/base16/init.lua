@@ -9,18 +9,22 @@ local did_setup = false
 
 ---@class Base16.Config
 ---@field colors? table<Base16.Group.Raw, string> Colors to override
----@field bold_vert_split? boolean Bold vertical splits
----@field enable_bold? boolean Enable bold text
----@field enable_italics? boolean Enable italics
----@field enable_transparency? boolean Transparent background
----@field dim_inactive_windows? boolean Dim inactive windows
+---@field styles? Base16.Config.Styles Styles to override
 ---@field highlight_groups? table<string, vim.api.keyset.highlight> Additional highlight groups to set
----@field before_highlight? fun(group: string, opts: table, c: table<Base16.Group.Alias, string>): nil Callback to run before setting highlight groups
+---@field before_highlight? fun(group: string, opts: vim.api.keyset.highlight, c: table<Base16.Group.Alias, string>): nil Callback to run before setting highlight groups
+
+---@class Base16.Config.Styles
+---@field italic? boolean Enable italics
+---@field bold? boolean Enable bold text
+---@field transparency? boolean Transparent background
+---@field dim_inactive_windows? boolean Dim inactive windows
 
 ---@alias Base16.Group.Raw "base00"|"base01"|"base02"|"base03"|"base04"|"base05"|"base06"|"base07"|"base08"|"base09"|"base0A"|"base0B"|"base0C"|"base0D"|"base0E"|"base0F"
 ---@alias Base16.Group.Alias "bg"|"bg_dim"|"bg_light"|"fg_dim"|"fg_dark"|"fg"|"fg_light"|"fg_bright"|"red"|"orange"|"yellow"|"green"|"cyan"|"blue"|"purple"|"brown"
 
+---Convert a color name to RGB values
 ---@param color string
+---@return number[] rgb The RGB values
 local function color_to_rgb(color)
   local function byte(value, offset)
     return bit.band(bit.rshift(value, offset), 0xFF)
@@ -34,11 +38,13 @@ local function color_to_rgb(color)
   return { byte(new_color, 16), byte(new_color, 8), byte(new_color, 0) }
 end
 
+---@type table<string, string>
 local blend_cache = {}
 
 ---@param fg string Foreground color
 ---@param bg string Background color
 ---@param alpha number Between 0 (background) and 1 (foreground)
+---@return string blended_color The blended color as hex
 local function blend(fg, bg, alpha)
   local cache_key = fg .. bg .. alpha
   if blend_cache[cache_key] then
@@ -80,7 +86,6 @@ local base16_alias = {
   brown = "base0F", -- Deprecated, Opening/Closing Embedded Language Tags, e.g. <?php ?>
 }
 
--- Standardized blend values
 local BLEND = {
   subtle = 10, -- barely visible backgrounds
   medium = 15, -- noticeable but not distracting
@@ -113,16 +118,21 @@ local function add_semantic_palette(raw_colors)
   })
 end
 
--- Helper function for consistent transparency handling
+---Helper function for consistent transparency handling
+---@param normal_bg string The normal background color
+---@param transparent_override? string The transparent override color
+---@return string The background color
 local function get_bg(normal_bg, transparent_override)
-  if M.config.enable_transparency then
+  if M.config.styles.transparency then
     return transparent_override or "NONE"
   end
   return normal_bg
 end
 
----@param highlights table<string, table> The highlights table to setup
+---Setup editor highlights
+---@param highlights table<string, vim.api.keyset.highlight> The highlights table to setup
 ---@param c table<Base16.Group.Alias, string> The semantic color palette
+---@return nil
 local function setup_editor_hl(highlights, c)
   -- Normal/Float/NC
   highlights.Normal = { fg = c.fg, bg = get_bg(c.bg) }
@@ -132,21 +142,21 @@ local function setup_editor_hl(highlights, c)
   }
   highlights.NormalNC = {
     fg = c.fg,
-    bg = (M.config.dim_inactive_windows and c.bg_dim) or get_bg(c.bg),
-    blend = M.config.dim_inactive_windows and BLEND.super or nil,
+    bg = (M.config.styles.dim_inactive_windows and c.bg_dim) or get_bg(c.bg),
+    blend = M.config.styles.dim_inactive_windows and BLEND.super or nil,
   }
   highlights.NormalSB = { fg = c.fg, bg = c.bg }
 
   -- Cursor & Lines
-  highlights.Cursor = { fg = c.bg, bg = c.fg, bold = M.config.enable_bold }
-  highlights.lCursor = { fg = c.bg, bg = c.fg, bold = M.config.enable_bold }
-  highlights.CursorIM = { fg = c.bg, bg = c.fg, bold = M.config.enable_bold }
+  highlights.Cursor = { fg = c.bg, bg = c.fg, bold = M.config.styles.bold }
+  highlights.lCursor = { fg = c.bg, bg = c.fg, bold = M.config.styles.bold }
+  highlights.CursorIM = { fg = c.bg, bg = c.fg, bold = M.config.styles.bold }
   highlights.CursorLine = { bg = blend(c.bg_light, c.bg, 0.6) }
   highlights.CursorColumn = { bg = get_bg(blend(c.bg_dim, c.bg, 0.3)) }
   highlights.CursorLineNr = {
     fg = c.yellow,
     bg = get_bg(blend(c.bg_light, c.bg, 0.6)),
-    bold = M.config.enable_bold,
+    bold = M.config.styles.bold,
   }
   highlights.LineNr = { fg = blend(c.fg_dim, c.bg, 0.7) }
   highlights.SignColumn = { fg = c.fg_dim }
@@ -154,10 +164,7 @@ local function setup_editor_hl(highlights, c)
   highlights.ColorColumn = { bg = get_bg(c.bg_dim) }
 
   -- Split & Windows
-  highlights.VertSplit = {
-    fg = M.config.bold_vert_split and c.fg or c.fg_dim,
-    bold = M.config.bold_vert_split,
-  }
+  highlights.VertSplit = { fg = c.fg_dim }
   highlights.WinSeparator = { fg = c.fg_dim }
   highlights.WinBar = { fg = c.fg_dark, bg = get_bg(c.bg_light) }
   highlights.WinBarNC = { fg = c.fg_dim, bg = get_bg(c.bg_dim) }
@@ -170,28 +177,28 @@ local function setup_editor_hl(highlights, c)
   -- Visual & Selection - Fixed bold consistency
   highlights.Visual = { bg = c.bg_light }
   highlights.VisualNOS = { link = "Visual" }
-  highlights.MatchParen = { bg = c.bg_light, bold = M.config.enable_bold }
+  highlights.MatchParen = { bg = c.bg_light, bold = M.config.styles.bold }
 
   -- Search
-  highlights.Search = { fg = c.bg, bg = c.yellow, bold = M.config.enable_bold }
+  highlights.Search = { fg = c.bg, bg = c.yellow, bold = M.config.styles.bold }
   highlights.IncSearch = { link = "CurSearch" }
-  highlights.CurSearch = { fg = c.bg, bg = c.orange, bold = M.config.enable_bold }
+  highlights.CurSearch = { fg = c.bg, bg = c.orange, bold = M.config.styles.bold }
   highlights.Substitute = { link = "IncSearch" }
 
   -- Popup Menu
-  highlights.Pmenu = { fg = c.fg, bg = get_bg(c.bg_dim) }
-  highlights.PmenuSel = { bg = c.bg_light, bold = M.config.enable_bold }
+  highlights.Pmenu = { fg = c.fg, bg = get_bg(c.bg) }
+  highlights.PmenuSel = { bg = c.bg_light, bold = M.config.styles.bold }
   highlights.PmenuSbar = { bg = c.bg_light }
   highlights.PmenuThumb = { bg = c.fg_dark }
-  highlights.PmenuKind = { fg = c.purple, bold = M.config.enable_bold }
-  highlights.PmenuKindSel = { fg = c.purple, bg = blend(c.blue, c.bg, 0.3), bold = M.config.enable_bold }
+  highlights.PmenuKind = { fg = c.purple, bold = M.config.styles.bold }
+  highlights.PmenuKindSel = { fg = c.purple, bg = blend(c.blue, c.bg, 0.3), bold = M.config.styles.bold }
   highlights.PmenuExtra = { fg = c.fg_dim }
   highlights.PmenuExtraSel = { fg = c.fg_dim, bg = blend(c.blue, c.bg, 0.3) }
 
   -- Tabline
   highlights.TabLine = { fg = c.fg_dim, bg = get_bg(c.bg_dim) }
   highlights.TabLineFill = { bg = get_bg(c.bg_dim) }
-  highlights.TabLineSel = { fg = c.fg, bg = c.bg_light, bold = M.config.enable_bold }
+  highlights.TabLineSel = { fg = c.fg, bg = c.bg_light, bold = M.config.styles.bold }
 
   -- Statusline
   highlights.StatusLine = { fg = c.fg_dark, bg = c.bg_dim }
@@ -211,28 +218,32 @@ local function setup_editor_hl(highlights, c)
   highlights.FloatTitle = {
     fg = c.cyan,
     bg = get_bg(c.bg),
-    bold = M.config.enable_bold,
-    italic = M.config.enable_italics,
+    bold = M.config.styles.bold,
+    italic = M.config.styles.italic,
   }
   highlights.FloatShadowThrough = { link = "FloatShadow" }
   highlights.WildMenu = { link = "IncSearch" }
-  highlights.Directory = { fg = c.cyan, bold = M.config.enable_bold }
-  highlights.Title = { fg = c.cyan, bold = M.config.enable_bold }
+  highlights.Directory = { fg = c.cyan, bold = M.config.styles.bold }
+  highlights.Title = { fg = c.cyan, bold = M.config.styles.bold }
 end
 
----@param highlights table<string, table> The highlights table to setup
+---Setup message highlights
+---@param highlights table<string, vim.api.keyset.highlight> The highlights table to setup
 ---@param c table<Base16.Group.Alias, string> The semantic color palette
+---@return nil
 local function setup_message_hl(highlights, c)
-  highlights.ErrorMsg = { fg = c.red, bold = M.config.enable_bold }
-  highlights.WarningMsg = { fg = c.orange, bold = M.config.enable_bold }
+  highlights.ErrorMsg = { fg = c.red, bold = M.config.styles.bold }
+  highlights.WarningMsg = { fg = c.orange, bold = M.config.styles.bold }
   highlights.MoreMsg = { fg = c.green }
   highlights.ModeMsg = { fg = c.green }
   highlights.Question = { fg = c.blue }
   highlights.NvimInternalError = { link = "ErrorMsg" }
 end
 
----@param highlights table<string, table> The highlights table to setup
+---Setup diff highlights
+---@param highlights table<string, vim.api.keyset.highlight> The highlights table to setup
 ---@param c table<Base16.Group.Alias, string> The semantic color palette
+---@return nil
 local function setup_diff_hl(highlights, c)
   highlights.DiffAdd = { fg = c.green }
   highlights.DiffChange = { fg = c.orange }
@@ -240,8 +251,10 @@ local function setup_diff_hl(highlights, c)
   highlights.DiffText = { fg = c.blue }
 end
 
----@param highlights table<string, table> The highlights table to setup
+---Setup spelling highlights
+---@param highlights table<string, vim.api.keyset.highlight> The highlights table to setup
 ---@param c table<Base16.Group.Alias, string> The semantic color palette
+---@return nil
 local function setup_spelling_hl(highlights, c)
   highlights.SpellBad = { sp = c.red, undercurl = true }
   highlights.SpellCap = { sp = c.blue, undercurl = true }
@@ -249,45 +262,47 @@ local function setup_spelling_hl(highlights, c)
   highlights.SpellRare = { sp = c.purple, undercurl = true }
 end
 
----@param highlights table<string, table> The highlights table to setup
+---Setup syntax highlights
+---@param highlights table<string, vim.api.keyset.highlight> The highlights table to setup
 ---@param c table<Base16.Group.Alias, string> The semantic color palette
+---@return nil
 local function setup_syntax_hl(highlights, c)
   -- Comments
   highlights.Comment = {
-    fg = c.fg_dim,
-    italic = M.config.enable_italics,
+    fg = c.fg_dark,
+    italic = M.config.styles.italic,
   }
   -- Constants
   highlights.Constant = { fg = c.orange }
-  highlights.String = { fg = c.green, italic = M.config.enable_italics }
+  highlights.String = { fg = c.green, italic = M.config.styles.italic }
   highlights.Character = { fg = c.orange }
   highlights.Number = { fg = c.orange }
   highlights.Boolean = {
     fg = c.orange,
-    italic = M.config.enable_italics,
+    italic = M.config.styles.italic,
   }
   highlights.Float = { fg = c.orange }
 
   -- Identifiers
   highlights.Identifier = {
     fg = c.fg,
-    italic = M.config.enable_italics,
+    italic = M.config.styles.italic,
   }
   highlights.Function = {
     fg = c.blue,
-    bold = M.config.enable_bold,
+    bold = M.config.styles.bold,
   }
 
   -- Statement & Keywords
-  highlights.Statement = { fg = c.blue, bold = M.config.enable_bold }
+  highlights.Statement = { fg = c.blue, bold = M.config.styles.bold }
   highlights.Conditional = { fg = c.purple }
   highlights.Repeat = { fg = c.purple }
   highlights.Label = { fg = c.cyan }
   highlights.Operator = { fg = c.cyan }
   highlights.Keyword = {
     fg = c.purple,
-    bold = M.config.enable_bold,
-    italic = M.config.enable_italics,
+    bold = M.config.styles.bold,
+    italic = M.config.styles.italic,
   }
   highlights.Exception = { fg = c.red }
 
@@ -299,7 +314,7 @@ local function setup_syntax_hl(highlights, c)
   highlights.PreCondit = { fg = c.purple }
 
   -- Types
-  highlights.Type = { fg = c.yellow, bold = M.config.enable_bold }
+  highlights.Type = { fg = c.yellow, bold = M.config.styles.bold }
   highlights.StorageClass = { fg = c.yellow }
   highlights.Structure = { fg = c.cyan }
   highlights.Typedef = { link = "Type" }
@@ -313,25 +328,25 @@ local function setup_syntax_hl(highlights, c)
   highlights.Debug = { fg = c.red }
 
   -- Markdown
-  highlights.markdownH1 = { fg = c.red, bold = M.config.enable_bold }
+  highlights.markdownH1 = { fg = c.red, bold = M.config.styles.bold }
   highlights.markdownH1Delimiter = { link = "markdownH1" }
-  highlights.markdownH2 = { fg = c.orange, bold = M.config.enable_bold }
+  highlights.markdownH2 = { fg = c.orange, bold = M.config.styles.bold }
   highlights.markdownH2Delimiter = { link = "markdownH2" }
-  highlights.markdownH3 = { fg = c.yellow, bold = M.config.enable_bold }
+  highlights.markdownH3 = { fg = c.yellow, bold = M.config.styles.bold }
   highlights.markdownH3Delimiter = { link = "markdownH3" }
-  highlights.markdownH4 = { fg = c.green, bold = M.config.enable_bold }
+  highlights.markdownH4 = { fg = c.green, bold = M.config.styles.bold }
   highlights.markdownH4Delimiter = { link = "markdownH4" }
-  highlights.markdownH5 = { fg = c.cyan, bold = M.config.enable_bold }
+  highlights.markdownH5 = { fg = c.cyan, bold = M.config.styles.bold }
   highlights.markdownH5Delimiter = { link = "markdownH5" }
-  highlights.markdownH6 = { fg = c.blue, bold = M.config.enable_bold }
+  highlights.markdownH6 = { fg = c.blue, bold = M.config.styles.bold }
   highlights.markdownH6Delimiter = { link = "markdownH6" }
   highlights.markdownLinkText = { link = "markdownUrl" }
   highlights.markdownUrl = { fg = c.purple, sp = c.purple, underline = true }
 
   -- Misc
   highlights.Underlined = { underline = true }
-  highlights.Bold = { bold = M.config.enable_bold }
-  highlights.Italic = { italic = M.config.enable_italics }
+  highlights.Bold = { bold = M.config.styles.bold }
+  highlights.Italic = { italic = M.config.styles.italic }
   highlights.Ignore = { fg = c.fg_dim }
   highlights.Error = { fg = c.red, bg = get_bg(c.bg) }
   highlights.Todo = { fg = c.yellow, bg = get_bg(c.bg_dim) }
@@ -340,23 +355,25 @@ local function setup_syntax_hl(highlights, c)
   highlights.healthWarning = { fg = c.orange }
 end
 
----@param highlights table<string, table> The highlights table to setup
+---Setup treesitter highlights
+---@param highlights table<string, vim.api.keyset.highlight> The highlights table to setup
 ---@param c table<Base16.Group.Alias, string> The semantic color palette
+---@return nil
 local function setup_treesitter_hl(highlights, c)
   highlights["@variable"] = {
     fg = c.fg,
   }
-  highlights["@variable.builtin"] = { fg = c.red, bold = M.config.enable_bold, italic = M.config.enable_italics }
+  highlights["@variable.builtin"] = { fg = c.red, bold = M.config.styles.bold, italic = M.config.styles.italic }
   highlights["@variable.parameter"] = { fg = c.orange }
-  highlights["@variable.parameter.builtin"] = { fg = c.purple, bold = M.config.enable_bold }
+  highlights["@variable.parameter.builtin"] = { fg = c.purple, bold = M.config.styles.bold }
   highlights["@variable.member"] = { fg = c.cyan }
 
-  highlights["@constant"] = { link = "Constant", bold = M.config.enable_bold }
-  highlights["@constant.builtin"] = { fg = c.red, bold = M.config.enable_bold }
+  highlights["@constant"] = { link = "Constant", bold = M.config.styles.bold }
+  highlights["@constant.builtin"] = { fg = c.red, bold = M.config.styles.bold }
   highlights["@constant.macro"] = { fg = c.orange }
 
   highlights["@module"] = { fg = c.fg }
-  highlights["@module.builtin"] = { fg = c.fg, bold = M.config.enable_bold }
+  highlights["@module.builtin"] = { fg = c.fg, bold = M.config.styles.bold }
   highlights["@label"] = { link = "Label" }
 
   highlights["@string"] = { link = "String" }
@@ -375,16 +392,16 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@float"] = { link = "Number" }
 
   highlights["@type"] = { fg = c.orange }
-  highlights["@type.builtin"] = { fg = c.orange, bold = M.config.enable_bold, italic = M.config.enable_italics }
+  highlights["@type.builtin"] = { fg = c.orange, bold = M.config.styles.bold, italic = M.config.styles.italic }
   highlights["@type.definition"] = { link = "Type" }
 
   highlights["@attribute"] = { fg = c.yellow }
-  highlights["@attribute.builtin"] = { fg = c.yellow, bold = M.config.enable_bold }
+  highlights["@attribute.builtin"] = { fg = c.yellow, bold = M.config.styles.bold }
 
   highlights["@property"] = { fg = c.cyan }
 
   highlights["@function"] = { link = "Function" }
-  highlights["@function.builtin"] = { fg = c.cyan, bold = M.config.enable_bold }
+  highlights["@function.builtin"] = { fg = c.cyan, bold = M.config.styles.bold }
 
   highlights["@function.call"] = { link = "Function" }
   highlights["@function.macro"] = { link = "Function" }
@@ -398,18 +415,18 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@keyword.modifier"] = { link = "Function" }
   highlights["@keyword.type"] = { link = "Function" }
   highlights["@keyword.coroutine"] = { link = "Function" }
-  highlights["@keyword.function"] = { fg = c.purple, bold = M.config.enable_bold }
+  highlights["@keyword.function"] = { fg = c.purple, bold = M.config.styles.bold }
   highlights["@keyword.operator"] = { fg = c.purple }
   highlights["@keyword.import"] = { link = "Include" }
   highlights["@keyword.repeat"] = { link = "Repeat" }
-  highlights["@keyword.return"] = { fg = c.red, bold = M.config.enable_bold }
+  highlights["@keyword.return"] = { fg = c.red, bold = M.config.styles.bold }
   highlights["@keyword.debug"] = { link = "Exception" }
   highlights["@keyword.exception"] = { link = "Exception" }
   highlights["@keyword.conditional"] = { link = "Conditional" }
   highlights["@keyword.conditional.ternary"] = { link = "Operator" }
   highlights["@keyword.directive"] = { link = "PreProc" }
   highlights["@keyword.directive.define"] = { link = "Define" }
-  highlights["@keyword.export"] = { fg = c.blue, italic = M.config.enable_italics }
+  highlights["@keyword.export"] = { fg = c.blue, italic = M.config.styles.italic }
 
   highlights["@punctuation.delimiter.regex"] = { link = "@string.regexp" }
   highlights["@punctuation.delimiter"] = { link = "Delimiter" }
@@ -421,22 +438,22 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@comment.todo"] = {
     fg = c.yellow,
     bg = blend(c.yellow, c.bg, 0.1),
-    bold = M.config.enable_bold,
+    bold = M.config.styles.bold,
   }
   highlights["@comment.note"] = {
     fg = c.blue,
     bg = blend(c.blue, c.bg, 0.1),
-    bold = M.config.enable_bold,
+    bold = M.config.styles.bold,
   }
   highlights["@comment.warning"] = {
     fg = c.orange,
     bg = blend(c.orange, c.bg, 0.1),
-    bold = M.config.enable_bold,
+    bold = M.config.styles.bold,
   }
   highlights["@comment.error"] = {
     fg = c.red,
     bg = blend(c.red, c.bg, 0.1),
-    bold = M.config.enable_bold,
+    bold = M.config.styles.bold,
   }
 
   highlights["@markup.heading.1.markdown"] = { link = "markdownH1" }
@@ -452,12 +469,12 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@markup.heading.5.marker.markdown"] = { link = "markdownH5Delimiter" }
   highlights["@markup.heading.6.marker.markdown"] = { link = "markdownH6Delimiter" }
 
-  highlights["@markup.strong"] = { bold = M.config.enable_bold }
-  highlights["@markup.italic"] = { italic = M.config.enable_italics }
+  highlights["@markup.strong"] = { bold = M.config.styles.bold }
+  highlights["@markup.italic"] = { italic = M.config.styles.italic }
   highlights["@markup.strikethrough"] = { strikethrough = true }
   highlights["@markup.underline"] = { underline = true }
 
-  highlights["@markup.heading"] = { fg = c.cyan, bold = M.config.enable_bold }
+  highlights["@markup.heading"] = { fg = c.cyan, bold = M.config.styles.bold }
   highlights["@markup.quote"] = { fg = c.fg_dim }
   highlights["@markup.list"] = { fg = c.red }
   highlights["@markup.link"] = { fg = c.purple, underline = true }
@@ -492,29 +509,35 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@lsp.typemod.variable.injected"] = { link = "@variable" }
 end
 
----@param highlights table<string, table> The highlights table to setup
+---Setup diagnostics highlights
+---@param highlights table<string, vim.api.keyset.highlight> The highlights table to setup
 ---@param c table<Base16.Group.Alias, string> The semantic color palette
+---@return nil
 local function setup_diagnostics_hl(highlights, c)
-  highlights.DiagnosticError = { fg = c.red, bold = M.config.enable_bold }
-  highlights.DiagnosticWarn = { fg = c.orange, bold = M.config.enable_bold }
-  highlights.DiagnosticInfo = { fg = c.blue, bold = M.config.enable_bold }
-  highlights.DiagnosticHint = { fg = c.purple, bold = M.config.enable_bold }
+  highlights.DiagnosticError = { fg = c.red, bold = M.config.styles.bold }
+  highlights.DiagnosticWarn = { fg = c.orange, bold = M.config.styles.bold }
+  highlights.DiagnosticInfo = { fg = c.blue, bold = M.config.styles.bold }
+  highlights.DiagnosticHint = { fg = c.purple, bold = M.config.styles.bold }
   highlights.DiagnosticUnderlineError = { sp = c.red, undercurl = true }
   highlights.DiagnosticUnderlineWarn = { sp = c.orange, undercurl = true }
   highlights.DiagnosticUnderlineInfo = { sp = c.blue, undercurl = true }
   highlights.DiagnosticUnderlineHint = { sp = c.purple, undercurl = true }
 end
 
----@param highlights table<string, table> The highlights table to setup
+---Setup lsp highlights
+---@param highlights table<string, vim.api.keyset.highlight> The highlights table to setup
 ---@param c table<Base16.Group.Alias, string> The semantic color palette
+---@return nil
 local function setup_lsp_hl(highlights, c)
   highlights.LspReferenceText = { bg = c.bg_light }
   highlights.LspReferenceRead = { bg = c.bg_light }
   highlights.LspReferenceWrite = { bg = c.bg_light }
 end
 
----@param highlights table<string, table> The highlights table to setup
+---Setup integration highlights
+---@param highlights table<string, vim.api.keyset.highlight> The highlights table to setup
 ---@param c table<Base16.Group.Alias, string> The semantic color palette
+---@return nil
 local function setup_integration_hl(highlights, c)
   -- Mini Icons
   highlights.MiniIconsAzure = { fg = c.cyan }
@@ -559,7 +582,7 @@ local function setup_integration_hl(highlights, c)
   highlights.MiniPickPreviewRegion = { link = "IncSearch" }
   highlights.MiniPickPrompt = {
     bg = get_bg(c.bg),
-    bold = M.config.enable_bold,
+    bold = M.config.styles.bold,
   }
 
   -- Render Markdown
@@ -595,7 +618,7 @@ local function setup_integration_hl(highlights, c)
   highlights.BlinkCmpGhostText = { link = "Comment" }
   highlights.BlinkCmpLabel = { link = "Comment" }
   highlights.BlinkCmpLabelDeprecated = { link = "Comment", strikethrough = true }
-  highlights.BlinkCmpLabelMatch = { fg = c.fg, bold = M.config.enable_bold }
+  highlights.BlinkCmpLabelMatch = { fg = c.fg, bold = M.config.styles.bold }
   highlights.BlinkCmpDefault = { link = "Normal" }
   highlights.BlinkCmpKindText = { fg = c.blue }
   highlights.BlinkCmpKindMethod = { fg = c.cyan }
@@ -645,11 +668,11 @@ local function setup_integration_hl(highlights, c)
   highlights.GrugFarResultsStats = { fg = c.purple }
 
   -- Whichkey
-  highlights.WhichKey = { fg = c.blue, bold = M.config.enable_bold }
+  highlights.WhichKey = { fg = c.blue, bold = M.config.styles.bold }
   highlights.WhichKeyBorder = { link = "FloatBorder" }
-  highlights.WhichKeyDesc = { fg = c.fg, italic = M.config.enable_italics }
+  highlights.WhichKeyDesc = { fg = c.fg, italic = M.config.styles.italic }
   highlights.WhichKeyFloat = { link = "NormalFloat" }
-  highlights.WhichKeyGroup = { fg = c.purple, bold = M.config.enable_bold }
+  highlights.WhichKeyGroup = { fg = c.purple, bold = M.config.styles.bold }
   highlights.WhichKeyIcon = { fg = c.blue }
   highlights.WhichKeyIconAzure = { link = "MiniIconsAzure" }
   highlights.WhichKeyIconBlue = { link = "MiniIconsBlue" }
@@ -669,6 +692,8 @@ local function setup_integration_hl(highlights, c)
   highlights.FlashLabel = { fg = c.bg, bg = c.red }
 end
 
+---Apply all highlights
+---@return nil
 local function apply_highlights()
   local raw = M.config.colors or {}
 
@@ -700,6 +725,7 @@ local function apply_highlights()
 
   local c = add_semantic_palette(raw)
 
+  ---@type table<string, vim.api.keyset.highlight>
   local highlights = {}
 
   setup_editor_hl(highlights, c)
@@ -752,13 +778,17 @@ local function apply_highlights()
 
     if opts.blend ~= nil and (opts.blend >= 0 and opts.blend <= 100) and opts.bg ~= nil then
       local bg_hex = c[opts.bg] or opts.bg
+      ---@diagnostic disable-next-line: param-type-mismatch
       opts.bg = blend(bg_hex, opts.blend_on or c.bg, opts.blend / 100)
     end
 
     opts.blend = nil
+    ---@diagnostic disable-next-line: inject-field
     opts.blend_on = nil
 
+    ---@diagnostic disable-next-line: undefined-field
     if opts._nvim_blend ~= nil then
+      ---@diagnostic disable-next-line: undefined-field
       opts.blend = opts._nvim_blend
     end
 
@@ -778,11 +808,11 @@ local default_config = {
   colors = {},
   highlight_groups = {},
   before_highlight = nil,
-  bold_vert_split = false,
-  enable_bold = false,
-  enable_italics = false,
-  enable_transparency = false,
-  dim_inactive_windows = false,
+  styles = {
+    italic = false,
+    bold = false,
+    transparency = false,
+  },
 }
 
 -- Cache for the semantic palette
@@ -790,6 +820,7 @@ local _cached_colors = nil
 
 ---Setup the base16 plugin
 ---@param user_config? Base16.Config
+---@return nil
 function M.setup(user_config)
   if did_setup then
     vim.notify("Base16: Plugin already set up", vim.log.levels.WARN)
@@ -806,6 +837,7 @@ function M.setup(user_config)
   did_setup = true
 end
 
+---Setup the colorscheme
 function M.colorscheme()
   -- Clear existing highlights
   vim.cmd("hi clear")
@@ -820,7 +852,8 @@ function M.colorscheme()
   apply_highlights()
 end
 
--- Auto command to load colorscheme
+---Auto command to load colorscheme
+---@return nil
 function M.load()
   M.colorscheme()
 end
