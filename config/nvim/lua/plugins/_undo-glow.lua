@@ -23,10 +23,10 @@ function M.setup()
     return
   end
 
-  local colors = require("base16").get_colors({
-    "bg",
-    "fg",
-  })
+  -- local colors = require("base16").get_colors({
+  --   "bg",
+  --   "fg",
+  -- })
 
   ---@type UndoGlow.Config
   local plugin_opts = {
@@ -35,10 +35,10 @@ function M.setup()
       duration = 300,
       window_scoped = true,
     },
-    fallback_for_transparency = {
-      bg = colors.bg,
-      fg = colors.fg,
-    },
+    -- fallback_for_transparency = {
+    --   bg = colors.bg,
+    --   fg = colors.fg,
+    -- },
     priority = 2048 * 3,
   }
 
