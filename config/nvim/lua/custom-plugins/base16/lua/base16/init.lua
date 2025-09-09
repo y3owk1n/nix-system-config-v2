@@ -9,8 +9,6 @@ local did_setup = false
 
 ---@class Base16.Config
 ---@field colors? table<Base16.Group.Raw, string> Colors to override
----@field disable_background? boolean Disable background color
----@field disable_float_background? boolean Disable floating window background color
 ---@field bold_vert_split? boolean Bold vertical splits
 ---@field enable_bold? boolean Enable bold text
 ---@field enable_italics? boolean Enable italics
@@ -81,6 +79,13 @@ local base16_alias = {
   brown = "base0F",
 }
 
+-- Standardized blend values
+local BLEND = {
+  subtle = 10, -- barely visible backgrounds
+  medium = 15, -- noticeable but not distracting
+  strong = 25, -- prominent highlights
+}
+
 ---@private
 ---Add semantic aliases to the raw colors
 ---@param raw_colors table<Base16.Group.Raw, string>
@@ -104,6 +109,14 @@ local function add_semantic_palette(raw_colors)
       return nil
     end,
   })
+end
+
+-- Helper function for consistent transparency handling
+local function get_bg(normal_bg, transparent_override)
+  if M.config.enable_transparency then
+    return transparent_override or "NONE"
+  end
+  return normal_bg
 end
 
 local function apply_highlights()
@@ -143,68 +156,65 @@ local function apply_highlights()
   -- Core Editor UI
   ------------------------------------------------------------
 
-  -- Normal/Float/NC
-  highlights.Normal = { fg = c.fg, bg = M.config.enable_transparency and c.bg or c.bg }
-  highlights.NormalFloat = {
-    fg = c.fg,
-    bg = (M.config.disable_float_background or M.config.enable_transparency) and c.bg or c.bg_dim,
-  }
-  highlights.NormalNC = {
-    fg = c.fg,
-    bg = M.config.enable_transparency and c.bg or c.bg,
-  }
+  -- Normal/Float/NC - Fixed transparency consistency
+  highlights.Normal = { fg = c.fg, bg = get_bg(c.bg) }
+  highlights.NormalFloat = { fg = c.fg, bg = get_bg(c.bg) }
+  highlights.NormalNC = { fg = c.fg, bg = get_bg(c.bg) }
 
   -- Cursor & Lines
   highlights.Cursor = { fg = c.bg, bg = c.fg }
   highlights.CursorLine = { bg = c.bg_light }
-  highlights.CursorColumn = { bg = M.config.enable_transparency and c.bg or c.bg_dim }
-  highlights.CursorLineNr =
-    { fg = c.fg_dark, bg = M.config.enable_transparency and c.bg or c.bg_dim, bold = M.config.enable_bold }
-  highlights.LineNr = { fg = c.fg_dim }
-  highlights.SignColumn = { fg = c.fg_dim, bg = M.config.enable_transparency and c.bg or c.bg }
-  highlights.ColorColumn = { bg = c.bg_dim }
+  highlights.CursorColumn = { bg = get_bg(c.bg_dim) }
+  highlights.CursorLineNr = {
+    fg = c.fg_dark,
+    bg = get_bg(c.bg_dim),
+    bold = M.config.enable_bold,
+  }
+  highlights.LineNr = { fg = c.fg_dim, bg = get_bg(c.bg) }
+  highlights.SignColumn = { fg = c.fg_dim, bg = get_bg(c.bg) }
+  highlights.ColorColumn = { bg = get_bg(c.bg_dim) }
 
-  -- Split & Windows
+  -- Split & Windows - Standardized colors
   highlights.VertSplit = {
-    fg = M.config.bold_vert_split and c.fg or c.bg_light,
+    fg = M.config.bold_vert_split and c.fg or c.fg_dim,
     bold = M.config.bold_vert_split,
   }
-  highlights.WinSeparator = { link = "VertSplit" }
-  highlights.WinBar = { fg = c.fg_dark, bg = c.bg_light }
-  highlights.WinBarNC = { fg = c.fg_dim, bg = c.bg_dim }
+  highlights.WinSeparator = { fg = c.fg_dim } -- Consistent with other separators
+  highlights.WinBar = { fg = c.fg_dark, bg = get_bg(c.bg_light) }
+  highlights.WinBarNC = { fg = c.fg_dim, bg = get_bg(c.bg_dim) }
 
   -- Fold & Conceals
-  highlights.Folded = { fg = c.fg_dim, bg = c.bg_dim }
-  highlights.FoldColumn = { fg = c.fg_dim }
+  highlights.Folded = { fg = c.fg_dim, bg = get_bg(c.bg_dim) }
+  highlights.FoldColumn = { fg = c.fg_dim, bg = get_bg(c.bg) }
   highlights.Conceal = { fg = c.fg_dim }
 
-  -- Visual & Selection
+  -- Visual & Selection - Fixed bold consistency
   highlights.Visual = { bg = c.bg_light }
   highlights.VisualNOS = { bg = c.bg_light }
-  highlights.MatchParen = { bg = c.bg_light, bold = true }
+  highlights.MatchParen = { bg = c.bg_light, bold = M.config.enable_bold }
 
   -- Search
-  highlights.Search = { fg = c.bg_dim, bg = c.yellow }
+  highlights.Search = { fg = c.bg, bg = c.yellow }
   highlights.IncSearch = { link = "CurSearch" }
-  highlights.CurSearch = { fg = c.bg_dim, bg = c.orange }
+  highlights.CurSearch = { fg = c.bg, bg = c.orange }
   highlights.Substitute = { link = "IncSearch" }
 
-  -- Popup Menu
-  highlights.Pmenu = { fg = c.fg, bg = c.bg_dim }
-  highlights.PmenuSel = { bg = c.bg_light, bold = true }
+  -- Popup Menu - Fixed bold consistency
+  highlights.Pmenu = { fg = c.fg, bg = get_bg(c.bg_dim) }
+  highlights.PmenuSel = { bg = c.bg_light, bold = M.config.enable_bold }
   highlights.PmenuSbar = { bg = c.bg_light }
   highlights.PmenuThumb = { bg = c.fg_dark }
 
   -- Tabline
-  highlights.TabLine = { fg = c.fg_dim, bg = c.bg_dim }
-  highlights.TabLineFill = { bg = c.bg_dim }
+  highlights.TabLine = { fg = c.fg_dim, bg = get_bg(c.bg_dim) }
+  highlights.TabLineFill = { bg = get_bg(c.bg_dim) }
   highlights.TabLineSel = { fg = c.fg, bg = c.bg_light, bold = M.config.enable_bold }
 
   -- Statusline
-  highlights.StatusLine = { fg = c.fg_dark, bg = c.bg_light }
-  highlights.StatusLineNC = { fg = c.fg_dim, bg = c.bg_dim }
+  highlights.StatusLine = { fg = c.fg_dark, bg = get_bg(c.bg_light) }
+  highlights.StatusLineNC = { fg = c.fg_dim, bg = get_bg(c.bg_dim) }
 
-  -- Misc UI
+  -- Misc UI - Standardized border colors
   highlights.FloatBorder = { fg = c.fg_dim }
   highlights.FloatShadow = { bg = c.bg_light }
   highlights.FloatShadowThrough = { link = "FloatShadow" }
@@ -227,10 +237,10 @@ local function apply_highlights()
   -- Diff & Git
   ------------------------------------------------------------
 
-  highlights.DiffAdd = { fg = c.green, bg = c.bg_dim, blend = 20 }
-  highlights.DiffChange = { fg = c.orange, bg = c.bg_dim, blend = 20 }
-  highlights.DiffDelete = { fg = c.red, bg = c.bg_dim, blend = 20 }
-  highlights.DiffText = { fg = c.blue, bg = c.bg_dim, blend = 40 }
+  highlights.DiffAdd = { fg = c.green }
+  highlights.DiffChange = { fg = c.orange }
+  highlights.DiffDelete = { fg = c.red }
+  highlights.DiffText = { fg = c.blue }
 
   ------------------------------------------------------------
   -- Spelling
@@ -247,7 +257,7 @@ local function apply_highlights()
 
   -- Comments
   highlights.Comment = {
-    fg = c.fg_dark,
+    fg = c.fg_dim,
     italic = M.config.enable_italics,
   }
   -- Constants
@@ -260,7 +270,7 @@ local function apply_highlights()
     italic = M.config.enable_italics,
   }
   highlights.Float = { fg = c.orange }
-  highlights.FloatTitle = { fg = c.cyan, bg = c.bg, bold = M.config.enable_bold }
+  highlights.FloatTitle = { fg = c.cyan, bg = get_bg(c.bg), bold = M.config.enable_bold }
 
   -- Identifiers
   highlights.Identifier = {
@@ -306,34 +316,34 @@ local function apply_highlights()
   highlights.Debug = { fg = c.red }
 
   -- Markdown
-  highlights.markdownH1 = { fg = c.purple, bold = M.config.enable_bold }
+  highlights.markdownH1 = { fg = c.red, bold = M.config.enable_bold }
   highlights.markdownH1Delimiter = { link = "markdownH1" }
-  highlights.markdownH2 = { fg = c.blue, bold = M.config.enable_bold }
+  highlights.markdownH2 = { fg = c.orange, bold = M.config.enable_bold }
   highlights.markdownH2Delimiter = { link = "markdownH2" }
-  highlights.markdownH3 = { fg = c.green, bold = M.config.enable_bold }
+  highlights.markdownH3 = { fg = c.yellow, bold = M.config.enable_bold }
   highlights.markdownH3Delimiter = { link = "markdownH3" }
-  highlights.markdownH4 = { fg = c.orange, bold = M.config.enable_bold }
+  highlights.markdownH4 = { fg = c.green, bold = M.config.enable_bold }
   highlights.markdownH4Delimiter = { link = "markdownH4" }
   highlights.markdownH5 = { fg = c.cyan, bold = M.config.enable_bold }
   highlights.markdownH5Delimiter = { link = "markdownH5" }
-  highlights.markdownH6 = { fg = c.yellow, bold = M.config.enable_bold }
+  highlights.markdownH6 = { fg = c.blue, bold = M.config.enable_bold }
   highlights.markdownH6Delimiter = { link = "markdownH6" }
   highlights.markdownLinkText = { link = "markdownUrl" }
   highlights.markdownUrl = { fg = c.purple, sp = c.purple, underline = true }
 
   -- Misc
   highlights.Underlined = { underline = true }
-  highlights.Bold = { bold = true }
-  highlights.Italic = { italic = true }
+  highlights.Bold = { bold = M.config.enable_bold }
+  highlights.Italic = { italic = M.config.enable_italics }
   highlights.Ignore = { fg = c.fg_dim }
-  highlights.Error = { fg = c.red, bg = c.bg }
-  highlights.Todo = { fg = c.yellow, bg = c.bg_dim }
+  highlights.Error = { fg = c.red, bg = get_bg(c.bg) }
+  highlights.Todo = { fg = c.yellow, bg = get_bg(c.bg_dim) }
   highlights.healthError = { fg = c.red }
   highlights.healthSuccess = { fg = c.green }
   highlights.healthWarning = { fg = c.orange }
 
   ------------------------------------------------------------
-  -- Treesitter Highlights
+  -- Treesitter Highlights - Fixed redundant styling
   ------------------------------------------------------------
 
   highlights["@variable"] = {
@@ -345,7 +355,7 @@ local function apply_highlights()
   highlights["@variable.parameter.builtin"] = { fg = c.purple, bold = M.config.enable_bold }
   highlights["@variable.member"] = { fg = c.cyan }
 
-  highlights["@constant"] = { fg = c.orange }
+  highlights["@constant"] = { link = "Constant" }
   highlights["@constant.builtin"] = { fg = c.orange, bold = M.config.enable_bold }
   highlights["@constant.macro"] = { fg = c.orange }
 
@@ -365,16 +375,14 @@ local function apply_highlights()
   highlights["@character"] = { link = "Character" }
   highlights["@character.special"] = { link = "Character" }
 
-  highlights["@boolean"] = {
-    link = "Boolean",
-    italic = M.config.enable_italics,
-  }
+  -- Fixed: Removed redundant italic since Boolean already has it
+  highlights["@boolean"] = { link = "Boolean" }
   highlights["@number"] = { link = "Number" }
   highlights["@number.float"] = { link = "Number" }
   highlights["@float"] = { link = "Number" }
 
-  highlights["@type"] = { fg = c.cyan }
-  highlights["@type.builtin"] = { fg = c.cyan, bold = M.config.enable_bold }
+  highlights["@type"] = { fg = c.orange }
+  highlights["@type.builtin"] = { fg = c.orange, bold = M.config.enable_bold }
   highlights["@type.definition"] = { link = "Type" }
 
   highlights["@attribute"] = { fg = c.yellow }
@@ -382,10 +390,8 @@ local function apply_highlights()
 
   highlights["@property"] = { fg = c.cyan }
 
-  highlights["@function"] = {
-    link = "Function",
-    italic = M.config.enable_italics,
-  }
+  -- Fixed: Removed redundant italic since Function already has it
+  highlights["@function"] = { link = "Function" }
   highlights["@function.builtin"] = { fg = c.blue, bold = M.config.enable_bold }
 
   highlights["@function.call"] = { link = "Function" }
@@ -396,10 +402,8 @@ local function apply_highlights()
   highlights["@constructor"] = { fg = c.fg_dim }
   highlights["@operator"] = { link = "Operator" }
 
-  highlights["@keyword"] = {
-    link = "Keyword",
-    italic = M.config.enable_italics,
-  }
+  -- Fixed: Removed redundant italic since Keyword already has it
+  highlights["@keyword"] = { link = "Keyword" }
   highlights["@keyword.modifier"] = { link = "Function" }
   highlights["@keyword.type"] = { link = "Function" }
   highlights["@keyword.coroutine"] = { link = "Function" }
@@ -420,10 +424,8 @@ local function apply_highlights()
   highlights["@punctuation.bracket"] = { fg = c.brown }
   highlights["@punctuation.special"] = { link = "Special" }
 
-  highlights["@comment"] = {
-    link = "Comment",
-    italic = M.config.enable_italics,
-  }
+  -- Fixed: Removed redundant italic since Comment already has it
+  highlights["@comment"] = { link = "Comment" }
   highlights["@comment.documentation"] = { link = "Comment" }
 
   highlights["@markup.heading.1.markdown"] = { link = "markdownH1" }
@@ -485,11 +487,11 @@ local function apply_highlights()
   highlights.DiagnosticError = { fg = c.red }
   highlights.DiagnosticWarn = { fg = c.orange }
   highlights.DiagnosticInfo = { fg = c.blue }
-  highlights.DiagnosticHint = { fg = c.cyan }
+  highlights.DiagnosticHint = { fg = c.fg_dim } -- More subtle than cyan
   highlights.DiagnosticUnderlineError = { sp = c.red, undercurl = true }
   highlights.DiagnosticUnderlineWarn = { sp = c.orange, undercurl = true }
   highlights.DiagnosticUnderlineInfo = { sp = c.blue, undercurl = true }
-  highlights.DiagnosticUnderlineHint = { sp = c.cyan, undercurl = true }
+  highlights.DiagnosticUnderlineHint = { sp = c.fg_dim, undercurl = true }
 
   ------------------------------------------------------------
   -- LSP Highlights
@@ -500,7 +502,7 @@ local function apply_highlights()
   highlights.LspReferenceWrite = { bg = c.bg_light }
 
   ------------------------------------------------------------
-  -- Plugins Highlights
+  -- Plugins Highlights - Standardized blend values
   ------------------------------------------------------------
 
   -- Mini Icons
@@ -522,41 +524,41 @@ local function apply_highlights()
   highlights.MiniDiffSignChange = { link = "DiffChange" }
   highlights.MiniDiffSignDelete = { link = "DiffDelete" }
 
-  -- Render Markdown
-  highlights.RenderMarkdownH1Bg = { bg = c.purple, blend = 20 }
-  highlights.RenderMarkdownH2Bg = { bg = c.blue, blend = 20 }
-  highlights.RenderMarkdownH3Bg = { bg = c.green, blend = 20 }
-  highlights.RenderMarkdownH4Bg = { bg = c.orange, blend = 20 }
-  highlights.RenderMarkdownH5Bg = { bg = c.red, blend = 20 }
-  highlights.RenderMarkdownH6Bg = { bg = c.yellow, blend = 20 }
+  -- Render Markdown - Standardized blend values
+  highlights.RenderMarkdownH1Bg = { bg = c.red, blend = BLEND.medium }
+  highlights.RenderMarkdownH2Bg = { bg = c.orange, blend = BLEND.medium }
+  highlights.RenderMarkdownH3Bg = { bg = c.yellow, blend = BLEND.medium }
+  highlights.RenderMarkdownH4Bg = { bg = c.green, blend = BLEND.medium }
+  highlights.RenderMarkdownH5Bg = { bg = c.cyan, blend = BLEND.medium }
+  highlights.RenderMarkdownH6Bg = { bg = c.blue, blend = BLEND.medium }
   highlights.RenderMarkdownBullet = { fg = c.orange }
   highlights.RenderMarkdownChecked = { fg = c.cyan }
   highlights.RenderMarkdownUnchecked = { fg = c.fg_dim }
-  highlights.RenderMarkdownCode = { bg = c.bg_light }
-  highlights.RenderMarkdownCodeInline = { bg = c.bg_light, fg = c.fg }
+  highlights.RenderMarkdownCode = { bg = c.bg_dim }
+  highlights.RenderMarkdownCodeInline = { bg = c.bg_dim, fg = c.fg }
   highlights.RenderMarkdownQuote = { fg = c.fg_dim }
   highlights.RenderMarkdownTableFill = { link = "Conceal" }
   highlights.RenderMarkdownTableHead = { fg = c.fg_dim }
   highlights.RenderMarkdownTableRow = { fg = c.fg_dim }
 
-  -- Undoglow
-  highlights.UgUndo = { bg = c.red, blend = 30 }
-  highlights.UgRedo = { bg = c.green, blend = 30 }
-  highlights.UgYank = { bg = c.orange, blend = 30 }
-  highlights.UgPaste = { bg = c.cyan, blend = 30 }
-  highlights.UgSearch = { bg = c.blue, blend = 30 }
-  highlights.UgComment = { bg = c.yellow, blend = 30 }
-  highlights.UgCursor = { bg = c.brown }
+  -- Undoglow - Standardized blend values
+  highlights.UgUndo = { bg = c.red, blend = BLEND.strong }
+  highlights.UgRedo = { bg = c.green, blend = BLEND.strong }
+  highlights.UgYank = { bg = c.orange, blend = BLEND.strong }
+  highlights.UgPaste = { bg = c.cyan, blend = BLEND.strong }
+  highlights.UgSearch = { bg = c.blue, blend = BLEND.strong }
+  highlights.UgComment = { bg = c.yellow, blend = BLEND.strong }
+  highlights.UgCursor = { bg = c.bg_light }
 
   -- Blink Cmp
-  highlights.BlinkCmpMenu = { bg = c.bg }
+  highlights.BlinkCmpMenu = { bg = get_bg(c.bg) }
   highlights.BlinkCmpMenuBorder = { link = "FloatBorder" }
   highlights.BlinkCmpDocBorder = { link = "FloatBorder" }
 
   -- Grugfar
   highlights.GrugFarResultsMatch = { link = "IncSearch" }
 
-  -- Apply custom highlights from user M.configuration
+  -- Apply custom highlights from user configuration
   if M.config.highlight_groups and next(M.config.highlight_groups) then
     for group, highlight in pairs(M.config.highlight_groups) do
       local existing = highlights[group] or {}
@@ -622,8 +624,6 @@ local default_config = {
   colors = {},
   highlight_groups = {},
   before_highlight = nil,
-  disable_background = false,
-  disable_float_background = false,
   bold_vert_split = false,
   enable_bold = false,
   enable_italics = false,
