@@ -63,21 +63,21 @@ end
 ---@type table<Base16.Group.Alias, Base16.Group.Raw>
 local base16_alias = {
   bg = "base00", -- Default background
-  bg_dim = "base01", -- Lighter background (status line, etc.)
+  bg_dim = "base01", -- Lighter Background (Used for status bars)
   bg_light = "base02", -- Selection background
-  fg_dim = "base03", -- Comments, secondary text
-  fg_dark = "base04", -- Dark foreground (default text)
-  fg = "base05", -- Default foreground
+  fg_dim = "base03", -- Comments, Invisibles, Line Highlighting
+  fg_dark = "base04", -- Dark Foreground (Used for status bars)
+  fg = "base05", -- Default Foreground, Caret, Delimiters, Operators
   fg_light = "base06", -- Light foreground
-  fg_bright = "base07", -- Brightest foreground
-  red = "base08",
-  orange = "base09",
-  yellow = "base0A",
-  green = "base0B",
-  cyan = "base0C",
-  blue = "base0D",
-  purple = "base0E",
-  brown = "base0F",
+  fg_bright = "base07", -- The Lightest Foreground
+  red = "base08", -- Variables, XML Tags, Markup Link Text, Markup Lists, Diff Deleted
+  orange = "base09", -- Integers, Boolean, Constants, XML Attributes, Markup Link Url
+  yellow = "base0A", -- Classes, Markup Bold, Search Text Background
+  green = "base0B", -- Strings, Inherited Class, Markup Code, Diff Inserted
+  cyan = "base0C", -- Support, Regular Expressions, Escape Characters, Markup Quotes
+  blue = "base0D", -- Functions, Methods, Attribute IDs, Headings
+  purple = "base0E", -- Keywords, Storage, Selector, Markup Italic, Diff Changed
+  brown = "base0F", -- Deprecated, Opening/Closing Embedded Language Tags, e.g. <?php ?>
 }
 
 -- Standardized blend values
@@ -129,19 +129,19 @@ local function setup_editor_hl(highlights, c)
   highlights.NormalNC = {
     fg = c.fg,
     bg = (M.config.dim_inactive_windows and c.bg_dim) or get_bg(c.bg),
-    blend = M.config.dim_inactive_windows and 50,
+    blend = M.config.dim_inactive_windows and 50 or 0,
   }
 
   -- Cursor & Lines
-  highlights.Cursor = { fg = c.bg, bg = c.fg }
-  highlights.CursorLine = { bg = c.bg_light }
-  highlights.CursorColumn = { bg = get_bg(c.bg_dim) }
+  highlights.Cursor = { fg = c.bg, bg = c.fg, bold = M.config.enable_bold }
+  highlights.CursorLine = { bg = blend(c.bg_light, c.bg, 0.6) }
+  highlights.CursorColumn = { bg = get_bg(blend(c.bg_dim, c.bg, 0.3)) }
   highlights.CursorLineNr = {
-    fg = c.fg_dark,
-    bg = get_bg(c.bg_dim),
+    fg = c.yellow,
+    bg = get_bg(blend(c.bg_light, c.bg, 0.6)),
     bold = M.config.enable_bold,
   }
-  highlights.LineNr = { fg = c.fg_dim, bg = get_bg(c.bg) }
+  highlights.LineNr = { fg = blend(c.fg_dim, c.bg, 0.7), bg = get_bg(c.bg) }
   highlights.SignColumn = { fg = c.fg_dim, bg = get_bg(c.bg) }
   highlights.ColorColumn = { bg = get_bg(c.bg_dim) }
 
@@ -161,13 +161,13 @@ local function setup_editor_hl(highlights, c)
 
   -- Visual & Selection - Fixed bold consistency
   highlights.Visual = { bg = c.bg_light }
-  highlights.VisualNOS = { bg = c.bg_light }
+  highlights.VisualNOS = { link = "Visual" }
   highlights.MatchParen = { bg = c.bg_light, bold = M.config.enable_bold }
 
   -- Search
-  highlights.Search = { fg = c.bg, bg = c.yellow }
+  highlights.Search = { fg = c.bg, bg = c.yellow, bold = M.config.enable_bold }
   highlights.IncSearch = { link = "CurSearch" }
-  highlights.CurSearch = { fg = c.bg, bg = c.orange }
+  highlights.CurSearch = { fg = c.bg, bg = c.orange, bold = M.config.enable_bold }
   highlights.Substitute = { link = "IncSearch" }
 
   -- Popup Menu
@@ -175,6 +175,10 @@ local function setup_editor_hl(highlights, c)
   highlights.PmenuSel = { bg = c.bg_light, bold = M.config.enable_bold }
   highlights.PmenuSbar = { bg = c.bg_light }
   highlights.PmenuThumb = { bg = c.fg_dark }
+  highlights.PmenuKind = { fg = c.purple, bold = true }
+  highlights.PmenuKindSel = { fg = c.purple, bg = blend(c.blue, c.bg, 0.3), bold = true }
+  highlights.PmenuExtra = { fg = c.fg_dim }
+  highlights.PmenuExtraSel = { fg = c.fg_dim, bg = blend(c.blue, c.bg, 0.3) }
 
   -- Tabline
   highlights.TabLine = { fg = c.fg_dim, bg = get_bg(c.bg_dim) }
@@ -185,9 +189,16 @@ local function setup_editor_hl(highlights, c)
   highlights.StatusLine = { fg = c.fg_dark, bg = c.bg_dim }
   highlights.StatusLineNC = { fg = c.fg_dim, bg = c.bg_dim }
 
+  -- Terminal
+  highlights.Terminal = { fg = c.fg, bg = get_bg(c.bg) }
+  highlights.TermCursor = { fg = c.bg, bg = c.green }
+  highlights.TermCursorNC = { fg = c.bg, bg = c.fg_dim }
+
   -- Misc UI
   highlights.FloatBorder = { fg = c.fg_dim }
   highlights.FloatShadow = { bg = c.bg_light }
+  highlights.FloatTitle =
+    { fg = c.cyan, bg = get_bg(c.bg), bold = M.config.enable_bold, italic = M.config.enable_italics }
   highlights.FloatShadowThrough = { link = "FloatShadow" }
   highlights.WildMenu = { link = "IncSearch" }
   highlights.Directory = { fg = c.cyan, bold = M.config.enable_bold }
@@ -233,7 +244,7 @@ local function setup_syntax_hl(highlights, c)
   }
   -- Constants
   highlights.Constant = { fg = c.orange }
-  highlights.String = { fg = c.yellow }
+  highlights.String = { fg = c.green, italic = M.config.enable_italics }
   highlights.Character = { fg = c.orange }
   highlights.Number = { fg = c.orange }
   highlights.Boolean = {
@@ -241,7 +252,6 @@ local function setup_syntax_hl(highlights, c)
     italic = M.config.enable_italics,
   }
   highlights.Float = { fg = c.orange }
-  highlights.FloatTitle = { fg = c.cyan, bg = get_bg(c.bg), bold = M.config.enable_bold }
 
   -- Identifiers
   highlights.Identifier = {
@@ -249,8 +259,8 @@ local function setup_syntax_hl(highlights, c)
     italic = M.config.enable_italics,
   }
   highlights.Function = {
-    fg = c.orange,
-    italic = M.config.enable_italics,
+    fg = c.blue,
+    bold = M.config.enable_bold,
   }
 
   -- Statement & Keywords
@@ -258,9 +268,10 @@ local function setup_syntax_hl(highlights, c)
   highlights.Conditional = { fg = c.purple }
   highlights.Repeat = { fg = c.purple }
   highlights.Label = { fg = c.cyan }
-  highlights.Operator = { fg = c.fg }
+  highlights.Operator = { fg = c.cyan }
   highlights.Keyword = {
     fg = c.purple,
+    bold = M.config.enable_bold,
     italic = M.config.enable_italics,
   }
   highlights.Exception = { fg = c.red }
@@ -273,7 +284,7 @@ local function setup_syntax_hl(highlights, c)
   highlights.PreCondit = { fg = c.purple }
 
   -- Types
-  highlights.Type = { fg = c.cyan }
+  highlights.Type = { fg = c.yellow, bold = M.config.enable_bold }
   highlights.StorageClass = { fg = c.yellow }
   highlights.Structure = { fg = c.cyan }
   highlights.Typedef = { link = "Type" }
@@ -319,15 +330,14 @@ end
 local function setup_treesitter_hl(highlights, c)
   highlights["@variable"] = {
     fg = c.fg,
-    italic = M.config.enable_italics,
   }
-  highlights["@variable.builtin"] = { fg = c.orange, bold = M.config.enable_bold }
-  highlights["@variable.parameter"] = { fg = c.purple }
+  highlights["@variable.builtin"] = { fg = c.red, bold = M.config.enable_bold, italic = M.config.enable_italics }
+  highlights["@variable.parameter"] = { fg = c.orange }
   highlights["@variable.parameter.builtin"] = { fg = c.purple, bold = M.config.enable_bold }
   highlights["@variable.member"] = { fg = c.cyan }
 
-  highlights["@constant"] = { link = "Constant" }
-  highlights["@constant.builtin"] = { fg = c.orange, bold = M.config.enable_bold }
+  highlights["@constant"] = { link = "Constant", bold = M.config.enable_bold }
+  highlights["@constant.builtin"] = { fg = c.red, bold = M.config.enable_bold }
   highlights["@constant.macro"] = { fg = c.orange }
 
   highlights["@module"] = { fg = c.fg }
@@ -341,8 +351,6 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@string.special.symbol"] = { link = "Identifier" }
   highlights["@string.special.url"] = { fg = c.purple }
 
-  highlights["@punctuation.delimiter.regex"] = { link = "@string.regexp" }
-
   highlights["@character"] = { link = "Character" }
   highlights["@character.special"] = { link = "Character" }
 
@@ -352,7 +360,7 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@float"] = { link = "Number" }
 
   highlights["@type"] = { fg = c.orange }
-  highlights["@type.builtin"] = { fg = c.orange, bold = M.config.enable_bold }
+  highlights["@type.builtin"] = { fg = c.orange, bold = M.config.enable_bold, italic = M.config.enable_italics }
   highlights["@type.definition"] = { link = "Type" }
 
   highlights["@attribute"] = { fg = c.yellow }
@@ -361,7 +369,7 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@property"] = { fg = c.cyan }
 
   highlights["@function"] = { link = "Function" }
-  highlights["@function.builtin"] = { fg = c.blue, bold = M.config.enable_bold }
+  highlights["@function.builtin"] = { fg = c.cyan, bold = M.config.enable_bold }
 
   highlights["@function.call"] = { link = "Function" }
   highlights["@function.macro"] = { link = "Function" }
@@ -375,11 +383,11 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@keyword.modifier"] = { link = "Function" }
   highlights["@keyword.type"] = { link = "Function" }
   highlights["@keyword.coroutine"] = { link = "Function" }
-  highlights["@keyword.function"] = { fg = c.blue }
-  highlights["@keyword.operator"] = { fg = c.blue }
+  highlights["@keyword.function"] = { fg = c.purple, bold = M.config.enable_bold }
+  highlights["@keyword.operator"] = { fg = c.purple }
   highlights["@keyword.import"] = { link = "Include" }
   highlights["@keyword.repeat"] = { link = "Repeat" }
-  highlights["@keyword.return"] = { fg = c.blue }
+  highlights["@keyword.return"] = { fg = c.red, bold = M.config.enable_bold }
   highlights["@keyword.debug"] = { link = "Exception" }
   highlights["@keyword.exception"] = { link = "Exception" }
   highlights["@keyword.conditional"] = { link = "Conditional" }
@@ -388,12 +396,33 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@keyword.directive.define"] = { link = "Define" }
   highlights["@keyword.export"] = { fg = c.blue, italic = M.config.enable_italics }
 
+  highlights["@punctuation.delimiter.regex"] = { link = "@string.regexp" }
   highlights["@punctuation.delimiter"] = { link = "Delimiter" }
-  highlights["@punctuation.bracket"] = { fg = c.brown }
+  highlights["@punctuation.bracket"] = { link = "@constructor" }
   highlights["@punctuation.special"] = { link = "Special" }
 
   highlights["@comment"] = { link = "Comment" }
   highlights["@comment.documentation"] = { link = "Comment" }
+  highlights["@comment.todo"] = {
+    fg = c.yellow,
+    bg = blend(c.yellow, c.bg, 0.1),
+    bold = M.config.enable_bold,
+  }
+  highlights["@comment.note"] = {
+    fg = c.blue,
+    bg = blend(c.blue, c.bg, 0.1),
+    bold = M.config.enable_bold,
+  }
+  highlights["@comment.warning"] = {
+    fg = c.orange,
+    bg = blend(c.orange, c.bg, 0.1),
+    bold = M.config.enable_bold,
+  }
+  highlights["@comment.error"] = {
+    fg = c.red,
+    bg = blend(c.red, c.bg, 0.1),
+    bold = M.config.enable_bold,
+  }
 
   highlights["@markup.heading.1.markdown"] = { link = "markdownH1" }
   highlights["@markup.heading.2.markdown"] = { link = "markdownH2" }
@@ -451,10 +480,10 @@ end
 ---@param highlights table<string, table> The highlights table to setup
 ---@param c table<Base16.Group.Alias, string> The semantic color palette
 local function setup_diagnostics_hl(highlights, c)
-  highlights.DiagnosticError = { fg = c.red }
-  highlights.DiagnosticWarn = { fg = c.orange }
-  highlights.DiagnosticInfo = { fg = c.blue }
-  highlights.DiagnosticHint = { fg = c.purple }
+  highlights.DiagnosticError = { fg = c.red, bold = M.config.enable_bold }
+  highlights.DiagnosticWarn = { fg = c.orange, bold = M.config.enable_bold }
+  highlights.DiagnosticInfo = { fg = c.blue, bold = M.config.enable_bold }
+  highlights.DiagnosticHint = { fg = c.purple, bold = M.config.enable_bold }
   highlights.DiagnosticUnderlineError = { sp = c.red, undercurl = true }
   highlights.DiagnosticUnderlineWarn = { sp = c.orange, undercurl = true }
   highlights.DiagnosticUnderlineInfo = { sp = c.blue, undercurl = true }
@@ -491,6 +520,15 @@ local function setup_integration_hl(highlights, c)
   highlights.MiniDiffSignChange = { link = "DiffChange" }
   highlights.MiniDiffSignDelete = { link = "DiffDelete" }
 
+  -- Mini Files
+  highlights.MiniFilesBorder = { link = "FloatBorder" }
+  highlights.MiniFilesBorderModified = { link = "DiagnosticFloatingWarn" }
+  highlights.MiniFilesCursorLine = { link = "CursorLine" }
+  highlights.MiniFilesDirectory = { link = "Directory" }
+  highlights.MiniFilesFile = { fg = c.fg }
+  highlights.MiniFilesNormal = { link = "NormalFloat" }
+  highlights.MiniFilesTitle = { link = "FloatTitle" }
+
   -- Render Markdown
   highlights.RenderMarkdownH1Bg = { bg = c.red, blend = BLEND.medium }
   highlights.RenderMarkdownH2Bg = { bg = c.orange, blend = BLEND.medium }
@@ -523,6 +561,12 @@ local function setup_integration_hl(highlights, c)
 
   -- Grugfar
   highlights.GrugFarResultsMatch = { link = "IncSearch" }
+
+  -- Whichkey
+  highlights.WhichKey = { fg = c.blue, bold = true }
+  highlights.WhichKeyDesc = { fg = c.fg, italic = M.config.enable_italics }
+  highlights.WhichKeyGroup = { fg = c.purple, bold = true }
+  highlights.WhichKeySeparator = { fg = c.fg_dim }
 end
 
 local function apply_highlights()
