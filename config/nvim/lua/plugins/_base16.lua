@@ -22,8 +22,10 @@ function M.setup()
   ---@type Base16.Config
   local plugin_opts = {
     colors = pastel_twilight,
-    enable_bold = true,
-    enable_italics = true,
+    styles = {
+      italic = true,
+      bold = true,
+    },
     highlight_groups = {
       -- barline
       BarlineFileInfo = { fg = "yellow" }, -- match my tmux layout
