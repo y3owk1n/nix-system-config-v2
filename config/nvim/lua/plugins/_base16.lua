@@ -6,7 +6,9 @@ M.name = "base16"
 M.priority = 1
 
 M.registry = {
-  { src = vim.fn.stdpath("config") .. "/lua/custom-plugins/base16", name = "base16" },
+  { src = "https://github.com/y3owk1n/base16.nvim", name = "base16" },
+  -- { src = "local:base16.nvim", name = "base16" },
+  -- { src = vim.fn.stdpath("config") .. "/lua/custom-plugins/base16", name = "base16" },
 }
 
 function M.setup()
