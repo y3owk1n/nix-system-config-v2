@@ -1,3 +1,37 @@
+---@mod base16.nvim Base16 colorscheme plugin
+---@brief [[
+---Base16 is a highly configurable colorscheme engine for Neovim that
+---aims to not only covers base16 colorschemes, but also include features
+---that are built-in to most colorscheme plugins (e.g. dim_inactive_windows,
+---blends, italics, custom highlights, etc.)
+---
+---It allows defining a semantic color palette, generating highlight
+---groups automatically, and integrating with popular plugins.
+--
+---Features: ~
+---  • Semantic color aliases (bg, fg, red, etc.)
+---  • Configurable style options (bold, italic, blends, transparency)
+---  • Automatic Neovim UI, syntax, Treesitter, and LSP highlights
+---  • Plugin integrations (Mini, Blink, RenderMarkdown, etc.)
+--
+---Usage: ~
+--->lua
+---  require("base16").setup({
+---    colors = {
+---      base00 = "#1f1f28", base01 = "#2a2a37", base02 = "#3a3a4e",
+---      base03 = "#4e4e5e", base04 = "#9e9eaf", base05 = "#c5c5da",
+---      base06 = "#dfdfef", base07 = "#e6e6f0", base08 = "#ff5f87",
+---      base09 = "#ff8700", base0A = "#ffaf00", base0B = "#5fff87",
+---      base0C = "#5fd7ff", base0D = "#5fafff", base0E = "#af87ff",
+---      base0F = "#d7875f",
+---    },
+---  })
+---  vim.cmd.colorscheme("base16")
+---<
+---@brief ]]
+
+---@toc base16.contents
+
 ---@class Base16
 local M = {}
 
@@ -99,9 +133,47 @@ local did_setup = false
 ---@field folke_which_key_nvim? boolean Enable Which Key
 ---@field folke_flash_nvim? boolean Enable Flash
 
----@alias Base16.Group.Raw "base00"|"base01"|"base02"|"base03"|"base04"|"base05"|"base06"|"base07"|"base08"|"base09"|"base0A"|"base0B"|"base0C"|"base0D"|"base0E"|"base0F"
----@alias Base16.Group.Alias "bg"|"bg_dim"|"bg_light"|"fg_dim"|"fg_dark"|"fg"|"fg_light"|"fg_bright"|"red"|"orange"|"yellow"|"green"|"cyan"|"blue"|"purple"|"brown"
+---@alias Base16.Group.Raw
+---| '"base00"' # Default background (Semantic Alias: bg)
+---| '"base01"' # Lighter Background (Used for status bars) (Semantic Alias: bg_dim)
+---| '"base02"' # Selection background (Semantic Alias: bg_light)
+---| '"base03"' # Comments, Invisibles, Line Highlighting (Semantic Alias: fg_dim)
+---| '"base04"' # Dark Foreground (Used for status bars) (Semantic Alias: fg_dark)
+---| '"base05"' # Default Foreground, Caret, Delimiters, Operators (Semantic Alias: fg)
+---| '"base06"' # Light foreground (Semantic Alias: fg_light)
+---| '"base07"' # The Lightest Foreground (Semantic Alias: fg_bright)
+---| '"base08"' # Variables, XML Tags, Markup Link Text, Markup Lists, Diff Deleted (Semantic Alias: red)
+---| '"base09"' # Integers, Boolean, Constants, XML Attributes, Markup Link Url (Semantic Alias: orange)
+---| '"base0A"' # Classes, Markup Bold, Search Text Background (Semantic Alias: yellow)
+---| '"base0B"' # Strings, Inherited Class, Markup Code, Diff Inserted (Semantic Alias: green)
+---| '"base0C"' # Support, Regular Expressions, Escape Characters, Markup Quotes (Semantic Alias: cyan)
+---| '"base0D"' # Functions, Methods, Attribute IDs, Headings (Semantic Alias: blue)
+---| '"base0E"' # Keywords, Storage, Selector, Markup Italic, Diff Changed (Semantic Alias: purple)
+---| '"base0F"' # Deprecated, Opening/Closing Embedded Language Tags, e.g. <?php ?> (Semantic Alias: brown)
 
+---@alias Base16.Group.Alias
+---| '"bg"' # Default background (Raw Base16: base00)
+---| '"bg_dim"' # Lighter Background (Used for status bars) (Raw Base16: base01)
+---| '"bg_light"' # Selection background (Raw Base16: base02)
+---| '"fg_dim"' # Comments, Invisibles, Line Highlighting (Raw Base16: base03)
+---| '"fg_dark"' # Dark Foreground (Used for status bars) (Raw Base16: base04)
+---| '"fg"' # Default Foreground, Caret, Delimiters, Operators (Raw Base16: base05)
+---| '"fg_light"' # Light foreground (Raw Base16: base06)
+---| '"fg_bright"' # The Lightest Foreground (Raw Base16: base07)
+---| '"red"' # Variables, XML Tags, Markup Link Text, Markup Lists, Diff Deleted (Raw Base16: base08)
+---| '"orange"' # Integers, Boolean, Constants, XML Attributes, Markup Link Url (Raw Base16: base09)
+---| '"yellow"' # Classes, Markup Bold, Search Text Background (Raw Base16: base0A)
+---| '"green"' # Strings, Inherited Class, Markup Code, Diff Insert
+---| '"cyan"' # Support, Regular Expressions, Escape Characters, Markup Quotes (Raw Base16: base0C)
+---| '"blue"' # Functions, Methods, Attribute IDs, Headings (Raw Base16: base0D)
+---| '"purple"' # Keywords, Storage, Selector, Markup Italic, Diff Changed (Raw Base16: base0E)
+---| '"brown"' # Deprecated, Opening/Closing Embedded Language Tags, e.g. <?php ?> (Raw Base16: base0F)
+
+-- ------------------------------------------------------------------
+-- Utility
+-- ------------------------------------------------------------------
+
+---@private
 ---Convert a color name to RGB values
 ---@param color string
 ---@return number[] rgb The RGB values
@@ -121,6 +193,7 @@ end
 ---@type table<string, string>
 local blend_cache = {}
 
+---@private
 ---@param fg string Foreground color
 ---@param bg string Background color
 ---@param alpha number Between 0 (background) and 1 (foreground)
@@ -145,6 +218,7 @@ local function blend(fg, bg, alpha)
   return result
 end
 
+---@private
 ---Check if a plugin is enabled in config
 ---@param name string The plugin name
 local function has_plugin(name)
@@ -203,6 +277,7 @@ local function add_semantic_palette(raw_colors)
   })
 end
 
+---@private
 ---Helper function for consistent transparency handling
 ---@param normal_bg string The normal background color
 ---@param transparent_override? string The transparent override color
@@ -214,6 +289,7 @@ local function get_bg(normal_bg, transparent_override)
   return normal_bg
 end
 
+---@private
 ---Get a color from the standardized color groups
 ---@param group string The color group (e.g., "syntax", "states")
 ---@param key string The color key within the group
@@ -234,9 +310,10 @@ local function get_group_color(group, key, c)
 end
 
 -- ------------------------------------------------------------------
--- Highlight Setup Functions (Grouped by Category)
+-- Highlight Setup Functions
 -- ------------------------------------------------------------------
 
+---@private
 ---Setup editor highlights (UI elements)
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -330,6 +407,7 @@ local function setup_editor_hl(highlights, c)
   highlights.Substitute = { link = "IncSearch" }
 end
 
+---@private
 ---Setup popup menu highlights
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -360,6 +438,7 @@ local function setup_popup_hl(highlights, c)
   }
 end
 
+---@private
 ---Setup status and tab line highlights
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -387,6 +466,7 @@ local function setup_statusline_hl(highlights, c)
   }
 end
 
+---@private
 ---Setup message highlights
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -405,6 +485,7 @@ local function setup_message_hl(highlights, c)
   highlights.NvimInternalError = { link = "ErrorMsg" }
 end
 
+---@private
 ---Setup diff highlights
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -415,6 +496,7 @@ local function setup_diff_hl(highlights, c)
   highlights.DiffText = { fg = get_group_color("diff", "text", c) }
 end
 
+---@private
 ---Setup spelling highlights
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -425,6 +507,7 @@ local function setup_spelling_hl(highlights, c)
   highlights.SpellRare = { sp = get_group_color("states", "hint", c), undercurl = true }
 end
 
+---@private
 ---Setup syntax highlights
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -519,6 +602,7 @@ local function setup_syntax_hl(highlights, c)
   highlights.healthWarning = { fg = get_group_color("states", "warning", c) }
 end
 
+---@private
 ---Setup treesitter highlights
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -682,6 +766,7 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@lsp.typemod.variable.injected"] = { link = "@variable" }
 end
 
+---@private
 ---Setup markdown highlights
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -745,6 +830,7 @@ local function setup_markdown_hl(highlights, c)
   highlights["@tag.delimiter"] = { fg = get_group_color("syntax", "delimiter", c) }
 end
 
+---@private
 ---Setup diagnostics highlights
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -786,6 +872,7 @@ local function setup_diagnostics_hl(highlights, c)
   }
 end
 
+---@private
 ---Setup LSP highlights
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -795,6 +882,7 @@ local function setup_lsp_hl(highlights, c)
   highlights.LspReferenceWrite = { bg = get_group_color("backgrounds", "light", c) }
 end
 
+---@private
 ---Setup terminal highlights
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -813,6 +901,7 @@ local function setup_terminal_hl(highlights, c)
   }
 end
 
+---@private
 ---Setup floating window highlights
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -840,6 +929,7 @@ local function setup_float_hl(highlights, c)
   }
 end
 
+---@private
 ---Setup plugin integration highlights
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
@@ -968,7 +1058,7 @@ local function setup_integration_hl(highlights, c)
     highlights.UgCursor = { bg = get_group_color("backgrounds", "light", c) }
   end
 
-  -- Blink Cmp - comprehensive completion menu styling
+  -- Blink Cmp
   if has_plugin("saghen_blink_cmp") then
     highlights.BlinkCmpDoc = { link = "Normal" }
     highlights.BlinkCmpDocSeparator = { fg = get_group_color("foregrounds", "dim", c) }
@@ -1021,7 +1111,7 @@ local function setup_integration_hl(highlights, c)
     highlights.BlinkCmpMenuBorder = { link = "FloatBorder" }
   end
 
-  -- Grug Far - search and replace tool
+  -- Grug Far
   if has_plugin("magicduck_grug_far_nvim") then
     highlights.GrugFarHelpHeader = { fg = get_group_color("states", "info", c) }
     highlights.GrugFarHelpHeaderKey = { fg = get_group_color("syntax", "constant", c) }
@@ -1078,7 +1168,7 @@ local function setup_integration_hl(highlights, c)
     highlights.WhichKeyValue = { fg = get_group_color("syntax", "constant", c) }
   end
 
-  -- Flash (jump/search plugin)
+  -- Flash
   if has_plugin("folke_flash_nvim") then
     highlights.FlashLabel = {
       fg = get_group_color("backgrounds", "normal", c),
@@ -1087,6 +1177,7 @@ local function setup_integration_hl(highlights, c)
   end
 end
 
+---@private
 ---Apply all highlights with standardized grouping
 ---@return nil
 local function apply_highlights()
@@ -1300,6 +1391,11 @@ local _cached_colors = nil
 ---Setup the base16 plugin
 ---@param user_config? Base16.Config
 ---@return nil
+---@usage [[
+---require("base16").setup({
+---  colors = { base00 = "#1f1f28", base01 = "#2a2a37", ... }
+---})
+---@usage ]]
 function M.setup(user_config)
   if did_setup then
     vim.notify("Base16: Plugin already set up", vim.log.levels.WARN)
@@ -1322,6 +1418,9 @@ function M.setup(user_config)
 end
 
 ---Setup the colorscheme
+---@usage [[
+---vim.cmd.colorscheme("base16")
+---@usage ]]
 function M.colorscheme()
   -- Clear existing highlights
   vim.cmd("hi clear")
@@ -1471,103 +1570,6 @@ function M.validate_colors(colors)
   end
 
   return #missing == 0, missing
-end
-
----Create a preview of the theme colors
----@return table<string, string> preview A table of semantic names to hex colors for preview
-function M.preview_colors()
-  local colors = M.colors()
-  if not colors then
-    return {}
-  end
-
-  return {
-    -- Backgrounds
-    ["Background"] = colors.bg,
-    ["Background Dim"] = colors.bg_dim,
-    ["Background Light"] = colors.bg_light,
-
-    -- Foregrounds
-    ["Foreground"] = colors.fg,
-    ["Foreground Dim"] = colors.fg_dim,
-    ["Foreground Dark"] = colors.fg_dark,
-    ["Foreground Light"] = colors.fg_light,
-    ["Foreground Bright"] = colors.fg_bright,
-
-    -- Semantic Colors
-    ["Red (Variables/Errors)"] = colors.red,
-    ["Orange (Numbers/Constants)"] = colors.orange,
-    ["Yellow (Classes/Types)"] = colors.yellow,
-    ["Green (Strings/Success)"] = colors.green,
-    ["Cyan (Support/Operators)"] = colors.cyan,
-    ["Blue (Functions/Info)"] = colors.blue,
-    ["Purple (Keywords/Hints)"] = colors.purple,
-    ["Brown (Delimiters)"] = colors.brown,
-  }
-end
-
----Generate a minimal theme configuration example
----@return string config_example Lua code for a basic theme setup
-function M.generate_config_example()
-  return [[
--- Example Base16 theme configuration
-local base16 = require("your-base16-theme")
-
-base16.setup({
-  colors = {
-    -- Background colors (darkest to lightest)
-    base00 = "#181818", -- Default background
-    base01 = "#282828", -- Lighter background (status bars)
-    base02 = "#383838", -- Selection background
-    base03 = "#585858", -- Comments, invisibles
-    base04 = "#b8b8b8", -- Dark foreground (status bars)
-    base05 = "#d8d8d8", -- Default foreground
-    base06 = "#e8e8e8", -- Light foreground
-    base07 = "#f8f8f8", -- Lightest foreground
-
-    -- Accent colors
-    base08 = "#ab4642", -- Red: Variables, XML Tags, Diff Deleted
-    base09 = "#dc9656", -- Orange: Integers, Constants, XML Attributes
-    base0A = "#f7ca88", -- Yellow: Classes, Search Text Background
-    base0B = "#a1b56c", -- Green: Strings, Diff Inserted
-    base0C = "#86c1b9", -- Cyan: Support, Regular Expressions
-    base0D = "#7cafc2", -- Blue: Functions, Methods, Headings
-    base0E = "#ba8baf", -- Purple: Keywords, Storage, Diff Changed
-    base0F = "#a16946", -- Brown: Deprecated, Language Tags
-  },
-
-  styles = {
-    italic = true,
-    bold = true,
-    transparency = false,
-    dim_inactive_windows = false,
-  },
-
-  plugins = {
-    enable_all = true,
-    -- Or enable specific plugins:
-    -- ["nvim-treesitter/nvim-treesitter"] = true,
-    -- ["folke/which-key.nvim"] = true,
-  },
-
-  -- Custom highlight groups
-  highlight_groups = {
-    -- Override or add custom highlights
-    MyCustomGroup = { fg = "red", bg = "bg", bold = true },
-  },
-
-  -- Hook to modify highlights before they're applied
-  before_highlight = function(group, opts, colors)
-    -- Modify opts here if needed
-    if group == "Comment" then
-      opts.italic = false -- Force comments to not be italic
-    end
-  end,
-})
-
--- Apply the colorscheme
-base16.colorscheme()
-]]
 end
 
 return M
