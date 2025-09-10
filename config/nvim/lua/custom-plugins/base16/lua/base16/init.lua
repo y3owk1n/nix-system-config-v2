@@ -852,12 +852,6 @@ function M.colorscheme()
   apply_highlights()
 end
 
----Auto command to load colorscheme
----@return nil
-function M.load()
-  M.colorscheme()
-end
-
 ---Get the semantic color palette
 ---@return table<Base16.Group.Alias, string>|nil colors The semantic color palette, or nil if not set up
 function M.colors()

@@ -50,7 +50,7 @@ function M.setup()
 
   plugin.setup(plugin_opts)
 
-  plugin.load()
+  vim.cmd.colorscheme("base16")
 end
 
 return M
