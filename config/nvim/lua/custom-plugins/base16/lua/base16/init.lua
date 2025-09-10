@@ -35,7 +35,53 @@
 ---@class Base16
 local M = {}
 
+---@class Base16.Validator
+local V = {}
+
+---@class Base16.Utility
+local U = {}
+
+-- ------------------------------------------------------------------
+-- States & caches
+-- ------------------------------------------------------------------
+
 local did_setup = false
+
+---@type table<string, string>|nil
+local _blend_cache = nil
+
+---@type Base16.Group.Alias[]|nil
+local _base16_aliases = nil
+
+---@type Base16.Group.Raw[]|nil
+local _base16_raw = nil
+
+local _color_cache = nil
+
+-- ------------------------------------------------------------------
+-- Constants
+-- ------------------------------------------------------------------
+
+---Reference `https://github.com/tinted-theming/home/blob/main/styling.md`
+---@type table<Base16.Group.Alias, Base16.Group.Raw>
+local base16_alias_map = {
+  bg = "base00", -- Default background
+  bg_dim = "base01", -- Lighter Background (Used for status bars)
+  bg_light = "base02", -- Selection background
+  fg_dim = "base03", -- Comments, Invisibles, Line Highlighting
+  fg_dark = "base04", -- Dark Foreground (Used for status bars)
+  fg = "base05", -- Default Foreground, Caret, Delimiters, Operators
+  fg_light = "base06", -- Light foreground
+  fg_bright = "base07", -- The Lightest Foreground
+  red = "base08", -- Variables, XML Tags, Markup Link Text, Markup Lists, Diff Deleted
+  orange = "base09", -- Integers, Boolean, Constants, XML Attributes, Markup Link Url
+  yellow = "base0A", -- Classes, Markup Bold, Search Text Background
+  green = "base0B", -- Strings, Inherited Class, Markup Code, Diff Inserted
+  cyan = "base0C", -- Support, Regular Expressions, Escape Characters, Markup Quotes
+  blue = "base0D", -- Functions, Methods, Attribute IDs, Headings
+  purple = "base0E", -- Keywords, Storage, Selector, Markup Italic, Diff Changed
+  brown = "base0F", -- Deprecated, Opening/Closing Embedded Language Tags, e.g. <?php ?>
+}
 
 -- ------------------------------------------------------------------
 -- Types
@@ -177,7 +223,7 @@ local did_setup = false
 ---Convert a color name to RGB values
 ---@param color string
 ---@return number[] rgb The RGB values
-local function color_to_rgb(color)
+function U.color_to_rgb(color)
   local function byte(value, offset)
     return bit.band(bit.rshift(value, offset), 0xFF)
   end
@@ -190,22 +236,23 @@ local function color_to_rgb(color)
   return { byte(new_color, 16), byte(new_color, 8), byte(new_color, 0) }
 end
 
----@type table<string, string>
-local blend_cache = {}
-
 ---@private
 ---@param fg string Foreground color
 ---@param bg string Background color
 ---@param alpha number Between 0 (background) and 1 (foreground)
 ---@return string blended_color The blended color as hex
-local function blend(fg, bg, alpha)
+function U.blend(fg, bg, alpha)
   local cache_key = fg .. bg .. alpha
-  if blend_cache[cache_key] then
-    return blend_cache[cache_key]
+  if not _blend_cache then
+    _blend_cache = {}
   end
 
-  local fg_rgb = color_to_rgb(fg)
-  local bg_rgb = color_to_rgb(bg)
+  if _blend_cache[cache_key] then
+    return _blend_cache[cache_key]
+  end
+
+  local fg_rgb = U.color_to_rgb(fg)
+  local bg_rgb = U.color_to_rgb(bg)
 
   local function blend_channel(i)
     local ret = (alpha * fg_rgb[i] + ((1 - alpha) * bg_rgb[i]))
@@ -214,14 +261,14 @@ local function blend(fg, bg, alpha)
 
   local result = string.format("#%02X%02X%02X", blend_channel(1), blend_channel(2), blend_channel(3))
 
-  blend_cache[cache_key] = result
+  _blend_cache[cache_key] = result
   return result
 end
 
 ---@private
 ---Check if a plugin is enabled in config
 ---@param name string The plugin name
-local function has_plugin(name)
+function U.has_plugin(name)
   local plugin = M.config.plugins[name]
 
   if not plugin then
@@ -231,58 +278,36 @@ local function has_plugin(name)
   return plugin
 end
 
----Reference `https://github.com/tinted-theming/home/blob/main/styling.md`
----@type table<Base16.Group.Alias, Base16.Group.Raw>
-local base16_alias = {
-  bg = "base00", -- Default background
-  bg_dim = "base01", -- Lighter Background (Used for status bars)
-  bg_light = "base02", -- Selection background
-  fg_dim = "base03", -- Comments, Invisibles, Line Highlighting
-  fg_dark = "base04", -- Dark Foreground (Used for status bars)
-  fg = "base05", -- Default Foreground, Caret, Delimiters, Operators
-  fg_light = "base06", -- Light foreground
-  fg_bright = "base07", -- The Lightest Foreground
-  red = "base08", -- Variables, XML Tags, Markup Link Text, Markup Lists, Diff Deleted
-  orange = "base09", -- Integers, Boolean, Constants, XML Attributes, Markup Link Url
-  yellow = "base0A", -- Classes, Markup Bold, Search Text Background
-  green = "base0B", -- Strings, Inherited Class, Markup Code, Diff Inserted
-  cyan = "base0C", -- Support, Regular Expressions, Escape Characters, Markup Quotes
-  blue = "base0D", -- Functions, Methods, Attribute IDs, Headings
-  purple = "base0E", -- Keywords, Storage, Selector, Markup Italic, Diff Changed
-  brown = "base0F", -- Deprecated, Opening/Closing Embedded Language Tags, e.g. <?php ?>
-}
-
 ---@private
 ---Add semantic aliases to the raw colors
 ---@param raw_colors table<Base16.Group.Raw, string>
 ---@return table<Base16.Group.Alias, string>
-local function add_semantic_palette(raw_colors)
+function U.add_semantic_palette(raw_colors)
   return setmetatable({}, {
     __index = function(_, k)
-      -- 1. Exact match in the raw palette?
+      -- Exact match in the raw palette?
       local v = raw_colors[k]
       if v then
         return v
       end
 
-      -- 2. Semantic alias?
-      local canonical = base16_alias[k]
+      -- Semantic alias
+      local canonical = base16_alias_map[k]
       if canonical then
         return raw_colors[canonical]
       end
 
-      -- 3. Nothing found.
       return nil
     end,
   })
 end
 
 ---@private
----Helper function for consistent transparency handling
+---Consistent transparency handling
 ---@param normal_bg string The normal background color
 ---@param transparent_override? string The transparent override color
 ---@return string The background color
-local function get_bg(normal_bg, transparent_override)
+function U.get_bg(normal_bg, transparent_override)
   if M.config.styles.transparency then
     return transparent_override or "NONE"
   end
@@ -290,12 +315,12 @@ local function get_bg(normal_bg, transparent_override)
 end
 
 ---@private
----Get a color from the standardized color groups
+---Get a color from the color groups
 ---@param group string The color group (e.g., "syntax", "states")
 ---@param key string The color key within the group
 ---@param c table<Base16.Group.Alias, string> The semantic color palette
 ---@return string color The resolved color
-local function get_group_color(group, key, c)
+function U.get_group_color(group, key, c)
   local color_group = M.config.color_groups[group]
   if not color_group or not color_group[key] then
     return c.fg -- fallback
@@ -309,6 +334,633 @@ local function get_group_color(group, key, c)
   end
 end
 
+---@private
+---Check if a value is a valid hex color
+---@param color string The color value to validate
+---@return boolean valid True if valid hex color
+---@return string? error Error message if invalid
+function U.is_valid_hex_color(color)
+  if type(color) ~= "string" then
+    return false, "must be a string"
+  end
+
+  -- Allow "NONE" for transparency
+  if color == "NONE" then
+    return true
+  end
+
+  -- Check hex color format
+  if not color:match("^#[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]$") then
+    return false, "must be a valid hex color (e.g., #ffffff) or 'NONE'"
+  end
+
+  return true
+end
+
+---@private
+---Validate blend value
+---@param blend_value number The blend value to validate
+---@return boolean valid True if valid
+---@return string? error Error message if invalid
+function U.is_valid_blend(blend_value)
+  if type(blend_value) ~= "number" then
+    return false, "must be a number"
+  end
+
+  if blend_value < 0 or blend_value > 100 then
+    return false, "must be between 0 and 100"
+  end
+
+  return true
+end
+
+---@private
+---Validate plugin name format
+---@param plugin_name string The plugin name to validate
+---@return boolean valid True if valid
+---@return string? error Error message if invalid
+function U.is_valid_plugin_name(plugin_name)
+  if type(plugin_name) ~= "string" then
+    return false, "must be a string"
+  end
+
+  -- Check if it matches expected plugin naming convention
+  if not plugin_name:match("^[a-zA-Z0-9_][a-zA-Z0-9_]*$") then
+    return false, "must contain only alphanumeric characters and underscores"
+  end
+
+  return true
+end
+
+---@private
+---Validate color group color value (can be string or function)
+---@param color Base16.Config.ColorGroups.Color The color value to validate
+---@param group_name string The group name for error context
+---@param key_name string The key name for error context
+---@return boolean valid True if valid
+---@return string? error Error message if invalid
+function U.is_valid_color_group_color(color, group_name, key_name)
+  local base16_aliases = _base16_aliases or U.get_base16_aliases()
+  local base16_raw = _base16_raw or U.get_base16_raw()
+
+  if type(color) == "string" then
+    -- Check if it's a known alias
+    for _, alias in ipairs(base16_aliases) do
+      if color == alias then
+        return true
+      end
+    end
+
+    -- Check if it's a raw base16 color
+    for _, raw in ipairs(base16_raw) do
+      if color == raw then
+        return true
+      end
+    end
+
+    -- Check if it's a hex color
+    local valid, err = U.is_valid_hex_color(color)
+    if not valid then
+      return false, string.format("in %s.%s: %s", group_name, key_name, err)
+    end
+
+    return true
+  elseif type(color) == "function" then
+    return true -- Functions are validated at runtime
+  else
+    return false, string.format("in %s.%s: must be a string (color alias/hex) or function", group_name, key_name)
+  end
+end
+
+---Get array of all base16 semantic aliases
+---@return Base16.Group.Alias[]
+function U.get_base16_aliases()
+  if not _base16_aliases then
+    _base16_aliases = vim.tbl_keys(base16_alias_map)
+    table.sort(_base16_aliases) -- For consistent ordering
+  end
+  return _base16_aliases
+end
+
+---Get array of all base16 raw color names
+---@return Base16.Group.Raw[]
+function U.get_base16_raw()
+  if not _base16_raw then
+    -- Create sorted list of unique raw values
+    local raw_set = {}
+    for _, raw_color in pairs(base16_alias_map) do
+      raw_set[raw_color] = true
+    end
+
+    _base16_raw = vim.tbl_keys(raw_set)
+    table.sort(_base16_raw) -- For consistent ordering
+  end
+  return _base16_raw
+end
+
+---Check if a color name is a valid base16 alias
+---@param color_name string
+---@return boolean
+function U.is_base16_alias(color_name)
+  return base16_alias_map[color_name] ~= nil
+end
+
+---Check if a color name is a valid base16 raw color
+---@param color_name string
+---@return boolean
+function U.is_base16_raw(color_name)
+  for _, raw_color in pairs(base16_alias_map) do
+    if raw_color == color_name then
+      return true
+    end
+  end
+  return false
+end
+
+---Check if a color name is any valid base16 reference (alias or raw)
+---@param color_name string
+---@return boolean
+function U.is_valid_base16_color(color_name)
+  return U.is_base16_alias(color_name) or U.is_base16_raw(color_name)
+end
+
+---Get the raw color for an alias, or return the input if it's already raw
+---@param color_name string
+---@return string|nil
+function U.resolve_color_name(color_name)
+  -- If it's an alias, return the raw color
+  if base16_alias_map[color_name] then
+    return base16_alias_map[color_name]
+  end
+
+  -- If it's already a raw color, return it
+  if U.is_base16_raw(color_name) then
+    return color_name
+  end
+
+  -- Not a base16 color
+  return nil
+end
+
+-- ------------------------------------------------------------------
+-- Validators
+-- ------------------------------------------------------------------
+
+---Validate colors configuration
+---@param colors table<Base16.Group.Raw, string> Colors configuration
+---@return boolean valid True if valid
+---@return table<string, string> errors Map of error keys to messages
+function V.validate_colors(colors)
+  local errors = {}
+
+  if not colors or type(colors) ~= "table" then
+    errors.colors = "must be a table"
+    return false, errors
+  end
+
+  local required_colors = _base16_raw or U.get_base16_raw()
+
+  -- Check for missing colors
+  for _, color_key in ipairs(required_colors) do
+    if not colors[color_key] then
+      errors["colors." .. color_key] = "required base16 color is missing"
+    else
+      local valid, err = U.is_valid_hex_color(colors[color_key])
+      if not valid then
+        errors["colors." .. color_key] = err
+      end
+    end
+  end
+
+  -- Check for unexpected colors
+  for color_key, _ in pairs(colors) do
+    local found = false
+    for _, required in ipairs(required_colors) do
+      if color_key == required then
+        found = true
+        break
+      end
+    end
+    if not found then
+      errors["colors." .. color_key] = "unknown color key (expected base00-base0F)"
+    end
+  end
+
+  return next(errors) == nil, errors
+end
+
+---Validate styles configuration
+---@param styles Base16.Config.Styles Styles configuration
+---@return boolean valid True if valid
+---@return table<string, string> errors Map of error keys to messages
+function V.validate_styles(styles)
+  local errors = {}
+
+  if not styles then
+    return true, errors -- styles is optional
+  end
+
+  if type(styles) ~= "table" then
+    errors.styles = "must be a table"
+    return false, errors
+  end
+
+  -- Validate boolean style options
+  local boolean_options = { "italic", "bold", "transparency", "dim_inactive_windows" }
+  for _, option in ipairs(boolean_options) do
+    if styles[option] ~= nil and type(styles[option]) ~= "boolean" then
+      errors["styles." .. option] = "must be a boolean"
+    end
+  end
+
+  -- Validate blends
+  if styles.blends then
+    if type(styles.blends) ~= "table" then
+      errors["styles.blends"] = "must be a table"
+    else
+      local blend_keys = { "subtle", "medium", "strong", "super" }
+      for _, key in ipairs(blend_keys) do
+        if styles.blends[key] ~= nil then
+          local valid, err = U.is_valid_blend(styles.blends[key])
+          if not valid then
+            errors["styles.blends." .. key] = err
+          end
+        end
+      end
+
+      -- Check for unexpected blend keys
+      for key, _ in pairs(styles.blends) do
+        local found = false
+        for _, expected in ipairs(blend_keys) do
+          if key == expected then
+            found = true
+            break
+          end
+        end
+        if not found then
+          errors["styles.blends." .. key] = "unknown blend key (expected: subtle, medium, strong, super)"
+        end
+      end
+    end
+  end
+
+  -- Check for unexpected style keys
+  local valid_keys = { "italic", "bold", "transparency", "dim_inactive_windows", "blends" }
+  for key, _ in pairs(styles) do
+    local found = false
+    for _, valid_key in ipairs(valid_keys) do
+      if key == valid_key then
+        found = true
+        break
+      end
+    end
+    if not found then
+      errors["styles." .. key] = "unknown style option"
+    end
+  end
+
+  return next(errors) == nil, errors
+end
+
+---Validate plugins configuration
+---@param plugins Base16.Config.Plugins Plugins configuration
+---@return boolean valid True if valid
+---@return table<string, string> errors Map of error keys to messages
+function V.validate_plugins(plugins)
+  local errors = {}
+
+  if not plugins then
+    return true, errors -- plugins is optional
+  end
+
+  if type(plugins) ~= "table" then
+    errors.plugins = "must be a table"
+    return false, errors
+  end
+
+  -- Validate known plugin options
+  local known_plugins = {
+    "enable_all",
+    "nvim_mini_mini_icons",
+    "nvim_mini_mini_diff",
+    "nvim_mini_mini_files",
+    "nvim_mini_mini_pick",
+    "meandering_programmer_render_markdown_nvim",
+    "y3owk1n_undo_glow_nvim",
+    "saghen_blink_cmp",
+    "magicduck_grug_far_nvim",
+    "folke_which_key_nvim",
+    "folke_flash_nvim",
+  }
+
+  for key, value in pairs(plugins) do
+    -- Validate plugin name format
+    local valid_name, name_err = U.is_valid_plugin_name(key)
+    if not valid_name then
+      errors["plugins." .. key] = "invalid plugin name: " .. name_err
+    end
+
+    -- Validate boolean value
+    if type(value) ~= "boolean" then
+      errors["plugins." .. key] = "must be a boolean"
+    end
+
+    -- Warn about unknown plugins (not an error, just informational)
+    local is_known = false
+    for _, known in ipairs(known_plugins) do
+      if key == known then
+        is_known = true
+        break
+      end
+    end
+    if not is_known and key ~= "enable_all" then
+      -- This is just a warning, not an error
+      vim.notify("Base16: Unknown plugin: " .. key, vim.log.levels.WARN)
+    end
+  end
+
+  return next(errors) == nil, errors
+end
+
+---Validate color groups configuration
+---@param color_groups Base16.Config.ColorGroups Color groups configuration
+---@return boolean valid True if valid
+---@return table<string, string> errors Map of error keys to messages
+function V.validate_color_groups(color_groups)
+  local errors = {}
+
+  if not color_groups then
+    return true, errors -- color_groups is optional
+  end
+
+  if type(color_groups) ~= "table" then
+    errors.color_groups = "must be a table"
+    return false, errors
+  end
+
+  local group_schemas = {
+    backgrounds = { "normal", "dim", "light", "selection", "cursor_line", "cursor_column" },
+    foregrounds = { "normal", "dim", "dark", "light", "bright", "comment", "line_number" },
+    syntax = {
+      "variable",
+      "constant",
+      "string",
+      "number",
+      "boolean",
+      "keyword",
+      "function_name",
+      "type",
+      "comment",
+      "operator",
+      "delimiter",
+    },
+    states = { "error", "warning", "info", "hint", "success" },
+    diff = { "added", "removed", "changed", "text" },
+    search = { "match", "current", "incremental" },
+  }
+
+  for group_name, group_config in pairs(color_groups) do
+    if not group_schemas[group_name] then
+      errors["color_groups." .. group_name] = "unknown color group"
+    else
+      if type(group_config) ~= "table" then
+        errors["color_groups." .. group_name] = "must be a table"
+      else
+        -- Validate keys within the group
+        for key, value in pairs(group_config) do
+          local found = false
+          for _, valid_key in ipairs(group_schemas[group_name]) do
+            if key == valid_key then
+              found = true
+              break
+            end
+          end
+
+          if not found then
+            errors["color_groups." .. group_name .. "." .. key] = "unknown color key"
+          else
+            local valid, err = U.is_valid_color_group_color(value, group_name, key)
+            if not valid then
+              errors["color_groups." .. group_name .. "." .. key] = err
+            end
+          end
+        end
+      end
+    end
+  end
+
+  return next(errors) == nil, errors
+end
+
+---Validate highlight groups configuration
+---@param highlight_groups table<string, vim.api.keyset.highlight> Highlight groups configuration
+---@return boolean valid True if valid
+---@return table<string, string> errors Map of error keys to messages
+function V.validate_highlight_groups(highlight_groups)
+  local errors = {}
+
+  if not highlight_groups then
+    return true, errors -- highlight_groups is optional
+  end
+
+  if type(highlight_groups) ~= "table" then
+    errors.highlight_groups = "must be a table"
+    return false, errors
+  end
+
+  for group_name, highlight in pairs(highlight_groups) do
+    if type(group_name) ~= "string" then
+      errors["highlight_groups.<invalid_key>"] = "highlight group names must be strings"
+      goto continue
+    end
+
+    if type(highlight) ~= "table" then
+      errors["highlight_groups." .. group_name] = "must be a table"
+      goto continue
+    end
+
+    -- Validate highlight attributes
+    for attr, value in pairs(highlight) do
+      if attr == "fg" or attr == "bg" or attr == "sp" then
+        if type(value) ~= "string" then
+          errors["highlight_groups." .. group_name .. "." .. attr] = "color attributes must be strings"
+        else
+          local base16_aliases = _base16_aliases or U.get_base16_aliases()
+          local base16_raw = _base16_raw or U.get_base16_raw()
+          -- Check if it's a known base16 alias
+          local is_alias = false
+          for _, alias in ipairs(base16_aliases) do
+            if value == alias then
+              is_alias = true
+              break
+            end
+          end
+
+          -- Check if it's a raw base16 color
+          local is_raw = false
+          if not is_alias then
+            for _, raw in ipairs(base16_raw) do
+              if value == raw then
+                is_raw = true
+                break
+              end
+            end
+          end
+
+          -- If it's not an alias or raw color, validate as hex
+          if not is_alias and not is_raw then
+            local valid, err = U.is_valid_hex_color(value)
+            if not valid then
+              errors["highlight_groups." .. group_name .. "." .. attr] = err
+            end
+          end
+        end
+      elseif attr == "blend" then
+        if type(value) ~= "number" or value < 0 or value > 100 then
+          errors["highlight_groups." .. group_name .. "." .. attr] = "must be a number between 0 and 100"
+        end
+      elseif attr == "link" then
+        if type(value) ~= "string" then
+          errors["highlight_groups." .. group_name .. "." .. attr] = "must be a string"
+        end
+      else
+        -- Boolean attributes (bold, italic, underline, etc.)
+        local boolean_attrs = {
+          "bold",
+          "italic",
+          "underline",
+          "undercurl",
+          "underdouble",
+          "underdotted",
+          "underdashed",
+          "strikethrough",
+          "reverse",
+          "standout",
+          "nocombine",
+        }
+        local is_boolean_attr = false
+        for _, bool_attr in ipairs(boolean_attrs) do
+          if attr == bool_attr then
+            is_boolean_attr = true
+            break
+          end
+        end
+
+        if is_boolean_attr then
+          if type(value) ~= "boolean" then
+            errors["highlight_groups." .. group_name .. "." .. attr] = "must be a boolean"
+          end
+        else
+          errors["highlight_groups." .. group_name .. "." .. attr] = "unknown highlight attribute"
+        end
+      end
+    end
+
+    ::continue::
+  end
+
+  return next(errors) == nil, errors
+end
+
+---Validate before_highlight callback
+---@param before_highlight function? The callback function
+---@return boolean valid True if valid
+---@return string? error Error message if invalid
+function V.validate_before_highlight(before_highlight)
+  if before_highlight == nil then
+    return true -- optional
+  end
+
+  if type(before_highlight) ~= "function" then
+    return false, "must be a function"
+  end
+
+  return true
+end
+
+---Validate entire configuration
+---@param config Base16.Config The configuration to validate
+---@return boolean valid True if all validation passes
+---@return table<string, string> errors Map of error keys to messages
+---@return table<string, string> warnings Map of warning keys to messages
+function V.validate_config(config)
+  local errors = {}
+  local warnings = {}
+
+  if not config or type(config) ~= "table" then
+    errors.config = "configuration must be a table"
+    return false, errors, warnings
+  end
+
+  -- Validate each section
+  local sections = {
+    { key = "colors", validator = V.validate_colors },
+    { key = "styles", validator = V.validate_styles },
+    { key = "plugins", validator = V.validate_plugins },
+    { key = "color_groups", validator = V.validate_color_groups },
+    { key = "highlight_groups", validator = V.validate_highlight_groups },
+  }
+
+  for _, section in ipairs(sections) do
+    local valid, section_errors = section.validator(config[section.key])
+    if not valid then
+      for key, message in pairs(section_errors) do
+        errors[key] = message
+      end
+    end
+  end
+
+  -- Validate before_highlight callback
+  local valid, err = V.validate_before_highlight(config.before_highlight)
+  if not valid then
+    errors.before_highlight = err
+  end
+
+  -- Check for unknown top-level keys
+  local valid_keys = { "colors", "styles", "plugins", "color_groups", "highlight_groups", "before_highlight" }
+  for key, _ in pairs(config) do
+    local found = false
+    for _, valid_key in ipairs(valid_keys) do
+      if key == valid_key then
+        found = true
+        break
+      end
+    end
+    if not found then
+      warnings["config." .. key] = "unknown configuration key (will be ignored)"
+    end
+  end
+
+  return next(errors) == nil, errors, warnings
+end
+
+---Format validation errors for display
+---@param errors table<string, string> Map of error keys to messages
+---@param warnings? table<string, string> Map of warning keys to messages
+---@return string formatted_message The formatted error message
+function V.format_errors(errors, warnings)
+  local lines = {}
+
+  if next(errors) then
+    table.insert(lines, "Base16 Configuration Errors:")
+    for key, message in pairs(errors) do
+      table.insert(lines, "  • " .. key .. ": " .. message)
+    end
+  end
+
+  if warnings and next(warnings) then
+    if next(errors) then
+      table.insert(lines, "")
+    end
+    table.insert(lines, "Base16 Configuration Warnings:")
+    for key, message in pairs(warnings) do
+      table.insert(lines, "  • " .. key .. ": " .. message)
+    end
+  end
+
+  return table.concat(lines, "\n")
+end
+
 -- ------------------------------------------------------------------
 -- Highlight Setup Functions
 -- ------------------------------------------------------------------
@@ -320,87 +972,87 @@ end
 local function setup_editor_hl(highlights, c)
   -- Normal and floating windows
   highlights.Normal = {
-    fg = get_group_color("foregrounds", "normal", c),
-    bg = get_bg(get_group_color("backgrounds", "normal", c)),
+    fg = U.get_group_color("foregrounds", "normal", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "normal", c)),
   }
   highlights.NormalFloat = {
-    fg = get_group_color("foregrounds", "normal", c),
-    bg = get_bg(get_group_color("backgrounds", "normal", c)),
+    fg = U.get_group_color("foregrounds", "normal", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "normal", c)),
   }
   highlights.NormalNC = {
-    fg = get_group_color("foregrounds", "normal", c),
-    bg = M.config.styles.dim_inactive_windows and get_group_color("backgrounds", "dim", c)
-      or get_bg(get_group_color("backgrounds", "normal", c)),
+    fg = U.get_group_color("foregrounds", "normal", c),
+    bg = M.config.styles.dim_inactive_windows and U.get_group_color("backgrounds", "dim", c)
+      or U.get_bg(U.get_group_color("backgrounds", "normal", c)),
     blend = M.config.styles.dim_inactive_windows and M.config.styles.blends.super or nil,
   }
   highlights.NormalSB = {
-    fg = get_group_color("foregrounds", "normal", c),
-    bg = get_group_color("backgrounds", "normal", c),
+    fg = U.get_group_color("foregrounds", "normal", c),
+    bg = U.get_group_color("backgrounds", "normal", c),
   }
 
   -- Cursor and lines
   highlights.Cursor = {
-    fg = get_group_color("backgrounds", "normal", c),
-    bg = get_group_color("foregrounds", "normal", c),
+    fg = U.get_group_color("backgrounds", "normal", c),
+    bg = U.get_group_color("foregrounds", "normal", c),
     bold = M.config.styles.bold,
   }
   highlights.lCursor = { link = "Cursor" }
   highlights.CursorIM = { link = "Cursor" }
-  highlights.CursorLine = { bg = get_group_color("backgrounds", "cursor_line", c) }
-  highlights.CursorColumn = { bg = get_bg(get_group_color("backgrounds", "cursor_column", c)) }
+  highlights.CursorLine = { bg = U.get_group_color("backgrounds", "cursor_line", c) }
+  highlights.CursorColumn = { bg = U.get_bg(U.get_group_color("backgrounds", "cursor_column", c)) }
   highlights.CursorLineNr = {
-    fg = get_group_color("syntax", "constant", c),
-    bg = get_bg(get_group_color("backgrounds", "cursor_line", c)),
+    fg = U.get_group_color("syntax", "constant", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "cursor_line", c)),
     bold = M.config.styles.bold,
   }
-  highlights.LineNr = { fg = get_group_color("foregrounds", "line_number", c) }
-  highlights.SignColumn = { fg = get_group_color("foregrounds", "dim", c) }
+  highlights.LineNr = { fg = U.get_group_color("foregrounds", "line_number", c) }
+  highlights.SignColumn = { fg = U.get_group_color("foregrounds", "dim", c) }
   highlights.SignColumnSB = {
-    fg = get_group_color("foregrounds", "dim", c),
-    bg = get_bg(get_group_color("backgrounds", "normal", c)),
+    fg = U.get_group_color("foregrounds", "dim", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "normal", c)),
   }
-  highlights.ColorColumn = { bg = get_bg(get_group_color("backgrounds", "dim", c)) }
+  highlights.ColorColumn = { bg = U.get_bg(U.get_group_color("backgrounds", "dim", c)) }
 
   -- Window separators
-  highlights.VertSplit = { fg = get_group_color("foregrounds", "dim", c) }
-  highlights.WinSeparator = { fg = get_group_color("foregrounds", "dim", c) }
+  highlights.VertSplit = { fg = U.get_group_color("foregrounds", "dim", c) }
+  highlights.WinSeparator = { fg = U.get_group_color("foregrounds", "dim", c) }
   highlights.WinBar = {
-    fg = get_group_color("foregrounds", "dark", c),
-    bg = get_bg(get_group_color("backgrounds", "light", c)),
+    fg = U.get_group_color("foregrounds", "dark", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "light", c)),
   }
   highlights.WinBarNC = {
-    fg = get_group_color("foregrounds", "dim", c),
-    bg = get_bg(get_group_color("backgrounds", "dim", c)),
+    fg = U.get_group_color("foregrounds", "dim", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "dim", c)),
   }
 
   -- Folding and concealing
   highlights.Folded = {
-    fg = get_group_color("foregrounds", "dim", c),
-    bg = get_bg(get_group_color("backgrounds", "dim", c)),
+    fg = U.get_group_color("foregrounds", "dim", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "dim", c)),
   }
   highlights.FoldColumn = {
-    fg = get_group_color("foregrounds", "dim", c),
-    bg = get_bg(get_group_color("backgrounds", "normal", c)),
+    fg = U.get_group_color("foregrounds", "dim", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "normal", c)),
   }
-  highlights.Conceal = { fg = get_group_color("foregrounds", "dim", c) }
+  highlights.Conceal = { fg = U.get_group_color("foregrounds", "dim", c) }
 
   -- Visual selection
-  highlights.Visual = { bg = get_group_color("backgrounds", "selection", c) }
+  highlights.Visual = { bg = U.get_group_color("backgrounds", "selection", c) }
   highlights.VisualNOS = { link = "Visual" }
   highlights.MatchParen = {
-    bg = get_group_color("backgrounds", "selection", c),
+    bg = U.get_group_color("backgrounds", "selection", c),
     bold = M.config.styles.bold,
   }
 
   -- Search
   highlights.Search = {
-    fg = get_group_color("backgrounds", "normal", c),
-    bg = get_group_color("search", "match", c),
+    fg = U.get_group_color("backgrounds", "normal", c),
+    bg = U.get_group_color("search", "match", c),
     bold = M.config.styles.bold,
   }
   highlights.CurSearch = {
-    fg = get_group_color("backgrounds", "normal", c),
-    bg = get_group_color("search", "current", c),
+    fg = U.get_group_color("backgrounds", "normal", c),
+    bg = U.get_group_color("search", "current", c),
     bold = M.config.styles.bold,
   }
   highlights.IncSearch = { link = "CurSearch" }
@@ -413,28 +1065,28 @@ end
 ---@param c table<Base16.Group.Alias, string>
 local function setup_popup_hl(highlights, c)
   highlights.Pmenu = {
-    fg = get_group_color("foregrounds", "normal", c),
-    bg = get_bg(get_group_color("backgrounds", "normal", c)),
+    fg = U.get_group_color("foregrounds", "normal", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "normal", c)),
   }
   highlights.PmenuSel = {
-    bg = get_group_color("backgrounds", "selection", c),
+    bg = U.get_group_color("backgrounds", "selection", c),
     bold = M.config.styles.bold,
   }
-  highlights.PmenuSbar = { bg = get_group_color("backgrounds", "light", c) }
-  highlights.PmenuThumb = { bg = get_group_color("foregrounds", "dark", c) }
+  highlights.PmenuSbar = { bg = U.get_group_color("backgrounds", "light", c) }
+  highlights.PmenuThumb = { bg = U.get_group_color("foregrounds", "dark", c) }
   highlights.PmenuKind = {
-    fg = get_group_color("syntax", "keyword", c),
+    fg = U.get_group_color("syntax", "keyword", c),
     bold = M.config.styles.bold,
   }
   highlights.PmenuKindSel = {
-    fg = get_group_color("syntax", "keyword", c),
-    bg = blend(get_group_color("syntax", "function_name", c), get_group_color("backgrounds", "normal", c), 0.3),
+    fg = U.get_group_color("syntax", "keyword", c),
+    bg = U.blend(U.get_group_color("syntax", "function_name", c), U.get_group_color("backgrounds", "normal", c), 0.3),
     bold = M.config.styles.bold,
   }
-  highlights.PmenuExtra = { fg = get_group_color("foregrounds", "dim", c) }
+  highlights.PmenuExtra = { fg = U.get_group_color("foregrounds", "dim", c) }
   highlights.PmenuExtraSel = {
-    fg = get_group_color("foregrounds", "dim", c),
-    bg = blend(get_group_color("syntax", "function_name", c), get_group_color("backgrounds", "normal", c), 0.3),
+    fg = U.get_group_color("foregrounds", "dim", c),
+    bg = U.blend(U.get_group_color("syntax", "function_name", c), U.get_group_color("backgrounds", "normal", c), 0.3),
   }
 end
 
@@ -445,24 +1097,24 @@ end
 local function setup_statusline_hl(highlights, c)
   -- Tabline
   highlights.TabLine = {
-    fg = get_group_color("foregrounds", "dim", c),
-    bg = get_bg(get_group_color("backgrounds", "dim", c)),
+    fg = U.get_group_color("foregrounds", "dim", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "dim", c)),
   }
-  highlights.TabLineFill = { bg = get_bg(get_group_color("backgrounds", "dim", c)) }
+  highlights.TabLineFill = { bg = U.get_bg(U.get_group_color("backgrounds", "dim", c)) }
   highlights.TabLineSel = {
-    fg = get_group_color("foregrounds", "normal", c),
-    bg = get_group_color("backgrounds", "light", c),
+    fg = U.get_group_color("foregrounds", "normal", c),
+    bg = U.get_group_color("backgrounds", "light", c),
     bold = M.config.styles.bold,
   }
 
   -- Statusline
   highlights.StatusLine = {
-    fg = get_group_color("foregrounds", "dark", c),
-    bg = get_group_color("backgrounds", "dim", c),
+    fg = U.get_group_color("foregrounds", "dark", c),
+    bg = U.get_group_color("backgrounds", "dim", c),
   }
   highlights.StatusLineNC = {
-    fg = get_group_color("foregrounds", "dim", c),
-    bg = get_group_color("backgrounds", "dim", c),
+    fg = U.get_group_color("foregrounds", "dim", c),
+    bg = U.get_group_color("backgrounds", "dim", c),
   }
 end
 
@@ -472,16 +1124,16 @@ end
 ---@param c table<Base16.Group.Alias, string>
 local function setup_message_hl(highlights, c)
   highlights.ErrorMsg = {
-    fg = get_group_color("states", "error", c),
+    fg = U.get_group_color("states", "error", c),
     bold = M.config.styles.bold,
   }
   highlights.WarningMsg = {
-    fg = get_group_color("states", "warning", c),
+    fg = U.get_group_color("states", "warning", c),
     bold = M.config.styles.bold,
   }
-  highlights.MoreMsg = { fg = get_group_color("states", "success", c) }
-  highlights.ModeMsg = { fg = get_group_color("states", "success", c) }
-  highlights.Question = { fg = get_group_color("states", "info", c) }
+  highlights.MoreMsg = { fg = U.get_group_color("states", "success", c) }
+  highlights.ModeMsg = { fg = U.get_group_color("states", "success", c) }
+  highlights.Question = { fg = U.get_group_color("states", "info", c) }
   highlights.NvimInternalError = { link = "ErrorMsg" }
 end
 
@@ -490,10 +1142,10 @@ end
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
 local function setup_diff_hl(highlights, c)
-  highlights.DiffAdd = { fg = get_group_color("diff", "added", c) }
-  highlights.DiffChange = { fg = get_group_color("diff", "changed", c) }
-  highlights.DiffDelete = { fg = get_group_color("diff", "removed", c) }
-  highlights.DiffText = { fg = get_group_color("diff", "text", c) }
+  highlights.DiffAdd = { fg = U.get_group_color("diff", "added", c) }
+  highlights.DiffChange = { fg = U.get_group_color("diff", "changed", c) }
+  highlights.DiffDelete = { fg = U.get_group_color("diff", "removed", c) }
+  highlights.DiffText = { fg = U.get_group_color("diff", "text", c) }
 end
 
 ---@private
@@ -501,10 +1153,10 @@ end
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
 local function setup_spelling_hl(highlights, c)
-  highlights.SpellBad = { sp = get_group_color("states", "error", c), undercurl = true }
-  highlights.SpellCap = { sp = get_group_color("states", "info", c), undercurl = true }
-  highlights.SpellLocal = { sp = get_group_color("syntax", "operator", c), undercurl = true }
-  highlights.SpellRare = { sp = get_group_color("states", "hint", c), undercurl = true }
+  highlights.SpellBad = { sp = U.get_group_color("states", "error", c), undercurl = true }
+  highlights.SpellCap = { sp = U.get_group_color("states", "info", c), undercurl = true }
+  highlights.SpellLocal = { sp = U.get_group_color("syntax", "operator", c), undercurl = true }
+  highlights.SpellRare = { sp = U.get_group_color("states", "hint", c), undercurl = true }
 end
 
 ---@private
@@ -514,92 +1166,92 @@ end
 local function setup_syntax_hl(highlights, c)
   -- Comments
   highlights.Comment = {
-    fg = get_group_color("syntax", "comment", c),
+    fg = U.get_group_color("syntax", "comment", c),
     italic = M.config.styles.italic,
   }
 
   -- Constants
-  highlights.Constant = { fg = get_group_color("syntax", "constant", c) }
+  highlights.Constant = { fg = U.get_group_color("syntax", "constant", c) }
   highlights.String = {
-    fg = get_group_color("syntax", "string", c),
+    fg = U.get_group_color("syntax", "string", c),
     italic = M.config.styles.italic,
   }
-  highlights.Character = { fg = get_group_color("syntax", "constant", c) }
-  highlights.Number = { fg = get_group_color("syntax", "number", c) }
+  highlights.Character = { fg = U.get_group_color("syntax", "constant", c) }
+  highlights.Number = { fg = U.get_group_color("syntax", "number", c) }
   highlights.Boolean = {
-    fg = get_group_color("syntax", "boolean", c),
+    fg = U.get_group_color("syntax", "boolean", c),
     italic = M.config.styles.italic,
   }
-  highlights.Float = { fg = get_group_color("syntax", "number", c) }
+  highlights.Float = { fg = U.get_group_color("syntax", "number", c) }
 
   -- Identifiers
   highlights.Identifier = {
-    fg = get_group_color("syntax", "variable", c),
+    fg = U.get_group_color("syntax", "variable", c),
     italic = M.config.styles.italic,
   }
   highlights.Function = {
-    fg = get_group_color("syntax", "function_name", c),
+    fg = U.get_group_color("syntax", "function_name", c),
     bold = M.config.styles.bold,
   }
 
   -- Keywords and statements
   highlights.Statement = {
-    fg = get_group_color("syntax", "function_name", c),
+    fg = U.get_group_color("syntax", "function_name", c),
     bold = M.config.styles.bold,
   }
-  highlights.Conditional = { fg = get_group_color("syntax", "keyword", c) }
-  highlights.Repeat = { fg = get_group_color("syntax", "keyword", c) }
-  highlights.Label = { fg = get_group_color("syntax", "operator", c) }
-  highlights.Operator = { fg = get_group_color("syntax", "operator", c) }
+  highlights.Conditional = { fg = U.get_group_color("syntax", "keyword", c) }
+  highlights.Repeat = { fg = U.get_group_color("syntax", "keyword", c) }
+  highlights.Label = { fg = U.get_group_color("syntax", "operator", c) }
+  highlights.Operator = { fg = U.get_group_color("syntax", "operator", c) }
   highlights.Keyword = {
-    fg = get_group_color("syntax", "keyword", c),
+    fg = U.get_group_color("syntax", "keyword", c),
     bold = M.config.styles.bold,
     italic = M.config.styles.italic,
   }
-  highlights.Exception = { fg = get_group_color("states", "error", c) }
+  highlights.Exception = { fg = U.get_group_color("states", "error", c) }
 
   -- Preprocessor
   highlights.PreProc = { link = "PreCondit" }
-  highlights.Include = { fg = get_group_color("syntax", "function_name", c) }
-  highlights.Define = { fg = get_group_color("syntax", "keyword", c) }
-  highlights.Macro = { fg = get_group_color("states", "error", c) }
-  highlights.PreCondit = { fg = get_group_color("syntax", "keyword", c) }
+  highlights.Include = { fg = U.get_group_color("syntax", "function_name", c) }
+  highlights.Define = { fg = U.get_group_color("syntax", "keyword", c) }
+  highlights.Macro = { fg = U.get_group_color("states", "error", c) }
+  highlights.PreCondit = { fg = U.get_group_color("syntax", "keyword", c) }
 
   -- Types
   highlights.Type = {
-    fg = get_group_color("syntax", "type", c),
+    fg = U.get_group_color("syntax", "type", c),
     bold = M.config.styles.bold,
   }
-  highlights.StorageClass = { fg = get_group_color("syntax", "type", c) }
-  highlights.Structure = { fg = get_group_color("syntax", "operator", c) }
+  highlights.StorageClass = { fg = U.get_group_color("syntax", "type", c) }
+  highlights.Structure = { fg = U.get_group_color("syntax", "operator", c) }
   highlights.Typedef = { link = "Type" }
 
   -- Specials
-  highlights.Special = { fg = get_group_color("syntax", "operator", c) }
+  highlights.Special = { fg = U.get_group_color("syntax", "operator", c) }
   highlights.SpecialChar = { link = "Special" }
-  highlights.Tag = { fg = get_group_color("syntax", "operator", c) }
-  highlights.Delimiter = { fg = get_group_color("syntax", "delimiter", c) }
+  highlights.Tag = { fg = U.get_group_color("syntax", "operator", c) }
+  highlights.Delimiter = { fg = U.get_group_color("syntax", "delimiter", c) }
   highlights.SpecialComment = { link = "Special" }
-  highlights.Debug = { fg = get_group_color("states", "error", c) }
+  highlights.Debug = { fg = U.get_group_color("states", "error", c) }
 
   -- Misc
   highlights.Underlined = { underline = true }
   highlights.Bold = { bold = M.config.styles.bold }
   highlights.Italic = { italic = M.config.styles.italic }
-  highlights.Ignore = { fg = get_group_color("foregrounds", "dim", c) }
+  highlights.Ignore = { fg = U.get_group_color("foregrounds", "dim", c) }
   highlights.Error = {
-    fg = get_group_color("states", "error", c),
-    bg = get_bg(get_group_color("backgrounds", "normal", c)),
+    fg = U.get_group_color("states", "error", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "normal", c)),
   }
   highlights.Todo = {
-    fg = get_group_color("syntax", "type", c),
-    bg = get_bg(get_group_color("backgrounds", "dim", c)),
+    fg = U.get_group_color("syntax", "type", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "dim", c)),
   }
 
   -- Health check colors
-  highlights.healthError = { fg = get_group_color("states", "error", c) }
-  highlights.healthSuccess = { fg = get_group_color("states", "success", c) }
-  highlights.healthWarning = { fg = get_group_color("states", "warning", c) }
+  highlights.healthError = { fg = U.get_group_color("states", "error", c) }
+  highlights.healthSuccess = { fg = U.get_group_color("states", "success", c) }
+  highlights.healthWarning = { fg = U.get_group_color("states", "warning", c) }
 end
 
 ---@private
@@ -608,45 +1260,45 @@ end
 ---@param c table<Base16.Group.Alias, string>
 local function setup_treesitter_hl(highlights, c)
   -- Variables
-  highlights["@variable"] = { fg = get_group_color("syntax", "variable", c) }
+  highlights["@variable"] = { fg = U.get_group_color("syntax", "variable", c) }
   highlights["@variable.builtin"] = {
-    fg = get_group_color("states", "error", c),
+    fg = U.get_group_color("states", "error", c),
     bold = M.config.styles.bold,
     italic = M.config.styles.italic,
   }
-  highlights["@variable.parameter"] = { fg = get_group_color("syntax", "constant", c) }
+  highlights["@variable.parameter"] = { fg = U.get_group_color("syntax", "constant", c) }
   highlights["@variable.parameter.builtin"] = {
-    fg = get_group_color("syntax", "keyword", c),
+    fg = U.get_group_color("syntax", "keyword", c),
     bold = M.config.styles.bold,
   }
-  highlights["@variable.member"] = { fg = get_group_color("syntax", "operator", c) }
+  highlights["@variable.member"] = { fg = U.get_group_color("syntax", "operator", c) }
 
   -- Constants
   highlights["@constant"] = {
-    fg = get_group_color("syntax", "constant", c),
+    fg = U.get_group_color("syntax", "constant", c),
     bold = M.config.styles.bold,
   }
   highlights["@constant.builtin"] = {
-    fg = get_group_color("states", "error", c),
+    fg = U.get_group_color("states", "error", c),
     bold = M.config.styles.bold,
   }
-  highlights["@constant.macro"] = { fg = get_group_color("syntax", "constant", c) }
+  highlights["@constant.macro"] = { fg = U.get_group_color("syntax", "constant", c) }
 
   -- Modules and labels
-  highlights["@module"] = { fg = get_group_color("syntax", "variable", c) }
+  highlights["@module"] = { fg = U.get_group_color("syntax", "variable", c) }
   highlights["@module.builtin"] = {
-    fg = get_group_color("syntax", "variable", c),
+    fg = U.get_group_color("syntax", "variable", c),
     bold = M.config.styles.bold,
   }
   highlights["@label"] = { link = "Label" }
 
   -- Strings
   highlights["@string"] = { link = "String" }
-  highlights["@string.regexp"] = { fg = get_group_color("syntax", "keyword", c) }
-  highlights["@string.escape"] = { fg = get_group_color("syntax", "function_name", c) }
+  highlights["@string.regexp"] = { fg = U.get_group_color("syntax", "keyword", c) }
+  highlights["@string.escape"] = { fg = U.get_group_color("syntax", "function_name", c) }
   highlights["@string.special"] = { link = "String" }
   highlights["@string.special.symbol"] = { link = "Identifier" }
-  highlights["@string.special.url"] = { fg = get_group_color("syntax", "keyword", c) }
+  highlights["@string.special.url"] = { fg = U.get_group_color("syntax", "keyword", c) }
 
   -- Numbers and characters
   highlights["@character"] = { link = "Character" }
@@ -657,26 +1309,26 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@float"] = { link = "Number" }
 
   -- Types
-  highlights["@type"] = { fg = get_group_color("syntax", "constant", c) }
+  highlights["@type"] = { fg = U.get_group_color("syntax", "constant", c) }
   highlights["@type.builtin"] = {
-    fg = get_group_color("syntax", "constant", c),
+    fg = U.get_group_color("syntax", "constant", c),
     bold = M.config.styles.bold,
     italic = M.config.styles.italic,
   }
   highlights["@type.definition"] = { link = "Type" }
 
   -- Attributes and properties
-  highlights["@attribute"] = { fg = get_group_color("syntax", "type", c) }
+  highlights["@attribute"] = { fg = U.get_group_color("syntax", "type", c) }
   highlights["@attribute.builtin"] = {
-    fg = get_group_color("syntax", "type", c),
+    fg = U.get_group_color("syntax", "type", c),
     bold = M.config.styles.bold,
   }
-  highlights["@property"] = { fg = get_group_color("syntax", "operator", c) }
+  highlights["@property"] = { fg = U.get_group_color("syntax", "operator", c) }
 
   -- Functions
   highlights["@function"] = { link = "Function" }
   highlights["@function.builtin"] = {
-    fg = get_group_color("syntax", "operator", c),
+    fg = U.get_group_color("syntax", "operator", c),
     bold = M.config.styles.bold,
   }
   highlights["@function.call"] = { link = "Function" }
@@ -685,7 +1337,7 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@function.method.call"] = { link = "Function" }
 
   -- Operators and constructors
-  highlights["@constructor"] = { fg = get_group_color("foregrounds", "dim", c) }
+  highlights["@constructor"] = { fg = U.get_group_color("foregrounds", "dim", c) }
   highlights["@operator"] = { link = "Operator" }
 
   -- Keywords (comprehensive mapping)
@@ -694,14 +1346,14 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@keyword.type"] = { link = "Function" }
   highlights["@keyword.coroutine"] = { link = "Function" }
   highlights["@keyword.function"] = {
-    fg = get_group_color("syntax", "keyword", c),
+    fg = U.get_group_color("syntax", "keyword", c),
     bold = M.config.styles.bold,
   }
-  highlights["@keyword.operator"] = { fg = get_group_color("syntax", "keyword", c) }
+  highlights["@keyword.operator"] = { fg = U.get_group_color("syntax", "keyword", c) }
   highlights["@keyword.import"] = { link = "Include" }
   highlights["@keyword.repeat"] = { link = "Repeat" }
   highlights["@keyword.return"] = {
-    fg = get_group_color("states", "error", c),
+    fg = U.get_group_color("states", "error", c),
     bold = M.config.styles.bold,
   }
   highlights["@keyword.debug"] = { link = "Exception" }
@@ -711,7 +1363,7 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@keyword.directive"] = { link = "PreProc" }
   highlights["@keyword.directive.define"] = { link = "Define" }
   highlights["@keyword.export"] = {
-    fg = get_group_color("syntax", "function_name", c),
+    fg = U.get_group_color("syntax", "function_name", c),
     italic = M.config.styles.italic,
   }
 
@@ -725,23 +1377,23 @@ local function setup_treesitter_hl(highlights, c)
   highlights["@comment"] = { link = "Comment" }
   highlights["@comment.documentation"] = { link = "Comment" }
   highlights["@comment.todo"] = {
-    fg = get_group_color("syntax", "type", c),
-    bg = blend(get_group_color("syntax", "type", c), get_group_color("backgrounds", "normal", c), 0.1),
+    fg = U.get_group_color("syntax", "type", c),
+    bg = U.blend(U.get_group_color("syntax", "type", c), U.get_group_color("backgrounds", "normal", c), 0.1),
     bold = M.config.styles.bold,
   }
   highlights["@comment.note"] = {
-    fg = get_group_color("states", "info", c),
-    bg = blend(get_group_color("states", "info", c), get_group_color("backgrounds", "normal", c), 0.1),
+    fg = U.get_group_color("states", "info", c),
+    bg = U.blend(U.get_group_color("states", "info", c), U.get_group_color("backgrounds", "normal", c), 0.1),
     bold = M.config.styles.bold,
   }
   highlights["@comment.warning"] = {
-    fg = get_group_color("states", "warning", c),
-    bg = blend(get_group_color("states", "warning", c), get_group_color("backgrounds", "normal", c), 0.1),
+    fg = U.get_group_color("states", "warning", c),
+    bg = U.blend(U.get_group_color("states", "warning", c), U.get_group_color("backgrounds", "normal", c), 0.1),
     bold = M.config.styles.bold,
   }
   highlights["@comment.error"] = {
-    fg = get_group_color("states", "error", c),
-    bg = blend(get_group_color("states", "error", c), get_group_color("backgrounds", "normal", c), 0.1),
+    fg = U.get_group_color("states", "error", c),
+    bg = U.blend(U.get_group_color("states", "error", c), U.get_group_color("backgrounds", "normal", c), 0.1),
     bold = M.config.styles.bold,
   }
 
@@ -773,12 +1425,12 @@ end
 local function setup_markdown_hl(highlights, c)
   -- Markdown headings with consistent color progression
   local heading_colors = {
-    get_group_color("states", "error", c), -- H1: red
-    get_group_color("syntax", "constant", c), -- H2: orange
-    get_group_color("syntax", "type", c), -- H3: yellow
-    get_group_color("states", "success", c), -- H4: green
-    get_group_color("syntax", "operator", c), -- H5: cyan
-    get_group_color("states", "info", c), -- H6: blue
+    U.get_group_color("states", "error", c), -- H1: red
+    U.get_group_color("syntax", "constant", c), -- H2: orange
+    U.get_group_color("syntax", "type", c), -- H3: yellow
+    U.get_group_color("states", "success", c), -- H4: green
+    U.get_group_color("syntax", "operator", c), -- H5: cyan
+    U.get_group_color("states", "info", c), -- H6: blue
   }
 
   for i = 1, 6 do
@@ -797,8 +1449,8 @@ local function setup_markdown_hl(highlights, c)
   -- Markdown links and formatting
   highlights.markdownLinkText = { link = "markdownUrl" }
   highlights.markdownUrl = {
-    fg = get_group_color("syntax", "keyword", c),
-    sp = get_group_color("syntax", "keyword", c),
+    fg = U.get_group_color("syntax", "keyword", c),
+    sp = U.get_group_color("syntax", "keyword", c),
     underline = true,
   }
 
@@ -808,26 +1460,26 @@ local function setup_markdown_hl(highlights, c)
   highlights["@markup.strikethrough"] = { strikethrough = true }
   highlights["@markup.underline"] = { underline = true }
   highlights["@markup.heading"] = {
-    fg = get_group_color("syntax", "operator", c),
+    fg = U.get_group_color("syntax", "operator", c),
     bold = M.config.styles.bold,
   }
-  highlights["@markup.quote"] = { fg = get_group_color("foregrounds", "dim", c) }
-  highlights["@markup.list"] = { fg = get_group_color("states", "error", c) }
+  highlights["@markup.quote"] = { fg = U.get_group_color("foregrounds", "dim", c) }
+  highlights["@markup.list"] = { fg = U.get_group_color("states", "error", c) }
   highlights["@markup.link"] = {
-    fg = get_group_color("syntax", "keyword", c),
+    fg = U.get_group_color("syntax", "keyword", c),
     underline = true,
   }
-  highlights["@markup.raw"] = { fg = get_group_color("syntax", "string", c) }
+  highlights["@markup.raw"] = { fg = U.get_group_color("syntax", "string", c) }
 
   -- Diff markup
-  highlights["@diff.plus"] = { fg = get_group_color("diff", "added", c) }
-  highlights["@diff.minus"] = { fg = get_group_color("diff", "removed", c) }
-  highlights["@diff.delta"] = { fg = get_group_color("states", "hint", c) }
+  highlights["@diff.plus"] = { fg = U.get_group_color("diff", "added", c) }
+  highlights["@diff.minus"] = { fg = U.get_group_color("diff", "removed", c) }
+  highlights["@diff.delta"] = { fg = U.get_group_color("states", "hint", c) }
 
   -- Tags
   highlights["@tag"] = { link = "Tag" }
-  highlights["@tag.attribute"] = { fg = get_group_color("syntax", "keyword", c) }
-  highlights["@tag.delimiter"] = { fg = get_group_color("syntax", "delimiter", c) }
+  highlights["@tag.attribute"] = { fg = U.get_group_color("syntax", "keyword", c) }
+  highlights["@tag.delimiter"] = { fg = U.get_group_color("syntax", "delimiter", c) }
 end
 
 ---@private
@@ -837,37 +1489,37 @@ end
 local function setup_diagnostics_hl(highlights, c)
   -- Diagnostic messages
   highlights.DiagnosticError = {
-    fg = get_group_color("states", "error", c),
+    fg = U.get_group_color("states", "error", c),
     bold = M.config.styles.bold,
   }
   highlights.DiagnosticWarn = {
-    fg = get_group_color("states", "warning", c),
+    fg = U.get_group_color("states", "warning", c),
     bold = M.config.styles.bold,
   }
   highlights.DiagnosticInfo = {
-    fg = get_group_color("states", "info", c),
+    fg = U.get_group_color("states", "info", c),
     bold = M.config.styles.bold,
   }
   highlights.DiagnosticHint = {
-    fg = get_group_color("states", "hint", c),
+    fg = U.get_group_color("states", "hint", c),
     bold = M.config.styles.bold,
   }
 
   -- Diagnostic underlines
   highlights.DiagnosticUnderlineError = {
-    sp = get_group_color("states", "error", c),
+    sp = U.get_group_color("states", "error", c),
     undercurl = true,
   }
   highlights.DiagnosticUnderlineWarn = {
-    sp = get_group_color("states", "warning", c),
+    sp = U.get_group_color("states", "warning", c),
     undercurl = true,
   }
   highlights.DiagnosticUnderlineInfo = {
-    sp = get_group_color("states", "info", c),
+    sp = U.get_group_color("states", "info", c),
     undercurl = true,
   }
   highlights.DiagnosticUnderlineHint = {
-    sp = get_group_color("states", "hint", c),
+    sp = U.get_group_color("states", "hint", c),
     undercurl = true,
   }
 end
@@ -877,9 +1529,9 @@ end
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
 local function setup_lsp_hl(highlights, c)
-  highlights.LspReferenceText = { bg = get_group_color("backgrounds", "light", c) }
-  highlights.LspReferenceRead = { bg = get_group_color("backgrounds", "light", c) }
-  highlights.LspReferenceWrite = { bg = get_group_color("backgrounds", "light", c) }
+  highlights.LspReferenceText = { bg = U.get_group_color("backgrounds", "light", c) }
+  highlights.LspReferenceRead = { bg = U.get_group_color("backgrounds", "light", c) }
+  highlights.LspReferenceWrite = { bg = U.get_group_color("backgrounds", "light", c) }
 end
 
 ---@private
@@ -888,16 +1540,16 @@ end
 ---@param c table<Base16.Group.Alias, string>
 local function setup_terminal_hl(highlights, c)
   highlights.Terminal = {
-    fg = get_group_color("foregrounds", "normal", c),
-    bg = get_bg(get_group_color("backgrounds", "normal", c)),
+    fg = U.get_group_color("foregrounds", "normal", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "normal", c)),
   }
   highlights.TermCursor = {
-    fg = get_group_color("backgrounds", "normal", c),
-    bg = get_group_color("states", "success", c),
+    fg = U.get_group_color("backgrounds", "normal", c),
+    bg = U.get_group_color("states", "success", c),
   }
   highlights.TermCursorNC = {
-    fg = get_group_color("backgrounds", "normal", c),
-    bg = get_group_color("foregrounds", "dim", c),
+    fg = U.get_group_color("backgrounds", "normal", c),
+    bg = U.get_group_color("foregrounds", "dim", c),
   }
 end
 
@@ -907,24 +1559,24 @@ end
 ---@param c table<Base16.Group.Alias, string>
 local function setup_float_hl(highlights, c)
   highlights.FloatBorder = {
-    fg = get_group_color("foregrounds", "dim", c),
-    bg = get_bg(get_group_color("backgrounds", "normal", c)),
+    fg = U.get_group_color("foregrounds", "dim", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "normal", c)),
   }
-  highlights.FloatShadow = { bg = get_group_color("backgrounds", "light", c) }
+  highlights.FloatShadow = { bg = U.get_group_color("backgrounds", "light", c) }
   highlights.FloatTitle = {
-    fg = get_group_color("syntax", "operator", c),
-    bg = get_bg(get_group_color("backgrounds", "normal", c)),
+    fg = U.get_group_color("syntax", "operator", c),
+    bg = U.get_bg(U.get_group_color("backgrounds", "normal", c)),
     bold = M.config.styles.bold,
     italic = M.config.styles.italic,
   }
   highlights.FloatShadowThrough = { link = "FloatShadow" }
   highlights.WildMenu = { link = "IncSearch" }
   highlights.Directory = {
-    fg = get_group_color("syntax", "operator", c),
+    fg = U.get_group_color("syntax", "operator", c),
     bold = M.config.styles.bold,
   }
   highlights.Title = {
-    fg = get_group_color("syntax", "operator", c),
+    fg = U.get_group_color("syntax", "operator", c),
     bold = M.config.styles.bold,
   }
 end
@@ -934,21 +1586,21 @@ end
 ---@param highlights table<string, vim.api.keyset.highlight>
 ---@param c table<Base16.Group.Alias, string>
 local function setup_integration_hl(highlights, c)
-  -- Mini Icons - standardized color mapping
-  if has_plugin("nvim_mini_mini_icons") then
-    highlights.MiniIconsAzure = { fg = get_group_color("syntax", "operator", c) }
-    highlights.MiniIconsBlue = { fg = get_group_color("states", "info", c) }
-    highlights.MiniIconsCyan = { fg = get_group_color("syntax", "operator", c) }
-    highlights.MiniIconsGreen = { fg = get_group_color("states", "success", c) }
-    highlights.MiniIconsGrey = { fg = get_group_color("foregrounds", "dim", c) }
-    highlights.MiniIconsOrange = { fg = get_group_color("states", "warning", c) }
-    highlights.MiniIconsPurple = { fg = get_group_color("states", "hint", c) }
-    highlights.MiniIconsRed = { fg = get_group_color("states", "error", c) }
-    highlights.MiniIconsYellow = { fg = get_group_color("syntax", "type", c) }
+  -- Mini Icons
+  if U.has_plugin("nvim_mini_mini_icons") then
+    highlights.MiniIconsAzure = { fg = U.get_group_color("syntax", "operator", c) }
+    highlights.MiniIconsBlue = { fg = U.get_group_color("states", "info", c) }
+    highlights.MiniIconsCyan = { fg = U.get_group_color("syntax", "operator", c) }
+    highlights.MiniIconsGreen = { fg = U.get_group_color("states", "success", c) }
+    highlights.MiniIconsGrey = { fg = U.get_group_color("foregrounds", "dim", c) }
+    highlights.MiniIconsOrange = { fg = U.get_group_color("states", "warning", c) }
+    highlights.MiniIconsPurple = { fg = U.get_group_color("states", "hint", c) }
+    highlights.MiniIconsRed = { fg = U.get_group_color("states", "error", c) }
+    highlights.MiniIconsYellow = { fg = U.get_group_color("syntax", "type", c) }
   end
 
   -- Mini Diff
-  if has_plugin("nvim_mini_mini_diff") then
+  if U.has_plugin("nvim_mini_mini_diff") then
     highlights.MiniDiffAdd = { link = "DiffAdd" }
     highlights.MiniDiffChange = { link = "DiffChange" }
     highlights.MiniDiffDelete = { link = "DiffDelete" }
@@ -958,54 +1610,54 @@ local function setup_integration_hl(highlights, c)
   end
 
   -- Mini Files
-  if has_plugin("nvim_mini_mini_files") then
+  if U.has_plugin("nvim_mini_mini_files") then
     highlights.MiniFilesBorder = { link = "FloatBorder" }
     highlights.MiniFilesBorderModified = {
-      fg = get_group_color("states", "warning", c),
-      bg = get_bg(get_group_color("backgrounds", "normal", c)),
+      fg = U.get_group_color("states", "warning", c),
+      bg = U.get_bg(U.get_group_color("backgrounds", "normal", c)),
     }
     highlights.MiniFilesCursorLine = { link = "CursorLine" }
     highlights.MiniFilesDirectory = { link = "Directory" }
-    highlights.MiniFilesFile = { fg = get_group_color("foregrounds", "normal", c) }
+    highlights.MiniFilesFile = { fg = U.get_group_color("foregrounds", "normal", c) }
     highlights.MiniFilesNormal = { link = "NormalFloat" }
     highlights.MiniFilesTitle = { link = "FloatTitle" }
   end
 
   -- Mini Pick
-  if has_plugin("nvim_mini_mini_pick") then
+  if U.has_plugin("nvim_mini_mini_pick") then
     highlights.MiniPickBorder = { link = "FloatBorder" }
     highlights.MiniPickBorderBusy = {
-      fg = get_group_color("states", "warning", c),
-      bg = get_bg(get_group_color("backgrounds", "normal", c)),
+      fg = U.get_group_color("states", "warning", c),
+      bg = U.get_bg(U.get_group_color("backgrounds", "normal", c)),
     }
-    highlights.MiniPickBorderText = { bg = get_group_color("foregrounds", "dim", c) }
+    highlights.MiniPickBorderText = { bg = U.get_group_color("foregrounds", "dim", c) }
     highlights.MiniPickIconDirectory = { link = "Directory" }
     highlights.MiniPickIconFile = { link = "MiniPickNormal" }
     highlights.MiniPickHeader = {
-      fg = get_group_color("states", "hint", c),
-      bg = get_bg(get_group_color("backgrounds", "normal", c)),
+      fg = U.get_group_color("states", "hint", c),
+      bg = U.get_bg(U.get_group_color("backgrounds", "normal", c)),
     }
     highlights.MiniPickMatchCurrent = { link = "CursorLine" }
     highlights.MiniPickMatchMarked = { link = "Visual" }
-    highlights.MiniPickMatchRanges = { fg = get_group_color("syntax", "operator", c) }
+    highlights.MiniPickMatchRanges = { fg = U.get_group_color("syntax", "operator", c) }
     highlights.MiniPickNormal = { link = "NormalFloat" }
     highlights.MiniPickPreviewLine = { link = "CursorLine" }
     highlights.MiniPickPreviewRegion = { link = "IncSearch" }
     highlights.MiniPickPrompt = {
-      bg = get_bg(get_group_color("backgrounds", "normal", c)),
+      bg = U.get_bg(U.get_group_color("backgrounds", "normal", c)),
       bold = M.config.styles.bold,
     }
   end
 
   -- Render Markdown
-  if has_plugin("meandering_programmer_render_markdown_nvim") then
+  if U.has_plugin("meandering_programmer_render_markdown_nvim") then
     local heading_colors = {
-      get_group_color("states", "error", c), -- H1: red
-      get_group_color("syntax", "constant", c), -- H2: orange
-      get_group_color("syntax", "type", c), -- H3: yellow
-      get_group_color("states", "success", c), -- H4: green
-      get_group_color("syntax", "operator", c), -- H5: cyan
-      get_group_color("states", "info", c), -- H6: blue
+      U.get_group_color("states", "error", c), -- H1: red
+      U.get_group_color("syntax", "constant", c), -- H2: orange
+      U.get_group_color("syntax", "type", c), -- H3: yellow
+      U.get_group_color("states", "success", c), -- H4: green
+      U.get_group_color("syntax", "operator", c), -- H5: cyan
+      U.get_group_color("states", "info", c), -- H6: blue
     }
 
     for i = 1, 6 do
@@ -1015,59 +1667,59 @@ local function setup_integration_hl(highlights, c)
       }
     end
 
-    highlights.RenderMarkdownBullet = { fg = get_group_color("syntax", "constant", c) }
-    highlights.RenderMarkdownChecked = { fg = get_group_color("syntax", "operator", c) }
-    highlights.RenderMarkdownUnchecked = { fg = get_group_color("foregrounds", "dim", c) }
-    highlights.RenderMarkdownCode = { bg = get_group_color("backgrounds", "dim", c) }
+    highlights.RenderMarkdownBullet = { fg = U.get_group_color("syntax", "constant", c) }
+    highlights.RenderMarkdownChecked = { fg = U.get_group_color("syntax", "operator", c) }
+    highlights.RenderMarkdownUnchecked = { fg = U.get_group_color("foregrounds", "dim", c) }
+    highlights.RenderMarkdownCode = { bg = U.get_group_color("backgrounds", "dim", c) }
     highlights.RenderMarkdownCodeInline = {
-      bg = get_group_color("backgrounds", "dim", c),
-      fg = get_group_color("foregrounds", "normal", c),
+      bg = U.get_group_color("backgrounds", "dim", c),
+      fg = U.get_group_color("foregrounds", "normal", c),
     }
-    highlights.RenderMarkdownQuote = { fg = get_group_color("foregrounds", "dim", c) }
+    highlights.RenderMarkdownQuote = { fg = U.get_group_color("foregrounds", "dim", c) }
     highlights.RenderMarkdownTableFill = { link = "Conceal" }
-    highlights.RenderMarkdownTableHead = { fg = get_group_color("foregrounds", "dim", c) }
-    highlights.RenderMarkdownTableRow = { fg = get_group_color("foregrounds", "dim", c) }
+    highlights.RenderMarkdownTableHead = { fg = U.get_group_color("foregrounds", "dim", c) }
+    highlights.RenderMarkdownTableRow = { fg = U.get_group_color("foregrounds", "dim", c) }
   end
 
   -- Undo Glow
-  if has_plugin("y3owk1n_undo_glow_nvim") then
+  if U.has_plugin("y3owk1n_undo_glow_nvim") then
     highlights.UgUndo = {
-      bg = get_group_color("states", "error", c),
+      bg = U.get_group_color("states", "error", c),
       blend = M.config.styles.blends.strong,
     }
     highlights.UgRedo = {
-      bg = get_group_color("states", "success", c),
+      bg = U.get_group_color("states", "success", c),
       blend = M.config.styles.blends.strong,
     }
     highlights.UgYank = {
-      bg = get_group_color("syntax", "constant", c),
+      bg = U.get_group_color("syntax", "constant", c),
       blend = M.config.styles.blends.strong,
     }
     highlights.UgPaste = {
-      bg = get_group_color("syntax", "operator", c),
+      bg = U.get_group_color("syntax", "operator", c),
       blend = M.config.styles.blends.strong,
     }
     highlights.UgSearch = {
-      bg = get_group_color("states", "info", c),
+      bg = U.get_group_color("states", "info", c),
       blend = M.config.styles.blends.strong,
     }
     highlights.UgComment = {
-      bg = get_group_color("syntax", "type", c),
+      bg = U.get_group_color("syntax", "type", c),
       blend = M.config.styles.blends.strong,
     }
-    highlights.UgCursor = { bg = get_group_color("backgrounds", "light", c) }
+    highlights.UgCursor = { bg = U.get_group_color("backgrounds", "light", c) }
   end
 
   -- Blink Cmp
-  if has_plugin("saghen_blink_cmp") then
+  if U.has_plugin("saghen_blink_cmp") then
     highlights.BlinkCmpDoc = { link = "Normal" }
-    highlights.BlinkCmpDocSeparator = { fg = get_group_color("foregrounds", "dim", c) }
+    highlights.BlinkCmpDocSeparator = { fg = U.get_group_color("foregrounds", "dim", c) }
     highlights.BlinkCmpDocBorder = { link = "FloatBorder" }
     highlights.BlinkCmpGhostText = { link = "Comment" }
     highlights.BlinkCmpLabel = { link = "Comment" }
     highlights.BlinkCmpLabelDeprecated = { link = "Comment", strikethrough = true }
     highlights.BlinkCmpLabelMatch = {
-      fg = get_group_color("foregrounds", "normal", c),
+      fg = U.get_group_color("foregrounds", "normal", c),
       bold = M.config.styles.bold,
     }
     highlights.BlinkCmpDefault = { link = "Normal" }
@@ -1104,7 +1756,7 @@ local function setup_integration_hl(highlights, c)
     for kind, color_path in pairs(cmp_kinds) do
       local group_name, color_name = color_path:match("([^.]+)%.([^.]+)")
       highlights["BlinkCmpKind" .. kind] = {
-        fg = get_group_color(group_name, color_name, c),
+        fg = U.get_group_color(group_name, color_name, c),
       }
     end
 
@@ -1112,46 +1764,45 @@ local function setup_integration_hl(highlights, c)
   end
 
   -- Grug Far
-  if has_plugin("magicduck_grug_far_nvim") then
-    highlights.GrugFarHelpHeader = { fg = get_group_color("states", "info", c) }
-    highlights.GrugFarHelpHeaderKey = { fg = get_group_color("syntax", "constant", c) }
-    highlights.GrugFarHelpWinActionKey = { fg = get_group_color("syntax", "constant", c) }
-    highlights.GrugFarHelpWinActionPrefix = { fg = get_group_color("syntax", "operator", c) }
-    highlights.GrugFarHelpWinActionText = { fg = get_group_color("states", "info", c) }
+  if U.has_plugin("magicduck_grug_far_nvim") then
+    highlights.GrugFarHelpHeader = { fg = U.get_group_color("states", "info", c) }
+    highlights.GrugFarHelpHeaderKey = { fg = U.get_group_color("syntax", "constant", c) }
+    highlights.GrugFarHelpWinActionKey = { fg = U.get_group_color("syntax", "constant", c) }
+    highlights.GrugFarHelpWinActionPrefix = { fg = U.get_group_color("syntax", "operator", c) }
+    highlights.GrugFarHelpWinActionText = { fg = U.get_group_color("states", "info", c) }
     highlights.GrugFarHelpWinHeader = { link = "FloatTitle" }
-    highlights.GrugFarInputLabel = { fg = get_group_color("syntax", "operator", c) }
+    highlights.GrugFarInputLabel = { fg = U.get_group_color("syntax", "operator", c) }
     highlights.GrugFarInputPlaceholder = { link = "Comment" }
-    highlights.GrugFarResultsActionMessage = { fg = get_group_color("syntax", "operator", c) }
-    highlights.GrugFarResultsChangeIndicator = { fg = get_group_color("diff", "changed", c) }
-    highlights.GrugFarResultsRemoveIndicator = { fg = get_group_color("diff", "removed", c) }
-    highlights.GrugFarResultsAddIndicator = { fg = get_group_color("diff", "added", c) }
-    highlights.GrugFarResultsHeader = { fg = get_group_color("states", "info", c) }
-    highlights.GrugFarResultsLineNo = { fg = get_group_color("states", "hint", c) }
+    highlights.GrugFarResultsActionMessage = { fg = U.get_group_color("syntax", "operator", c) }
+    highlights.GrugFarResultsChangeIndicator = { fg = U.get_group_color("diff", "changed", c) }
+    highlights.GrugFarResultsRemoveIndicator = { fg = U.get_group_color("diff", "removed", c) }
+    highlights.GrugFarResultsAddIndicator = { fg = U.get_group_color("diff", "added", c) }
+    highlights.GrugFarResultsHeader = { fg = U.get_group_color("states", "info", c) }
+    highlights.GrugFarResultsLineNo = { fg = U.get_group_color("states", "hint", c) }
     highlights.GrugFarResultsLineColumn = { link = "GrugFarResultsLineNo" }
     highlights.GrugFarResultsMatch = { link = "IncSearch" }
-    highlights.GrugFarResultsPath = { fg = get_group_color("syntax", "operator", c) }
-    highlights.GrugFarResultsStats = { fg = get_group_color("states", "hint", c) }
+    highlights.GrugFarResultsPath = { fg = U.get_group_color("syntax", "operator", c) }
+    highlights.GrugFarResultsStats = { fg = U.get_group_color("states", "hint", c) }
   end
 
   -- Which Key
-  if has_plugin("folke_which_key_nvim") then
+  if U.has_plugin("folke_which_key_nvim") then
     highlights.WhichKey = {
-      fg = get_group_color("states", "info", c),
+      fg = U.get_group_color("states", "info", c),
       bold = M.config.styles.bold,
     }
     highlights.WhichKeyBorder = { link = "FloatBorder" }
     highlights.WhichKeyDesc = {
-      fg = get_group_color("foregrounds", "normal", c),
+      fg = U.get_group_color("foregrounds", "normal", c),
       italic = M.config.styles.italic,
     }
     highlights.WhichKeyFloat = { link = "NormalFloat" }
     highlights.WhichKeyGroup = {
-      fg = get_group_color("states", "hint", c),
+      fg = U.get_group_color("states", "hint", c),
       bold = M.config.styles.bold,
     }
-    highlights.WhichKeyIcon = { fg = get_group_color("states", "info", c) }
+    highlights.WhichKeyIcon = { fg = U.get_group_color("states", "info", c) }
 
-    -- Link to standardized icon colors
     highlights.WhichKeyIconAzure = { link = "MiniIconsAzure" }
     highlights.WhichKeyIconBlue = { link = "MiniIconsBlue" }
     highlights.WhichKeyIconCyan = { link = "MiniIconsCyan" }
@@ -1163,45 +1814,28 @@ local function setup_integration_hl(highlights, c)
     highlights.WhichKeyIconYellow = { link = "MiniIconsYellow" }
 
     highlights.WhichKeyNormal = { link = "Normal" }
-    highlights.WhichKeySeparator = { fg = get_group_color("foregrounds", "dim", c) }
+    highlights.WhichKeySeparator = { fg = U.get_group_color("foregrounds", "dim", c) }
     highlights.WhichKeyTitle = { link = "FloatTitle" }
-    highlights.WhichKeyValue = { fg = get_group_color("syntax", "constant", c) }
+    highlights.WhichKeyValue = { fg = U.get_group_color("syntax", "constant", c) }
   end
 
   -- Flash
-  if has_plugin("folke_flash_nvim") then
+  if U.has_plugin("folke_flash_nvim") then
     highlights.FlashLabel = {
-      fg = get_group_color("backgrounds", "normal", c),
-      bg = get_group_color("states", "error", c),
+      fg = U.get_group_color("backgrounds", "normal", c),
+      bg = U.get_group_color("states", "error", c),
     }
   end
 end
 
 ---@private
----Apply all highlights with standardized grouping
+---Apply all highlights
 ---@return nil
 local function apply_highlights()
   local raw = M.config.colors or {}
 
   -- Validate that all required colors are provided
-  local required_colors = {
-    "base00",
-    "base01",
-    "base02",
-    "base03",
-    "base04",
-    "base05",
-    "base06",
-    "base07",
-    "base08",
-    "base09",
-    "base0A",
-    "base0B",
-    "base0C",
-    "base0D",
-    "base0E",
-    "base0F",
-  }
+  local required_colors = _base16_raw or U.get_base16_raw()
 
   for _, color in ipairs(required_colors) do
     if not raw[color] then
@@ -1209,7 +1843,7 @@ local function apply_highlights()
     end
   end
 
-  local c = add_semantic_palette(raw)
+  local c = U.add_semantic_palette(raw)
 
   ---@type table<string, vim.api.keyset.highlight>
   local highlights = {}
@@ -1272,7 +1906,7 @@ local function apply_highlights()
     if opts.blend ~= nil and (opts.blend >= 0 and opts.blend <= 100) and opts.bg ~= nil then
       local bg_hex = c[opts.bg] or opts.bg
       ---@diagnostic disable-next-line: param-type-mismatch
-      opts.bg = blend(bg_hex, opts.blend_on or c.bg, opts.blend / 100)
+      opts.bg = U.blend(bg_hex, opts.blend_on or c.bg, opts.blend / 100)
     end
 
     opts.blend = nil
@@ -1324,10 +1958,10 @@ local default_config = {
       light = "bg_light",
       selection = "bg_light",
       cursor_line = function(c)
-        return blend(c.bg_light, c.bg, 0.6)
+        return U.blend(c.bg_light, c.bg, 0.6)
       end,
       cursor_column = function(c)
-        return blend(c.bg_dim, c.bg, 0.3)
+        return U.blend(c.bg_dim, c.bg, 0.3)
       end,
     },
 
@@ -1340,7 +1974,7 @@ local default_config = {
       bright = "fg_bright",
       comment = "fg_dark",
       line_number = function(c)
-        return blend(c.fg_dim, c.bg, 0.7)
+        return U.blend(c.fg_dim, c.bg, 0.7)
       end,
     },
 
@@ -1385,9 +2019,6 @@ local default_config = {
   },
 }
 
--- Cache for the semantic palette
-local _cached_colors = nil
-
 ---Setup the base16 plugin
 ---@param user_config? Base16.Config
 ---@return nil
@@ -1398,23 +2029,70 @@ local _cached_colors = nil
 ---@usage ]]
 function M.setup(user_config)
   if did_setup then
-    vim.notify("Base16: Plugin already set up", vim.log.levels.WARN)
     return
+  end
+
+  U.get_base16_aliases() -- Ensure base16 aliases are loaded
+  U.get_base16_raw() -- Ensure base16 raw colors are loaded
+
+  local valid, errors, warnings = V.validate_config(user_config or {})
+
+  if warnings and next(warnings) then
+    local warning_msg = V.format_errors({}, warnings)
+    vim.notify(warning_msg, vim.log.levels.WARN)
+  end
+
+  if not valid then
+    local error_msg = V.format_errors(errors, {})
+
+    -- Show detailed error message
+    vim.notify("Base16 setup failed:\n" .. error_msg, vim.log.levels.ERROR)
+
+    -- Don't proceed with invalid configuration
+    error("Base16: Invalid configuration. See above for details.")
   end
 
   M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
 
-  -- Validate colors
-  if not M.config.colors or type(M.config.colors) ~= "table" then
-    error("colors table is required in setup(). Please provide colors.")
+  -- Additional runtime validation that can only be done after merging
+  local runtime_errors = {}
+
+  -- Validate that colors are provided
+  if not next(M.config.colors) then
+    runtime_errors["colors"] = "No colors provided. At least base00-base0F are required."
   end
 
-  -- Validate plugins
-  if not M.config.plugins or type(M.config.plugins) ~= "table" then
-    error("plugins table is required in setup(). Please provide plugins.")
+  -- Validate color group functions at runtime (if possible)
+  if M.config.color_groups then
+    local test_colors = U.add_semantic_palette(M.config.colors or {})
+
+    for group_name, group_config in pairs(M.config.color_groups) do
+      if type(group_config) == "table" then
+        for key, color_value in pairs(group_config) do
+          if type(color_value) == "function" then
+            local success, result = pcall(color_value, test_colors)
+            if not success then
+              runtime_errors["color_groups." .. group_name .. "." .. key] = "Function failed: " .. tostring(result)
+            elseif type(result) ~= "string" then
+              runtime_errors["color_groups." .. group_name .. "." .. key] = "Function must return a string, got "
+                .. type(result)
+            end
+          end
+        end
+      end
+    end
+  end
+
+  -- Show runtime errors if any
+  if next(runtime_errors) then
+    local error_msg = V.format_errors(runtime_errors, {})
+    vim.notify("Base16 runtime validation failed:\n" .. error_msg, vim.log.levels.ERROR)
+    error("Base16: Runtime validation failed. See above for details.")
   end
 
   did_setup = true
+
+  M._invalidate_cache()
 end
 
 ---Setup the colorscheme
@@ -1449,13 +2127,13 @@ function M.colors()
   end
 
   -- Return cached colors if available
-  if _cached_colors then
-    return _cached_colors
+  if _color_cache then
+    return _color_cache
   end
 
   -- Create and cache the semantic palette
-  _cached_colors = add_semantic_palette(M.config.colors)
-  return _cached_colors
+  _color_cache = U.add_semantic_palette(M.config.colors)
+  return _color_cache
 end
 
 ---Get a specific color by name
@@ -1508,10 +2186,10 @@ end
 ---Get semantic color mapping
 ---@return table<Base16.Group.Alias, Base16.Group.Raw> mapping The semantic to raw color mapping
 function M.color_mapping()
-  return vim.deepcopy(base16_alias)
+  return vim.deepcopy(base16_alias_map)
 end
 
----Get a color from standardized groups
+---Get a color from groups
 ---@param group string The color group name
 ---@param key string The color key within the group
 ---@return string|nil color The resolved color, or nil if not found
@@ -1520,7 +2198,7 @@ function M.get_group_color(group, key)
   if not colors then
     return nil
   end
-  return get_group_color(group, key, colors)
+  return U.get_group_color(group, key, colors)
 end
 
 ---Blend two colors together
@@ -1529,13 +2207,14 @@ end
 ---@param alpha number Alpha value between 0 (background) and 1 (foreground)
 ---@return string blended_color The blended color as hex
 function M.blend_colors(fg_color, bg_color, alpha)
-  return blend(fg_color, bg_color, alpha)
+  return U.blend(fg_color, bg_color, alpha)
 end
 
 ---Invalidate the color cache (useful when colors are updated)
 ---@private
 function M._invalidate_cache()
-  _cached_colors = nil
+  _color_cache = nil
+  _blend_cache = nil
 end
 
 ---Validate color configuration
@@ -1543,24 +2222,7 @@ end
 ---@return boolean valid True if all required colors are present
 ---@return string[] missing Array of missing color keys
 function M.validate_colors(colors)
-  local required_colors = {
-    "base00",
-    "base01",
-    "base02",
-    "base03",
-    "base04",
-    "base05",
-    "base06",
-    "base07",
-    "base08",
-    "base09",
-    "base0A",
-    "base0B",
-    "base0C",
-    "base0D",
-    "base0E",
-    "base0F",
-  }
+  local required_colors = _base16_raw or U.get_base16_raw()
 
   local missing = {}
   for _, color in ipairs(required_colors) do
