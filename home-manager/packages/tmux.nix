@@ -27,10 +27,9 @@ in
       }
     ];
     extraConfig = ''
-      # Set the default terminal for tmux to a modern variant
       set -g default-terminal "tmux-256color"
-      # Append necessary features for true color (RGB) and modern underline styles (undercurl)
-      set -ga terminal-features ",*:usstyle,*:RGB"
+      set -ga terminal-overrides ",xterm-ghostty:Tc"
+      set -ga terminal-features ",*:usstyle,*:RGB,*:strikethrough"
 
       bind -r j resize-pane -D 5
       bind -r k resize-pane -U 5
@@ -56,7 +55,6 @@ in
 
       set -g allow-passthrough on
 
-      set -ga terminal-overrides ",xterm-256color:Tc"
       set -g repeat-time 1000
       set -g detach-on-destroy off
       set -g renumber-windows on
