@@ -56,6 +56,7 @@ local _base16_aliases = nil
 ---@type Base16.Group.Raw[]|nil
 local _base16_raw = nil
 
+---@type table<string, string>|nil
 local _color_cache = nil
 
 -- ------------------------------------------------------------------
