@@ -25,7 +25,6 @@ function M.setup()
     styles = {
       italic = true,
       bold = true,
-      use_cterm = true,
     },
     plugins = {
       enable_all = true,
