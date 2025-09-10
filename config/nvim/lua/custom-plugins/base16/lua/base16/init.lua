@@ -59,6 +59,12 @@ local _base16_raw = nil
 ---@type table<string, string>|nil
 local _color_cache = nil
 
+---@type table<number, { r: integer, g: integer, b: integer }>
+local _cterm_cache = nil
+
+---@type table<string, integer|"NONE">
+local _hex_to_cterm_cache = {}
+
 -- ------------------------------------------------------------------
 -- Constants
 -- ------------------------------------------------------------------
@@ -160,6 +166,7 @@ local base16_alias_map = {
 ---@field transparency? boolean Transparent background
 ---@field dim_inactive_windows? boolean Dim inactive windows
 ---@field blends? Base16.Config.Styles.Blends Blend values to override
+---@field use_cterm? boolean Use cterm colors (overrides colors)
 
 ---@class Base16.Config.Styles.Blends
 ---@field subtle? number barely visible backgrounds (10%)
@@ -235,6 +242,113 @@ function U.color_to_rgb(color)
   end
 
   return { byte(new_color, 16), byte(new_color, 8), byte(new_color, 0) }
+end
+
+---@private
+---Build cterm colors
+---@return table<number, { r: integer, g: integer, b: integer }>
+function U.build_cterm_colors()
+  local cterm_palette = {}
+
+  local ansi = {
+    { 0, 0, 0 },
+    { 128, 0, 0 },
+    { 0, 128, 0 },
+    { 128, 128, 0 },
+    { 0, 0, 128 },
+    { 128, 0, 128 },
+    { 0, 128, 128 },
+    { 192, 192, 192 },
+    { 128, 128, 128 },
+    { 255, 0, 0 },
+    { 0, 255, 0 },
+    { 255, 255, 0 },
+    { 0, 0, 255 },
+    { 255, 0, 255 },
+    { 0, 255, 255 },
+    { 255, 255, 255 },
+  }
+  for i, rgb in ipairs(ansi) do
+    cterm_palette[i - 1] = { r = rgb[1], g = rgb[2], b = rgb[3] }
+  end
+
+  -- 6×6×6 color cube (index 16–231)
+  local index = 16
+  for r = 0, 5 do
+    for g = 0, 5 do
+      for b = 0, 5 do
+        local function level(v)
+          return v == 0 and 0 or v * 40 + 55
+        end
+        cterm_palette[index] = { r = level(r), g = level(g), b = level(b) }
+        index = index + 1
+      end
+    end
+  end
+
+  -- Grayscale ramp (index 232–255)
+  for i = 0, 23 do
+    local level = 8 + i * 10
+    cterm_palette[index] = { r = level, g = level, b = level }
+    index = index + 1
+  end
+
+  return cterm_palette
+end
+
+---@private
+---Get the rgb to cterm256 table
+---@return table<number, { r: integer, g: integer, b: integer }>
+function U.get_rgb_to_cterm()
+  if not _cterm_cache then
+    _cterm_cache = U.build_cterm_colors()
+  end
+  return _cterm_cache
+end
+
+---Find the nearest cterm256 color index by Manhattan distance
+---@param rgb {r: integer, g: integer, b: integer}
+---@return integer|nil
+function U.get_nearest_cterm(rgb)
+  local nearest_id = nil
+  local nearest_distance = math.huge
+
+  for id, c in pairs(U.get_rgb_to_cterm()) do
+    local distance = math.abs(rgb.r - c.r) + math.abs(rgb.g - c.g) + math.abs(rgb.b - c.b)
+    if distance < nearest_distance then
+      nearest_id, nearest_distance = id, distance
+    end
+  end
+  return nearest_id
+end
+
+---@private
+---Convert a hex color to a cterm256 color
+---@param hex string The hex color
+---@return integer|"NONE" cterm256 The cterm256 color
+function U.hex_to_cterm256(hex)
+  if hex == "NONE" then
+    return "NONE"
+  end
+
+  if _hex_to_cterm_cache[hex] then
+    return _hex_to_cterm_cache[hex]
+  end
+
+  local r = tonumber(hex:sub(2, 3), 16)
+  local g = tonumber(hex:sub(4, 5), 16)
+  local b = tonumber(hex:sub(6, 7), 16)
+
+  if not r or not g or not b then
+    _hex_to_cterm_cache[hex] = "NONE"
+    return "NONE"
+  end
+
+  local nearest = U.get_nearest_cterm({ r = r, g = g, b = b }) or "NONE"
+
+  _hex_to_cterm_cache[hex] = nearest
+
+  return nearest
 end
 
 ---@private
@@ -567,7 +681,7 @@ function V.validate_styles(styles)
   end
 
   -- Validate boolean style options
-  local boolean_options = { "italic", "bold", "transparency", "dim_inactive_windows" }
+  local boolean_options = { "italic", "bold", "transparency", "dim_inactive_windows", "use_cterm" }
   for _, option in ipairs(boolean_options) do
     if styles[option] ~= nil and type(styles[option]) ~= "boolean" then
       errors["styles." .. option] = "must be a boolean"
@@ -606,7 +720,7 @@ function V.validate_styles(styles)
   end
 
   -- Check for unexpected style keys
-  local valid_keys = { "italic", "bold", "transparency", "dim_inactive_windows", "blends" }
+  local valid_keys = { "italic", "bold", "transparency", "dim_inactive_windows", "blends", "use_cterm" }
   for key, _ in pairs(styles) do
     local found = false
     for _, valid_key in ipairs(valid_keys) do
@@ -1920,6 +2034,17 @@ local function apply_highlights()
       opts.blend = opts._nvim_blend
     end
 
+    if M.config.styles.use_cterm then
+      if opts.fg then
+        ---@diagnostic disable-next-line: param-type-mismatch
+        opts.ctermfg = U.hex_to_cterm256(opts.fg)
+      end
+      if opts.bg then
+        ---@diagnostic disable-next-line: param-type-mismatch
+        opts.ctermbg = U.hex_to_cterm256(opts.bg)
+      end
+    end
+
     vim.api.nvim_set_hl(0, group, opts)
   end
 end
@@ -1940,6 +2065,7 @@ local default_config = {
     italic = false,
     bold = false,
     transparency = false,
+    use_cterm = false,
     dim_inactive_windows = false,
     blends = {
       subtle = 10,
@@ -2106,9 +2232,6 @@ function M.colorscheme()
   if vim.fn.exists("syntax_on") then
     vim.cmd("syntax reset")
   end
-
-  -- Enable termguicolors
-  vim.opt.termguicolors = true
 
   -- Apply highlights
   apply_highlights()
