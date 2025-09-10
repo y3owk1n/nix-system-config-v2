@@ -2108,7 +2108,7 @@ local default_config = {
     -- Semantic colors for syntax
     syntax = {
       variable = "fg",
-      constant = "orange",
+      constant = "brown",
       string = "green",
       number = "orange",
       boolean = "orange",
@@ -2117,7 +2117,7 @@ local default_config = {
       type = "yellow",
       comment = "fg_dark",
       operator = "cyan",
-      delimiter = "brown",
+      delimiter = "fg_dim",
     },
 
     -- UI state colors
