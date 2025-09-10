@@ -1997,9 +1997,9 @@ local default_config = {
     -- UI state colors
     states = {
       error = "red",
-      warning = "orange",
+      warning = "yellow",
       info = "blue",
-      hint = "purple",
+      hint = "cyan",
       success = "green",
     },
 
