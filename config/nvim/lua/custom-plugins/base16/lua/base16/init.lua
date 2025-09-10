@@ -128,6 +128,7 @@ local base16_alias_map = {
 ---@field bright? Base16.Config.ColorGroups.Color Bright foreground
 ---@field comment? Base16.Config.ColorGroups.Color Comment foreground
 ---@field line_number? Base16.Config.ColorGroups.Color Line number foreground
+---@field deprecated? Base16.Config.ColorGroups.Color deprecated foreground
 
 ---@class Base16.Config.ColorGroups.Syntax
 ---@field variable? Base16.Config.ColorGroups.Color Variable foreground
@@ -1619,6 +1620,10 @@ local function setup_diagnostics_hl(highlights, c)
     fg = U.get_group_color("states", "hint", c),
     bold = M.config.styles.bold,
   }
+  highlights.DiagnosticDeprecated = {
+    fg = U.get_group_color("foregrounds", "deprecated", c),
+    strikethrough = true,
+  }
 
   -- Diagnostic underlines
   highlights.DiagnosticUnderlineError = {
@@ -1832,7 +1837,7 @@ local function setup_integration_hl(highlights, c)
     highlights.BlinkCmpDocBorder = { link = "FloatBorder" }
     highlights.BlinkCmpGhostText = { link = "Comment" }
     highlights.BlinkCmpLabel = { link = "Comment" }
-    highlights.BlinkCmpLabelDeprecated = { link = "Comment", strikethrough = true }
+    highlights.BlinkCmpLabelDeprecated = { fg = U.get_group_color("syntax", "deprecated", c), strikethrough = true }
     highlights.BlinkCmpLabelMatch = {
       fg = U.get_group_color("foregrounds", "normal", c),
       bold = M.config.styles.bold,
@@ -2108,7 +2113,7 @@ local default_config = {
     -- Semantic colors for syntax
     syntax = {
       variable = "fg",
-      constant = "brown",
+      constant = "orange",
       string = "green",
       number = "orange",
       boolean = "orange",
@@ -2118,6 +2123,7 @@ local default_config = {
       comment = "fg_dark",
       operator = "cyan",
       delimiter = "fg_dim",
+      deprecated = "brown",
     },
 
     -- UI state colors
