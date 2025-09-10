@@ -12,6 +12,7 @@ local did_setup = false
 ---@field styles? Base16.Config.Styles Styles to override
 ---@field highlight_groups? table<string, vim.api.keyset.highlight> Additional highlight groups to set
 ---@field before_highlight? fun(group: string, opts: vim.api.keyset.highlight, c: table<Base16.Group.Alias, string>): nil Callback to run before setting highlight groups
+---@field plugins? table<"enable_all"|string, boolean> Enable/disable plugins
 
 ---@class Base16.Config.Styles
 ---@field italic? boolean Enable italics
@@ -63,6 +64,15 @@ local function blend(fg, bg, alpha)
 
   blend_cache[cache_key] = result
   return result
+end
+
+---Check if a plugin is enabled in config
+local function has_plugin(name)
+  local plugin = M.config.plugins[name]
+
+  if not plugin then
+    return M.config.plugins.enable_all or false
+  end
 end
 
 ---Reference `https://github.com/tinted-theming/home/blob/main/styling.md`
@@ -540,156 +550,176 @@ end
 ---@return nil
 local function setup_integration_hl(highlights, c)
   -- Mini Icons
-  highlights.MiniIconsAzure = { fg = c.cyan }
-  highlights.MiniIconsBlue = { fg = c.blue }
-  highlights.MiniIconsCyan = { fg = c.cyan }
-  highlights.MiniIconsGreen = { fg = c.green }
-  highlights.MiniIconsGrey = { fg = c.fg_dim }
-  highlights.MiniIconsOrange = { fg = c.orange }
-  highlights.MiniIconsPurple = { fg = c.purple }
-  highlights.MiniIconsRed = { fg = c.red }
-  highlights.MiniIconsYellow = { fg = c.yellow }
+  if has_plugin("nvim-mini/mini.icons") then
+    highlights.MiniIconsAzure = { fg = c.cyan }
+    highlights.MiniIconsBlue = { fg = c.blue }
+    highlights.MiniIconsCyan = { fg = c.cyan }
+    highlights.MiniIconsGreen = { fg = c.green }
+    highlights.MiniIconsGrey = { fg = c.fg_dim }
+    highlights.MiniIconsOrange = { fg = c.orange }
+    highlights.MiniIconsPurple = { fg = c.purple }
+    highlights.MiniIconsRed = { fg = c.red }
+    highlights.MiniIconsYellow = { fg = c.yellow }
+  end
 
   -- Mini Diff
-  highlights.MiniDiffAdd = { link = "DiffAdd" }
-  highlights.MiniDiffChange = { link = "DiffChange" }
-  highlights.MiniDiffDelete = { link = "DiffDelete" }
-  highlights.MiniDiffSignAdd = { link = "DiffAdd" }
-  highlights.MiniDiffSignChange = { link = "DiffChange" }
-  highlights.MiniDiffSignDelete = { link = "DiffDelete" }
+  if has_plugin("nvim-mini/mini.diff") then
+    highlights.MiniDiffAdd = { link = "DiffAdd" }
+    highlights.MiniDiffChange = { link = "DiffChange" }
+    highlights.MiniDiffDelete = { link = "DiffDelete" }
+    highlights.MiniDiffSignAdd = { link = "DiffAdd" }
+    highlights.MiniDiffSignChange = { link = "DiffChange" }
+    highlights.MiniDiffSignDelete = { link = "DiffDelete" }
+  end
 
   -- Mini Files
-  highlights.MiniFilesBorder = { link = "FloatBorder" }
-  highlights.MiniFilesBorderModified = { link = "DiagnosticFloatingWarn" }
-  highlights.MiniFilesCursorLine = { link = "CursorLine" }
-  highlights.MiniFilesDirectory = { link = "Directory" }
-  highlights.MiniFilesFile = { fg = c.fg }
-  highlights.MiniFilesNormal = { link = "NormalFloat" }
-  highlights.MiniFilesTitle = { link = "FloatTitle" }
+  if has_plugin("nvim-mini/mini.files") then
+    highlights.MiniFilesBorder = { link = "FloatBorder" }
+    highlights.MiniFilesBorderModified = { link = "DiagnosticFloatingWarn" }
+    highlights.MiniFilesCursorLine = { link = "CursorLine" }
+    highlights.MiniFilesDirectory = { link = "Directory" }
+    highlights.MiniFilesFile = { fg = c.fg }
+    highlights.MiniFilesNormal = { link = "NormalFloat" }
+    highlights.MiniFilesTitle = { link = "FloatTitle" }
+  end
 
   -- Mini Pick
-  highlights.MiniPickBorder = { link = "FloatBorder" }
-  highlights.MiniPickBorderBusy = { link = "DiagnosticFloatingWarn" }
-  highlights.MiniPickBorderText = { bg = c.fg_dim }
-  highlights.MiniPickIconDirectory = { link = "Directory" }
-  highlights.MiniPickIconFile = { link = "MiniPickNormal" }
-  highlights.MiniPickHeader = { link = "DiagnosticFloatingHint" }
-  highlights.MiniPickMatchCurrent = { link = "CursorLine" }
-  highlights.MiniPickMatchMarked = { link = "Visual" }
-  highlights.MiniPickMatchRanges = { fg = c.cyan }
-  highlights.MiniPickNormal = { link = "NormalFloat" }
-  highlights.MiniPickPreviewLine = { link = "CursorLine" }
-  highlights.MiniPickPreviewRegion = { link = "IncSearch" }
-  highlights.MiniPickPrompt = {
-    bg = get_bg(c.bg),
-    bold = M.config.styles.bold,
-  }
+  if has_plugin("nvim-mini/mini.pick") then
+    highlights.MiniPickBorder = { link = "FloatBorder" }
+    highlights.MiniPickBorderBusy = { link = "DiagnosticFloatingWarn" }
+    highlights.MiniPickBorderText = { bg = c.fg_dim }
+    highlights.MiniPickIconDirectory = { link = "Directory" }
+    highlights.MiniPickIconFile = { link = "MiniPickNormal" }
+    highlights.MiniPickHeader = { link = "DiagnosticFloatingHint" }
+    highlights.MiniPickMatchCurrent = { link = "CursorLine" }
+    highlights.MiniPickMatchMarked = { link = "Visual" }
+    highlights.MiniPickMatchRanges = { fg = c.cyan }
+    highlights.MiniPickNormal = { link = "NormalFloat" }
+    highlights.MiniPickPreviewLine = { link = "CursorLine" }
+    highlights.MiniPickPreviewRegion = { link = "IncSearch" }
+    highlights.MiniPickPrompt = {
+      bg = get_bg(c.bg),
+      bold = M.config.styles.bold,
+    }
+  end
 
   -- Render Markdown
-  highlights.RenderMarkdownH1Bg = { bg = c.red, blend = BLEND.medium }
-  highlights.RenderMarkdownH2Bg = { bg = c.orange, blend = BLEND.medium }
-  highlights.RenderMarkdownH3Bg = { bg = c.yellow, blend = BLEND.medium }
-  highlights.RenderMarkdownH4Bg = { bg = c.green, blend = BLEND.medium }
-  highlights.RenderMarkdownH5Bg = { bg = c.cyan, blend = BLEND.medium }
-  highlights.RenderMarkdownH6Bg = { bg = c.blue, blend = BLEND.medium }
-  highlights.RenderMarkdownBullet = { fg = c.orange }
-  highlights.RenderMarkdownChecked = { fg = c.cyan }
-  highlights.RenderMarkdownUnchecked = { fg = c.fg_dim }
-  highlights.RenderMarkdownCode = { bg = c.bg_dim }
-  highlights.RenderMarkdownCodeInline = { bg = c.bg_dim, fg = c.fg }
-  highlights.RenderMarkdownQuote = { fg = c.fg_dim }
-  highlights.RenderMarkdownTableFill = { link = "Conceal" }
-  highlights.RenderMarkdownTableHead = { fg = c.fg_dim }
-  highlights.RenderMarkdownTableRow = { fg = c.fg_dim }
+  if has_plugin("MeanderingProgrammer/render-markdown.nvim") then
+    highlights.RenderMarkdownH1Bg = { bg = c.red, blend = BLEND.medium }
+    highlights.RenderMarkdownH2Bg = { bg = c.orange, blend = BLEND.medium }
+    highlights.RenderMarkdownH3Bg = { bg = c.yellow, blend = BLEND.medium }
+    highlights.RenderMarkdownH4Bg = { bg = c.green, blend = BLEND.medium }
+    highlights.RenderMarkdownH5Bg = { bg = c.cyan, blend = BLEND.medium }
+    highlights.RenderMarkdownH6Bg = { bg = c.blue, blend = BLEND.medium }
+    highlights.RenderMarkdownBullet = { fg = c.orange }
+    highlights.RenderMarkdownChecked = { fg = c.cyan }
+    highlights.RenderMarkdownUnchecked = { fg = c.fg_dim }
+    highlights.RenderMarkdownCode = { bg = c.bg_dim }
+    highlights.RenderMarkdownCodeInline = { bg = c.bg_dim, fg = c.fg }
+    highlights.RenderMarkdownQuote = { fg = c.fg_dim }
+    highlights.RenderMarkdownTableFill = { link = "Conceal" }
+    highlights.RenderMarkdownTableHead = { fg = c.fg_dim }
+    highlights.RenderMarkdownTableRow = { fg = c.fg_dim }
+  end
 
   -- Undoglow
-  highlights.UgUndo = { bg = c.red, blend = BLEND.strong }
-  highlights.UgRedo = { bg = c.green, blend = BLEND.strong }
-  highlights.UgYank = { bg = c.orange, blend = BLEND.strong }
-  highlights.UgPaste = { bg = c.cyan, blend = BLEND.strong }
-  highlights.UgSearch = { bg = c.blue, blend = BLEND.strong }
-  highlights.UgComment = { bg = c.yellow, blend = BLEND.strong }
-  highlights.UgCursor = { bg = c.bg_light }
+  if has_plugin("y3owk1n/undo-glow.nvim") then
+    highlights.UgUndo = { bg = c.red, blend = BLEND.strong }
+    highlights.UgRedo = { bg = c.green, blend = BLEND.strong }
+    highlights.UgYank = { bg = c.orange, blend = BLEND.strong }
+    highlights.UgPaste = { bg = c.cyan, blend = BLEND.strong }
+    highlights.UgSearch = { bg = c.blue, blend = BLEND.strong }
+    highlights.UgComment = { bg = c.yellow, blend = BLEND.strong }
+    highlights.UgCursor = { bg = c.bg_light }
+  end
 
   -- Blink Cmp
-  highlights.BlinkCmpDoc = { link = "Normal" }
-  highlights.BlinkCmpDocSeparator = { fg = c.fg_dim }
-  highlights.BlinkCmpDocBorder = { link = "FloatBorder" }
-  highlights.BlinkCmpGhostText = { link = "Comment" }
-  highlights.BlinkCmpLabel = { link = "Comment" }
-  highlights.BlinkCmpLabelDeprecated = { link = "Comment", strikethrough = true }
-  highlights.BlinkCmpLabelMatch = { fg = c.fg, bold = M.config.styles.bold }
-  highlights.BlinkCmpDefault = { link = "Normal" }
-  highlights.BlinkCmpKindText = { fg = c.blue }
-  highlights.BlinkCmpKindMethod = { fg = c.cyan }
-  highlights.BlinkCmpKindFunction = { fg = c.cyan }
-  highlights.BlinkCmpKindConstructor = { fg = c.cyan }
-  highlights.BlinkCmpKindField = { fg = c.blue }
-  highlights.BlinkCmpKindVariable = { fg = c.orange }
-  highlights.BlinkCmpKindClass = { fg = c.yellow }
-  highlights.BlinkCmpKindInterface = { fg = c.yellow }
-  highlights.BlinkCmpKindModule = { fg = c.cyan }
-  highlights.BlinkCmpKindProperty = { fg = c.cyan }
-  highlights.BlinkCmpKindUnit = { fg = c.blue }
-  highlights.BlinkCmpKindValue = { fg = c.red }
-  highlights.BlinkCmpKindKeyword = { fg = c.purple }
-  highlights.BlinkCmpKindSnippet = { fg = c.orange }
-  highlights.BlinkCmpKindColor = { fg = c.red }
-  highlights.BlinkCmpKindFile = { fg = c.cyan }
-  highlights.BlinkCmpKindReference = { fg = c.red }
-  highlights.BlinkCmpKindFolder = { fg = c.cyan }
-  highlights.BlinkCmpKindEnum = { fg = c.cyan }
-  highlights.BlinkCmpKindEnumMember = { fg = c.cyan }
-  highlights.BlinkCmpKindConstant = { fg = c.orange }
-  highlights.BlinkCmpKindStruct = { fg = c.cyan }
-  highlights.BlinkCmpKindEvent = { fg = c.cyan }
-  highlights.BlinkCmpKindOperator = { fg = c.cyan }
-  highlights.BlinkCmpKindTypeParameter = { fg = c.purple }
-  highlights.BlinkCmpMenuBorder = { link = "FloatBorder" }
+  if has_plugin("saghen/blink.cmp") then
+    highlights.BlinkCmpDoc = { link = "Normal" }
+    highlights.BlinkCmpDocSeparator = { fg = c.fg_dim }
+    highlights.BlinkCmpDocBorder = { link = "FloatBorder" }
+    highlights.BlinkCmpGhostText = { link = "Comment" }
+    highlights.BlinkCmpLabel = { link = "Comment" }
+    highlights.BlinkCmpLabelDeprecated = { link = "Comment", strikethrough = true }
+    highlights.BlinkCmpLabelMatch = { fg = c.fg, bold = M.config.styles.bold }
+    highlights.BlinkCmpDefault = { link = "Normal" }
+    highlights.BlinkCmpKindText = { fg = c.blue }
+    highlights.BlinkCmpKindMethod = { fg = c.cyan }
+    highlights.BlinkCmpKindFunction = { fg = c.cyan }
+    highlights.BlinkCmpKindConstructor = { fg = c.cyan }
+    highlights.BlinkCmpKindField = { fg = c.blue }
+    highlights.BlinkCmpKindVariable = { fg = c.orange }
+    highlights.BlinkCmpKindClass = { fg = c.yellow }
+    highlights.BlinkCmpKindInterface = { fg = c.yellow }
+    highlights.BlinkCmpKindModule = { fg = c.cyan }
+    highlights.BlinkCmpKindProperty = { fg = c.cyan }
+    highlights.BlinkCmpKindUnit = { fg = c.blue }
+    highlights.BlinkCmpKindValue = { fg = c.red }
+    highlights.BlinkCmpKindKeyword = { fg = c.purple }
+    highlights.BlinkCmpKindSnippet = { fg = c.orange }
+    highlights.BlinkCmpKindColor = { fg = c.red }
+    highlights.BlinkCmpKindFile = { fg = c.cyan }
+    highlights.BlinkCmpKindReference = { fg = c.red }
+    highlights.BlinkCmpKindFolder = { fg = c.cyan }
+    highlights.BlinkCmpKindEnum = { fg = c.cyan }
+    highlights.BlinkCmpKindEnumMember = { fg = c.cyan }
+    highlights.BlinkCmpKindConstant = { fg = c.orange }
+    highlights.BlinkCmpKindStruct = { fg = c.cyan }
+    highlights.BlinkCmpKindEvent = { fg = c.cyan }
+    highlights.BlinkCmpKindOperator = { fg = c.cyan }
+    highlights.BlinkCmpKindTypeParameter = { fg = c.purple }
+    highlights.BlinkCmpMenuBorder = { link = "FloatBorder" }
+  end
 
   -- Grugfar
-  highlights.GrugFarHelpHeader = { fg = c.blue }
-  highlights.GrugFarHelpHeaderKey = { fg = c.orange }
-  highlights.GrugFarHelpWinActionKey = { fg = c.orange }
-  highlights.GrugFarHelpWinActionPrefix = { fg = c.cyan }
-  highlights.GrugFarHelpWinActionText = { fg = c.blue }
-  highlights.GrugFarHelpWinHeader = { link = "FloatTitle" }
-  highlights.GrugFarInputLabel = { fg = c.cyan }
-  highlights.GrugFarInputPlaceholder = { link = "Comment" }
-  highlights.GrugFarResultsActionMessage = { fg = c.cyan }
-  highlights.GrugFarResultsChangeIndicator = { fg = c.orange }
-  highlights.GrugFarResultsRemoveIndicator = { fg = c.red }
-  highlights.GrugFarResultsAddIndicator = { fg = c.green }
-  highlights.GrugFarResultsHeader = { fg = c.blue }
-  highlights.GrugFarResultsLineNo = { fg = c.purple }
-  highlights.GrugFarResultsLineColumn = { link = "GrugFarResultsLineNo" }
-  highlights.GrugFarResultsMatch = { link = "IncSearch" }
-  highlights.GrugFarResultsPath = { fg = c.cyan }
-  highlights.GrugFarResultsStats = { fg = c.purple }
+  if has_plugin("MagicDuck/grug-far.nvim") then
+    highlights.GrugFarHelpHeader = { fg = c.blue }
+    highlights.GrugFarHelpHeaderKey = { fg = c.orange }
+    highlights.GrugFarHelpWinActionKey = { fg = c.orange }
+    highlights.GrugFarHelpWinActionPrefix = { fg = c.cyan }
+    highlights.GrugFarHelpWinActionText = { fg = c.blue }
+    highlights.GrugFarHelpWinHeader = { link = "FloatTitle" }
+    highlights.GrugFarInputLabel = { fg = c.cyan }
+    highlights.GrugFarInputPlaceholder = { link = "Comment" }
+    highlights.GrugFarResultsActionMessage = { fg = c.cyan }
+    highlights.GrugFarResultsChangeIndicator = { fg = c.orange }
+    highlights.GrugFarResultsRemoveIndicator = { fg = c.red }
+    highlights.GrugFarResultsAddIndicator = { fg = c.green }
+    highlights.GrugFarResultsHeader = { fg = c.blue }
+    highlights.GrugFarResultsLineNo = { fg = c.purple }
+    highlights.GrugFarResultsLineColumn = { link = "GrugFarResultsLineNo" }
+    highlights.GrugFarResultsMatch = { link = "IncSearch" }
+    highlights.GrugFarResultsPath = { fg = c.cyan }
+    highlights.GrugFarResultsStats = { fg = c.purple }
+  end
 
   -- Whichkey
-  highlights.WhichKey = { fg = c.blue, bold = M.config.styles.bold }
-  highlights.WhichKeyBorder = { link = "FloatBorder" }
-  highlights.WhichKeyDesc = { fg = c.fg, italic = M.config.styles.italic }
-  highlights.WhichKeyFloat = { link = "NormalFloat" }
-  highlights.WhichKeyGroup = { fg = c.purple, bold = M.config.styles.bold }
-  highlights.WhichKeyIcon = { fg = c.blue }
-  highlights.WhichKeyIconAzure = { link = "MiniIconsAzure" }
-  highlights.WhichKeyIconBlue = { link = "MiniIconsBlue" }
-  highlights.WhichKeyIconCyan = { link = "MiniIconsCyan" }
-  highlights.WhichKeyIconGreen = { link = "MiniIconsGreen" }
-  highlights.WhichKeyIconGrey = { link = "MiniIconsGrey" }
-  highlights.WhichKeyIconOrange = { link = "MiniIconsOrange" }
-  highlights.WhichKeyIconPurple = { link = "MiniIconsPurple" }
-  highlights.WhichKeyIconRed = { link = "MiniIconsRed" }
-  highlights.WhichKeyIconYellow = { link = "MiniIconsYellow" }
-  highlights.WhichKeyNormal = { link = "Normal" }
-  highlights.WhichKeySeparator = { fg = c.fg_dim }
-  highlights.WhichKeyTitle = { link = "FloatTitle" }
-  highlights.WhichKeyValue = { fg = c.orange }
+  if has_plugin("folke/which-key.nvim") then
+    highlights.WhichKey = { fg = c.blue, bold = M.config.styles.bold }
+    highlights.WhichKeyBorder = { link = "FloatBorder" }
+    highlights.WhichKeyDesc = { fg = c.fg, italic = M.config.styles.italic }
+    highlights.WhichKeyFloat = { link = "NormalFloat" }
+    highlights.WhichKeyGroup = { fg = c.purple, bold = M.config.styles.bold }
+    highlights.WhichKeyIcon = { fg = c.blue }
+    highlights.WhichKeyIconAzure = { link = "MiniIconsAzure" }
+    highlights.WhichKeyIconBlue = { link = "MiniIconsBlue" }
+    highlights.WhichKeyIconCyan = { link = "MiniIconsCyan" }
+    highlights.WhichKeyIconGreen = { link = "MiniIconsGreen" }
+    highlights.WhichKeyIconGrey = { link = "MiniIconsGrey" }
+    highlights.WhichKeyIconOrange = { link = "MiniIconsOrange" }
+    highlights.WhichKeyIconPurple = { link = "MiniIconsPurple" }
+    highlights.WhichKeyIconRed = { link = "MiniIconsRed" }
+    highlights.WhichKeyIconYellow = { link = "MiniIconsYellow" }
+    highlights.WhichKeyNormal = { link = "Normal" }
+    highlights.WhichKeySeparator = { fg = c.fg_dim }
+    highlights.WhichKeyTitle = { link = "FloatTitle" }
+    highlights.WhichKeyValue = { fg = c.orange }
+  end
 
   -- Flash
-  highlights.FlashLabel = { fg = c.bg, bg = c.red }
+  if has_plugin("folke/flash.nvim") then
+    highlights.FlashLabel = { fg = c.bg, bg = c.red }
+  end
 end
 
 ---Apply all highlights
@@ -813,6 +843,9 @@ local default_config = {
     bold = false,
     transparency = false,
   },
+  plugins = {
+    enable_all = false,
+  },
 }
 
 -- Cache for the semantic palette
@@ -832,6 +865,11 @@ function M.setup(user_config)
   -- Validate colors
   if not M.config.colors or type(M.config.colors) ~= "table" then
     error("colors table is required in setup(). Please provide colors.")
+  end
+
+  -- Validate plugins
+  if not M.config.plugins or type(M.config.plugins) ~= "table" then
+    error("plugins table is required in setup(). Please provide plugins.")
   end
 
   did_setup = true

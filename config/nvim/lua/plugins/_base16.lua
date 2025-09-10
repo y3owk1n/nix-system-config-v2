@@ -26,6 +26,9 @@ function M.setup()
       italic = true,
       bold = true,
     },
+    plugins = {
+      enable_all = true,
+    },
     highlight_groups = {
       -- barline
       BarlineFileInfo = { fg = "yellow" }, -- match my tmux layout
