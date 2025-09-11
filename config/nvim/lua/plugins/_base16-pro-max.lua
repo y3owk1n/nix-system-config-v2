@@ -1,17 +1,17 @@
 ---@type PluginModule
 local M = {}
 
-M.name = "base16"
+M.name = "base16-pro-max"
 
 M.priority = 1
 
 M.registry = {
-  { src = "https://github.com/y3owk1n/base16.nvim", name = "base16" },
-  -- { src = "local:base16.nvim", name = "base16" },
+  { src = "https://github.com/y3owk1n/base16.nvim", name = "base16-pro-max" },
+  -- { src = "local:base16-pro-max.nvim", name = "base16-pro-max" },
 }
 
 function M.setup()
-  local plugin_ok, plugin = pcall(require, "base16")
+  local plugin_ok, plugin = pcall(require, "base16-pro-max")
 
   if not plugin_ok then
     return
@@ -20,7 +20,7 @@ function M.setup()
   local pastel_twilight =
     require("utils.base-16-colors").get_base16_colors("~/nix-system-config-v2/config/base16/pastel-twilight.yml")
 
-  ---@type Base16.Config
+  ---@type Base16ProMax.Config
   local plugin_opts = {
     colors = pastel_twilight,
     styles = {
@@ -55,7 +55,7 @@ function M.setup()
 
   plugin.setup(plugin_opts)
 
-  vim.cmd.colorscheme("base16")
+  vim.cmd.colorscheme("base16-pro-max")
 end
 
 return M

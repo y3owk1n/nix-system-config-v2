@@ -7,10 +7,6 @@ M.lazy = {
   event = { "VeryLazy" },
 }
 
-M.requires = {
-  "base16",
-}
-
 M.registry = {
   { src = "https://github.com/y3owk1n/undo-glow.nvim", name = "undo-glow" },
   -- { src = "local:undo-glow.nvim", name = "undo-glow" },
@@ -23,11 +19,6 @@ function M.setup()
     return
   end
 
-  -- local colors = require("base16").get_colors({
-  --   "bg",
-  --   "fg",
-  -- })
-
   ---@type UndoGlow.Config
   local plugin_opts = {
     animation = {
@@ -35,10 +26,6 @@ function M.setup()
       duration = 300,
       window_scoped = true,
     },
-    -- fallback_for_transparency = {
-    --   bg = colors.bg,
-    --   fg = colors.fg,
-    -- },
     priority = 2048 * 3,
   }
 
