@@ -8,7 +8,6 @@ M.priority = 1
 M.registry = {
   { src = "https://github.com/y3owk1n/base16.nvim", name = "base16" },
   -- { src = "local:base16.nvim", name = "base16" },
-  -- { src = vim.fn.stdpath("config") .. "/lua/custom-plugins/base16", name = "base16" },
 }
 
 function M.setup()
@@ -30,6 +29,7 @@ function M.setup()
     },
     plugins = {
       enable_all = true,
+      lewis6991_gitsigns_nvim = false,
     },
     highlight_groups = {
       -- barline
