@@ -6,7 +6,7 @@ M.name = "base16-pro-max"
 M.priority = 1
 
 M.registry = {
-  { src = "https://github.com/y3owk1n/base16.nvim", name = "base16-pro-max" },
+  { src = "https://github.com/y3owk1n/base16-pro-max.nvim", name = "base16-pro-max" },
   -- { src = "local:base16-pro-max.nvim", name = "base16-pro-max" },
 }
 
@@ -38,16 +38,6 @@ function M.setup()
       BarlineDiagnosticWarn = { link = "DiagnosticWarn" },
       BarlineDiagnosticInfo = { link = "DiagnosticInfo" },
       BarlineDiagnosticHint = { link = "DiagnosticHint" },
-      -- time machine colors
-      TimeMachineCurrent = {
-        bg = "cyan",
-        blend = 15,
-      },
-      TimeMachineTimeline = { fg = "purple" },
-      TimeMachineTimelineAlt = { fg = "fg_dark" },
-      TimeMachineKeymap = { fg = "cyan" },
-      TimeMachineSeq = { fg = "yellow" },
-      TimeMachineTag = { fg = "green" },
       -- mini.nvim
       MiniIndentscopeSymbol = { fg = "orange" },
     },
