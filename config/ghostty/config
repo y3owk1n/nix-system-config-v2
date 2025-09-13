@@ -21,9 +21,11 @@ cursor-text = #1f1d2e
 selection-background = #3a364d
 selection-foreground = #e0def4
 
-font-family = JetBrainsMonoL Nerd Font Mono
+font-family = JetBrainsMonoNL NFM SemiBold
+font-family-bold = JetBrainsMonoNL NFM ExtraBold
+font-family-italic = JetBrainsMonoNL NFM Medium Italic
+font-family-bold-italic = JetBrainsMonoNL NFM ExtraBold Italic
 font-size = 16
-font-thicken = true
 font-feature = -calt
 font-feature = -liga
 font-feature = -dlig
@@ -31,17 +33,21 @@ font-feature = -dlig
 window-padding-x = 10
 window-padding-y = 10
 window-padding-balance = true
-window-colorspace = "display-p3"
+window-save-state = never
 
 macos-titlebar-style = hidden
 
 confirm-close-surface = false
+
+quit-after-last-window-closed = true
 
 macos-option-as-alt = true
 
 mouse-hide-while-typing = true
 
 copy-on-select = false
+
+shell-integration-features = true
 
 keybind = clear
 keybind = super+shift+comma=reload_config
