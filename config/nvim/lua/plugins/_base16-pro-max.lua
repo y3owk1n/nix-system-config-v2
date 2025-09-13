@@ -17,8 +17,24 @@ function M.setup()
     return
   end
 
-  local pastel_twilight =
-    require("utils.base-16-colors").get_base16_colors("~/nix-system-config-v2/config/base16/pastel-twilight.yml")
+  local pastel_twilight = {
+    base00 = "#1f1d2e",
+    base01 = "#2a2738",
+    base02 = "#3a364d",
+    base03 = "#5a5672",
+    base04 = "#9a96b5",
+    base05 = "#e0def4",
+    base06 = "#f0ecf9",
+    base07 = "#faf7ff",
+    base08 = "#f28fad",
+    base09 = "#f8bd96",
+    base0A = "#f9e2af",
+    base0B = "#abe9b3",
+    base0C = "#b5e8e0",
+    base0D = "#80b8e8",
+    base0E = "#c9a0e9",
+    base0F = "#d4a4b8",
+  }
 
   ---@type Base16ProMax.Config
   local plugin_opts = {
@@ -30,6 +46,7 @@ function M.setup()
     plugins = {
       enable_all = true,
       lewis6991_gitsigns_nvim = false,
+      folke_flash_nvim = false,
     },
     highlight_groups = {
       -- barline
