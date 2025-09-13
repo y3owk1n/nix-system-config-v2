@@ -21,10 +21,10 @@ cursor-text = #1f1d2e
 selection-background = #3a364d
 selection-foreground = #e0def4
 
-font-family = JetBrainsMonoNL NFM SemiBold
-font-family-bold = JetBrainsMonoNL NFM ExtraBold
-font-family-italic = JetBrainsMonoNL NFM Medium Italic
-font-family-bold-italic = JetBrainsMonoNL NFM ExtraBold Italic
+font-family = JetBrainsMonoNL Nerd Font Propo SemiBold
+font-family-bold = JetBrainsMonoNL Nerd Font Propo ExtraBold
+font-family-italic = JetBrainsMonoNL Nerd Font Propo Medium Italic
+font-family-bold-italic = JetBrainsMonoNL Nerd Font Propo ExtraBold Italic
 font-size = 16
 font-feature = -calt
 font-feature = -liga
