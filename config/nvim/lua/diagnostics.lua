@@ -7,7 +7,18 @@ local function setup_diagnostics()
   vim.diagnostic.config({
     underline = true,
     update_in_insert = false,
-    virtual_text = true,
+    virtual_text = {
+      prefix = "",
+      suffix = "",
+      format = function(diagnostic)
+        local icon = vim.diagnostic.config().signs.text[diagnostic.severity]
+        if icon then
+          return string.format("%s %s ", icon, diagnostic.message)
+        else
+          return diagnostic.message
+        end
+      end,
+    },
     severity_sort = true,
     signs = {
       text = {
