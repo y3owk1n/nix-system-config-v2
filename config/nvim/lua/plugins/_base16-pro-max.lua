@@ -17,12 +17,11 @@ function M.setup()
     return
   end
 
-  local pastel_twilight =
-    require("utils.base-16-colors").get_base16_colors("~/nix-system-config-v2/config/base16/pastel-twilight.yml")
+  local yaml_parser = require("base16-pro-max.parser")
 
   ---@type Base16ProMax.Config
   local plugin_opts = {
-    colors = pastel_twilight,
+    colors = yaml_parser.get_base16_colors("~/nix-system-config-v2/config/base16/pastel-twilight.yml"),
     styles = {
       italic = true,
       bold = true,
