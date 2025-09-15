@@ -30,8 +30,13 @@ function M.setup()
       enable_all = true,
       lewis6991_gitsigns_nvim = false,
       folke_flash_nvim = false,
+      nvim_telescope_telescope_nvim = false,
+      ibhagwan_fzf_lua = false,
+      nvim_lualine_lualine_nvim = false,
     },
     highlight_groups = {
+      -- statusline
+      StatusLine = { fg = "fg_dark", bg = "bg_dim" },
       -- barline
       BarlineFileInfo = { fg = "yellow" }, -- match my tmux layout
       BarlineDiagnosticError = { link = "DiagnosticError" },
