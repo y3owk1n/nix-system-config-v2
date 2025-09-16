@@ -85,8 +85,6 @@ function M.setup()
     use_icons = use_icons,
   }
 
-  vim.opt.laststatus = 3
-
   plugin.setup(plugin_opts)
 end
 
