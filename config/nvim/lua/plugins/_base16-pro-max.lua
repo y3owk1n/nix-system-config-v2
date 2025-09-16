@@ -35,16 +35,10 @@ function M.setup()
       nvim_lualine_lualine_nvim = false,
     },
     highlight_groups = {
-      -- statusline
-      StatusLine = { fg = "fg_dark", bg = "bg_dim" },
-      -- barline
-      BarlineFileInfo = { fg = "yellow" }, -- match my tmux layout
-      BarlineDiagnosticError = { link = "DiagnosticError" },
-      BarlineDiagnosticWarn = { link = "DiagnosticWarn" },
-      BarlineDiagnosticInfo = { link = "DiagnosticInfo" },
-      BarlineDiagnosticHint = { link = "DiagnosticHint" },
       -- mini.nvim
       MiniIndentscopeSymbol = { fg = "orange" },
+      -- mini.statusline
+      MiniStatuslineFilename = { fg = "yellow" },
     },
   }
 
