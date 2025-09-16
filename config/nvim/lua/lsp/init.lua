@@ -479,11 +479,17 @@ local function setup_progress_spinner()
     local value = result.value
     local token = result.token
     local is_complete = value.kind == "end"
-    local has_percentage = value.percentage ~= nil
 
     local function render()
+      local function get_right_percentage(percentage)
+        if percentage == 0 or percentage == nil then
+          return nil
+        end
+        return percentage
+      end
+
       local progress_data = {
-        percentage = value.percentage or nil,
+        percentage = get_right_percentage(value.percentage),
         description = value.title or "Loading workspace",
         file_progress = value.message or nil,
       }
@@ -563,28 +569,25 @@ local function setup_progress_spinner()
 
     render()
 
-    if not has_percentage then
-      if not is_complete then
-        local timer = active_timers[token]
-        if not timer or timer:is_closing() then
-          timer = vim.uv.new_timer()
-          active_timers[token] = timer
-        end
-
-        if timer then
-          timer:start(0, 150, function()
-            vim.schedule(render)
-          end)
-        end
-      else
-        local timer = active_timers[token]
-        if timer and not timer:is_closing() then
-          timer:stop()
-          timer:close()
-          active_timers[token] = nil
-        end
-        vim.schedule(render)
+    if not is_complete then
+      local timer = active_timers[token]
+      if not timer or timer:is_closing() then
+        timer = vim.uv.new_timer()
+        active_timers[token] = timer
       end
+      if timer then
+        timer:start(0, 150, function()
+          vim.schedule(render)
+        end)
+      end
+    else
+      local timer = active_timers[token]
+      if timer and not timer:is_closing() then
+        timer:stop()
+        timer:close()
+        active_timers[token] = nil
+      end
+      vim.schedule(render)
     end
   end
 end
