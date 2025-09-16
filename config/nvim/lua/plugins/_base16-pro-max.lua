@@ -39,6 +39,12 @@ function M.setup()
       MiniIndentscopeSymbol = { fg = "orange" },
       -- mini.statusline
       MiniStatuslineFilename = { fg = "yellow" },
+      MiniStatuslineModeNormal = { fg = "blue", bg = "blue", blend = 20, bold = true },
+      MiniStatuslineModeInsert = { fg = "green", bg = "green", blend = 20, bold = true },
+      MiniStatuslineModeVisual = { fg = "yellow", bg = "yellow", blend = 20, bold = true },
+      MiniStatuslineModeReplace = { fg = "cyan", bg = "cyan", blend = 20, bold = true },
+      MiniStatuslineModeCommand = { fg = "red", bg = "red", blend = 20, bold = true },
+      MiniStatuslineModeOther = { fg = "brown", bg = "brown", blend = 20, bold = true },
     },
   }
 
