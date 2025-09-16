@@ -112,6 +112,7 @@
 
       screencapture = {
         disable-shadow = true;
+        include-date = true;
         location = "~/Downloads";
         type = "jpg";
       };
@@ -128,6 +129,10 @@
         StageManagerHideWidgets = true;
         StandardHideDesktopIcons = true; # Show items on desktop
         StandardHideWidgets = true;
+        EnableTiledWindowMargins = true;
+        EnableTilingByEdgeDrag = false;
+        EnableTilingOptionAccelerator = false;
+        EnableTopTilingByEdgeDrag = false;
       };
 
       controlcenter = {
@@ -170,8 +175,8 @@
         NSScrollAnimationEnabled = true; # smooth scrolling
         NSAutomaticCapitalizationEnabled = false;
         NSAutomaticDashSubstitutionEnabled = false;
+        NSAutomaticInlinePredictionEnabled = false;
         NSAutomaticPeriodSubstitutionEnabled = false;
-        # no automatic smart quotes
         NSAutomaticQuoteSubstitutionEnabled = false;
         NSAutomaticSpellingCorrectionEnabled = false;
         NSNavPanelExpandedStateForSaveMode = true;
