@@ -88,6 +88,6 @@ in
   stylix = {
     enable = true;
     # base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";
-    base16Scheme = ../../config/base16/pastel-twilight.yml;
+    base16Scheme = ../../config/pastel-twilight/base16.yml;
   };
 }

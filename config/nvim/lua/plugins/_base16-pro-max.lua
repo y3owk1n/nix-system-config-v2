@@ -21,7 +21,7 @@ function M.setup()
 
   ---@type Base16ProMax.Config
   local plugin_opts = {
-    colors = yaml_parser.get_base16_colors("~/nix-system-config-v2/config/base16/pastel-twilight.yml"),
+    colors = yaml_parser.get_base16_colors("~/nix-system-config-v2/config/pastel-twilight/base16.yml"),
     styles = {
       italic = true,
       bold = true,
