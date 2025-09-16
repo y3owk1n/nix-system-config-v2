@@ -25,17 +25,15 @@ function M.setup()
       return ""
     end
 
-    local repo_info = vim.b.githead_summary
-    local has_git = repo_info ~= nil and repo_info.head_name ~= nil
+    local repo_info = vim.b.githead_summary or {}
+    local branch_name = repo_info.head_name or ""
 
-    if not has_git then
+    if branch_name == "" then
       return ""
     end
 
-    local branch_name = repo_info.head_name
-
     local icon = args.icon or (use_icons and "" or "Git")
-    return icon .. " " .. (branch_name == "" and "-" or branch_name)
+    return icon .. " " .. branch_name
   end
 
   local section_warp = function(args)
@@ -53,7 +51,7 @@ function M.setup()
     local total = warp.count()
 
     local icon = args.icon or (use_icons and "󱐋" or "Warp")
-    return string.format("%s[%s/%s]", icon, current, total)
+    return string.format("%s%s/%s", icon, current, total)
   end
 
   local active_content = function()
