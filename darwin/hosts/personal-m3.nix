@@ -67,6 +67,7 @@ in
       "keka"
       "appcleaner"
       "homerow"
+      "keyboard-cowboy"
       # "adobe-creative-cloud"
     ];
 

@@ -27,7 +27,7 @@ let
 in
 {
   services.skhd = {
-    enable = true;
+    enable = false;
     package = skhd;
     config = ''
       # launchers
