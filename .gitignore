@@ -1,5 +1,7 @@
 result
 .DS_Store
 
+config/keyboardcowboy/backups/
+
 # home/node-packages/*
 # !home/node-packages/node-packages.json
