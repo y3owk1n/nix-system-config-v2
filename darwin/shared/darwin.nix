@@ -69,7 +69,7 @@
         FXEnableExtensionChangeWarning = false;
         # Use list view in all Finder windows by default
         FXPreferredViewStyle = "Nlsv";
-        QuitMenuItem = true;
+        QuitMenuItem = false;
         ShowPathbar = true;
         ShowStatusBar = true;
         _FXShowPosixPathInTitle = true;
@@ -322,94 +322,94 @@
         # Turn on app auto-update
         "com.apple.commerce".AutoUpdate = true;
         # Macos hotkeys
-        "com.apple.symbolichotkeys" = {
-          AppleSymbolicHotKeys = {
-            # Window -> Fill (control + shift + m)
-            "237" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  109
-                  46 # m
-                  393216
-                ];
-                type = "standard";
-              };
-            };
-            # Window -> Move & resize left (control + shift + h)
-            "240" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  104
-                  4
-                  393216
-                ];
-                type = "standard";
-              };
-            };
-            # Window -> Move & resize right (control + shift + l)
-            "241" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  108
-                  37
-                  393216
-                ];
-                type = "standard";
-              };
-            };
-            # Window -> Move & resize top (control + shift + k)
-            "242" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  107
-                  40
-                  393216
-                ];
-                type = "standard";
-              };
-            };
-            # Window -> Move & resize bottom (control + shift + j)
-            "243" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  106
-                  38
-                  393216
-                ];
-                type = "standard";
-              };
-            };
-            # Window -> Move & resize left & right (control + shift + \)
-            "248" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  92
-                  42
-                  393216
-                ];
-                type = "standard";
-              };
-            };
-            # Window -> Move & resize top & bottom (control + shift + -)
-            "250" = {
-              enabled = 1;
-              value = {
-                parameters = [
-                  45
-                  27
-                  393216
-                ];
-                type = "standard";
-              };
-            };
-          };
-        };
+        # "com.apple.symbolichotkeys" = {
+        #   AppleSymbolicHotKeys = {
+        #     # Window -> Fill (control + shift + m)
+        #     "237" = {
+        #       enabled = 1;
+        #       value = {
+        #         parameters = [
+        #           109
+        #           46 # m
+        #           393216
+        #         ];
+        #         type = "standard";
+        #       };
+        #     };
+        #     # Window -> Move & resize left (control + shift + h)
+        #     "240" = {
+        #       enabled = 1;
+        #       value = {
+        #         parameters = [
+        #           104
+        #           4
+        #           393216
+        #         ];
+        #         type = "standard";
+        #       };
+        #     };
+        #     # Window -> Move & resize right (control + shift + l)
+        #     "241" = {
+        #       enabled = 1;
+        #       value = {
+        #         parameters = [
+        #           108
+        #           37
+        #           393216
+        #         ];
+        #         type = "standard";
+        #       };
+        #     };
+        #     # Window -> Move & resize top (control + shift + k)
+        #     "242" = {
+        #       enabled = 1;
+        #       value = {
+        #         parameters = [
+        #           107
+        #           40
+        #           393216
+        #         ];
+        #         type = "standard";
+        #       };
+        #     };
+        #     # Window -> Move & resize bottom (control + shift + j)
+        #     "243" = {
+        #       enabled = 1;
+        #       value = {
+        #         parameters = [
+        #           106
+        #           38
+        #           393216
+        #         ];
+        #         type = "standard";
+        #       };
+        #     };
+        #     # Window -> Move & resize left & right (control + shift + \)
+        #     "248" = {
+        #       enabled = 1;
+        #       value = {
+        #         parameters = [
+        #           92
+        #           42
+        #           393216
+        #         ];
+        #         type = "standard";
+        #       };
+        #     };
+        #     # Window -> Move & resize top & bottom (control + shift + -)
+        #     "250" = {
+        #       enabled = 1;
+        #       value = {
+        #         parameters = [
+        #           45
+        #           27
+        #           393216
+        #         ];
+        #         type = "standard";
+        #       };
+        #     };
+        #   };
+        # };
         "com.apple.Siri" = {
           CustomizedKeyboardShortcutSAE = {
             enabled = 1;
