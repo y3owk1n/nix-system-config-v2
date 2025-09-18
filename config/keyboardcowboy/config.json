@@ -260,6 +260,46 @@
                   },
                   "meta" : {
                     "enabled" : true,
+                    "id" : "267A37EE-3935-49E3-A19A-074DFA092EAF",
+                    "name" : ""
+                  }
+                }
+              }
+            ],
+            "execution" : "concurrent",
+            "id" : "A28EA240-D141-4D32-A962-5F1BEE3CBC34",
+            "name" : "Open Whatsapp",
+            "trigger" : {
+              "keyboardShortcuts" : {
+                "allowRepeat" : false,
+                "shortcuts" : [
+                  {
+                    "id" : "63123F09-E95A-40E4-951D-3E1459183BF2",
+                    "key" : "w",
+                    "modifiers" : [
+                      "$",
+                      "^",
+                      "~",
+                      "@"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands" : [
+              {
+                "applicationCommand" : {
+                  "action" : "open",
+                  "application" : {
+                    "bundleIdentifier" : "com.zenangst.Keyboard-Cowboy",
+                    "bundleName" : "Keyboard Cowboy",
+                    "displayName" : "Keyboard Cowboy.app",
+                    "path" : "\/Applications\/Keyboard Cowboy.app"
+                  },
+                  "meta" : {
+                    "enabled" : true,
                     "id" : "AF08F07E-748F-4EDD-AC16-2DB0E2A6D1FD",
                     "name" : ""
                   }
@@ -268,14 +308,14 @@
             ],
             "execution" : "concurrent",
             "id" : "437A275C-EE83-4619-B2E2-587E6F33A38D",
-            "name" : "Open Whatsapp",
+            "name" : "Open KeyboardCowboy",
             "trigger" : {
               "keyboardShortcuts" : {
                 "allowRepeat" : false,
                 "shortcuts" : [
                   {
-                    "id" : "ECF1F674-59DC-4538-BF12-2DAC0B9A7277",
-                    "key" : "w",
+                    "id" : "2FE4F365-F161-4A80-980D-6A0FF7084A1E",
+                    "key" : "k",
                     "modifiers" : [
                       "$",
                       "^",
@@ -316,6 +356,40 @@
                   {
                     "id" : "5F26FA66-B3CE-436A-8913-4849E513B963",
                     "key" : "f",
+                    "modifiers" : [
+                      "$",
+                      "^",
+                      "~",
+                      "@"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands" : [
+              {
+                "systemCommand" : {
+                  "kind" : "activateLastApplication",
+                  "meta" : {
+                    "enabled" : true,
+                    "id" : "ECFCFADB-E0B0-40C6-A983-3E39BB953D86",
+                    "name" : ""
+                  }
+                }
+              }
+            ],
+            "execution" : "serial",
+            "id" : "0D98545B-2EFA-40CF-A3C3-F4FCAB68EFEA",
+            "name" : "Open Last Application",
+            "trigger" : {
+              "keyboardShortcuts" : {
+                "allowRepeat" : false,
+                "shortcuts" : [
+                  {
+                    "id" : "57841A58-25E3-4FE8-9ADF-DD6ABD670E0D",
+                    "key" : "l",
                     "modifiers" : [
                       "$",
                       "^",
@@ -781,6 +855,63 @@
                   }
                 ]
               }
+            }
+          }
+        ]
+      },
+      {
+        "color" : "#5D5FDE",
+        "id" : "254FC51C-B797-4E8C-8DCE-A06C85754373",
+        "name" : "Automation",
+        "symbol" : "bolt",
+        "workflows" : [
+          {
+            "commands" : [
+              {
+                "keyboardCommand" : {
+                  "kind" : {
+                    "key" : {
+                      "command" : {
+                        "iterations" : 1,
+                        "keyboardShortcuts" : [
+                          {
+                            "id" : "B7053E92-2106-404D-9072-AF8E1E5AD9C8",
+                            "key" : "h",
+                            "modifiers" : [
+                              "~",
+                              "@"
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "meta" : {
+                    "enabled" : true,
+                    "id" : "26D6323E-E80D-4206-8416-1236A643A2CD",
+                    "name" : ""
+                  }
+                }
+              }
+            ],
+            "execution" : "serial",
+            "id" : "DA1267C8-7485-412C-A1C9-B4AD9B5C5B40",
+            "name" : "Frontmost",
+            "trigger" : {
+              "application" : [
+                {
+                  "application" : {
+                    "bundleIdentifier" : "*.*.*",
+                    "bundleName" : "Any Application",
+                    "displayName" : "Any Application",
+                    "path" : "Any Application"
+                  },
+                  "contexts" : [
+                    "frontMost"
+                  ],
+                  "id" : "ED6EA1C9-F7F2-4739-8814-7F5955B36D60"
+                }
+              ]
             }
           }
         ]
