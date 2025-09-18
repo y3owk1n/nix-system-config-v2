@@ -59,9 +59,6 @@ function M.setup()
 
   plugin.setup(plugin_opts)
 
-  --- override vim.ui.select
-  vim.ui.select = plugin.ui_select
-
   --- setting keymaps
   vim.keymap.set("n", "<leader><space>", function()
     plugin.builtin.files()
