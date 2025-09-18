@@ -65,6 +65,7 @@ in
       "appcleaner"
       "adobe-creative-cloud"
       "homerow"
+      "keyboard-cowboy"
     ];
 
     masApps = { };

@@ -1,0 +1,769 @@
+[
+  {
+    "groups": [
+      {
+        "color": "#EB5545",
+        "id": "2139C912-D248-4C18-B375-36108F74C540",
+        "name": "Automation",
+        "symbol": "autostartstop"
+      },
+      {
+        "color": "#F2A23C",
+        "id": "1028B452-BF14-47F0-8369-1AB9AD536A68",
+        "name": "Applications",
+        "symbol": "app.dashed",
+        "workflows": [
+          {
+            "commands": [
+              {
+                "applicationCommand": {
+                  "action": "open",
+                  "application": {
+                    "bundleIdentifier": "com.apple.finder",
+                    "bundleName": "Finder",
+                    "displayName": "Finder",
+                    "path": "\/System\/Library\/CoreServices\/Finder.app"
+                  },
+                  "meta": {
+                    "enabled": true,
+                    "id": "730FF1BF-D58E-4BDC-93ED-56F930D3DF03",
+                    "name": ""
+                  }
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "1DC97790-EA4B-4CA9-AF2A-C79C2BAEFA89",
+            "name": "Switch to Finder",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": [
+                  {
+                    "id": "0AF30181-EE11-44BB-99CE-F492AD469A14",
+                    "key": "f",
+                    "modifiers": ["$", "^", "~", "@"]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "applicationCommand": {
+                  "action": "open",
+                  "application": {
+                    "bundleIdentifier": "com.apple.Safari",
+                    "bundleName": "Safari",
+                    "displayName": "Safari",
+                    "path": "\/Applications\/Safari.app"
+                  },
+                  "meta": {
+                    "enabled": true,
+                    "id": "02005025-4737-4181-B171-5D3374502323",
+                    "name": ""
+                  }
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "1EF38C1A-F9FF-4CA6-964C-EE4EAB29B0CF",
+            "name": "Switch to Safari",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": [
+                  {
+                    "id": "936D39D8-7C1F-468A-A482-52A50F820D9E",
+                    "key": "b",
+                    "modifiers": ["$", "^", "~", "@"]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "applicationCommand": {
+                  "action": "open",
+                  "application": {
+                    "bundleIdentifier": "com.apple.systempreferences",
+                    "bundleName": "System Settings",
+                    "displayName": "System Settings",
+                    "path": "\/System\/Applications\/System Settings.app"
+                  },
+                  "meta": {
+                    "enabled": true,
+                    "id": "220CDFAE-0B27-48C1-A9C1-3826083ADE57",
+                    "name": ""
+                  }
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "3BD472A1-22C0-4A7A-8B96-F7389B756659",
+            "name": "Open System Settings",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": [
+                  {
+                    "id": "7423C15F-1F9C-4A4C-96EA-07A9EBC50A87",
+                    "key": "s",
+                    "modifiers": ["$", "^", "~", "@"]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "applicationCommand": {
+                  "action": "open",
+                  "application": {
+                    "bundleIdentifier": "com.mitchellh.ghostty",
+                    "bundleName": "Ghostty",
+                    "displayName": "Ghostty.app",
+                    "path": "\/Applications\/Ghostty.app"
+                  },
+                  "meta": {
+                    "enabled": true,
+                    "id": "A652017E-89B7-43B5-9DA0-AB83F14E359F",
+                    "name": ""
+                  }
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "6A149330-2F20-4D72-B25E-C80CAA8C8613",
+            "name": "Switch to Ghostty",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": [
+                  {
+                    "id": "8D62F0DD-0D19-4D70-8579-590B6C85C031",
+                    "key": "t",
+                    "modifiers": ["$", "^", "~", "@"]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "applicationCommand": {
+                  "action": "open",
+                  "application": {
+                    "bundleIdentifier": "com.apple.Notes",
+                    "bundleName": "Notes",
+                    "displayName": "Notes.app",
+                    "path": "\/System\/Applications\/Notes.app"
+                  },
+                  "meta": {
+                    "enabled": true,
+                    "id": "B441645C-5BC3-4A88-AC10-591EB3FC3B27",
+                    "name": ""
+                  }
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "9F6FDBF7-3ACB-4D85-91E1-0D2AC65AF7D2",
+            "name": "Switch to Notes",
+            "trigger": {
+              "keyboardShortcuts": {
+                "allowRepeat": false,
+                "shortcuts": [
+                  {
+                    "id": "E3EE4E17-11E4-4A24-900F-277EE9F5427D",
+                    "key": "n",
+                    "modifiers": ["$", "^", "~", "@"]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "applicationCommand": {
+                  "action": "open",
+                  "application": {
+                    "bundleIdentifier": "com.apple.mail",
+                    "bundleName": "Mail",
+                    "displayName": "Mail.app",
+                    "path": "\/System\/Applications\/Mail.app"
+                  },
+                  "meta": {
+                    "enabled": true,
+                    "id": "31A2A72C-AAD9-411D-9A56-1CE1FEB2E2F5",
+                    "name": ""
+                  }
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "4BF288A1-E86C-4514-BEF0-94CCD96009A7",
+            "name": "Switch to Mail",
+            "trigger": {
+              "keyboardShortcuts": {
+                "allowRepeat": false,
+                "shortcuts": [
+                  {
+                    "id": "8E70F5C5-0C77-4000-BBAA-1FB087EFC052",
+                    "key": "m",
+                    "modifiers": ["$", "^", "~", "@"]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "applicationCommand": {
+                  "action": "open",
+                  "application": {
+                    "bundleIdentifier": "com.apple.Passwords",
+                    "bundleName": "Passwords",
+                    "displayName": "Passwords.app",
+                    "path": "\/System\/Applications\/Passwords.app"
+                  },
+                  "meta": {
+                    "enabled": true,
+                    "id": "3EDD2E7A-2497-4D13-938C-193BE076E808",
+                    "name": ""
+                  }
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "7199DECB-28D5-4CDE-8AEB-E92A9CC8EAEF",
+            "name": "Switch to Passwords",
+            "trigger": {
+              "keyboardShortcuts": {
+                "allowRepeat": false,
+                "shortcuts": [
+                  {
+                    "id": "D4479A4C-2C10-4CE6-A66A-E35F84DF58BE",
+                    "key": "p",
+                    "modifiers": ["$", "^", "~", "@"]
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "color": "#F9D64A",
+        "id": "2A954CCF-0EA5-4CBB-A0F1-D6E9D933D1E1",
+        "name": "AppleScripts",
+        "symbol": "applescript",
+        "workflows": [
+          {
+            "commands": [
+              {
+                "scriptCommand": {
+                  "kind": {
+                    "appleScript": {
+                      "variant": {
+                        "regular": {}
+                      }
+                    }
+                  },
+                  "meta": {
+                    "enabled": true,
+                    "id": "0A83BB2A-834E-417B-B3B6-1B40ADBA1FB0",
+                    "name": "Show note"
+                  },
+                  "source": {
+                    "inline": {
+                      "_0": "tell application \"Notes\"\n    show note \"awesome note\"\nend tell"
+                    }
+                  }
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "656BD821-19C0-4142-859E-DD31F45EAC44",
+            "name": "Open a specific note"
+          }
+        ]
+      },
+      {
+        "color": "#6BD35F",
+        "id": "26099A4B-11FB-46E8-AA5C-B4F761556B56",
+        "name": "Files & Folders",
+        "symbol": "folder",
+        "workflows": [
+          {
+            "commands": [
+              {
+                "openCommand": {
+                  "meta": {
+                    "enabled": true,
+                    "id": "A5EA2CCC-C7CA-45F0-9ED8-C5EEE5124AA6",
+                    "name": ""
+                  },
+                  "path": "\/Users\/kylewong"
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "073F5E7B-83C9-47C5-B547-7319F5AE754B",
+            "name": "Open Home folder",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": [
+                  {
+                    "id": "BC324182-A302-4834-AF57-1FD84683DDF6",
+                    "key": "H",
+                    "modifiers": ["fn"]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "openCommand": {
+                  "meta": {
+                    "enabled": true,
+                    "id": "B873B1E9-020E-4169-8ED9-FE1551C05799",
+                    "name": ""
+                  },
+                  "path": "\/Users\/kylewong\/Documents"
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "8CC37E1C-1C8B-48B7-A76B-C0AA3C222260",
+            "name": "Open Documents folder",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": []
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "openCommand": {
+                  "meta": {
+                    "enabled": true,
+                    "id": "D571DED3-67D8-4B97-BD17-BB3CCFF5B592",
+                    "name": ""
+                  },
+                  "path": "\/Users\/kylewong\/Downloads"
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "1E00C09B-E343-46B1-A0B2-08DB444F19FB",
+            "name": "Open Downloads folder",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": []
+              }
+            }
+          }
+        ]
+      },
+      {
+        "color": "#3984F7",
+        "id": "82B6F88A-68AC-4264-954B-61ADFA9E0DD2",
+        "name": "Rebinding",
+        "symbol": "app.connected.to.app.below.fill",
+        "workflows": [
+          {
+            "commands": [
+              {
+                "keyboardCommand": {
+                  "kind": {
+                    "key": {
+                      "command": {
+                        "iterations": 1,
+                        "keyboardShortcuts": [
+                          {
+                            "id": "A89FCA2C-D50A-46A8-937E-6BDE7FACE895",
+                            "key": "←"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "meta": {
+                    "enabled": true,
+                    "id": "E9251549-B745-46D5-AC5E-85B6E9060AD1",
+                    "name": ""
+                  }
+                }
+              }
+            ],
+            "disabled": true,
+            "execution": "concurrent",
+            "id": "166E10EA-227E-4E00-A63B-C0039FD78A79",
+            "name": "Vim bindings H to ←",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": [
+                  {
+                    "id": "7CB546F1-B716-4EE8-969A-BE15BD811809",
+                    "key": "H",
+                    "modifiers": ["~"]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "keyboardCommand": {
+                  "kind": {
+                    "key": {
+                      "command": {
+                        "iterations": 1,
+                        "keyboardShortcuts": [
+                          {
+                            "id": "2A1B06D4-F586-4B05-87B6-1C4BEE635701",
+                            "key": "↓"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "meta": {
+                    "enabled": true,
+                    "id": "2CFD73BB-24EB-4A31-9448-2C096BA5BE57",
+                    "name": ""
+                  }
+                }
+              }
+            ],
+            "disabled": true,
+            "execution": "concurrent",
+            "id": "1989320F-8AF0-4AB7-A34E-A0F165155635",
+            "name": "Vim bindings J to ↓",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": [
+                  {
+                    "id": "99AC830A-BEF0-4A58-B491-C3B8810537B2",
+                    "key": "J",
+                    "modifiers": ["~"]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "keyboardCommand": {
+                  "kind": {
+                    "key": {
+                      "command": {
+                        "iterations": 1,
+                        "keyboardShortcuts": [
+                          {
+                            "id": "697F05FE-4694-4465-936A-280D1B45C931",
+                            "key": "↑"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "meta": {
+                    "enabled": true,
+                    "id": "13269C05-7AF2-45D0-8113-E4BCC74BACCD",
+                    "name": ""
+                  }
+                }
+              }
+            ],
+            "disabled": true,
+            "execution": "concurrent",
+            "id": "602B35DA-02A6-4FA0-BB2C-434DF54A57D6",
+            "name": "Vim bindings K to ↑",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": [
+                  {
+                    "id": "28765D16-135C-4DC0-B39D-503E1C91BF91",
+                    "key": "K",
+                    "modifiers": ["~"]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "keyboardCommand": {
+                  "kind": {
+                    "key": {
+                      "command": {
+                        "iterations": 1,
+                        "keyboardShortcuts": [
+                          {
+                            "id": "A7056CC6-3693-41DF-98BA-42FDE8FC2615",
+                            "key": "→"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "meta": {
+                    "enabled": true,
+                    "id": "0B9FA56B-5028-4234-8CFF-53C0CEDEA856",
+                    "name": ""
+                  }
+                }
+              }
+            ],
+            "disabled": true,
+            "execution": "concurrent",
+            "id": "10F18816-E123-486A-B6F8-E8F17F6C21D2",
+            "name": "Vim bindings L to →",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": [
+                  {
+                    "id": "B83769EC-7C17-4B3B-AAF4-FD2046189535",
+                    "key": "L",
+                    "modifiers": ["~"]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "keyboardCommand": {
+                  "kind": {
+                    "key": {
+                      "command": {
+                        "iterations": 1,
+                        "keyboardShortcuts": [
+                          {
+                            "id": "45ACF0BA-5901-4519-AAF9-8D5166716C8A",
+                            "key": "Space",
+                            "modifiers": ["r@"]
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "meta": {
+                    "enabled": true,
+                    "id": "06984D8E-5CB8-4F8E-8119-770F53A7A8CB",
+                    "name": ""
+                  }
+                }
+              }
+            ],
+            "execution": "serial",
+            "id": "5AB0AE8B-3287-4A83-9E31-119111A974B4",
+            "name": "Spotlight binding",
+            "trigger": {
+              "keyboardShortcuts": {
+                "allowRepeat": false,
+                "shortcuts": [
+                  {
+                    "id": "A3EAA83D-313F-47B5-8BC6-A19609208C94",
+                    "key": "↩",
+                    "modifiers": ["$", "^", "~", "@"]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "execution": "serial",
+            "id": "8734A1F4-C8F3-4BBB-A70C-AB6A98533035",
+            "name": "Untitled workflow"
+          }
+        ]
+      },
+      {
+        "color": "#B263EA",
+        "id": "4436A27A-4473-4C68-9C8E-AF6D861FFA29",
+        "name": "Shortcuts",
+        "symbol": "flowchart"
+      },
+      {
+        "color": "#5D5FDE",
+        "id": "8C0BD2B5-5AC3-44C1-BDA4-0DAD20BC8766",
+        "name": "ShellScripts",
+        "symbol": "terminal"
+      },
+      {
+        "color": "#A78F6D",
+        "id": "0C43F9E3-B9F4-489D-BB61-73A70FBFC8D9",
+        "name": "System",
+        "symbol": "laptopcomputer"
+      },
+      {
+        "color": "#98989D",
+        "id": "E41D7B49-62A1-4427-B332-B9F9A0341B42",
+        "name": "Websites",
+        "symbol": "safari",
+        "workflows": [
+          {
+            "commands": [
+              {
+                "openCommand": {
+                  "meta": {
+                    "enabled": true,
+                    "id": "D2DC4969-E53D-42AE-A991-C61B98184B55",
+                    "name": ""
+                  },
+                  "path": "https:\/\/www.apple.com"
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "2F0CFE35-D2F2-4E7B-A100-0162C82F9630",
+            "name": "Open apple.com",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": [
+                  {
+                    "id": "577B23A3-6972-4170-B44E-43723AB32A44",
+                    "key": "⇥",
+                    "modifiers": ["fn"]
+                  },
+                  {
+                    "id": "EE9C0E55-AEF0-4423-B37A-233BA174AD20",
+                    "key": "A"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "openCommand": {
+                  "meta": {
+                    "enabled": true,
+                    "id": "33F212B6-5D29-47A3-951B-C158E5710EAC",
+                    "name": ""
+                  },
+                  "path": "https:\/\/www.github.com"
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "F7F07DC7-D1E6-49D5-B7D1-25EE1D7AA560",
+            "name": "Open github.com",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": [
+                  {
+                    "id": "4C65B700-2084-4FE5-AB52-42DFDE105478",
+                    "key": "⇥",
+                    "modifiers": ["fn"]
+                  },
+                  {
+                    "id": "C919AABE-B940-4F0C-8A0A-4E03D3B761B0",
+                    "key": "G"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "commands": [
+              {
+                "openCommand": {
+                  "meta": {
+                    "enabled": true,
+                    "id": "CE81669F-EF7C-41BD-9BE1-A3879E1C4C39",
+                    "name": ""
+                  },
+                  "path": "https:\/\/www.imdb.com"
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "F6D8D0B3-4970-4958-9B91-31C0057EBF6B",
+            "name": "Open imdb.com",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": [
+                  {
+                    "id": "411B8B5E-C14D-4FD5-8475-DBB3BC866C54",
+                    "key": "⇥",
+                    "modifiers": ["fn"]
+                  },
+                  {
+                    "id": "03D53B1B-5A30-43AA-A52B-B03B5930C2BA",
+                    "key": "I"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "color": "#3984F7",
+        "id": "4CF78CF4-BA3B-4B93-BD3F-04B61A71CC5B",
+        "name": "Mail",
+        "rule": {
+          "bundleIdentifiers": ["com.apple.mail"],
+          "id": "7AF6A9E1-DC9A-45AF-B7C0-9E21ADAF387B"
+        },
+        "symbol": "folder",
+        "workflows": [
+          {
+            "commands": [
+              {
+                "textCommand": {
+                  "kind": {
+                    "insertText": {
+                      "_0": {
+                        "actions": ["insertEnter"],
+                        "input": "Stay hungry, stay awesome!\n--------------------------\nxoxo\nKyle Wong",
+                        "meta": {
+                          "enabled": true,
+                          "id": "A3044D94-C223-417C-9CAD-C553B867FE0B",
+                          "name": "Signature"
+                        },
+                        "mode": "Instant"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "execution": "concurrent",
+            "id": "4BD5DA98-0EEA-4AD3-BD12-0E6A6BE5FE11",
+            "name": "Type mail signature",
+            "trigger": {
+              "keyboardShortcuts": {
+                "shortcuts": [
+                  {
+                    "id": "7A25D10E-68C0-41E8-B652-9FB9C0CB27D4",
+                    "key": "S",
+                    "modifiers": ["fn", "@"]
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "id": "DAA08367-9CFE-4222-B60B-D0D438AEF520",
+    "name": "Default Configuration",
+    "userModes": []
+  }
+]
