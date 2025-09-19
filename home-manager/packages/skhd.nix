@@ -30,22 +30,31 @@ in
     enable = false;
     package = skhd;
     config = ''
+      .define open_hide : open -a "{{1}}" && skhd --key "cmd + alt - h"
+
       # launchers
-      hyper - b : open -a Safari
-      hyper - 1 : open -a Safari
+      hyper - b : @open_hide("safari")
+      hyper - 1 : @open_hide("safari")
 
-      hyper - t : open -a Ghostty
-      hyper - 2 : open -a Ghostty
+      hyper - t : @open_hide("ghostty")
+      hyper - 2 : @open_hide("ghostty")
 
-      hyper - n : open -a Notes
-      hyper - m : open -a Mail
-      hyper - w : open -a WhatsApp
-      hyper - f : open -a Finder
-      hyper - s : open -a "System Settings"
-      hyper - p : open -a Passwords
+      hyper - n : @open_hide("notes")
+      hyper - m : @open_hide("mail")
+      hyper - w : @open_hide("WhatsApp")
+      hyper - f : @open_hide("Finder")
+      hyper - s : @open_hide("System Settings")
+      hyper - p : @open_hide("Passwords")
 
       # spotlight
       hyper - return : skhd --key "cmd - space"
+
+      # window management
+      ctrl + shift - m : skhd --key "fn + ctrl - f"
+      ctrl + shift - h : osascript -e 'tell application "System Events" to tell (first application process whose frontmost is true) to click menu item "Left" of menu 1 of menu item "Move & Resize" of menu "Window" of menu bar 1'
+      ctrl + shift - l : osascript -e 'tell application "System Events" to tell (first application process whose frontmost is true) to click menu item "Right" of menu 1 of menu item "Move & Resize" of menu "Window" of menu bar 1'
+      ctrl + shift - j : osascript -e 'tell application "System Events" to tell (first application process whose frontmost is true) to click menu item "Bottom" of menu 1 of menu item "Move & Resize" of menu "Window" of menu bar 1'
+      ctrl + shift - k : osascript -e 'tell application "System Events" to tell (first application process whose frontmost is true) to click menu item "Top" of menu 1 of menu item "Move & Resize" of menu "Window" of menu bar 1'
     '';
   };
 }
