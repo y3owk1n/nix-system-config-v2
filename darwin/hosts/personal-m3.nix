@@ -55,7 +55,7 @@ in
       "blender"
       "tailscale-app"
       # "ghostty"
-      "ghostty@tip"
+      # "ghostty@tip"
       "rustdesk"
       "brave-browser"
       "zen"
