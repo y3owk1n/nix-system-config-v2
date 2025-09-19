@@ -56,9 +56,9 @@
         }
         {
           name = "skhd config";
-          path = "~/nix-system-config-v2/darwin/modules";
+          path = "~/nix-system-config-v2/home-manager/packages";
           startup_command = "nvim skhd.nix";
-          preview_command = "bat --color=always ~/nix-system-config-v2/darwin/modules/skhd.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/home-manager/packages/skhd.nix";
         }
         {
           name = "btop";
