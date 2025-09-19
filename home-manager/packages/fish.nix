@@ -12,6 +12,9 @@
         nvs env --source | source
       end
 
+      if test -n "$GHOSTTY_RESOURCES_DIR"
+        source "$GHOSTTY_RESOURCES_DIR/shell-integration/fish/vendor_conf.d/ghostty-shell-integration.fish"
+      end
     '';
     shellInit = ''
       __load-em
