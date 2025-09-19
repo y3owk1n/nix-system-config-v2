@@ -200,7 +200,7 @@
           # AppleSpacesSwitchOnActivate = true;
           "com.apple.mouse.scaling" = 9;
           AppleLanguages = [
-            "en-US"
+            "en-SG"
             "ms-MY"
             "zh-Hant-MY"
           ];
