@@ -1,9 +1,6 @@
 theme = /Users/kylewong/nix-system-config-v2/config/pastel-twilight/ghostty
 
-font-family = JetBrainsMonoNL Nerd Font Propo SemiBold
-font-family-bold = JetBrainsMonoNL Nerd Font Propo ExtraBold
-font-family-italic = JetBrainsMonoNL Nerd Font Propo Medium Italic
-font-family-bold-italic = JetBrainsMonoNL Nerd Font Propo ExtraBold Italic
+font-family = JetBrains Mono
 font-size = 16
 font-feature = -calt
 font-feature = -liga

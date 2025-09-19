@@ -51,8 +51,8 @@ in
 
     casks = [
       "tailscale-app"
-      # "ghostty"
-      "ghostty@tip"
+      "ghostty"
+      # "ghostty@tip"
       "rustdesk"
       "brave-browser"
       "zen"
