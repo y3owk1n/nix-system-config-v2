@@ -1,5 +1,6 @@
 {
   username,
+  lib,
   ...
 }:
 
@@ -42,19 +43,55 @@
     username = username;
     homeDirectory = "/Users/${username}";
 
-    activation = {
-      # NOTE: Do not delete this! Uncomment this when you want to use spotlight search
-      # This will enable spotlight search to index installed apps
-      # rsync-home-manager-applications = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      #   rsyncArgs="--archive --checksum --chmod=-w --copy-unsafe-links --delete"
-      #   apps_source="$genProfilePath/home-path/Applications"
-      #   moniker="Home Manager Trampolines"
-      #   app_target_base="${config.home.homeDirectory}/Applications"
-      #   app_target="$app_target_base/$moniker"
-      #   mkdir -p "$app_target"
-      #   ${pkgs.rsync}/bin/rsync $rsyncArgs "$apps_source/" "$app_target"
-      # '';
-    };
+    # NOTE: Do not delete this! Uncomment this when you want to use spotlight search
+    # This will enable spotlight search to index installed apps
+    #
+    # Source -> https://gist.github.com/Jabb0/1b7ad92e8ab3065ac999c21edc23311f
+    #
+    activation.copyNixApps = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      # Create directory for the applications
+      mkdir -p "$HOME/Applications/Nix-Apps"
+      # Remove old entries
+      rm -rf "$HOME/Applications/Nix-Apps"/*
+      # Get the target of the symlink
+      NIXAPPS=$(readlink -f "$HOME/Applications/Home Manager Apps")
+      # For each application
+      for app_source in "$NIXAPPS"/*; do
+        if [ -d "$app_source" ] || [ -L "$app_source" ]; then
+            appname=$(basename "$app_source")
+            target="$HOME/Applications/Nix-Apps/$appname"
+
+            # Create the basic structure
+            mkdir -p "$target"
+            mkdir -p "$target/Contents"
+
+            # Copy the Info.plist file
+            if [ -f "$app_source/Contents/Info.plist" ]; then
+              mkdir -p "$target/Contents"
+              cp -f "$app_source/Contents/Info.plist" "$target/Contents/"
+            fi
+
+            # Copy icon files
+            if [ -d "$app_source/Contents/Resources" ]; then
+              mkdir -p "$target/Contents/Resources"
+              find "$app_source/Contents/Resources" -name "*.icns" -exec cp -f {} "$target/Contents/Resources/" \;
+            fi
+
+            # Symlink the MacOS directory (contains the actual binary)
+            if [ -d "$app_source/Contents/MacOS" ]; then
+              ln -sfn "$app_source/Contents/MacOS" "$target/Contents/MacOS"
+            fi
+
+            # Symlink other directories
+            for dir in "$app_source/Contents"/*; do
+              dirname=$(basename "$dir")
+              if [ "$dirname" != "Info.plist" ] && [ "$dirname" != "Resources" ] && [ "$dirname" != "MacOS" ]; then
+                ln -sfn "$dir" "$target/Contents/$dirname"
+              fi
+            done
+          fi
+          done
+    '';
 
     # This value determines the Home Manager release that your
     # configuration is compatible with. This helps avoid breakage
