@@ -30,7 +30,9 @@ in
     enable = false;
     package = skhd;
     config = ''
-      .define open_hide : open -a "{{1}}" && skhd --key "cmd + alt - h"
+      .shell "/bin/dash"
+
+      .define open_hide : open -a "{{1}}" && until pgrep -f "{{1}}" > /dev/null; do sleep 0.1; done && /etc/profiles/per-user/kylewong/bin/skhd --key "cmd + alt - h"
 
       # launchers
       hyper - b : @open_hide("safari")
@@ -47,10 +49,10 @@ in
       hyper - p : @open_hide("Passwords")
 
       # spotlight
-      hyper - return : skhd --key "cmd - space"
+      hyper - return : /etc/profiles/per-user/kylewong/bin/skhd --key "cmd - space"
 
       # window management
-      ctrl + shift - m : skhd --key "fn + ctrl - f"
+      ctrl + shift - m : /etc/profiles/per-user/kylewong/bin/skhd --key "fn + ctrl - f"
       ctrl + shift - h : osascript -e 'tell application "System Events" to tell (first application process whose frontmost is true) to click menu item "Left" of menu 1 of menu item "Move & Resize" of menu "Window" of menu bar 1'
       ctrl + shift - l : osascript -e 'tell application "System Events" to tell (first application process whose frontmost is true) to click menu item "Right" of menu 1 of menu item "Move & Resize" of menu "Window" of menu bar 1'
       ctrl + shift - j : osascript -e 'tell application "System Events" to tell (first application process whose frontmost is true) to click menu item "Bottom" of menu 1 of menu item "Move & Resize" of menu "Window" of menu bar 1'
