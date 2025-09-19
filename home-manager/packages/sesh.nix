@@ -8,9 +8,8 @@
     settings = {
       default_session = {
         startup_command = "ls";
-        preview_command = "tree -L 1 -C --dirsfirst -a {}";
+        preview_command = "eza --tree --level=1 --color=always --group-directories-first -a {}";
       };
-
       session = [
         {
           name = "home (~)";
