@@ -142,3 +142,8 @@ relaunch-skhd:
 relaunch-atauin-daemon:
     launchctl bootout gui/$(id -u)/org.nix-community.home.atuin-daemon
     launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/org.nix-community.home.atuin-daemon.plist
+
+[macos]
+relaunch-gpg-agent:
+    gpgconf --kill gpg-agent
+    gpgconf --launch gpg-agent
