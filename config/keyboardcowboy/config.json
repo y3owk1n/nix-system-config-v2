@@ -96,17 +96,17 @@
                     "bundleIdentifier" : "com.mitchellh.ghostty",
                     "bundleName" : "Ghostty",
                     "displayName" : "Ghostty.app",
-                    "path" : "\/Applications\/Ghostty.app"
+                    "path" : "\/Users\/kylewong\/Applications\/Nix-Apps\/Ghostty.app"
                   },
                   "meta" : {
                     "enabled" : true,
-                    "id" : "A652017E-89B7-43B5-9DA0-AB83F14E359F",
+                    "id" : "A1CC0C08-1431-422E-A32C-5532BAB4BA69",
                     "name" : ""
                   }
                 }
               }
             ],
-            "execution" : "concurrent",
+            "execution" : "serial",
             "id" : "6A149330-2F20-4D72-B25E-C80CAA8C8613",
             "name" : "Open Ghostty",
             "trigger" : {
