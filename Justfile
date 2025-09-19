@@ -137,3 +137,8 @@ restore-gpg gpg_key:
 relaunch-skhd:
     launchctl bootout gui/$(id -u)/org.nix-community.home.skhd
     launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/org.nix-community.home.skhd.plist
+
+[macos]
+relaunch-atauin-daemon:
+    launchctl bootout gui/$(id -u)/org.nix-community.home.atuin-daemon
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/org.nix-community.home.atuin-daemon.plist
