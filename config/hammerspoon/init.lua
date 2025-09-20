@@ -13,6 +13,26 @@ local keyStroke = function(mods, key, delay)
 end
 
 -- ------------------------------------------------------------------
+-- Global Preferences
+-- ------------------------------------------------------------------
+
+hs.autoLaunch(true)
+hs.automaticallyCheckForUpdates(true)
+hs.consoleOnTop(false)
+hs.dockIcon(false)
+hs.menuIcon(true)
+hs.uploadCrashData(false)
+hs.preferencesDarkMode(true)
+
+-- verbose, debug, info, warning, error, nothing
+hs.logger.defaultLogLevel = "warning"
+
+-- toggle console
+bind(hyper, "h", function()
+  hs.toggleConsole()
+end)
+
+-- ------------------------------------------------------------------
 -- Launcher
 -- ------------------------------------------------------------------
 
