@@ -20,6 +20,7 @@
     ./packages/git.nix
     ./packages/go.nix
     ./packages/gpg.nix
+    ./packages/hammerspoon.nix
     ./packages/kanata.nix
     ./packages/keyboardcowboy.nix
     ./packages/lazygit.nix
