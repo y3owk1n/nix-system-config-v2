@@ -65,6 +65,7 @@ in
       "imageoptim"
       "whatsapp"
       "keka"
+      "kekaexternalhelper"
       "appcleaner"
       "homerow"
       "keyboard-cowboy"
