@@ -61,6 +61,12 @@
           preview_command = "bat --color=always ~/nix-system-config-v2/home-manager/packages/skhd.nix";
         }
         {
+          name = "hammerspoon config";
+          path = "~/nix-system-config-v2/config/hammerspoon";
+          startup_command = "nvim init.lua";
+          preview_command = "bat --color=always ~/nix-system-config-v2/config/hammerspoon/init.lua";
+        }
+        {
           name = "btop";
           path = "~";
           startup_command = "btop";
