@@ -80,6 +80,7 @@ end)
 
 ---@class Hs.Config.Watcher
 ---@field hideAllWindowExceptFront Hs.Config.Watcher.HideAllWindowExceptFront Whether to hide all windows except the frontmost one
+---@field autoMaximizeWindow Hs.Config.Watcher.AutoMaximizeWindow Whether to maximize the window when it is activated
 
 ---@class Hs.Config.Watcher.Bindings
 ---@field modifier Hs.Modifier|Hs.Modifier[] Modifiers to use for the watcher bindings
@@ -88,6 +89,10 @@ end)
 ---@class Hs.Config.Watcher.HideAllWindowExceptFront
 ---@field enabled boolean Whether to hide all windows except the frontmost one
 ---@field bindings? Hs.Config.Watcher.Bindings Bindings to use for the watcher hide all window except front bindings
+
+---@class Hs.Config.Watcher.AutoMaximizeWindow
+---@field enabled boolean Whether to maximize the window when it is activated
+---@field bindings? Hs.Config.Watcher.Bindings Bindings to use for the watcher auto maximize window bindings
 
 -- ------------------------------------------------------------------
 -- Configuration
@@ -182,6 +187,13 @@ local config = {
         key = "1",
       },
     },
+    autoMaximizeWindow = {
+      enabled = true,
+      bindings = {
+        modifier = hyper,
+        key = "2",
+      },
+    },
   },
 }
 
@@ -251,6 +263,8 @@ local _appWatcher = nil
 
 local _hideAllWindowExceptFrontStatus = config.watcher.hideAllWindowExceptFront.enabled or false
 
+local _autoMaximizeWindowStatus = config.watcher.autoMaximizeWindow.enabled or false
+
 ---Function to create and start the watcher
 ---@return nil
 local function startWatcher()
@@ -277,6 +291,13 @@ local function startWatcher()
             keyStroke({ "cmd", "alt" }, "h")
           end)
         end
+
+        if _hideAllWindowExceptFrontStatus and _autoMaximizeWindowStatus then
+          doAfter(0.1, function()
+            -- maximize window
+            keyStroke({ "fn", "ctrl" }, "f")
+          end)
+        end
       end
 
       if eventType == watcher.deactivated then
@@ -299,16 +320,29 @@ end
 -- Bind `hideAllWindowExceptFront` toggle
 if config.watcher.hideAllWindowExceptFront.enabled then
   local bindings = config.watcher.hideAllWindowExceptFront.bindings
-  if not bindings then
+  if bindings and type(bindings) == "table" then
+    bind(bindings.modifier, bindings.key, function()
+      _hideAllWindowExceptFrontStatus = not _hideAllWindowExceptFrontStatus
+      notify(string.format("hideAllWindowExceptFront: %s", _hideAllWindowExceptFrontStatus))
+      printf("hideAllWindowExceptFront: %s", _hideAllWindowExceptFrontStatus)
+    end)
+  else
     printf("No watcher hideAllWindowExceptFront bindings defined")
-    return
   end
+end
 
-  bind(bindings.modifier, bindings.key, function()
-    _hideAllWindowExceptFrontStatus = not _hideAllWindowExceptFrontStatus
-    notify(string.format("hideAllWindowExceptFront: %s", _hideAllWindowExceptFrontStatus))
-    printf("hideAllWindowExceptFront: %s", _hideAllWindowExceptFrontStatus)
-  end)
+-- Bind `autoMaximizeWindow` toggle
+if config.watcher.autoMaximizeWindow.enabled then
+  local bindings = config.watcher.autoMaximizeWindow.bindings
+  if bindings and type(bindings) == "table" then
+    bind(bindings.modifier, bindings.key, function()
+      _autoMaximizeWindowStatus = not _autoMaximizeWindowStatus
+      notify(string.format("autoMaximizeWindow: %s", _autoMaximizeWindowStatus))
+      printf("autoMaximizeWindow: %s", _autoMaximizeWindowStatus)
+    end)
+  else
+    printf("No watcher autoMaximizeWindow bindings defined")
+  end
 end
 
 -- Start the watcher initially
