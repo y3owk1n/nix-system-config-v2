@@ -64,8 +64,6 @@ in
       "onyx"
       "imageoptim"
       "whatsapp"
-      "keka"
-      "kekaexternalhelper"
       "appcleaner"
       "homerow"
       "keyboard-cowboy"

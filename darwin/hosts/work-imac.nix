@@ -61,8 +61,6 @@ in
       "onyx"
       "imageoptim"
       "whatsapp"
-      "keka"
-      "kekaexternalhelper"
       "appcleaner"
       "adobe-creative-cloud"
       "homerow"
