@@ -79,7 +79,15 @@ end)
 ---@field action function Action to perform for the contextual bindings
 
 ---@class Hs.Config.Watcher
----@field hideAllWindowExceptFront boolean Whether to hide all windows except the frontmost one
+---@field hideAllWindowExceptFront Hs.Config.Watcher.HideAllWindowExceptFront Whether to hide all windows except the frontmost one
+
+---@class Hs.Config.Watcher.Bindings
+---@field modifier Hs.Modifier|Hs.Modifier[] Modifiers to use for the watcher bindings
+---@field key string Key to use for the watcher bindings
+
+---@class Hs.Config.Watcher.HideAllWindowExceptFront
+---@field enabled boolean Whether to hide all windows except the frontmost one
+---@field bindings? Hs.Config.Watcher.Bindings Bindings to use for the watcher hide all window except front bindings
 
 -- ------------------------------------------------------------------
 -- Configuration
@@ -167,7 +175,13 @@ local config = {
     },
   },
   watcher = {
-    hideAllWindowExceptFront = true,
+    hideAllWindowExceptFront = {
+      enabled = true,
+      bindings = {
+        modifier = hyper,
+        key = "1",
+      },
+    },
   },
 }
 
@@ -235,6 +249,8 @@ end
 -- Global variable to track watcher
 local _appWatcher = nil
 
+local _hideAllWindowExceptFrontStatus = config.watcher.hideAllWindowExceptFront.enabled or false
+
 ---Function to create and start the watcher
 ---@return nil
 local function startWatcher()
@@ -255,7 +271,7 @@ local function startWatcher()
           activateContextualBindings(appName)
         end)
 
-        if config.watcher.hideAllWindowExceptFront then
+        if _hideAllWindowExceptFrontStatus then
           doAfter(0.1, function()
             -- hide all windows except the frontmost one
             keyStroke({ "cmd", "alt" }, "h")
@@ -278,6 +294,21 @@ local function startWatcher()
 
   _appWatcher:start()
   printf("Watcher started/restarted")
+end
+
+-- Bind `hideAllWindowExceptFront` toggle
+if config.watcher.hideAllWindowExceptFront.enabled then
+  local bindings = config.watcher.hideAllWindowExceptFront.bindings
+  if not bindings then
+    printf("No watcher hideAllWindowExceptFront bindings defined")
+    return
+  end
+
+  bind(bindings.modifier, bindings.key, function()
+    _hideAllWindowExceptFrontStatus = not _hideAllWindowExceptFrontStatus
+    notify(string.format("hideAllWindowExceptFront: %s", _hideAllWindowExceptFrontStatus))
+    printf("hideAllWindowExceptFront: %s", _hideAllWindowExceptFrontStatus)
+  end)
 end
 
 -- Start the watcher initially
