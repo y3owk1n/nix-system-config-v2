@@ -97,9 +97,21 @@ end)
 
 local wf = hs.window.filter.new(nil) -- nil = all apps
 
-wf:subscribe({
+local wf_events = {
+  -- hs.window.filter.windowFocused, -- why not use this? The issue is that it never triggers reliably, maybe in the future.
   hs.window.filter.windowUnfocused,
-}, function(win, appName, event)
-  -- hide all windows except the frontmost one
-  hs.eventtap.keyStroke({ "cmd", "alt" }, "h", 0)
+}
+
+wf:subscribe(wf_events, function(win, appName, event)
+  local currentApp = frontmostApplication()
+
+  if not currentApp then
+    hs.alert.show("No frontmost app")
+    return
+  end
+
+  doAfter(0.1, function()
+    -- hide all windows except the frontmost one
+    hs.eventtap.keyStroke({ "cmd", "alt" }, "h")
+  end)
 end)
