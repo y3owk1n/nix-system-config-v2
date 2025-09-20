@@ -2,12 +2,15 @@
 
 local bind = hs.hotkey.bind
 local launchOrFocus = hs.application.launchOrFocus
-local keyStroke = hs.eventtap.keyStroke
 local notify = hs.alert.show
 local frontmostApplication = hs.application.frontmostApplication
 local doAfter = hs.timer.doAfter
 
 local hyper = { "cmd", "alt", "ctrl", "shift" }
+
+local keyStroke = function(mods, key, delay)
+  hs.eventtap.keyStroke(mods, key, delay or 0)
+end
 
 -- ------------------------------------------------------------------
 -- Launcher
@@ -36,7 +39,7 @@ end
 
 -- Spotlight
 bind(hyper, "return", function()
-  keyStroke("cmd", "space", 0)
+  keyStroke("cmd", "space")
 end)
 
 -- ------------------------------------------------------------------
@@ -44,10 +47,10 @@ end)
 -- ------------------------------------------------------------------
 
 bind(hyper, "l", function()
-  keyStroke({ "cmd" }, "tab", 0)
+  keyStroke({ "cmd" }, "tab")
 
   doAfter(0.01, function()
-    keyStroke({}, "return", 0)
+    keyStroke({}, "return")
   end)
 end)
 
@@ -57,7 +60,7 @@ end)
 
 -- Maximize window
 bind({ "ctrl", "shift" }, "m", function()
-  keyStroke({ "fn", "ctrl" }, "f", 0)
+  keyStroke({ "fn", "ctrl" }, "f")
 end)
 
 local function safeSelectMenuItem(items)
