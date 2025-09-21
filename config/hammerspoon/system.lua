@@ -7,10 +7,10 @@ local M = {}
 M.__index = M
 
 local bind = hs.hotkey.bind
-local launchOrFocus = hs.application.launchOrFocus
+local launch_or_focus = hs.application.launchOrFocus
 local notify = hs.alert.show
-local frontmostApplication = hs.application.frontmostApplication
-local doAfter = hs.timer.doAfter
+local frontmost_application = hs.application.frontmostApplication
+local do_after = hs.timer.doAfter
 local watcher = hs.application.watcher
 local printf = hs.printf
 
@@ -22,14 +22,14 @@ local printf = hs.printf
 ---@param key string
 ---@param delay? number
 ---@return nil
-local function keyStroke(mods, key, delay)
+local function key_stroke(mods, key, delay)
   hs.eventtap.keyStroke(mods, key, delay or 0)
 end
 
 ---@param items string[]
 ---@return nil
-local function safeSelectMenuItem(items)
-  local app = frontmostApplication()
+local function safe_select_menu_item(items)
+  local app = frontmost_application()
   local success = app:selectMenuItem(items)
   if not success then
     notify("Menu item not found")
@@ -63,8 +63,8 @@ end
 ---@field action function Action to perform for the contextual bindings
 
 ---@class Hs.System.Config.Watcher
----@field hideAllWindowExceptFront Hs.System.Config.Watcher.HideAllWindowExceptFront Whether to hide all windows except the frontmost one
----@field autoMaximizeWindow Hs.System.Config.Watcher.AutoMaximizeWindow Whether to maximize the window when it is activated
+---@field hide_all_window_except_front Hs.System.Config.Watcher.HideAllWindowExceptFront Whether to hide all windows except the frontmost one
+---@field auto_maximize_window Hs.System.Config.Watcher.AutoMaximizeWindow Whether to maximize the window when it is activated
 
 ---@class Hs.System.Config.Watcher.Bindings
 ---@field modifier Hs.System.Modifier|Hs.System.Modifier[] Modifiers to use for the watcher bindings
@@ -91,10 +91,10 @@ local default_config = {
   custom_bindings = {},
   contextual_bindings = {},
   watcher = {
-    hideAllWindowExceptFront = {
+    hide_all_window_except_front = {
       enabled = false,
     },
-    autoMaximizeWindow = {
+    auto_maximize_window = {
       enabled = false,
     },
   },
@@ -107,7 +107,7 @@ local default_config = {
 local function setup_launchers()
   for appName, shortcut in pairs(M.config.apps.bindings) do
     bind(M.config.apps.modifier, shortcut, function()
-      launchOrFocus(appName)
+      launch_or_focus(appName)
     end)
   end
 end
@@ -117,8 +117,8 @@ end
 -- ------------------------------------------------------------------
 
 local function setup_custom_bindings()
-  for _, customAction in pairs(M.config.custom_bindings) do
-    bind(customAction.modifier, customAction.key, customAction.action)
+  for _, custom_action in pairs(M.config.custom_bindings) do
+    bind(custom_action.modifier, custom_action.key, custom_action.action)
   end
 end
 
@@ -127,25 +127,25 @@ end
 -- ------------------------------------------------------------------
 
 -- Store active contextual hotkeys for cleanup
-local activeContextualHotkeys = {}
+local active_contextual_hotkeys = {}
 
 ---Function to clear all contextual bindings
 ---@return nil
-local function clearContextualBindings()
-  for _, hotkey in ipairs(activeContextualHotkeys) do
+local function clear_contextual_bindings()
+  for _, hotkey in ipairs(active_contextual_hotkeys) do
     if hotkey then
       hotkey:delete()
     end
   end
-  activeContextualHotkeys = {}
-  printf("Cleared %d contextual bindings", #activeContextualHotkeys)
+  active_contextual_hotkeys = {}
+  printf("Cleared %d contextual bindings", #active_contextual_hotkeys)
 end
 
 ---Function to activate contextual bindings for a specific app
 ---@param appName string
 ---@return nil
-local function activateContextualBindings(appName)
-  clearContextualBindings()
+local function activate_contextual_bindings(appName)
+  clear_contextual_bindings()
 
   local bindings = M.config.contextual_bindings[appName]
   if not bindings then
@@ -157,7 +157,7 @@ local function activateContextualBindings(appName)
 
   for _, binding in ipairs(bindings) do
     local hotkey = bind(binding.modifier, binding.key, binding.action)
-    table.insert(activeContextualHotkeys, hotkey)
+    table.insert(active_contextual_hotkeys, hotkey)
   end
 end
 
@@ -165,91 +165,95 @@ end
 -- Window Watcher
 -- ------------------------------------------------------------------
 
-local function setup_watcher()
-  -- Global variable to track watcher
-  local _appWatcher = nil
+-- Global variable to track watcher
+local _app_watcher = nil
+local _hide_all_window_except_front_status = false
+local _auto_maximize_window_status = false
 
-  local _hideAllWindowExceptFrontStatus = M.config.watcher.hideAllWindowExceptFront.enabled or false
+---Function to create and start the watcher
+---@return nil
+local function start_watcher()
+  -- Stop existing watcher if it exists
+  if _app_watcher then
+    _app_watcher:stop()
+  end
 
-  local _autoMaximizeWindowStatus = M.config.watcher.autoMaximizeWindow.enabled or false
+  _app_watcher = watcher.new(function(app_name, event_type, app_object)
+    -- Wrap the entire callback in pcall to prevent crashes
+    local success, error = pcall(function()
+      printf("Watcher event: App=%s, Event=%d", app_name or "nil", event_type or -1)
 
-  ---Function to create and start the watcher
-  ---@return nil
-  local function startWatcher()
-    -- Stop existing watcher if it exists
-    if _appWatcher then
-      _appWatcher:stop()
-    end
+      if event_type == watcher.activated then
+        printf("App activated: %s", app_name or "Unknown")
 
-    _appWatcher = watcher.new(function(appName, eventType, appObject)
-      -- Wrap the entire callback in pcall to prevent crashes
-      local success, error = pcall(function()
-        printf("Watcher event: App=%s, Event=%d", appName or "nil", eventType or -1)
+        do_after(0.1, function()
+          activate_contextual_bindings(app_name)
+        end)
 
-        if eventType == watcher.activated then
-          printf("App activated: %s", appName or "Unknown")
-
-          doAfter(0.1, function()
-            activateContextualBindings(appName)
+        if _hide_all_window_except_front_status then
+          do_after(0.1, function()
+            -- hide all windows except the frontmost one
+            key_stroke({ "cmd", "alt" }, "h")
           end)
-
-          if _hideAllWindowExceptFrontStatus then
-            doAfter(0.1, function()
-              -- hide all windows except the frontmost one
-              keyStroke({ "cmd", "alt" }, "h")
-            end)
-          end
-
-          if _hideAllWindowExceptFrontStatus and _autoMaximizeWindowStatus then
-            doAfter(0.1, function()
-              -- maximize window
-              keyStroke({ "fn", "ctrl" }, "f")
-            end)
-          end
         end
 
-        if eventType == watcher.deactivated then
-          printf("App deactivated: %s", appName or "Unknown")
-          clearContextualBindings()
+        if _hide_all_window_except_front_status and _auto_maximize_window_status then
+          do_after(0.1, function()
+            -- maximize window
+            key_stroke({ "fn", "ctrl" }, "f")
+          end)
         end
-      end)
+      end
 
-      if not success then
-        printf("Error in watcher callback: %s", error)
-        -- Restart the watcher after an error
-        doAfter(1.0, startWatcher)
+      if event_type == watcher.deactivated then
+        printf("App deactivated: %s", app_name or "Unknown")
+        clear_contextual_bindings()
       end
     end)
 
-    _appWatcher:start()
-    printf("Watcher started/restarted")
-  end
+    if not success then
+      printf("Error in watcher callback: %s", error)
+      -- Restart the watcher after an error
+      do_after(1.0, start_watcher)
+    end
+  end)
+
+  _app_watcher:start()
+  printf("Watcher started/restarted")
+end
+
+local function setup_watcher()
+  _hide_all_window_except_front_status = M.config.watcher.hide_all_window_except_front.enabled or false
+
+  _auto_maximize_window_status = M.config.watcher.auto_maximize_window.enabled or false
+
+  start_watcher()
 
   -- Bind `hideAllWindowExceptFront` toggle
-  if M.config.watcher.hideAllWindowExceptFront.enabled then
-    local bindings = M.config.watcher.hideAllWindowExceptFront.bindings
+  if M.config.watcher.hide_all_window_except_front.enabled then
+    local bindings = M.config.watcher.hide_all_window_except_front.bindings
     if bindings and type(bindings) == "table" then
       bind(bindings.modifier, bindings.key, function()
-        _hideAllWindowExceptFrontStatus = not _hideAllWindowExceptFrontStatus
-        notify(string.format("hideAllWindowExceptFront: %s", _hideAllWindowExceptFrontStatus))
-        printf("hideAllWindowExceptFront: %s", _hideAllWindowExceptFrontStatus)
+        _hide_all_window_except_front_status = not _hide_all_window_except_front_status
+        notify(string.format("hide_all_window_except_front: %s", _hide_all_window_except_front_status))
+        printf("hide_all_window_except_front: %s", _hide_all_window_except_front_status)
       end)
     else
-      printf("No watcher hideAllWindowExceptFront bindings defined")
+      printf("No watcher hide_all_window_except_front bindings defined")
     end
   end
 
   -- Bind `autoMaximizeWindow` toggle
-  if M.config.watcher.autoMaximizeWindow.enabled then
-    local bindings = M.config.watcher.autoMaximizeWindow.bindings
+  if M.config.watcher.auto_maximize_window.enabled then
+    local bindings = M.config.watcher.auto_maximize_window.bindings
     if bindings and type(bindings) == "table" then
       bind(bindings.modifier, bindings.key, function()
-        _autoMaximizeWindowStatus = not _autoMaximizeWindowStatus
-        notify(string.format("autoMaximizeWindow: %s", _autoMaximizeWindowStatus))
-        printf("autoMaximizeWindow: %s", _autoMaximizeWindowStatus)
+        _auto_maximize_window_status = not _auto_maximize_window_status
+        notify(string.format("auto_maximize_window: %s", _auto_maximize_window_status))
+        printf("auto_maximize_window: %s", _auto_maximize_window_status)
       end)
     else
-      printf("No watcher autoMaximizeWindow bindings defined")
+      printf("No watcher auto_maximize_window bindings defined")
     end
   end
 end
@@ -272,7 +276,7 @@ function M.setup(user_config)
   setup_watcher()
 end
 
-M.keyStroke = keyStroke
-M.safeSelectMenuItem = safeSelectMenuItem
+M.key_stroke = key_stroke
+M.safe_select_menu_item = safe_select_menu_item
 
 return M

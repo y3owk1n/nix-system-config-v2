@@ -34,17 +34,17 @@ local system_config = {
       modifier = utils.hyper,
       key = "return",
       action = function()
-        system.keyStroke("cmd", "space")
+        system.key_stroke("cmd", "space")
       end,
     },
     toggle_curr_prev_app = {
       modifier = utils.hyper,
       key = "l",
       action = function()
-        system.keyStroke({ "cmd" }, "tab")
+        system.key_stroke({ "cmd" }, "tab")
 
         hs.timer.doAfter(0.01, function()
-          system.keyStroke({}, "return")
+          system.key_stroke({}, "return")
         end)
       end,
     },
@@ -52,35 +52,35 @@ local system_config = {
       modifier = { "ctrl", "shift" },
       key = "m",
       action = function()
-        system.keyStroke({ "fn", "ctrl" }, "f")
+        system.key_stroke({ "fn", "ctrl" }, "f")
       end,
     },
     move_window = {
       modifier = { "ctrl", "shift" },
       key = "h",
       action = function()
-        system.safeSelectMenuItem({ "Window", "Move & Resize", "Left" })
+        system.safe_select_menu_item({ "Window", "Move & Resize", "Left" })
       end,
     },
     move_window_right = {
       modifier = { "ctrl", "shift" },
       key = "l",
       action = function()
-        system.safeSelectMenuItem({ "Window", "Move & Resize", "Right" })
+        system.safe_select_menu_item({ "Window", "Move & Resize", "Right" })
       end,
     },
     move_window_bottom = {
       modifier = { "ctrl", "shift" },
       key = "j",
       action = function()
-        system.safeSelectMenuItem({ "Window", "Move & Resize", "Bottom" })
+        system.safe_select_menu_item({ "Window", "Move & Resize", "Bottom" })
       end,
     },
     move_window_top = {
       modifier = { "ctrl", "shift" },
       key = "k",
       action = function()
-        system.safeSelectMenuItem({ "Window", "Move & Resize", "Top" })
+        system.safe_select_menu_item({ "Window", "Move & Resize", "Top" })
       end,
     },
   },
@@ -90,20 +90,20 @@ local system_config = {
         modifier = { "cmd" },
         key = "q",
         action = function()
-          system.keyStroke({ "cmd" }, "w")
+          system.key_stroke({ "cmd" }, "w")
         end,
       },
     },
   },
   watcher = {
-    hideAllWindowExceptFront = {
+    hide_all_window_except_front = {
       enabled = true,
       bindings = {
         modifier = utils.hyper,
         key = "1",
       },
     },
-    autoMaximizeWindow = {
+    auto_maximize_window = {
       enabled = true,
       bindings = {
         modifier = utils.hyper,
