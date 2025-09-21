@@ -155,7 +155,7 @@ function M.setup()
     desc = "Highlight when search cmdline leave",
     callback = function()
       plugin.search_cmd({
-        nimation = {
+        animation = {
           animation_type = "fade",
         },
       })
