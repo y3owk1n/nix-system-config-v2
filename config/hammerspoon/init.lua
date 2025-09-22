@@ -120,8 +120,10 @@ system.setup(system_config)
 -- Vimium
 -- ------------------------------------------------------------------
 
+---@type Hs.Vimium.Config
+---@diagnostic disable-next-line: missing-fields
 local vimium_config = {
-  excludedApps = {
+  excluded_apps = {
     "Terminal",
     "Ghostty",
     "Screen Sharing",
