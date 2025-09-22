@@ -65,7 +65,7 @@ in
       "imageoptim"
       "whatsapp"
       "appcleaner"
-      "homerow"
+      # "homerow"
       # "keyboard-cowboy"
       "hammerspoon"
       # "adobe-creative-cloud"
