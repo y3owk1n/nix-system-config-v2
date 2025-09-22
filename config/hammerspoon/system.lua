@@ -6,6 +6,7 @@ local M = {}
 
 M.__index = M
 
+local floor = math.floor
 local bind = hs.hotkey.bind
 local launch_or_focus = hs.application.launchOrFocus
 local notify = hs.alert.show
@@ -13,10 +14,22 @@ local frontmost_application = hs.application.frontmostApplication
 local do_after = hs.timer.doAfter
 local watcher = hs.application.watcher
 local printf = hs.printf
+local timer = hs.timer
 
 -- ------------------------------------------------------------------
 -- Helpers
 -- ------------------------------------------------------------------
+
+--- @param message string # The message to log.
+local function log(message)
+  if not M.config.show_logs then
+    return
+  end
+
+  local timestamp = os.date("%Y-%m-%d %H:%M:%S")
+  local ms = floor(timer.absoluteTime() / 1e6) % 1000
+  printf("[%s.%03d] %s", timestamp, ms, message)
+end
 
 ---@param mods Hs.System.Modifier|Hs.System.Modifier[]
 ---@param key string
@@ -45,6 +58,7 @@ end
 ---@field custom_bindings? table<string, Hs.System.Config.CustomBindings> Custom bindings configuration
 ---@field contextual_bindings? table<string,  Hs.System.Config.ContextualBindings[]> Contextual bindings configuration
 ---@field watcher? Hs.System.Config.Watcher Watcher configuration
+---@field show_logs? boolean Whether to show logs
 
 ---@alias Hs.System.Modifier "cmd"|"ctrl"|"alt"|"shift"|"fn"
 
@@ -84,6 +98,7 @@ end
 
 ---@type Hs.System.Config
 local default_config = {
+  show_logs = false,
   apps = {
     modifier = utils.hyper,
     bindings = {},
@@ -138,7 +153,7 @@ local function clear_contextual_bindings()
     end
   end
   active_contextual_hotkeys = {}
-  printf("Cleared %d contextual bindings", #active_contextual_hotkeys)
+  log("Cleared " .. #active_contextual_hotkeys .. " contextual bindings")
 end
 
 ---Function to activate contextual bindings for a specific app
@@ -149,11 +164,11 @@ local function activate_contextual_bindings(appName)
 
   local bindings = M.config.contextual_bindings[appName]
   if not bindings then
-    printf("No contextual bindings defined for: %s", appName or "Unknown")
+    log("No contextual bindings defined for: " .. (appName or "Unknown"))
     return
   end
 
-  printf("Activating %d contextual bindings for: %s", #bindings, appName)
+  log("Activating " .. #bindings .. " contextual bindings for: " .. appName)
 
   for _, binding in ipairs(bindings) do
     local hotkey = bind(binding.modifier, binding.key, binding.action)
@@ -181,10 +196,10 @@ local function start_watcher()
   _app_watcher = watcher.new(function(app_name, event_type, app_object)
     -- Wrap the entire callback in pcall to prevent crashes
     local success, error = pcall(function()
-      printf("Watcher event: App=%s, Event=%d", app_name or "nil", event_type or -1)
+      log("Watcher event: App=" .. (app_name or "nil") .. ", Event=" .. event_type)
 
       if event_type == watcher.activated then
-        printf("App activated: %s", app_name or "Unknown")
+        log("App activated: " .. (app_name or "Unknown"))
 
         do_after(0.1, function()
           activate_contextual_bindings(app_name)
@@ -206,20 +221,20 @@ local function start_watcher()
       end
 
       if event_type == watcher.deactivated then
-        printf("App deactivated: %s", app_name or "Unknown")
+        log("App deactivated: " .. (app_name or "Unknown"))
         clear_contextual_bindings()
       end
     end)
 
     if not success then
-      printf("Error in watcher callback: %s", error)
+      log("Error in watcher callback: " .. error)
       -- Restart the watcher after an error
       do_after(1.0, start_watcher)
     end
   end)
 
   _app_watcher:start()
-  printf("Watcher started/restarted")
+  log("Watcher started/restarted")
 end
 
 local function setup_watcher()
@@ -236,10 +251,10 @@ local function setup_watcher()
       bind(bindings.modifier, bindings.key, function()
         _hide_all_window_except_front_status = not _hide_all_window_except_front_status
         notify(string.format("hide_all_window_except_front: %s", _hide_all_window_except_front_status))
-        printf("hide_all_window_except_front: %s", _hide_all_window_except_front_status)
+        log("hide_all_window_except_front: " .. _hide_all_window_except_front_status)
       end)
     else
-      printf("No watcher hide_all_window_except_front bindings defined")
+      log("No watcher hide_all_window_except_front bindings defined")
     end
   end
 
@@ -250,10 +265,10 @@ local function setup_watcher()
       bind(bindings.modifier, bindings.key, function()
         _auto_maximize_window_status = not _auto_maximize_window_status
         notify(string.format("auto_maximize_window: %s", _auto_maximize_window_status))
-        printf("auto_maximize_window: %s", _auto_maximize_window_status)
+        log("auto_maximize_window: " .. _auto_maximize_window_status)
       end)
     else
-      printf("No watcher auto_maximize_window bindings defined")
+      log("No watcher auto_maximize_window bindings defined")
     end
   end
 end
