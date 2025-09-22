@@ -1,8 +1,10 @@
 ---@diagnostic disable: undefined-global
 
---------------------------------------------------------------------------------
--- Imports and Initialization
---------------------------------------------------------------------------------
+local _utils = require("utils")
+
+local M = {}
+
+M.__index = M
 
 local floor = math.floor
 local insert = table.insert
@@ -45,7 +47,7 @@ local mapping = {
   ["[["] = "cmdPrevPage",
 }
 
-local config = {
+local default_config = {
   doublePressDelay = 0.3, -- seconds
   showLogs = false,
   mapping = mapping,
@@ -96,11 +98,6 @@ local config = {
   -- Apps where we want to disable vim navigation
   excludedApps = {
     "Terminal",
-    "Alacritty",
-    "alacritty", -- when loading headless alacritty from path, its in lowercase...
-    "Ghostty",
-    "Screen Sharing",
-    "RustDesk",
   },
   -- Browser names to be considered
   browsers = {
@@ -112,7 +109,6 @@ local config = {
   },
   launchers = {
     "Spotlight",
-    "Raycast",
   },
 }
 
@@ -145,7 +141,7 @@ local cached = setmetatable({}, { __mode = "k" })
 
 --- @param message string # The message to log.
 local function log(message)
-  if not config.showLogs then
+  if not M.config.showLogs then
     return
   end
 
@@ -270,7 +266,7 @@ end
 --------------------------------------------------------------------------------
 
 function utils.fetchMappingPrefixes()
-  for k, _ in pairs(config.mapping) do
+  for k, _ in pairs(M.config.mapping) do
     if #k == 2 then
       state.mappingPrefixes[sub(k, 1, 1)] = true
     end
@@ -280,11 +276,11 @@ end
 
 function utils.isExcludedApp()
   local appName = state.elements.app():name()
-  return tblContains(config.excludedApps, appName)
+  return tblContains(M.config.excludedApps, appName)
 end
 
 function utils.isLauncherActive()
-  for _, launcher in ipairs(config.launchers) do
+  for _, launcher in ipairs(M.config.launchers) do
     local app = hs.application.get(launcher)
     if app then
       local appElement = hs.axuielement.applicationElement(app)
@@ -311,7 +307,7 @@ end
 function utils.isInBrowser()
   local currentAppName = state.elements.app():name()
 
-  return tblContains(config.browsers, currentAppName)
+  return tblContains(M.config.browsers, currentAppName)
 end
 
 --- @param mode integer # The mode to set. Expected values are in `M.modes`.
@@ -365,7 +361,7 @@ function utils.isElementPartiallyVisible(element)
 end
 
 function utils.getFocusedElement(element, depth)
-  if not element or (depth and depth > config.depth) then
+  if not element or (depth and depth > M.config.depth) then
     return
   end
 
@@ -393,7 +389,7 @@ end
 
 --- @return boolean, boolean # found status, completed status
 function utils.getNextPrevElement(element, depth, direction)
-  if not element or (depth and depth > config.depth) then
+  if not element or (depth and depth > M.config.depth) then
     return false, true
   end
 
@@ -472,7 +468,7 @@ end
 
 function utils.isEditableControlInFocus()
   if state.elements.axFocusedElement() then
-    return tblContains(config.axEditableRoles, utils.getAttribute(state.elements.axFocusedElement(), "AXRole"))
+    return tblContains(M.config.axEditableRoles, utils.getAttribute(state.elements.axFocusedElement(), "AXRole"))
   else
     return false
   end
@@ -505,7 +501,7 @@ function utils.isElementActionable(element)
     return false
   end
 
-  local axJumpableRoles = config.axJumpableRoles
+  local axJumpableRoles = M.config.axJumpableRoles
 
   return tblContains(axJumpableRoles, role)
 end
@@ -520,7 +516,7 @@ function utils.isElementScrollable(element)
     return false
   end
 
-  local axScrollableRoles = config.axScrollableRoles
+  local axScrollableRoles = M.config.axScrollableRoles
 
   return tblContains(axScrollableRoles, role)
 end
@@ -535,7 +531,7 @@ function utils.isElementInput(element)
     return false
   end
 
-  local axEditableRoles = config.axEditableRoles
+  local axEditableRoles = M.config.axEditableRoles
 
   return tblContains(axEditableRoles, role)
 end
@@ -580,7 +576,7 @@ function utils.getChildrens(mainElement, cb)
 end
 
 function utils.findClickableElements(element, withUrls, depth, cb)
-  if not element or (depth and depth > config.depth) then
+  if not element or (depth and depth > M.config.depth) then
     return
   end
 
@@ -607,7 +603,7 @@ function utils.findClickableElements(element, withUrls, depth, cb)
 end
 
 function utils.findScrollableElements(element, depth, cb)
-  if not element or (depth and depth > config.depth) then
+  if not element or (depth and depth > M.config.depth) then
     return
   end
 
@@ -632,7 +628,7 @@ function utils.findScrollableElements(element, depth, cb)
 end
 
 function utils.findUrlElements(element, depth, cb)
-  if not element or (depth and depth > config.depth) then
+  if not element or (depth and depth > M.config.depth) then
     return
   end
 
@@ -659,7 +655,7 @@ function utils.findUrlElements(element, depth, cb)
 end
 
 function utils.findInputElements(element, depth, cb)
-  if not element or (depth and depth > config.depth) then
+  if not element or (depth and depth > M.config.depth) then
     return
   end
 
@@ -683,7 +679,7 @@ function utils.findInputElements(element, depth, cb)
 end
 
 function utils.findImageElements(element, depth, cb)
-  if not element or (depth and depth > config.depth) then
+  if not element or (depth and depth > M.config.depth) then
     return
   end
 
@@ -732,7 +728,7 @@ function actions.smoothScroll(x, y, smooth)
   end
   local frame = 0
 
-  local interval = 1 / config.smoothScrollFrameRate
+  local interval = 1 / M.config.smoothScrollFrameRate
 
   local function animate()
     frame = frame + 1
@@ -1110,35 +1106,35 @@ end
 --------------------------------------------------------------------------------
 
 function commands.cmdScrollLeft()
-  actions.smoothScroll(config.scrollStep, 0, config.smoothScroll)
+  actions.smoothScroll(M.config.scrollStep, 0, M.config.smoothScroll)
 end
 
 function commands.cmdScrollRight()
-  actions.smoothScroll(-config.scrollStep, 0, config.smoothScroll)
+  actions.smoothScroll(-M.config.scrollStep, 0, M.config.smoothScroll)
 end
 
 function commands.cmdScrollUp()
-  actions.smoothScroll(0, config.scrollStep, config.smoothScroll)
+  actions.smoothScroll(0, M.config.scrollStep, M.config.smoothScroll)
 end
 
 function commands.cmdScrollDown()
-  actions.smoothScroll(0, -config.scrollStep, config.smoothScroll)
+  actions.smoothScroll(0, -M.config.scrollStep, M.config.smoothScroll)
 end
 
 function commands.cmdScrollHalfPageDown()
-  actions.smoothScroll(0, -config.scrollStepHalfPage, config.smoothScroll)
+  actions.smoothScroll(0, -M.config.scrollStepHalfPage, M.config.smoothScroll)
 end
 
 function commands.cmdScrollHalfPageUp()
-  actions.smoothScroll(0, config.scrollStepHalfPage, config.smoothScroll)
+  actions.smoothScroll(0, M.config.scrollStepHalfPage, M.config.smoothScroll)
 end
 
 function commands.cmdScrollToTop()
-  actions.smoothScroll(0, -config.scrollStepFullPage, config.smoothScroll)
+  actions.smoothScroll(0, -M.config.scrollStepFullPage, M.config.smoothScroll)
 end
 
 function commands.cmdScrollToBottom()
-  actions.smoothScroll(0, config.scrollStepFullPage, config.smoothScroll)
+  actions.smoothScroll(0, M.config.scrollStepFullPage, M.config.smoothScroll)
 end
 
 function commands.cmdCopyPageUrlToClipboard()
@@ -1622,7 +1618,7 @@ local function vimLoop(char, modifiers)
     keyCombo = state.elements.multi .. keyCombo
   end
 
-  local foundMapping = config.mapping[keyCombo]
+  local foundMapping = M.config.mapping[keyCombo]
 
   if foundMapping then
     utils.setMode(modes.NORMAL)
@@ -1674,7 +1670,7 @@ local function eventHandler(event)
     local delaySinceLastEscape = (timer.absoluteTime() - state.lastEscape) / 1e9 -- nanoseconds in seconds
     state.lastEscape = timer.absoluteTime()
 
-    if utils.isInBrowser() and delaySinceLastEscape < config.doublePressDelay then
+    if utils.isInBrowser() and delaySinceLastEscape < M.config.doublePressDelay then
       utils.setMode(modes.NORMAL)
       actions.forceUnfocus()
       return true
@@ -1707,7 +1703,7 @@ local function eventHandler(event)
   if modifiers and modifiers.ctrl then
     local filteredMappings = {}
 
-    for key, _ in pairs(config.mapping) do
+    for key, _ in pairs(M.config.mapping) do
       if key:sub(1, 2) == "C-" then
         table.insert(filteredMappings, key:sub(3))
       end
@@ -1729,7 +1725,7 @@ local function onWindowFocused(window, name, object)
   if not state.eventLoop then
     state.eventLoop = eventtap.new({ hs.eventtap.event.types.keyDown }, eventHandler):start()
   end
-  if not tblContains(config.excludedApps, name) then
+  if not tblContains(M.config.excludedApps, name) then
     utils.setMode(modes.NORMAL)
   else
     utils.setMode(modes.DISABLED)
@@ -1749,8 +1745,6 @@ end
 -- Module Initialization and Cleanup
 --------------------------------------------------------------------------------
 
-local M = {}
-
 local focusedEvents = {
   -- hs.window.filter.windowFocused,
   -- hs.window.filter.windowUnhidden,
@@ -1762,6 +1756,14 @@ local unfocusedEvents = {
   -- hs.window.filter.windowHidden,
   hs.window.filter.windowNotOnScreen,
 }
+
+M.config = {}
+
+function M.setup(user_config)
+  M.config = _utils.tbl_deep_extend("force", default_config, user_config or {})
+
+  M:start()
+end
 
 function M:start()
   state.windowFilter = hs.window.filter.new()

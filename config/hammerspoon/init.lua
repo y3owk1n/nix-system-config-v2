@@ -120,4 +120,13 @@ system.setup(system_config)
 -- Vimium
 -- ------------------------------------------------------------------
 
-vimium:start()
+local vimium_config = {
+  excludedApps = {
+    "Terminal",
+    "Ghostty",
+    "Screen Sharing",
+    "RustDesk",
+  },
+}
+
+vimium.setup(vimium_config)
