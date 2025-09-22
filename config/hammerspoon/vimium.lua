@@ -58,7 +58,7 @@ local watcher = hs.application.watcher
 ---@field mode number
 ---@field multi string|nil
 ---@field elements table<string, table>
----@field marks table<number, table<string, table>>
+---@field marks table<number, table<string, table|nil>>
 ---@field link_capture string
 ---@field last_escape number
 ---@field mapping_prefixes table<string, boolean>
@@ -67,6 +67,8 @@ local watcher = hs.application.watcher
 ---@field canvas table|nil
 ---@field on_click_callback fun(any)|nil
 ---@field app_watcher table|nil
+---@field focus_watcher table|nil
+---@field cleanup_timer table|nil
 
 --------------------------------------------------------------------------------
 -- Constants and Configuration
@@ -114,9 +116,9 @@ local DEFAULT_CONFIG = {
   scroll_step_half_page = 500,
   smooth_scroll = true,
   smooth_scroll_framerate = 120,
-  depth = 100,
+  depth = 50,
   max_elements = 676, -- 26*26 combinations
-  chunk_size = 10, -- Process elements in chunks for better performance
+  chunk_size = 20, -- Process elements in chunks for better performance
   ax_editable_roles = { "AXTextField", "AXComboBox", "AXTextArea", "AXSearchField" },
   ax_jumpable_roles = {
     "AXLink",
@@ -178,10 +180,14 @@ State = {
   canvas = nil,
   on_click_callback = nil,
   app_watcher = nil,
+  focus_watcher = nil,
+  cleanup_timer = nil,
 }
 
 -- Element cache with weak references for garbage collection
 local element_cache = setmetatable({}, { __mode = "k" })
+
+local attribute_cache = setmetatable({}, { __mode = "k" })
 
 --------------------------------------------------------------------------------
 -- Utility Functions
@@ -259,6 +265,7 @@ end
 ---@return nil
 function Utils.clear_cache()
   element_cache = setmetatable({}, { __mode = "k" })
+  attribute_cache = setmetatable({}, { __mode = "k" })
 end
 
 ---Gets an attribute from an element
@@ -270,11 +277,22 @@ function Utils.get_attribute(element, attributeName)
     return nil
   end
 
+  local cacheKey = tostring(element) .. ":" .. attributeName
+  local cached = attribute_cache[cacheKey]
+
+  if cached ~= nil then
+    return cached == "NIL_VALUE" and nil or cached
+  end
+
   local success, result = pcall(function()
     return element:attributeValue(attributeName)
   end)
 
-  return success and result or nil
+  result = success and result or nil
+
+  -- Store nil as a special marker to distinguish from uncached
+  attribute_cache[cacheKey] = result == nil and "NIL_VALUE" or result
+  return result
 end
 
 function Utils.is_element_valid(element)
@@ -534,8 +552,19 @@ function ModeManager.set_mode(mode, char)
   end
 
   if MenuBar.item then
-    MenuBar.item:setTitle(char or defaultModeChars[mode] or "?")
+    local currentApp = Elements.get_app()
+    local modeChar = char or defaultModeChars[mode] or "?"
+
+    -- Show app context in menu bar for debugging
+    if M.config.show_logs then
+      local appName = currentApp and currentApp:name() or "Unknown"
+      MenuBar.item:setTitle(modeChar .. ":" .. appName:sub(1, 3))
+    else
+      MenuBar.item:setTitle(modeChar)
+    end
   end
+
+  Utils.log(string.format("Mode changed: %s -> %s", previousMode, mode))
 end
 
 --------------------------------------------------------------------------------
@@ -714,6 +743,7 @@ function ElementFinder.find_elements(rootElement, predicate, callback)
 
     -- Process current element
     if Utils.is_element_valid(element) then
+      -- Cache the role once per element - it's used multiple times
       local role = Utils.get_attribute(element, "AXRole")
 
       -- Skip irrelevant containers early
@@ -743,6 +773,11 @@ function ElementFinder.find_elements(rootElement, predicate, callback)
     if (timer.absoluteTime() - startTime) / 1e9 > maxProcessTime then
       Utils.yield()
       startTime = timer.absoluteTime()
+
+      -- Clear cache periodically during long operations to prevent memory bloat
+      if processedCount % 100 == 0 then
+        collectgarbage("step", 100) -- Incremental GC
+      end
     end
   end
 end
@@ -773,9 +808,13 @@ function Marks.add(element)
   -- Pre-validate frame to avoid processing invalid elements later
   local frame = Utils.get_attribute(element, "AXFrame")
   if frame and frame.w > 0 and frame.h > 0 then
+    -- Also cache the role since we'll need it for click actions
+    local role = Utils.get_attribute(element, "AXRole")
+
     State.marks[#State.marks + 1] = {
       element = element,
       frame = frame, -- Cache frame for later use
+      role = role,
     }
   end
 end
@@ -791,8 +830,6 @@ function Marks.show(withUrls, elementType)
   end
 
   Marks.clear()
-
-  -- Pre-allocate marks table for better performance
   State.marks = {}
 
   local predicates = {
@@ -1109,13 +1146,14 @@ function Commands.cmd_goto_link()
   ModeManager.set_mode(MODES.LINKS)
   State.on_click_callback = function(mark)
     local element = mark.element
+
     local actions = element and element:actionNames() or {}
 
     if Utils.tbl_contains(actions, "AXPress") then
       element:performAction("AXPress")
     else
       -- Fallback to mouse click
-      local frame = Utils.get_attribute(element, "AXFrame")
+      local frame = mark.frame or Utils.get_attribute(element, "AXFrame")
       if frame then
         local clickX, clickY = frame.x + frame.w / 2, frame.y + frame.h / 2
         local originalPos = mouse.absolutePosition()
@@ -1601,32 +1639,133 @@ local function event_handler(event)
 end
 
 --------------------------------------------------------------------------------
--- App Watcher
+-- Watchers
 --------------------------------------------------------------------------------
+
+---Clears all caches and state when switching apps
+---@return nil
+local function cleanup_on_app_switch()
+  -- Clear all element caches
+  Utils.clear_cache()
+
+  -- Clear any active marks and canvas
+  Marks.clear()
+
+  -- Reset link capture state
+  State.link_capture = ""
+
+  -- Force garbage collection to free up memory
+  collectgarbage("collect")
+
+  Utils.log("Cleaned up caches and state for app switch")
+end
 
 ---Starts the app watcher
 ---@return nil
 local function start_watcher()
+  Utils.log(string.format("App event: %s - %s", appName, event_type))
+
   if State.app_watcher then
     State.app_watcher:stop()
   end
 
   State.app_watcher = watcher.new(function(appName, event_type, appObject)
+    Utils.log(string.format("App event: %s - %s", appName, event_type))
+
     if event_type == watcher.activated then
+      cleanup_on_app_switch()
+
       if not State.event_loop then
         State.event_loop = eventtap.new({ eventtap.event.types.keyDown }, event_handler):start()
+        Utils.log("Started event loop for app: " .. appName)
       end
 
       if Utils.tbl_contains(M.config.excluded_apps, appName) then
         ModeManager.set_mode(MODES.DISABLED)
+        Utils.log("Disabled mode for excluded app: " .. appName)
       else
-        ModeManager.set_mode(MODES.NORMAL)
+        -- Check if we're switching to an editable field
+        timer.doAfter(0.1, function()
+          if Elements.is_editable_control_in_focus() then
+            ModeManager.set_mode(MODES.INSERT)
+          else
+            ModeManager.set_mode(MODES.NORMAL)
+          end
+        end)
       end
     end
   end)
 
   State.app_watcher:start()
   Utils.log("App watcher started")
+end
+
+---Monitor focus changes within the same app
+---@return nil
+local function setup_focus_watcher()
+  -- Watch for focus changes to automatically switch between normal/insert modes
+  State.focus_watcher = eventtap
+    .new({ eventtap.event.types.leftMouseDown, eventtap.event.types.tabKeyDown }, function(event)
+      if State.mode == MODES.DISABLED then
+        return false
+      end
+
+      -- Delay slightly to let focus change complete
+      timer.doAfter(0.05, function()
+        if Elements.is_editable_control_in_focus() then
+          if State.mode ~= MODES.INSERT then
+            ModeManager.set_mode(MODES.INSERT)
+          end
+        else
+          if State.mode == MODES.INSERT then
+            ModeManager.set_mode(MODES.NORMAL)
+          end
+        end
+      end)
+
+      return false -- Don't consume the event
+    end)
+    :start()
+
+  Utils.log("Focus watcher started")
+end
+
+---Periodic cache cleanup to prevent memory leaks
+---@return nil
+local function setup_periodic_cleanup()
+  if State.cleanup_timer then
+    State.cleanup_timer:stop()
+  end
+
+  State.cleanup_timer = timer
+    .new(30, function() -- Every 30 seconds
+      -- Only clean up if we're not actively showing marks
+      if State.mode ~= MODES.LINKS then
+        Utils.clear_cache()
+        collectgarbage("collect")
+        Utils.log("Periodic cache cleanup completed")
+      end
+    end)
+    :start()
+end
+
+---Clean up timers and watchers
+---@return nil
+local function cleanup_watchers()
+  if State.app_watcher then
+    State.app_watcher:stop()
+    State.app_watcher = nil
+  end
+
+  if State.focus_watcher then
+    State.focus_watcher:stop()
+    State.focus_watcher = nil
+  end
+
+  if State.cleanup_timer then
+    State.cleanup_timer:stop()
+    State.cleanup_timer = nil
+  end
 end
 
 --------------------------------------------------------------------------------
@@ -1652,9 +1791,21 @@ end
 ---Starts the module
 ---@return nil
 function M:start()
+  cleanup_watchers()
+
   start_watcher()
+
+  setup_focus_watcher()
+  setup_periodic_cleanup()
+
   MenuBar.create()
-  ModeManager.set_mode(MODES.NORMAL)
+
+  local currentApp = Elements.get_app()
+  if currentApp and Utils.tbl_contains(M.config.excluded_apps, currentApp:name()) then
+    ModeManager.set_mode(MODES.DISABLED)
+  else
+    ModeManager.set_mode(MODES.NORMAL)
+  end
 
   Utils.log("Vim navigation started")
 end
@@ -1662,10 +1813,7 @@ end
 ---Stops the module
 ---@return nil
 function M:stop()
-  if State.app_watcher then
-    State.app_watcher:stop()
-    State.app_watcher = nil
-  end
+  cleanup_watchers()
 
   if State.event_loop then
     State.event_loop:stop()
@@ -1674,6 +1822,8 @@ function M:stop()
 
   MenuBar.destroy()
   Marks.clear()
+
+  cleanup_on_app_switch()
 
   Utils.log("Vim navigation stopped")
 end
