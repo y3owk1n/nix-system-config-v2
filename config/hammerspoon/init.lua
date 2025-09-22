@@ -3,6 +3,7 @@
 local utils = require("utils")
 local global_pref = require("global-pref")
 local system = require("system")
+local vimium = require("vimium")
 
 -- ------------------------------------------------------------------
 -- Global Preferences
@@ -114,3 +115,9 @@ local system_config = {
 }
 
 system.setup(system_config)
+
+-- ------------------------------------------------------------------
+-- Vimium
+-- ------------------------------------------------------------------
+
+vimium:start()
