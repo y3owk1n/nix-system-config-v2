@@ -30,8 +30,8 @@ local mapping = {
   ["l"] = "cmdScrollRight",
   ["C-d"] = "cmdScrollHalfPageDown",
   ["C-u"] = "cmdScrollHalfPageUp",
-  ["gg"] = "cmdScrollToBottom",
-  ["G"] = "cmdScrollToTop",
+  ["G"] = "cmdScrollToBottom",
+  ["gg"] = "cmdScrollToTop",
   ["H"] = { "cmd", "[" }, -- history back
   ["L"] = { "cmd", "]" }, -- history forward
   ["f"] = "cmdGotoLink",
@@ -53,7 +53,6 @@ local default_config = {
   mapping = mapping,
   scrollStep = 50,
   scrollStepHalfPage = 500,
-  scrollStepFullPage = 1e6, -- make it a super big number and not worry
   smoothScroll = true,
   smoothScrollFrameRate = 120,
   depth = 100, -- depth for traversing children when creating marks
@@ -1130,11 +1129,11 @@ function commands.cmdScrollHalfPageUp()
 end
 
 function commands.cmdScrollToTop()
-  actions.smoothScroll(0, -M.config.scrollStepFullPage, M.config.smoothScroll)
+  eventtap.keyStroke({ "command" }, "up", 0)
 end
 
 function commands.cmdScrollToBottom()
-  actions.smoothScroll(0, M.config.scrollStepFullPage, M.config.smoothScroll)
+  eventtap.keyStroke({ "command" }, "down", 0)
 end
 
 function commands.cmdCopyPageUrlToClipboard()
