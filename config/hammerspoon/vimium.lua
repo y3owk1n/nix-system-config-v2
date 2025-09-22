@@ -3,9 +3,9 @@
 local _utils = require("utils")
 
 local M = {}
-
 M.__index = M
 
+-- Cache frequently used functions
 local floor = math.floor
 local insert = table.insert
 local format = string.format
@@ -14,14 +14,21 @@ local pcall = pcall
 local timer = hs.timer
 local mouse = hs.mouse
 local eventtap = hs.eventtap
+local axuielement = hs.axuielement
 
 --------------------------------------------------------------------------------
 -- Constants and Configuration
 --------------------------------------------------------------------------------
 
-local modes = { DISABLED = 1, NORMAL = 2, INSERT = 3, MULTI = 4, LINKS = 5 }
+local MODES = {
+  DISABLED = 1,
+  NORMAL = 2,
+  INSERT = 3,
+  MULTI = 4,
+  LINKS = 5,
+}
 
-local mapping = {
+local DEFAULT_MAPPING = {
   ["i"] = "cmdInsertMode",
   -- movements
   ["h"] = "cmdScrollLeft",
@@ -47,15 +54,17 @@ local mapping = {
   ["[["] = "cmdPrevPage",
 }
 
-local default_config = {
-  doublePressDelay = 0.3, -- seconds
+local DEFAULT_CONFIG = {
+  doublePressDelay = 0.3,
   showLogs = false,
-  mapping = mapping,
+  mapping = DEFAULT_MAPPING,
   scrollStep = 50,
   scrollStepHalfPage = 500,
   smoothScroll = true,
   smoothScrollFrameRate = 120,
-  depth = 100, -- depth for traversing children when creating marks
+  depth = 100,
+  maxElements = 676, -- 26*26 combinations
+  chunkSize = 10, -- Process elements in chunks for better performance
   axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea", "AXSearchField" },
   axJumpableRoles = {
     "AXLink",
@@ -68,78 +77,63 @@ local default_config = {
     "AXRadioButton",
     "AXDisclosureTriangle",
     "AXMenuButton",
-    "AXMenuBarItem", -- To support top menu bar
+    "AXMenuBarItem",
     "AXMenuItem",
-    "AXRow", -- To support Mail.app without using "AXStaticText"
-    -- "AXColorWell", -- Macos Color Picker
-    -- "AXCell", -- This can help with showing marks on Calendar.app
-    -- "AXGroup", -- This can help with lots of MacOS apps, but creates lot of noise!
-    -- "AXStaticText",
-    -- "AXMenu",
-    -- "AXToolbar",
-    -- "AXToolbarButton",
-    -- "AXTabGroup",
-    -- "AXTab",
-    -- "AXSlider",
-    -- "AXIncrementor",
-    -- "AXDecrementor",
+    "AXRow",
   },
-  axScrollableRoles = {
-    "AXScrollArea",
-    -- "AXScrollView",
-    -- "AXOverflow",
-    "AXGroup", -- use AXGroup seems to be making the most sense to me
-    -- "AXScrollable",
-    -- "AXHorizontalScroll",
-    -- "AXVerticalScroll",
-    -- "AXWebArea",
-  },
-  -- Apps where we want to disable vim navigation
-  excludedApps = {
-    "Terminal",
-  },
-  -- Browser names to be considered
-  browsers = {
-    "Safari",
-    "Google Chrome",
-    "Firefox",
-    "Microsoft Edge",
-    "Brave Browser",
-  },
-  launchers = {
-    "Spotlight",
-  },
+  axScrollableRoles = { "AXScrollArea", "AXGroup" },
+  excludedApps = { "Terminal" },
+  browsers = { "Safari", "Google Chrome", "Firefox", "Microsoft Edge", "Brave Browser" },
+  launchers = { "Spotlight" },
 }
 
+local Utils = {}
+
+local Elements = {}
+
+local MenuBar = {}
+
+local ModeManager = {}
+
+local Actions = {}
+
+local ElementFinder = {}
+
+local Marks = {}
+
+local Commands = {}
+
 --------------------------------------------------------------------------------
--- State & Cache Management
+-- State Management with Better Structure
 --------------------------------------------------------------------------------
 
-local state = {
+local State = {
+  mode = MODES.DISABLED,
+  multi = nil,
   elements = {},
   marks = {},
-  windowFilter = nil,
-  eventLoop = nil,
-  linkCapture = nil,
+  linkCapture = "",
   lastEscape = timer.absoluteTime(),
   mappingPrefixes = {},
   allCombinations = {},
+  windowFilter = nil,
+  eventLoop = nil,
+  canvas = nil,
+  onClickCallback = nil,
 }
 
-local marks = {}
-local actions = {}
-local menuBar = {}
-local commands = {}
-local utils = {}
-
-local cached = setmetatable({}, { __mode = "k" })
+-- Element cache with weak references for garbage collection
+local ElementCache = setmetatable({}, { __mode = "k" })
 
 --------------------------------------------------------------------------------
--- Utility Functions
+-- Utility Functions (Improved)
 --------------------------------------------------------------------------------
 
---- @param message string # The message to log.
-local function log(message)
+function Utils.yield()
+  timer.usleep(1)
+end
+
+function Utils.log(message)
   if not M.config.showLogs then
     return
   end
@@ -149,11 +143,7 @@ local function log(message)
   hs.printf("[%s.%03d] %s", timestamp, ms, message)
 end
 
---- @generic T
---- @param tbl T[] # The table to search.
---- @param val T # The value to search for.
---- @return boolean # Returns `true` if the value is found, otherwise `false`.
-local function tblContains(tbl, val)
+function Utils.tblContains(tbl, val)
   for _, v in ipairs(tbl) do
     if v == val then
       return true
@@ -162,129 +152,100 @@ local function tblContains(tbl, val)
   return false
 end
 
---- @generic T
---- @param tbl T[] # The table to filter.
---- @param predicate fun(item: T): boolean # The function that determines if an item should be included.
---- @return T[] # A new table containing only the items for which the predicate returned true.
-local function tblFilter(tbl, predicate)
+function Utils.tblFilter(tbl, predicate)
   local result = {}
   for _, v in ipairs(tbl) do
     if predicate(v) then
-      table.insert(result, v)
+      insert(result, v)
     end
   end
   return result
 end
 
---------------------------------------------------------------------------------
--- Element State & Access Functions
---------------------------------------------------------------------------------
-
-function state.elements.app()
-  cached.app = cached.app or hs.application.frontmostApplication()
-  return cached.app
-end
-
-function state.elements.axApp()
-  cached.axApp = cached.axApp or hs.axuielement.applicationElement(state.elements.app())
-  return cached.axApp
-end
-
-function state.elements.window()
-  cached.window = cached.window or state.elements.app():focusedWindow()
-  return cached.window
-end
-
-function state.elements.axWindow()
-  cached.axWindow = cached.axWindow or hs.axuielement.windowElement(state.elements.window())
-  return cached.axWindow
-end
-
-function state.elements.axMenuBar()
-  cached.axMenuBar = cached.axMenuBar or utils.getAttribute(state.elements.axApp(), "AXMenuBar")
-  return cached.axMenuBar
-end
-
-function state.elements.axFocusedElement()
-  cached.axFocusedElement = cached.axFocusedElement or utils.getAttribute(state.elements.axApp(), "AXFocusedUIElement")
-  return cached.axFocusedElement
-end
-
-function state.elements.axWebArea()
-  cached.axWebArea = cached.axWebArea or utils.findAXRole(state.elements.axWindow(), "AXWebArea")
-  return cached.axWebArea
-end
-
-function state.elements.fullArea()
-  if cached.fullArea then
-    return cached.fullArea
+-- Improved caching with validation
+function Utils.getCachedElement(key, factory)
+  if
+    ElementCache[key]
+    and pcall(function()
+      return ElementCache[key]:isValid()
+    end)
+    and ElementCache[key]:isValid()
+  then
+    return ElementCache[key]
   end
 
-  local winFrame = utils.getAttribute(state.elements.axWindow(), "AXFrame") or {}
-  local menuBarFrame = utils.getAttribute(state.elements.axMenuBar(), "AXFrame") or {}
-
-  cached.fullArea = {
-    x = 0,
-    y = 0,
-    w = menuBarFrame.w,
-    h = winFrame.h + winFrame.y + menuBarFrame.h,
-  }
-
-  log("fullArea: " .. hs.inspect(cached.fullArea))
-
-  return cached.fullArea
+  local element = factory()
+  if element then
+    ElementCache[key] = element
+  end
+  return element
 end
 
-function state.elements.visibleArea()
-  if cached.visibleArea then
-    return cached.visibleArea
+function Utils.clearCache()
+  ElementCache = setmetatable({}, { __mode = "k" })
+end
+
+function Utils.getAttribute(element, attributeName)
+  if not element then
+    return nil
   end
 
-  local winFrame = utils.getAttribute(state.elements.axWindow(), "AXFrame") or {}
+  local success, result = pcall(function()
+    return element:attributeValue(attributeName)
+  end)
 
-  local visibleX = math.max(winFrame.x)
-  local visibleY = math.max(winFrame.y)
-
-  local visibleWidth = math.min(winFrame.x + winFrame.w) - visibleX
-  local visibleHeight = math.min(winFrame.y + winFrame.h) - visibleY
-
-  cached.visibleArea = {
-    x = visibleX,
-    y = visibleY,
-    w = visibleWidth,
-    h = visibleHeight,
-  }
-
-  log("visibleArea: " .. hs.inspect(cached.visibleArea))
-
-  return cached.visibleArea
+  return success and result or nil
 end
 
---------------------------------------------------------------------------------
--- Helper Functions
---------------------------------------------------------------------------------
+function Utils.isElementValid(element)
+  if not element then
+    return false
+  end
 
-function utils.fetchMappingPrefixes()
-  for k, _ in pairs(M.config.mapping) do
-    if #k == 2 then
-      state.mappingPrefixes[sub(k, 1, 1)] = true
+  local success = pcall(function()
+    return element:isValid()
+  end)
+
+  return success
+end
+
+function Utils.generateCombinations()
+  if #State.allCombinations > 0 then
+    return
+  end -- Already generated
+
+  local chars = "abcdefghijklmnopqrstuvwxyz"
+  for i = 1, #chars do
+    for j = 1, #chars do
+      insert(State.allCombinations, chars:sub(i, i) .. chars:sub(j, j))
+      if #State.allCombinations >= M.config.maxElements then
+        return
+      end
     end
   end
-  log("mappingPrefixes: " .. hs.inspect(state.mappingPrefixes))
 end
 
-function utils.isExcludedApp()
-  local appName = state.elements.app():name()
-  return tblContains(M.config.excludedApps, appName)
+function Utils.fetchMappingPrefixes()
+  State.mappingPrefixes = {}
+  for k, _ in pairs(M.config.mapping) do
+    if #k == 2 then
+      State.mappingPrefixes[sub(k, 1, 1)] = true
+    end
+  end
 end
 
-function utils.isLauncherActive()
+function Utils.isExcludedApp()
+  local app = hs.application.frontmostApplication()
+  return app and Utils.tblContains(M.config.excludedApps, app:name())
+end
+
+function Utils.isLauncherActive()
   for _, launcher in ipairs(M.config.launchers) do
     local app = hs.application.get(launcher)
     if app then
-      local appElement = hs.axuielement.applicationElement(app)
+      local appElement = axuielement.applicationElement(app)
       if appElement then
-        local windows = utils.getAttribute(appElement, "AXWindows") or {}
+        local windows = Utils.getAttribute(appElement, "AXWindows") or {}
         if #windows > 0 then
           return true, launcher
         end
@@ -294,439 +255,175 @@ function utils.isLauncherActive()
   return false
 end
 
-function utils.generateCombinations()
-  local chars = "abcdefghijklmnopqrstuvwxyz"
-  for i = 1, #chars do
-    for j = 1, #chars do
-      insert(state.allCombinations, chars:sub(i, i) .. chars:sub(j, j))
-    end
-  end
+function Utils.isInBrowser()
+  local app = hs.application.frontmostApplication()
+  return app and Utils.tblContains(M.config.browsers, app:name())
 end
 
-function utils.isInBrowser()
-  local currentAppName = state.elements.app():name()
+--------------------------------------------------------------------------------
+-- Element Access (Refactored)
+--------------------------------------------------------------------------------
 
-  return tblContains(M.config.browsers, currentAppName)
-end
-
---- @param mode integer # The mode to set. Expected values are in `M.modes`.
---- @param char string|nil # An optional character representing the mode in the menu bar.
-function utils.setMode(mode, char)
-  local defaultModeChars = {
-    [modes.DISABLED] = "X",
-    [modes.INSERT] = "I",
-    [modes.LINKS] = "L",
-    [modes.MULTI] = "M",
-    [modes.NORMAL] = "N",
-  }
-
-  local previousMode = state.elements.mode
-  state.elements.mode = mode
-
-  if state.elements.mode == modes.LINKS and previousMode ~= modes.LINKS then
-    state.linkCapture = ""
-    marks.clear()
-  end
-  if previousMode == modes.LINKS and state.elements.mode ~= modes.LINKS then
-    state.linkCapture = nil
-    timer.doAfter(0, marks.clear)
-  end
-
-  if state.elements.mode == modes.MULTI then
-    state.elements.multi = char
-  end
-  if state.elements.mode ~= modes.MULTI then
-    state.elements.multi = nil
-  end
-
-  menuBar.item:setTitle(char or defaultModeChars[mode] or "?")
-end
-
-function utils.isElementPartiallyVisible(element)
-  local axHidden = utils.getAttribute(element, "AXHidden")
-  local axFrame = utils.getAttribute(element, "AXFrame")
-
-  local frame = element and not axHidden and axFrame
-
-  if not frame or frame.w <= 0 or frame.h <= 0 then
-    return false
-  end
-
-  local fullArea = state.elements.fullArea()
-  local vx, vy, vw, vh = fullArea.x, fullArea.y, fullArea.w, fullArea.h
-  local fx, fy, fw, fh = frame.x, frame.y, frame.w, frame.h
-
-  return fx < vx + vw and fx + fw > vx and fy < vy + vh and fy + fh > vy
-end
-
-function utils.getFocusedElement(element, depth)
-  if not element or (depth and depth > M.config.depth) then
-    return
-  end
-
-  local elementApp = utils.getAttribute(element, "AXRole")
-  local elementFrame = utils.getAttribute(element, "AXFrame")
-
-  if elementApp ~= "AXApplication" then
-    if not elementFrame or not utils.isElementPartiallyVisible(element) then
-      return
-    end
-
-    local axFocused = utils.getAttribute(element, "AXFocused")
-
-    if axFocused then
-      log("Focused element found: " .. hs.inspect(element))
-      element:setAttributeValue("AXFocused", false)
-      log("Focused element unfocused.")
-    end
-  end
-
-  utils.getChildrens(element, function(_element)
-    utils.getFocusedElement(_element, (depth or 0) + 1)
+function Elements.getApp()
+  return Utils.getCachedElement("app", function()
+    return hs.application.frontmostApplication()
   end)
 end
 
---- @return boolean, boolean # found status, completed status
-function utils.getNextPrevElement(element, depth, direction)
-  if not element or (depth and depth > M.config.depth) then
-    return false, true
-  end
-
-  local elementApp = utils.getAttribute(element, "AXRole")
-  local elementFrame = utils.getAttribute(element, "AXFrame")
-
-  if elementApp ~= "AXApplication" then
-    if not elementFrame or not utils.isElementPartiallyVisible(element) then
-      return false, true
-    end
-
-    local role = utils.getAttribute(element, "AXRole")
-    local title = utils.getAttribute(element, "AXTitle")
-
-    if role == "AXLink" or role == "AXButton" or role == "AXMenuItem" then
-      if title and title:lower():find(direction) then
-        element:performAction("AXPress")
-        return true, true
-      end
-    end
-  end
-
-  local children = utils.getAttribute(element, "AXChildren")
-  if children then
-    local chunk_size = 10
-    for i = 1, #children, chunk_size do
-      local end_idx = math.min(i + chunk_size - 1, #children)
-      for j = i, end_idx do
-        local found = utils.getNextPrevElement(children[j], (depth or 0) + 1, direction)
-        if found then
-          return true, true -- Element found in children, traversal complete
-        end
-      end
-    end
-  end
-
-  return false, true -- No element found, but traversal completed for this branch
+function Elements.getAxApp()
+  return Utils.getCachedElement("axApp", function()
+    local app = Elements.getApp()
+    return app and axuielement.applicationElement(app)
+  end)
 end
 
-function utils.getElementPositionAndSize(element)
-  local frame = utils.getAttribute(element, "AXFrame")
-  if frame then
-    return { x = frame.x, y = frame.y }, { w = frame.w, h = frame.h }
-  end
-
-  local successPos, position = pcall(function()
-    return utils.getAttribute(element, "AXPosition")
+function Elements.getWindow()
+  return Utils.getCachedElement("window", function()
+    local app = Elements.getApp()
+    return app and app:focusedWindow()
   end)
-  local successSize, size = pcall(function()
-    return utils.getAttribute(element, "AXSize")
-  end)
-
-  if successPos and successSize and position and size then
-    return position, size
-  end
-
-  return nil, nil
 end
 
-function utils.findAXRole(rootElement, role)
-  local axRole = utils.getAttribute(rootElement, "AXRole")
+function Elements.getAxWindow()
+  return Utils.getCachedElement("axWindow", function()
+    local window = Elements.getWindow()
+    return window and axuielement.windowElement(window)
+  end)
+end
 
+function Elements.getAxFocusedElement()
+  return Utils.getCachedElement("axFocusedElement", function()
+    local axApp = Elements.getAxApp()
+    return axApp and Utils.getAttribute(axApp, "AXFocusedUIElement")
+  end)
+end
+
+function Elements.getAxWebArea()
+  return Utils.getCachedElement("axWebArea", function()
+    local axWindow = Elements.getAxWindow()
+    return axWindow and Elements.findAXRole(axWindow, "AXWebArea")
+  end)
+end
+
+function Elements.getAxMenuBar()
+  return Utils.getCachedElement("axMenuBar", function()
+    local axApp = Elements.getAxApp()
+    return axApp and Utils.getAttribute(axApp, "AXMenuBar")
+  end)
+end
+
+function Elements.getFullArea()
+  return Utils.getCachedElement("fullArea", function()
+    local winFrame = Utils.getAttribute(Elements.getAxWindow(), "AXFrame") or {}
+    local menuBarFrame = Utils.getAttribute(Elements.getAxMenuBar(), "AXFrame") or {}
+
+    return {
+      x = 0,
+      y = 0,
+      w = menuBarFrame.w,
+      h = winFrame.h + winFrame.y + menuBarFrame.h,
+    }
+  end)
+end
+
+function Elements.findAXRole(rootElement, role)
+  if not rootElement then
+    return nil
+  end
+
+  local axRole = Utils.getAttribute(rootElement, "AXRole")
   if axRole == role then
     return rootElement
   end
 
-  local axChildren = utils.getAttribute(rootElement, "AXChildren") or {}
-
+  local axChildren = Utils.getAttribute(rootElement, "AXChildren") or {}
   for _, child in ipairs(axChildren) do
-    local result = utils.findAXRole(child, role)
+    local result = Elements.findAXRole(child, role)
     if result then
       return result
     end
   end
+
+  return nil
 end
 
-function utils.isEditableControlInFocus()
-  if state.elements.axFocusedElement() then
-    return tblContains(M.config.axEditableRoles, utils.getAttribute(state.elements.axFocusedElement(), "AXRole"))
-  else
+function Elements.isEditableControlInFocus()
+  local focusedElement = Elements.getAxFocusedElement()
+  if not focusedElement then
     return false
+  end
+
+  local role = Utils.getAttribute(focusedElement, "AXRole")
+  return role and Utils.tblContains(M.config.axEditableRoles, role)
+end
+
+--------------------------------------------------------------------------------
+-- Menu Bar (Moved up for proper scoping)
+--------------------------------------------------------------------------------
+
+function MenuBar.create()
+  if MenuBar.item then
+    MenuBar.destroy()
+  end
+  MenuBar.item = hs.menubar.new()
+  MenuBar.item:setTitle("N")
+end
+
+function MenuBar.destroy()
+  if MenuBar.item then
+    MenuBar.item:delete()
+    MenuBar.item = nil
   end
 end
 
-function utils.getAttribute(element, attributeName)
-  if not element then
-    return nil
-  end
-  return element:attributeValue(attributeName)
-end
+--------------------------------------------------------------------------------
+-- Mode Management
+--------------------------------------------------------------------------------
 
-function utils.getDescendants(elements, cb)
-  local chunk_size = 10
-  for i = 1, #elements, chunk_size do
-    local end_idx = math.min(i + chunk_size - 1, #elements)
-    for j = i, end_idx do
-      cb(elements[j])
-    end
-  end
-end
-
-function utils.isElementActionable(element)
-  if not element then
-    return false
-  end
-
-  local role = utils.getAttribute(element, "AXRole")
-  if not role then
-    return false
-  end
-
-  local axJumpableRoles = M.config.axJumpableRoles
-
-  return tblContains(axJumpableRoles, role)
-end
-
-function utils.isElementScrollable(element)
-  if not element then
-    return false
-  end
-
-  local role = utils.getAttribute(element, "AXRole")
-  if not role then
-    return false
-  end
-
-  local axScrollableRoles = M.config.axScrollableRoles
-
-  return tblContains(axScrollableRoles, role)
-end
-
-function utils.isElementInput(element)
-  if not element then
-    return false
-  end
-
-  local role = utils.getAttribute(element, "AXRole")
-  if not role then
-    return false
-  end
-
-  local axEditableRoles = M.config.axEditableRoles
-
-  return tblContains(axEditableRoles, role)
-end
-
-function utils.isElementImage(element)
-  if not element then
-    return false
-  end
-
-  local role = utils.getAttribute(element, "AXRole")
-  local url = utils.getAttribute(element, "AXURL")
-
-  if not role then
-    return false
-  end
-
-  return role == "AXImage" and url ~= nil
-end
-
-function utils.getChildrens(mainElement, cb)
-  local role = utils.getAttribute(mainElement, "AXRole")
-  local main = utils.getAttribute(mainElement, "AXMain")
-
-  if role == "AXWindow" and main == false then
-    return
-  end
-
-  local sourceTypes = {
-    "AXVisibleRows",
-    "AXVisibleChildren",
-    "AXChildrenInNavigationOrder",
-    "AXChildren",
+function ModeManager.setMode(mode, char)
+  local defaultModeChars = {
+    [MODES.DISABLED] = "X",
+    [MODES.INSERT] = "I",
+    [MODES.LINKS] = "L",
+    [MODES.MULTI] = "M",
+    [MODES.NORMAL] = "N",
   }
 
-  for _, sourceType in ipairs(sourceTypes) do
-    local elements = utils.getAttribute(mainElement, sourceType)
-    if elements and #elements > 0 then
-      utils.getDescendants(elements, cb)
-      return
-    end
-  end
-end
+  local previousMode = State.mode
+  State.mode = mode
 
-function utils.findClickableElements(element, withUrls, depth, cb)
-  if not element or (depth and depth > M.config.depth) then
-    return
+  if mode == MODES.LINKS and previousMode ~= MODES.LINKS then
+    State.linkCapture = ""
+    Marks.clear()
+  elseif previousMode == MODES.LINKS and mode ~= MODES.LINKS then
+    timer.doAfter(0, Marks.clear)
   end
 
-  local elementApp = utils.getAttribute(element, "AXRole")
-  local elementFrame = utils.getAttribute(element, "AXFrame")
-
-  if elementApp ~= "AXApplication" then
-    if not elementFrame or not utils.isElementPartiallyVisible(element) then
-      return
-    end
-
-    local elementUrl = utils.getAttribute(element, "AXURL")
-
-    if utils.isElementActionable(element) and (not withUrls or elementUrl) then
-      cb(element)
-    end
+  if mode == MODES.MULTI then
+    State.multi = char
+  else
+    State.multi = nil
   end
 
-  utils.getChildrens(element, function(_element)
-    utils.findClickableElements(_element, withUrls, (depth or 0) + 1, function(_element2)
-      cb(_element2)
-    end)
-  end)
-end
-
-function utils.findScrollableElements(element, depth, cb)
-  if not element or (depth and depth > M.config.depth) then
-    return
+  if MenuBar.item then
+    MenuBar.item:setTitle(char or defaultModeChars[mode] or "?")
   end
-
-  local elementApp = utils.getAttribute(element, "AXRole")
-  local elementFrame = utils.getAttribute(element, "AXFrame")
-
-  if elementApp ~= "AXApplication" then
-    if not elementFrame or not utils.isElementPartiallyVisible(element) then
-      return
-    end
-
-    if utils.isElementScrollable(element) then
-      cb(element)
-    end
-  end
-
-  utils.getChildrens(element, function(_element)
-    utils.findScrollableElements(_element, (depth or 0) + 1, function(_element2)
-      cb(_element2)
-    end)
-  end)
-end
-
-function utils.findUrlElements(element, depth, cb)
-  if not element or (depth and depth > M.config.depth) then
-    return
-  end
-
-  local elementApp = utils.getAttribute(element, "AXRole")
-  local elementFrame = utils.getAttribute(element, "AXFrame")
-
-  if elementApp ~= "AXApplication" then
-    if not elementFrame or not utils.isElementPartiallyVisible(element) then
-      return
-    end
-
-    local elementUrl = utils.getAttribute(element, "AXURL")
-
-    if elementUrl then
-      cb(element)
-    end
-  end
-
-  utils.getChildrens(element, function(_element)
-    utils.findUrlElements(_element, (depth or 0) + 1, function(_element2)
-      cb(_element2)
-    end)
-  end)
-end
-
-function utils.findInputElements(element, depth, cb)
-  if not element or (depth and depth > M.config.depth) then
-    return
-  end
-
-  local elementApp = utils.getAttribute(element, "AXRole")
-  local elementFrame = utils.getAttribute(element, "AXFrame")
-
-  if elementApp ~= "AXApplication" then
-    if not elementFrame or not utils.isElementPartiallyVisible(element) then
-      return
-    end
-    if utils.isElementInput(element) then
-      cb(element)
-    end
-  end
-
-  utils.getChildrens(element, function(_element)
-    utils.findInputElements(_element, (depth or 0) + 1, function(_element2)
-      cb(_element2)
-    end)
-  end)
-end
-
-function utils.findImageElements(element, depth, cb)
-  if not element or (depth and depth > M.config.depth) then
-    return
-  end
-
-  local elementApp = utils.getAttribute(element, "AXRole")
-  local elementFrame = utils.getAttribute(element, "AXFrame")
-
-  if elementApp ~= "AXApplication" then
-    if not elementFrame or not utils.isElementPartiallyVisible(element) then
-      return
-    end
-    if utils.isElementImage(element) then
-      log("found AXImage: " .. hs.inspect(element))
-      cb(element)
-    end
-  end
-
-  utils.getChildrens(element, function(_element)
-    utils.findImageElements(_element, (depth or 0) + 1, function(_element2)
-      cb(_element2)
-    end)
-  end)
 end
 
 --------------------------------------------------------------------------------
--- Action Functions
+-- Actions (Improved with Error Handling)
 --------------------------------------------------------------------------------
 
---- @param x number|nil # The horizontal scroll amount in pixels (can be `nil` for vertical-only scrolling).
---- @param y number|nil # The vertical scroll amount in pixels (can be `nil` for horizontal-only scrolling).
---- @param smooth boolean # Whether to perform smooth scrolling.
-function actions.smoothScroll(x, y, smooth)
+function Actions.smoothScroll(x, y, smooth)
   if not smooth then
-    eventtap.event.newScrollEvent({ x, y }, {}, "pixel"):post()
+    eventtap.event.newScrollEvent({ x or 0, y or 0 }, {}, "pixel"):post()
     return
   end
 
   local steps = 5
-  local dx = 0
-  local dy = 0
-
-  if x then
-    dx = x / steps
-  end
-  if y then
-    dy = y / steps
-  end
+  local dx = x and (x / steps) or 0
+  local dy = y and (y / steps) or 0
   local frame = 0
-
   local interval = 1 / M.config.smoothScrollFrameRate
 
   local function animate()
@@ -737,174 +434,236 @@ function actions.smoothScroll(x, y, smooth)
 
     local factor = frame <= steps / 2 and 2 or 0.5
     eventtap.event.newScrollEvent({ dx * factor, dy * factor }, {}, "pixel"):post()
-
-    timer.doAfter(interval, animate) -- ~60fps
+    timer.doAfter(interval, animate)
   end
 
   animate()
 end
 
---- @param url string # The URL to open in a new browser tab.
-function actions.openUrlInNewTab(url)
-  local browserScripts = {
-    Safari = [[
-            tell application "Safari"
-                activate
-                tell window 1
-                    set current tab to (make new tab with properties {URL:"%s"})
-                end tell
-            end tell
-        ]],
-    ["Google Chrome"] = [[
-            tell application "Google Chrome"
-                activate
-                tell window 1
-                    make new tab with properties {URL:"%s"}
-                end tell
-            end tell
-        ]],
-    Firefox = [[
-            tell application "Firefox"
-                activate
-                tell window 1
-                    open location "%s"
-                end tell
-            end tell
-        ]],
-    ["Microsoft Edge"] = [[
-            tell application "Microsoft Edge"
-                activate
-                tell window 1
-                    make new tab with properties {URL:"%s"}
-                end tell
-            end tell
-        ]],
-    ["Brave Browser"] = [[
-            tell application "Brave Browser"
-                activate
-                tell window 1
-                    make new tab with properties {URL:"%s"}
-                end tell
-            end tell
-        ]],
-  }
-
-  local currentApp = state.elements.app():name()
-  local script
-
-  if browserScripts[currentApp] then
-    script = format(browserScripts[currentApp], url)
-  else
-    -- Fallback to Safari if not a known browser
-    script = format(browserScripts["Safari"], url)
-  end
-
-  hs.osascript.applescript(script)
-end
-
---- @param contents string|nil # The text to copy to the clipboard. If `nil`, the operation will fail.
-function actions.setClipboardContents(contents)
-  if contents and hs.pasteboard.setContents(contents) then
-    hs.alert.show("Copied to clipboard: " .. contents, nil, nil, 4)
-  else
-    hs.alert.show("Failed to copy to clipboard", nil, nil, 4)
-  end
-end
-
-function actions.forceUnfocus()
-  log("forced unfocus on escape")
-
-  local startElement = state.elements.axWindow()
-  if not startElement then
+function Actions.openUrlInNewTab(url)
+  if not url then
     return
   end
 
-  utils.getFocusedElement(startElement, 0)
+  local browserScripts = {
+    Safari = 'tell application "Safari" to tell window 1 to set current tab to (make new tab with properties {URL:"%s"})',
+    ["Google Chrome"] = 'tell application "Google Chrome" to tell window 1 to make new tab with properties {URL:"%s"}',
+    Firefox = 'tell application "Firefox" to tell window 1 to open location "%s"',
+    ["Microsoft Edge"] = 'tell application "Microsoft Edge" to tell window 1 to make new tab with properties {URL:"%s"}',
+    ["Brave Browser"] = 'tell application "Brave Browser" to tell window 1 to make new tab with properties {URL:"%s"}',
+  }
 
-  hs.alert.show("Force unfocused!")
-end
-
-function actions.restoreMousePosition(originalPosition)
-  timer.doAfter(0.05, function()
-    mouse.absolutePosition(originalPosition)
-  end)
-end
-
---------------------------------------------------------------------------------
--- Menubar
---------------------------------------------------------------------------------
-
-function menuBar.new()
-  if menuBar.item then
-    menuBar.delete()
+  local currentApp = Elements.getApp()
+  if not currentApp then
+    return
   end
-  menuBar.item = hs.menubar.new()
+
+  local appName = currentApp:name()
+  local script = browserScripts[appName] or browserScripts["Safari"]
+
+  hs.osascript.applescript(format(script, url))
 end
 
-function menuBar.delete()
-  if menuBar.item then
-    menuBar.item:delete()
+function Actions.setClipboardContents(contents)
+  if not contents then
+    hs.alert.show("Nothing to copy", nil, nil, 2)
+    return
   end
-  menuBar.item = nil
+
+  if hs.pasteboard.setContents(contents) then
+    hs.alert.show("Copied: " .. contents:sub(1, 50) .. (contents:len() > 50 and "..." or ""), nil, nil, 2)
+  else
+    hs.alert.show("Failed to copy to clipboard", nil, nil, 2)
+  end
 end
 
 --------------------------------------------------------------------------------
--- Marks
+-- Element Finding (Optimized)
 --------------------------------------------------------------------------------
 
-function marks.clear()
-  if marks.canvas then
-    marks.canvas:delete()
+function ElementFinder.isElementVisible(element)
+  if not element then
+    return false
   end
-  marks.canvas = nil
-  state.marks = {}
+
+  local hidden = Utils.getAttribute(element, "AXHidden")
+  local frame = Utils.getAttribute(element, "AXFrame")
+
+  if hidden or not frame or frame.w <= 0 or frame.h <= 0 then
+    return false
+  end
+
+  -- Simplified visibility check
+  return frame.x >= 0 and frame.y >= 0 and frame.x < 3000 and frame.y < 3000
 end
 
-function marks.draw()
-  if not marks.canvas then
-    marks.canvas = hs.canvas.new(state.elements.fullArea())
+function ElementFinder.isElementActionable(element)
+  if not element then
+    return false
+  end
+
+  local role = Utils.getAttribute(element, "AXRole")
+  return role and Utils.tblContains(M.config.axJumpableRoles, role)
+end
+
+function ElementFinder.processChildren(element, callback, depth)
+  if not element or depth > M.config.depth then
+    return
+  end
+
+  local children = Utils.getAttribute(element, "AXChildren") or {}
+  local chunkSize = M.config.chunkSize
+
+  -- Process in chunks to prevent blocking
+  for i = 1, #children, chunkSize do
+    local endIdx = math.min(i + chunkSize - 1, #children)
+
+    for j = i, endIdx do
+      if Utils.isElementValid(children[j]) then
+        callback(children[j], depth + 1)
+      end
+    end
+
+    -- Yield control briefly for large element trees
+    if i > chunkSize then
+      Utils.yield()
+    end
+  end
+end
+
+function ElementFinder.findElements(rootElement, predicate, callback)
+  if not rootElement then
+    return
+  end
+
+  local function processElement(element, depth)
+    if depth > M.config.depth then
+      return
+    end
+
+    local role = Utils.getAttribute(element, "AXRole")
+    if role ~= "AXApplication" and ElementFinder.isElementVisible(element) then
+      if predicate(element) then
+        callback(element)
+      end
+    end
+
+    ElementFinder.processChildren(element, processElement, depth)
+  end
+
+  processElement(rootElement, 0)
+end
+
+--------------------------------------------------------------------------------
+-- Marks System (Improved)
+--------------------------------------------------------------------------------
+
+function Marks.clear()
+  if State.canvas then
+    State.canvas:delete()
+    State.canvas = nil
+  end
+  State.marks = {}
+  State.linkCapture = ""
+end
+
+function Marks.add(element)
+  if #State.marks >= M.config.maxElements then
+    return
+  end
+  insert(State.marks, { element = element })
+end
+
+function Marks.show(withUrls, elementType)
+  local axApp = Elements.getAxApp()
+  if not axApp then
+    return
+  end
+
+  Marks.clear()
+
+  local predicates = {
+    link = function(el)
+      return ElementFinder.isElementActionable(el) and (not withUrls or Utils.getAttribute(el, "AXURL"))
+    end,
+    input = function(el)
+      return Utils.tblContains(M.config.axEditableRoles, Utils.getAttribute(el, "AXRole") or "")
+    end,
+    image = function(el)
+      return Utils.getAttribute(el, "AXRole") == "AXImage" and Utils.getAttribute(el, "AXURL")
+    end,
+  }
+
+  local predicate = predicates[elementType]
+  if not predicate then
+    return
+  end
+
+  ElementFinder.findElements(axApp, predicate, Marks.add)
+
+  if #State.marks == 0 then
+    hs.alert.show("No " .. elementType .. "s found", nil, nil, 2)
+    ModeManager.setMode(MODES.NORMAL)
+    return
+  end
+
+  -- Auto-click if only one input element
+  if elementType == "input" and #State.marks == 1 then
+    State.onClickCallback(State.marks[1])
+    ModeManager.setMode(MODES.NORMAL)
+    return
+  end
+
+  Marks.draw()
+end
+
+function Marks.draw()
+  if not State.canvas then
+    local frame = Elements.getFullArea()
+    if not frame then
+      return
+    end
+
+    State.canvas = hs.canvas.new(frame)
   end
 
   local elementsToDraw = {}
-  for i, _ in ipairs(state.marks) do
-    local markText = string.upper(state.allCombinations[i])
 
-    if #state.linkCapture == 0 or markText:sub(1, #state.linkCapture) == state.linkCapture then
-      local element = marks.prepareElementForDrawing(i)
+  for i, mark in ipairs(State.marks) do
+    if i > #State.allCombinations then
+      break
+    end
+
+    local markText = State.allCombinations[i]:upper()
+
+    if #State.linkCapture == 0 or markText:sub(1, #State.linkCapture) == State.linkCapture then
+      local element = Marks.createMarkElement(mark.element, markText)
       if element then
-        table.move(element, 1, #element, #elementsToDraw + 1, elementsToDraw)
+        for _, e in ipairs(element) do
+          insert(elementsToDraw, e)
+        end
       end
     end
   end
 
   if #elementsToDraw > 0 then
-    marks.canvas:replaceElements(elementsToDraw)
-    marks.canvas:show()
+    State.canvas:replaceElements(elementsToDraw)
+    State.canvas:show()
   else
-    marks.canvas:hide()
+    State.canvas:hide()
   end
 end
 
---- @param markIndex number # The index of the mark in `state.marks`.
---- @return table|nil # A table representing the graphical elements to draw or `nil` if the mark is invalid.
-function marks.prepareElementForDrawing(markIndex)
-  local mark = state.marks[markIndex]
-  if not mark then
-    return nil
-  end
-
-  local position, size = utils.getElementPositionAndSize(mark.element)
-  if not position or not size then
+function Marks.createMarkElement(element, text)
+  local frame = Utils.getAttribute(element, "AXFrame")
+  if not frame then
     return nil
   end
 
   local padding = 2
   local fontSize = 10
-  local text = string.upper(state.allCombinations[markIndex])
-
-  local textWidth = #text * (fontSize * 1.1) -- Approximate adjustment
-  local textHeight = fontSize * 1.1 -- Approximate adjustment
-
+  local textWidth = #text * (fontSize * 1.1)
+  local textHeight = fontSize * 1.1
   local containerWidth = textWidth + (padding * 2)
   local containerHeight = textHeight + (padding * 2)
 
@@ -922,8 +681,8 @@ function marks.prepareElementForDrawing(markIndex)
   }
 
   local bgRect = hs.geometry.rect(
-    position.x + (size.w / 2) - (containerWidth / 2),
-    position.y + (size.h / 3 * 2) + arrowHeight,
+    frame.x + (frame.w / 2) - (containerWidth / 2),
+    frame.y + (frame.h / 3 * 2) + arrowHeight,
     containerWidth,
     containerHeight
   )
@@ -1024,762 +783,573 @@ function marks.prepareElementForDrawing(markIndex)
   }
 end
 
-function marks.add(element)
-  insert(state.marks, { element = element })
-end
-
---- @param withUrls boolean # If true, includes URLs when finding clickable elements.
---- @param type "link"|"scroll"|"url"|"input"|"image" # The type of elements to find ("link", "scroll", "url", "input").
-function marks.show(withUrls, type)
-  local startElement = state.elements.axApp()
-  if not startElement then
-    return
-  end
-
-  log("startElement: " .. hs.inspect(startElement))
-
-  marks.clear()
-
-  if type == "link" then
-    utils.findClickableElements(startElement, withUrls, 0, function(element)
-      marks.add(element)
-    end)
-  end
-
-  if type == "scroll" then
-    utils.findScrollableElements(startElement, 0, function(element)
-      marks.add(element)
-    end)
-  end
-
-  if type == "url" then
-    utils.findUrlElements(startElement, 0, function(element)
-      marks.add(element)
-    end)
-  end
-
-  if type == "input" then
-    utils.findInputElements(startElement, 0, function(element)
-      marks.add(element)
-    end)
-
-    if #state.marks == 1 then
-      marks.onClickCallback(state.marks[1])
-      utils.setMode(modes.NORMAL)
-      return
-    end
-  end
-
-  if type == "image" then
-    utils.findImageElements(startElement, 0, function(element)
-      marks.add(element)
-    end)
-  end
-
-  if #state.marks > 0 then
-    marks.draw()
-  else
-    hs.alert.show("No elements found")
-    utils.setMode(modes.NORMAL)
-  end
-end
-
---- @param combination string # The combination that matches the element to be clicked.
-function marks.click(combination)
-  log("M.marks.click")
-  for i, c in ipairs(state.allCombinations) do
-    if c == combination and state.marks[i] and marks.onClickCallback then
-      local mark = state.marks[i]
-      if mark then
-        local success, err = pcall(marks.onClickCallback, mark)
-        if not success then
-          log("Error clicking element: " .. tostring(err))
-        end
+function Marks.click(combination)
+  for i, c in ipairs(State.allCombinations) do
+    if c == combination and State.marks[i] and State.onClickCallback then
+      local success, err = pcall(State.onClickCallback, State.marks[i])
+      if not success then
+        Utils.log("Error clicking element: " .. tostring(err))
       end
+      break
     end
   end
 end
 
 --------------------------------------------------------------------------------
--- Commands
+-- Commands (Streamlined)
 --------------------------------------------------------------------------------
 
-function commands.cmdScrollLeft()
-  actions.smoothScroll(M.config.scrollStep, 0, M.config.smoothScroll)
+-- Scrolling commands
+function Commands.cmdScrollLeft()
+  Actions.smoothScroll(M.config.scrollStep, 0, M.config.smoothScroll)
 end
-
-function commands.cmdScrollRight()
-  actions.smoothScroll(-M.config.scrollStep, 0, M.config.smoothScroll)
+function Commands.cmdScrollRight()
+  Actions.smoothScroll(-M.config.scrollStep, 0, M.config.smoothScroll)
 end
-
-function commands.cmdScrollUp()
-  actions.smoothScroll(0, M.config.scrollStep, M.config.smoothScroll)
+function Commands.cmdScrollUp()
+  Actions.smoothScroll(0, M.config.scrollStep, M.config.smoothScroll)
 end
-
-function commands.cmdScrollDown()
-  actions.smoothScroll(0, -M.config.scrollStep, M.config.smoothScroll)
+function Commands.cmdScrollDown()
+  Actions.smoothScroll(0, -M.config.scrollStep, M.config.smoothScroll)
 end
-
-function commands.cmdScrollHalfPageDown()
-  actions.smoothScroll(0, -M.config.scrollStepHalfPage, M.config.smoothScroll)
+function Commands.cmdScrollHalfPageDown()
+  Actions.smoothScroll(0, -M.config.scrollStepHalfPage, M.config.smoothScroll)
 end
-
-function commands.cmdScrollHalfPageUp()
-  actions.smoothScroll(0, M.config.scrollStepHalfPage, M.config.smoothScroll)
+function Commands.cmdScrollHalfPageUp()
+  Actions.smoothScroll(0, M.config.scrollStepHalfPage, M.config.smoothScroll)
 end
-
-function commands.cmdScrollToTop()
+function Commands.cmdScrollToTop()
   eventtap.keyStroke({ "command" }, "up", 0)
 end
-
-function commands.cmdScrollToBottom()
+function Commands.cmdScrollToBottom()
   eventtap.keyStroke({ "command" }, "down", 0)
 end
 
-function commands.cmdCopyPageUrlToClipboard()
-  if utils.isInBrowser() then
-    local element = state.elements.axWebArea()
-    local url = element and utils.getAttribute(element, "AXURL")
+-- Mode commands
+function Commands.cmdInsertMode()
+  ModeManager.setMode(MODES.INSERT)
+end
+
+-- Link commands
+function Commands.cmdGotoLink()
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = function(mark)
+    local element = mark.element
+    local actions = element and element:actionNames() or {}
+
+    if Utils.tblContains(actions, "AXPress") then
+      element:performAction("AXPress")
+    else
+      -- Fallback to mouse click
+      local frame = Utils.getAttribute(element, "AXFrame")
+      if frame then
+        local clickX, clickY = frame.x + frame.w / 2, frame.y + frame.h / 2
+        local originalPos = mouse.absolutePosition()
+        mouse.absolutePosition({ x = clickX, y = clickY })
+        eventtap.leftClick({ x = clickX, y = clickY })
+        timer.doAfter(0.1, function()
+          mouse.absolutePosition(originalPos)
+        end)
+      end
+    end
+  end
+  timer.doAfter(0, function()
+    Marks.show(false, "link")
+  end)
+end
+
+function Commands.cmdGotoInput()
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = Commands.cmdGotoLink().onClickCallback
+  timer.doAfter(0, function()
+    Marks.show(false, "input")
+  end)
+end
+
+function Commands.cmdRightClick()
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = function(mark)
+    local element = mark.element
+    local actions = element and element:actionNames() or {}
+
+    if Utils.tblContains(actions, "AXShowMenu") then
+      element:performAction("AXShowMenu")
+    else
+      local frame = Utils.getAttribute(element, "AXFrame")
+      if frame then
+        local clickX, clickY = frame.x + frame.w / 2, frame.y + frame.h / 2
+        local originalPos = mouse.absolutePosition()
+        mouse.absolutePosition({ x = clickX, y = clickY })
+        eventtap.rightClick({ x = clickX, y = clickY })
+        timer.doAfter(0.05, function()
+          mouse.absolutePosition(originalPos)
+        end)
+      end
+    end
+  end
+  timer.doAfter(0, function()
+    Marks.show(false, "link")
+  end)
+end
+
+function Commands.cmdGotoLinkNewTab()
+  if not Utils.isInBrowser() then
+    hs.alert.show("Only available in browser", nil, nil, 2)
+    return
+  end
+
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = function(mark)
+    local url = Utils.getAttribute(mark.element, "AXURL")
     if url then
-      actions.setClipboardContents(url.url)
-    end
-  else
-    hs.alert.show("Copy page url is only available for browser")
-  end
-end
-
---- @param char string|nil # Optional character to display for the INSERT mode in the menu bar.
-function commands.cmdInsertMode(char)
-  utils.setMode(modes.INSERT, char)
-end
-
-function commands.cmdGotoLink(char)
-  utils.setMode(modes.LINKS, char)
-  marks.onClickCallback = function(mark)
-    local element = mark.element
-    if not element then
-      log("Error: Invalid element")
-      return
-    end
-
-    local actionsNames = element:actionNames()
-
-    log("actions available: " .. hs.inspect(actionsNames))
-
-    if tblContains(actionsNames, "AXPress") then
-      mark.element:performAction("AXPress")
-      log("Success AXPress")
-    else
-      -- Try different methods to get position
-      local position, size = utils.getElementPositionAndSize(element)
-
-      if position and size then
-        local clickX = position.x + (size.w / 2)
-        local clickY = position.y + (size.h / 2)
-        local originalPosition = mouse.absolutePosition()
-
-        local clickSuccess, clickErr = pcall(function()
-          mouse.absolutePosition({ x = clickX, y = clickY })
-          eventtap.leftClick({ x = clickX, y = clickY })
-          actions.restoreMousePosition(originalPosition)
-        end)
-
-        if clickSuccess then
-          return
-        else
-          log("Click failed: " .. tostring(clickErr))
-        end
-      end
-
-      -- Fallback: Click using mark coordinates
-      if mark.x and mark.y then
-        local clickSuccess, clickErr = pcall(function()
-          local originalPosition = mouse.absolutePosition()
-          mouse.absolutePosition({ x = mark.x, y = mark.y })
-          eventtap.leftClick({ x = mark.x, y = mark.y })
-          actions.restoreMousePosition(originalPosition)
-        end)
-
-        if clickSuccess then
-          return
-        else
-          log("Mark click failed: " .. tostring(clickErr))
-        end
-      end
-
-      -- Final fallback: focus + return key
-      log("Falling back to focus + return method")
-      local focusSuccess, focusErr = pcall(function()
-        element:setAttributeValue("AXFocused", true)
-        timer.doAfter(0.1, function()
-          eventtap.keyStroke({}, "return", 0)
-        end)
-      end)
-
-      if not focusSuccess then
-        log("Focus fallback failed: " .. tostring(focusErr))
-      end
+      Actions.openUrlInNewTab(url.url)
     end
   end
   timer.doAfter(0, function()
-    marks.show(false, "link")
+    Marks.show(true, "link")
   end)
 end
 
---- @param char string # Character to display for the LINKS mode in the menu bar.
-function commands.cmdRightClick(char)
-  utils.setMode(modes.LINKS, char)
+function Commands.cmdDownloadImage()
+  if not Utils.isInBrowser() then
+    hs.alert.show("Only available in browser", nil, nil, 2)
+    return
+  end
 
-  marks.onClickCallback = function(mark)
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = function(mark)
     local element = mark.element
-    if not element then
-      log("Error: Invalid element")
-      return
-    end
+    local role = Utils.getAttribute(element, "AXRole")
 
-    local actionsNames = element:actionNames()
+    if role == "AXImage" then
+      local description = Utils.getAttribute(element, "AXDescription") or "image"
 
-    log(hs.inspect(actionsNames))
+      local downloadUrlAttr = Utils.getAttribute(element, "AXURL")
 
-    if tblContains(actionsNames, "AXShowMenu") then
-      mark.element:performAction("AXShowMenu")
-      log("Success AXShowMenu")
-    else
-      local position, size = utils.getElementPositionAndSize(element)
+      if downloadUrlAttr then
+        local url = downloadUrlAttr.url
 
-      if position and size then
-        local clickX = position.x + (size.w / 2)
-        local clickY = position.y + (size.h / 2)
-        local originalPosition = mouse.absolutePosition()
+        if url and url:match("^data:image/") then
+          -- Handle base64 images
+          local base64Data = url:match("^data:image/[^;]+;base64,(.+)$")
+          if base64Data then
+            local decodedData = hs.base64.decode(base64Data)
+            local fileName = description:gsub("%W+", "_") .. ".jpg"
+            local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
 
-        local clickSuccess, clickErr = pcall(function()
-          mouse.absolutePosition({ x = clickX, y = clickY })
-          eventtap.rightClick({ x = clickX, y = clickY })
-          actions.restoreMousePosition(originalPosition)
-        end)
-
-        if clickSuccess then
-          return
-        else
-          log("Right-click failed: " .. tostring(clickErr))
-        end
-      end
-    end
-  end
-
-  timer.doAfter(0, function()
-    marks.show(false, "link")
-  end)
-end
-
---- @param char string # Character to display for the LINKS mode in the menu bar.
-function commands.cmdGotoLinkNewTab(char)
-  if utils.isInBrowser() then
-    utils.setMode(modes.LINKS, char)
-    marks.onClickCallback = function(mark)
-      local axURL = utils.getAttribute(mark.element, "AXURL")
-      if axURL then
-        actions.openUrlInNewTab(axURL.url)
-      end
-    end
-    timer.doAfter(0, function()
-      marks.show(true, "link")
-    end)
-  else
-    hs.alert.show("Go to Link New Tab is only available for browser")
-  end
-end
-
---- @param char string # Character to display for the LINKS mode in the menu bar.
-function commands.cmdGotoInput(char)
-  utils.setMode(modes.LINKS, char)
-  marks.onClickCallback = function(mark)
-    local element = mark.element
-    if not element then
-      log("Error: Invalid element")
-      return
-    end
-
-    local actionsNames = element:actionNames()
-
-    log("actions available: " .. hs.inspect(actionsNames))
-
-    if tblContains(actionsNames, "AXPress") then
-      mark.element:performAction("AXPress")
-      log("Success AXPress")
-    else
-      -- Try different methods to get position
-      local position, size = utils.getElementPositionAndSize(element)
-
-      if position and size then
-        local clickX = position.x + (size.w / 2)
-        local clickY = position.y + (size.h / 2)
-        local originalPosition = mouse.absolutePosition()
-
-        local clickSuccess, clickErr = pcall(function()
-          mouse.absolutePosition({ x = clickX, y = clickY })
-          eventtap.leftClick({ x = clickX, y = clickY })
-          actions.restoreMousePosition(originalPosition)
-        end)
-
-        if clickSuccess then
-          return
-        else
-          log("Click failed: " .. tostring(clickErr))
-        end
-      end
-
-      -- Fallback: Click using mark coordinates
-      if mark.x and mark.y then
-        local clickSuccess, clickErr = pcall(function()
-          local originalPosition = mouse.absolutePosition()
-          mouse.absolutePosition({ x = mark.x, y = mark.y })
-          eventtap.leftClick({ x = mark.x, y = mark.y })
-          actions.restoreMousePosition(originalPosition)
-        end)
-
-        if clickSuccess then
-          return
-        else
-          log("Mark click failed: " .. tostring(clickErr))
-        end
-      end
-
-      -- Final fallback: focus + return key
-      log("Falling back to focus + return method")
-      local focusSuccess, focusErr = pcall(function()
-        element:setAttributeValue("AXFocused", true)
-        timer.doAfter(0.1, function()
-          eventtap.keyStroke({}, "return", 0)
-        end)
-      end)
-
-      if not focusSuccess then
-        log("Focus fallback failed: " .. tostring(focusErr))
-      end
-    end
-  end
-  timer.doAfter(0, function()
-    marks.show(true, "input")
-  end)
-end
-
---- @param char string # Character to display for the LINKS mode in the menu bar.
-function commands.cmdDownloadImage(char)
-  if utils.isInBrowser() then
-    utils.setMode(modes.LINKS, char)
-
-    marks.onClickCallback = function(mark)
-      local element = mark.element
-      if not element then
-        log("Error: Invalid element")
-        return
-      end
-
-      -- Check if the element is an image
-      if utils.getAttribute(element, "AXRole") == "AXImage" then
-        local imageDescription = utils.getAttribute(element, "AXDescription") or "unknown"
-        log("Image detected: " .. hs.inspect(imageDescription))
-
-        -- Try downloading the image
-        local downloadURLAttr = utils.getAttribute(element, "AXURL")
-
-        if downloadURLAttr then
-          log("AXURL attribute value: " .. hs.inspect(downloadURLAttr))
-          local downloadUrl = downloadURLAttr.url
-          log("Downloading image from URL: " .. downloadUrl)
-          if downloadUrl:match("^data:image/") then
-            log("Detected data:image URL, saving image directly.")
-
-            -- Extract the Base64 encoded data from the URL
-            local base64Data = downloadUrl:match("^data:image/[^;]+;base64,(.+)$")
-            if base64Data then
-              -- Decode the Base64 data
-              local decodedData = hs.base64.decode(base64Data)
-
-              -- Extract filename from image description or fallback
-              local fileName = imageDescription:gsub("%W+", "_") .. ".jpg"
-              local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
-              log("Saving Base64 image to: " .. filePath)
-
-              -- Write the decoded data to a file
-              local file, err = io.open(filePath, "wb")
-              if file then
-                file:write(decodedData)
-                file:close()
-                log("Image saved successfully to: " .. filePath)
-                hs.alert.show("Image downloaded successfully to: " .. filePath)
-              else
-                log("Failed to save image: " .. tostring(err))
-              end
-            else
-              log("Error: Failed to extract Base64 data from URL.")
+            local file = io.open(filePath, "wb")
+            if file then
+              file:write(decodedData)
+              file:close()
+              hs.alert.show("Image saved: " .. fileName, nil, nil, 2)
             end
-          else
-            hs.http.asyncGet(downloadUrl, nil, function(status, body, headers)
-              if status == 200 then
-                local contentType = headers["Content-Type"] or ""
-                if contentType:match("^image/") then
-                  log("Valid image detected. Content-Type: " .. contentType)
-
-                  -- Extract filename from headers or URL
-                  local fileName = headers["Content-Disposition"]
-                      and headers["Content-Disposition"]:match('filename="?(.-)"?$')
-                    or downloadUrl:match("^.+/(.+)$")
-
-                  if not fileName or fileName == "" then
-                    fileName = "no-name.jpg" -- Default filename with extension
-                  elseif not fileName:match("^.+%.%w+$") then
-                    fileName = fileName .. ".jpg" -- Add default extension
-                  end
-
-                  local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
-                  log("Downloading image to: " .. filePath)
-
-                  -- Download the image
-                  hs.http.asyncGet(downloadUrl, nil, function(status2, body2)
-                    if status2 == 200 then
-                      local file, err = io.open(filePath, "wb")
-                      if file then
-                        file:write(body2)
-                        file:close()
-                        log("Image downloaded successfully to: " .. filePath)
-                        hs.alert.show("Image downloaded successfully to: " .. filePath)
-                      else
-                        log("Failed to save image: " .. tostring(err))
-                      end
-                    else
-                      log("Failed to download image. HTTP Status: " .. tostring(status2))
-                    end
-                  end)
-                else
-                  log("Error: URL does not point to an image. Content-Type: " .. contentType)
-                end
-              else
-                log("Failed to validate URL. HTTP Status: " .. tostring(status))
-              end
-            end)
-            return
           end
         else
-          log("Error: No download URL available for the image.")
+          -- Handle regular URLs
+          hs.http.asyncGet(url, nil, function(status, body, headers)
+            if status == 200 then
+              local contentType = headers["Content-Type"] or ""
+              if contentType:match("^image/") then
+                local fileName = url:match("^.+/(.+)$") or "image.jpg"
+                if not fileName:match("%.%w+$") then
+                  fileName = fileName .. ".jpg"
+                end
+
+                local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
+                local file = io.open(filePath, "wb")
+                if file then
+                  file:write(body)
+                  file:close()
+                  hs.alert.show("Image downloaded: " .. fileName, nil, nil, 2)
+                end
+              end
+            end
+          end)
         end
       end
     end
-
-    timer.doAfter(0, function()
-      marks.show(false, "image")
-    end)
-  else
-    hs.alert.show("Download image is only available for browser")
-  end
-end
-
---- @param char string # Character to display for the LINKS mode in the menu bar.
-function commands.cmdMoveMouseToLink(char)
-  utils.setMode(modes.LINKS, char)
-  marks.onClickCallback = function(mark)
-    local frame = utils.getAttribute(mark.element, "AXFrame") or {}
-    mouse.absolutePosition({ x = frame.x + frame.w / 2, y = frame.y + frame.h / 2 })
   end
   timer.doAfter(0, function()
-    marks.show(true, "scroll")
+    Marks.show(false, "image")
   end)
 end
 
-function commands.cmdMoveMouseToCenter()
+function Commands.cmdMoveMouseToLink()
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = function(mark)
+    local frame = Utils.getAttribute(mark.element, "AXFrame")
+    if frame then
+      mouse.absolutePosition({
+        x = frame.x + frame.w / 2,
+        y = frame.y + frame.h / 2,
+      })
+    end
+  end
+  timer.doAfter(0, function()
+    Marks.show(false, "link")
+  end)
+end
+
+function Commands.cmdCopyLinkUrlToClipboard()
+  if not Utils.isInBrowser() then
+    hs.alert.show("Only available in browser", nil, nil, 2)
+    return
+  end
+
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = function(mark)
+    local url = Utils.getAttribute(mark.element, "AXURL")
+    if url then
+      Actions.setClipboardContents(url.url)
+    else
+      hs.alert.show("No URL found", nil, nil, 2)
+    end
+  end
+  timer.doAfter(0, function()
+    Marks.show(true, "link")
+  end)
+end
+
+function Commands.cmdNextPage()
+  if not Utils.isInBrowser() then
+    hs.alert.show("Only available in browser", nil, nil, 2)
+    return
+  end
+
+  local function findNextButton(element, depth)
+    if not element or depth > M.config.depth then
+      return false
+    end
+
+    local role = Utils.getAttribute(element, "AXRole")
+    local title = Utils.getAttribute(element, "AXTitle")
+
+    if (role == "AXLink" or role == "AXButton") and title then
+      if title:lower():find("next") then
+        element:performAction("AXPress")
+        return true
+      end
+    end
+
+    local children = Utils.getAttribute(element, "AXChildren") or {}
+    for _, child in ipairs(children) do
+      if findNextButton(child, depth + 1) then
+        return true
+      end
+    end
+
+    return false
+  end
+
+  local axWindow = Elements.getAxWindow()
+  if axWindow then
+    if not findNextButton(axWindow, 0) then
+      hs.alert.show("No Next button found", nil, nil, 2)
+    end
+  end
+end
+
+function Commands.cmdPrevPage()
+  if not Utils.isInBrowser() then
+    hs.alert.show("Only available in browser", nil, nil, 2)
+    return
+  end
+
+  local function findPrevButton(element, depth)
+    if not element or depth > M.config.depth then
+      return false
+    end
+
+    local role = Utils.getAttribute(element, "AXRole")
+    local title = Utils.getAttribute(element, "AXTitle")
+
+    if (role == "AXLink" or role == "AXButton") and title then
+      if title:lower():find("prev") or title:lower():find("previous") then
+        element:performAction("AXPress")
+        return true
+      end
+    end
+
+    local children = Utils.getAttribute(element, "AXChildren") or {}
+    for _, child in ipairs(children) do
+      if findPrevButton(child, depth + 1) then
+        return true
+      end
+    end
+
+    return false
+  end
+
+  local axWindow = Elements.getAxWindow()
+  if axWindow then
+    if not findPrevButton(axWindow, 0) then
+      hs.alert.show("No Previous button found", nil, nil, 2)
+    end
+  end
+end
+
+-- Utility commands
+function Commands.cmdCopyPageUrlToClipboard()
+  if not Utils.isInBrowser() then
+    hs.alert.show("Only available in browser", nil, nil, 2)
+    return
+  end
+
+  local webArea = Elements.getAxWebArea()
+  local url = webArea and Utils.getAttribute(webArea, "AXURL")
+  if url then
+    Actions.setClipboardContents(url.url)
+  end
+end
+
+function Commands.cmdMoveMouseToCenter()
+  local window = Elements.getWindow()
+  if not window then
+    return
+  end
+
+  local frame = window:frame()
   mouse.absolutePosition({
-    x = state.elements.visibleArea().x + state.elements.visibleArea().w / 2,
-    y = state.elements.visibleArea().y + state.elements.visibleArea().h / 2,
+    x = frame.x + frame.w / 2,
+    y = frame.y + frame.h / 2,
   })
 end
 
---- @param char string # Character to display for the LINKS mode in the menu bar.
-function commands.cmdCopyLinkUrlToClipboard(char)
-  if utils.isInBrowser() then
-    utils.setMode(modes.LINKS, char)
-    marks.onClickCallback = function(mark)
-      local axURL = utils.getAttribute(mark.element, "AXURL") or {}
-      actions.setClipboardContents(axURL.url)
-    end
-    timer.doAfter(0, function()
-      marks.show(true, "url")
-    end)
-  else
-    hs.alert.show("Copy link url is only available for browser")
-  end
-end
-
-function commands.cmdNextPage()
-  if utils.isInBrowser() then
-    local navigateAction = function()
-      local startElement = state.elements.axWindow()
-      if not startElement then
-        return
-      end
-
-      local success, status = utils.getNextPrevElement(startElement, 0, "next")
-
-      if not success and status then
-        hs.alert.show("No Next button found")
-      end
-    end
-
-    -- Perform the navigation
-    timer.doAfter(0, navigateAction)
-  else
-    hs.alert.show("Next Page is only available for browser")
-  end
-end
-
-function commands.cmdPrevPage()
-  if utils.isInBrowser() then
-    local navigateAction = function()
-      local startElement = state.elements.axWindow()
-      if not startElement then
-        return
-      end
-
-      local success, status = utils.getNextPrevElement(startElement, 0, "prev")
-
-      if not success and status then
-        hs.alert.show("No Previous button found")
-      end
-    end
-
-    -- Perform the navigation
-    timer.doAfter(0, navigateAction)
-  else
-    hs.alert.show("Prev Page is only available for browser")
-  end
-end
-
 --------------------------------------------------------------------------------
---- Event Handling and Input Processing
+-- Event Handling (Improved)
 --------------------------------------------------------------------------------
 
---- @param char string # The character input that triggers specific actions or commands.
---- @param modifiers table # Table of modifiers. Only supports ctrl for now
-local function vimLoop(char, modifiers)
-  log("vimLoop " .. char .. ", modifiers " .. hs.inspect(modifiers))
+local function handleVimInput(char, modifiers)
+  Utils.log("handleVimInput: " .. char .. " modifiers: " .. hs.inspect(modifiers))
 
-  if state.elements.mode == modes.LINKS then
+  if State.mode == MODES.LINKS then
     if char == "backspace" then
-      -- Remove the last character from the filter
-      if #state.linkCapture > 0 then
-        state.linkCapture = state.linkCapture:sub(1, -2)
-        marks.draw()
+      if #State.linkCapture > 0 then
+        State.linkCapture = State.linkCapture:sub(1, -2)
+        Marks.draw()
       end
       return
     end
 
-    state.linkCapture = state.linkCapture .. char:upper()
-    marks.draw()
+    State.linkCapture = State.linkCapture .. char:upper()
+    Marks.draw()
 
-    local matchFound = false
-    for i, _ in ipairs(state.marks) do
-      local markText = string.upper(state.allCombinations[i])
-      if markText == state.linkCapture then
-        marks.click(markText:lower())
-        utils.setMode(modes.NORMAL)
-        matchFound = true
+    -- Check for exact match
+    for i, _ in ipairs(State.marks) do
+      if i > #State.allCombinations then
+        break
+      end
+
+      local markText = State.allCombinations[i]:upper()
+      if markText == State.linkCapture then
+        Marks.click(markText:lower())
+        ModeManager.setMode(MODES.NORMAL)
+        return
+      end
+    end
+
+    -- Check for partial matches
+    local hasPartialMatches = false
+    for i, _ in ipairs(State.marks) do
+      if i > #State.allCombinations then
+        break
+      end
+
+      local markText = State.allCombinations[i]:upper()
+      if markText:sub(1, #State.linkCapture) == State.linkCapture then
+        hasPartialMatches = true
         break
       end
     end
 
-    if state.linkCapture and #state.linkCapture > 0 and not matchFound then
-      local hasPartialMatches = false
-      for i, _ in ipairs(state.marks) do
-        local markText = string.upper(state.allCombinations[i])
-        if markText:sub(1, #state.linkCapture) == state.linkCapture then
-          hasPartialMatches = true
-          break
-        end
-      end
-
-      if not hasPartialMatches then
-        state.linkCapture = ""
-        marks.draw()
-      end
+    if not hasPartialMatches then
+      State.linkCapture = ""
+      Marks.draw()
     end
     return
   end
 
+  -- Build key combination
   local keyCombo = ""
-
   if modifiers and modifiers.ctrl then
     keyCombo = "C-"
   end
-
   keyCombo = keyCombo .. char
 
-  if state.elements.mode == modes.MULTI then
-    keyCombo = state.elements.multi .. keyCombo
+  if State.mode == MODES.MULTI then
+    keyCombo = State.multi .. keyCombo
   end
 
-  local foundMapping = M.config.mapping[keyCombo]
+  -- Execute mapping
+  local mapping = M.config.mapping[keyCombo]
+  if mapping then
+    ModeManager.setMode(MODES.NORMAL)
 
-  if foundMapping then
-    utils.setMode(modes.NORMAL)
-
-    if type(foundMapping) == "string" then
-      commands[foundMapping](keyCombo)
-    elseif type(foundMapping) == "table" then
-      eventtap.keyStroke(foundMapping[1], foundMapping[2], 0)
-    else
-      log("Unknown mapping for " .. keyCombo .. " " .. hs.inspect(foundMapping))
+    if type(mapping) == "string" then
+      local cmd = Commands[mapping]
+      if cmd then
+        cmd()
+      else
+        Utils.log("Unknown command: " .. mapping)
+      end
+    elseif type(mapping) == "table" then
+      eventtap.keyStroke(mapping[1], mapping[2], 0)
     end
-  elseif state.mappingPrefixes[keyCombo] then
-    utils.setMode(modes.MULTI, keyCombo)
-  else
-    log("Unknown char " .. keyCombo)
+  elseif State.mappingPrefixes[keyCombo] then
+    ModeManager.setMode(MODES.MULTI, keyCombo)
   end
 end
 
 local function eventHandler(event)
-  cached = setmetatable({}, { __mode = "k" })
+  Utils.clearCache()
 
-  if utils.isExcludedApp() then
-    return false
-  end
-
-  if utils.isLauncherActive() then
+  if Utils.isExcludedApp() or Utils.isLauncherActive() then
     return false
   end
 
   local flags = event:getFlags()
   local keyCode = event:getKeyCode()
-  local modifiers = { ctrl = flags.ctrl }
+
+  -- Handle escape key
+  if keyCode == hs.keycodes.map["escape"] then
+    local delaySinceLastEscape = (timer.absoluteTime() - State.lastEscape) / 1e9
+    State.lastEscape = timer.absoluteTime()
+
+    if Utils.isInBrowser() and delaySinceLastEscape < M.config.doublePressDelay then
+      ModeManager.setMode(MODES.NORMAL)
+      return true
+    end
+
+    if State.mode ~= MODES.NORMAL then
+      ModeManager.setMode(MODES.NORMAL)
+      return true
+    end
+
+    return false
+  end
+
+  -- Skip if in insert mode or editable control has focus
+  if State.mode == MODES.INSERT or Elements.isEditableControlInFocus() then
+    return false
+  end
 
   -- Handle backspace in LINKS mode
-  if state.elements.mode == modes.LINKS and keyCode == hs.keycodes.map["delete"] then
+  if State.mode == MODES.LINKS and keyCode == hs.keycodes.map["delete"] then
     timer.doAfter(0, function()
-      vimLoop("backspace", modifiers)
+      handleVimInput("backspace", { ctrl = flags.ctrl })
     end)
     return true
   end
 
+  local char = hs.keycodes.map[keyCode]
+  if not char then
+    return false
+  end
+
+  -- Check for invalid modifiers (except shift and ctrl)
   for key, modifier in pairs(flags) do
     if modifier and key ~= "shift" and key ~= "ctrl" then
       return false
     end
-  end
 
-  if keyCode == hs.keycodes.map["escape"] then
-    local delaySinceLastEscape = (timer.absoluteTime() - state.lastEscape) / 1e9 -- nanoseconds in seconds
-    state.lastEscape = timer.absoluteTime()
+    local filteredMappings = {}
 
-    if utils.isInBrowser() and delaySinceLastEscape < M.config.doublePressDelay then
-      utils.setMode(modes.NORMAL)
-      actions.forceUnfocus()
-      return true
+    for _key, _ in pairs(M.config.mapping) do
+      if _key:sub(1, 2) == "C-" then
+        table.insert(filteredMappings, _key:sub(3))
+      end
     end
 
-    if state.elements.mode ~= modes.NORMAL then
-      utils.setMode(modes.NORMAL)
-      return true
+    if Utils.tblContains(filteredMappings, char) == false then
+      return false
     end
-
-    return false
   end
-
-  if state.elements.mode == modes.INSERT or utils.isEditableControlInFocus() then
-    return false
-  end
-
-  local char = hs.keycodes.map[keyCode]
-
-  log("char: " .. char)
 
   if flags.shift then
     char = event:getCharacters()
   end
 
+  -- Only handle single alphanumeric characters and some symbols
   if not char:match("[%a%d%[%]%$]") or #char ~= 1 then
     return false
   end
 
-  if modifiers and modifiers.ctrl then
-    local filteredMappings = {}
-
-    for key, _ in pairs(M.config.mapping) do
-      if key:sub(1, 2) == "C-" then
-        table.insert(filteredMappings, key:sub(3))
-      end
-    end
-
-    if tblContains(filteredMappings, char) == false then
-      return false
-    end
-  end
-
   timer.doAfter(0, function()
-    vimLoop(char, modifiers)
+    handleVimInput(char, { ctrl = flags.ctrl })
   end)
+
   return true
 end
 
-local function onWindowFocused(window, name, object)
-  log("onWindowFocused")
-  if not state.eventLoop then
-    state.eventLoop = eventtap.new({ hs.eventtap.event.types.keyDown }, eventHandler):start()
+--------------------------------------------------------------------------------
+-- Window Management
+--------------------------------------------------------------------------------
+
+local function onWindowFocused(window, appName)
+  Utils.log("Window focused: " .. (appName or "unknown"))
+
+  if not State.eventLoop then
+    State.eventLoop = eventtap.new({ eventtap.event.types.keyDown }, eventHandler):start()
   end
-  if not tblContains(M.config.excludedApps, name) then
-    utils.setMode(modes.NORMAL)
+
+  if Utils.tblContains(M.config.excludedApps, appName) then
+    ModeManager.setMode(MODES.DISABLED)
   else
-    utils.setMode(modes.DISABLED)
+    ModeManager.setMode(MODES.NORMAL)
   end
 end
 
-local function onWindowUnfocused()
-  log("onWindowUnfocused")
-  if state.eventLoop then
-    state.eventLoop:stop()
-    state.eventLoop = nil
-  end
-  utils.setMode(modes.DISABLED)
-end
-
 --------------------------------------------------------------------------------
--- Module Initialization and Cleanup
+-- Module Interface
 --------------------------------------------------------------------------------
-
-local focusedEvents = {
-  -- hs.window.filter.windowFocused,
-  -- hs.window.filter.windowUnhidden,
-  hs.window.filter.windowOnScreen,
-}
-
-local unfocusedEvents = {
-  -- hs.window.filter.windowUnfocused,
-  -- hs.window.filter.windowHidden,
-  hs.window.filter.windowNotOnScreen,
-}
 
 M.config = {}
 
-function M.setup(user_config)
-  M.config = _utils.tbl_deep_extend("force", default_config, user_config or {})
-
+function M.setup(userConfig)
+  M.config = _utils.tbl_deep_extend("force", DEFAULT_CONFIG, userConfig or {})
   M:start()
 end
 
 function M:start()
-  state.windowFilter = hs.window.filter.new()
-  state.windowFilter:subscribe(focusedEvents, onWindowFocused)
-  -- state.windowFilter:subscribe(unfocusedEvents, onWindowUnfocused)
-  menuBar.new()
-  utils.fetchMappingPrefixes()
-  utils.generateCombinations()
+  State.windowFilter = hs.window.filter.new()
+  State.windowFilter:subscribe(hs.window.filter.windowOnScreen, onWindowFocused)
+
+  MenuBar.create()
+  Utils.fetchMappingPrefixes()
+  Utils.generateCombinations()
+
+  ModeManager.setMode(MODES.NORMAL)
+
+  Utils.log("Vim navigation started")
 end
 
 function M:stop()
-  if state.windowFilter then
-    state.windowFilter:unsubscribe(onWindowFocused)
-    -- state.windowFilter:unsubscribe(onWindowUnfocused)
-    state.windowFilter = nil
+  if State.windowFilter then
+    State.windowFilter:unsubscribeAll()
+    State.windowFilter = nil
   end
-  menuBar.delete()
+
+  if State.eventLoop then
+    State.eventLoop:stop()
+    State.eventLoop = nil
+  end
+
+  MenuBar.destroy()
+  Marks.clear()
+
+  Utils.log("Vim navigation stopped")
 end
+
+-- Expose useful functions for debugging
+M.debug = {
+  getState = function()
+    return State
+  end,
+  getElements = function()
+    return Elements
+  end,
+  clearCache = Utils.clearCache,
+  log = Utils.log,
+}
 
 return M
