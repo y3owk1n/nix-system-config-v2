@@ -15,6 +15,15 @@ function M.setup()
   hs.uploadCrashData(false)
   hs.preferencesDarkMode(true)
 
+  hs.console.darkMode(true)
+  hs.console.outputBackgroundColor({ white = 0 })
+  hs.console.consolePrintColor({ white = 1 })
+  hs.console.consoleResultColor({ white = 0.8 })
+  hs.console.consoleCommandColor({ white = 1 })
+
+  -- fast animation for hs windows
+  hs.window.animationDuration = 0.1
+
   -- verbose, debug, info, warning, error, nothing
   hs.logger.defaultLogLevel = "warning"
 
