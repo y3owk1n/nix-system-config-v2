@@ -181,7 +181,7 @@ State = {
 }
 
 -- Element cache with weak references for garbage collection
-local ElementCache = setmetatable({}, { __mode = "k" })
+local element_cache = setmetatable({}, { __mode = "k" })
 
 --------------------------------------------------------------------------------
 -- Utility Functions
@@ -239,18 +239,18 @@ end
 ---@return table|nil
 function Utils.get_cached_element(key, factory)
   if
-    ElementCache[key]
+    element_cache[key]
     and pcall(function()
-      return ElementCache[key]:isValid()
+      return element_cache[key]:isValid()
     end)
-    and ElementCache[key]:isValid()
+    and element_cache[key]:isValid()
   then
-    return ElementCache[key]
+    return element_cache[key]
   end
 
   local element = factory()
   if element then
-    ElementCache[key] = element
+    element_cache[key] = element
   end
   return element
 end
@@ -258,7 +258,7 @@ end
 ---Clears the element cache
 ---@return nil
 function Utils.clear_cache()
-  ElementCache = setmetatable({}, { __mode = "k" })
+  element_cache = setmetatable({}, { __mode = "k" })
 end
 
 ---Gets an attribute from an element
@@ -628,15 +628,20 @@ function ElementFinder.is_element_visible(element)
     return false
   end
 
-  local hidden = Utils.get_attribute(element, "AXHidden")
+  -- Cache common attribute checks
   local frame = Utils.get_attribute(element, "AXFrame")
-
-  if hidden or not frame or frame.w <= 0 or frame.h <= 0 then
+  if not frame or frame.w <= 0 or frame.h <= 0 then
     return false
   end
 
-  -- Simplified visibility check
-  return frame.x >= 0 and frame.y >= 0 and frame.x < 3000 and frame.y < 3000
+  -- Quick bounds check (most elements fail here)
+  if frame.x < -100 or frame.y < -100 or frame.x > 4000 or frame.y > 3000 then
+    return false
+  end
+
+  -- Only check hidden if we passed basic checks
+  local hidden = Utils.get_attribute(element, "AXHidden")
+  return not hidden
 end
 
 ---Checks if an element is actionable
@@ -691,22 +696,55 @@ function ElementFinder.find_elements(rootElement, predicate, callback)
     return
   end
 
-  local function process_element(element, depth)
+  local processedCount = 0
+  local maxProcessTime = 0.001 -- 1ms max processing time per chunk
+  local startTime = timer.absoluteTime()
+
+  -- Use iterative approach instead of recursive to avoid stack overflow
+  local stack = { { element = rootElement, depth = 0 } }
+
+  while #stack > 0 and processedCount < M.config.max_elements do
+    local current = table.remove(stack, 1)
+    local element = current.element
+    local depth = current.depth
+
     if depth > M.config.depth then
-      return
+      goto continue
     end
 
-    local role = Utils.get_attribute(element, "AXRole")
-    if role ~= "AXApplication" and ElementFinder.is_element_visible(element) then
-      if predicate(element) then
-        callback(element)
+    -- Process current element
+    if Utils.is_element_valid(element) then
+      local role = Utils.get_attribute(element, "AXRole")
+
+      -- Skip irrelevant containers early
+      if role == "AXApplication" or role == "AXWindow" then
+        -- Just add children, don't process these containers
+      elseif ElementFinder.is_element_visible(element) then
+        if predicate(element) then
+          callback(element)
+          processedCount = processedCount + 1
+        end
+      end
+
+      -- Add children to stack (process in reverse order for depth-first)
+      local children = Utils.get_attribute(element, "AXChildren")
+      if children and depth < M.config.depth then
+        for i = #children, 1, -1 do
+          if Utils.is_element_valid(children[i]) then
+            table.insert(stack, 1, { element = children[i], depth = depth + 1 })
+          end
+        end
       end
     end
 
-    ElementFinder.process_children(element, process_element, depth)
-  end
+    ::continue::
 
-  process_element(rootElement, 0)
+    -- Yield control if we've been processing too long
+    if (timer.absoluteTime() - startTime) / 1e9 > maxProcessTime then
+      Utils.yield()
+      startTime = timer.absoluteTime()
+    end
+  end
 end
 
 --------------------------------------------------------------------------------
@@ -731,7 +769,15 @@ function Marks.add(element)
   if #State.marks >= M.config.max_elements then
     return
   end
-  insert(State.marks, { element = element })
+
+  -- Pre-validate frame to avoid processing invalid elements later
+  local frame = Utils.get_attribute(element, "AXFrame")
+  if frame and frame.w > 0 and frame.h > 0 then
+    State.marks[#State.marks + 1] = {
+      element = element,
+      frame = frame, -- Cache frame for later use
+    }
+  end
 end
 
 ---Shows the marks
@@ -746,15 +792,32 @@ function Marks.show(withUrls, elementType)
 
   Marks.clear()
 
+  -- Pre-allocate marks table for better performance
+  State.marks = {}
+
   local predicates = {
     link = function(el)
-      return ElementFinder.is_element_actionable(el) and (not withUrls or Utils.get_attribute(el, "AXURL"))
+      local role = Utils.get_attribute(el, "AXRole")
+      if not Utils.tbl_contains(M.config.ax_jumpable_roles, role or "") then
+        return false
+      end
+
+      if withUrls then
+        local url = Utils.get_attribute(el, "AXURL")
+        return url ~= nil
+      end
+      return true
     end,
     input = function(el)
-      return Utils.tbl_contains(M.config.ax_editable_roles, Utils.get_attribute(el, "AXRole") or "")
+      local role = Utils.get_attribute(el, "AXRole")
+      return Utils.tbl_contains(M.config.ax_editable_roles, role or "")
     end,
     image = function(el)
-      return Utils.get_attribute(el, "AXRole") == "AXImage" and Utils.get_attribute(el, "AXURL")
+      local role = Utils.get_attribute(el, "AXRole")
+      if role ~= "AXImage" then
+        return false
+      end
+      return Utils.get_attribute(el, "AXURL") ~= nil
     end,
   }
 
@@ -793,7 +856,9 @@ function Marks.draw()
     State.canvas = hs.canvas.new(frame)
   end
 
-  local elementsToDraw = {}
+  -- Pre-calculate visible marks to avoid redundant work
+  local visibleMarks = {}
+  local captureLen = #State.link_capture
 
   for i, mark in ipairs(State.marks) do
     if i > #State.all_combinations then
@@ -802,30 +867,42 @@ function Marks.draw()
 
     local markText = State.all_combinations[i]:upper()
 
-    if #State.link_capture == 0 or markText:sub(1, #State.link_capture) == State.link_capture then
-      local element = Marks.create_mark_element(mark.element, markText)
-      if element then
-        for _, e in ipairs(element) do
-          insert(elementsToDraw, e)
+    if captureLen == 0 or (captureLen <= #markText and markText:sub(1, captureLen) == State.link_capture) then
+      visibleMarks[#visibleMarks + 1] = {
+        mark = mark,
+        text = markText,
+        frame = mark.frame or Utils.get_attribute(mark.element, "AXFrame"),
+      }
+    end
+  end
+
+  if #visibleMarks == 0 then
+    State.canvas:hide()
+    return
+  end
+
+  local elementsToDraw = {}
+
+  for _, visibleMark in ipairs(visibleMarks) do
+    if visibleMark.frame then
+      local markElements = Marks.create_mark_element(visibleMark.frame, visibleMark.text)
+      if markElements then
+        for _, element in ipairs(markElements) do
+          elementsToDraw[#elementsToDraw + 1] = element
         end
       end
     end
   end
 
-  if #elementsToDraw > 0 then
-    State.canvas:replaceElements(elementsToDraw)
-    State.canvas:show()
-  else
-    State.canvas:hide()
-  end
+  State.canvas:replaceElements(elementsToDraw)
+  State.canvas:show()
 end
 
 ---Creates a mark element
----@param element table
+---@param frame table
 ---@param text string
 ---@return table|nil
-function Marks.create_mark_element(element, text)
-  local frame = Utils.get_attribute(element, "AXFrame")
+function Marks.create_mark_element(frame, text)
   if not frame then
     return nil
   end
