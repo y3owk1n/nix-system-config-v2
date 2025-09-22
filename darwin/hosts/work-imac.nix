@@ -63,7 +63,7 @@ in
       "whatsapp"
       "appcleaner"
       "adobe-creative-cloud"
-      "homerow"
+      # "homerow"
       "hammerspoon"
       # "keyboard-cowboy"
     ];
