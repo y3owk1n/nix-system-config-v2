@@ -8,6 +8,7 @@
 local _utils = require("utils")
 local app_watcher = require("app_watcher")
 
+---@class Hs.Vimium
 local M = {}
 
 local Utils = {}
@@ -71,6 +72,18 @@ local app_watcher_name = "vimium_module"
 ---@field on_click_callback fun(any)|nil
 ---@field focus_watcher table|nil
 ---@field cleanup_timer table|nil
+
+---@class Hs.Vimium.WalkElementOpts
+---@field element table
+---@field depth number
+---@field cb fun(element: table)
+
+---@class Hs.Vimium.FindElementOpts : Hs.Vimium.WalkElementOpts
+---@field withUrls? boolean
+
+---@class Hs.Vimium.WalkAndMatchOpts : Hs.Vimium.WalkElementOpts
+---@field matcher fun(element: table, extra: any): boolean
+---@field extra any
 
 --------------------------------------------------------------------------------
 -- Constants and Configuration
@@ -663,137 +676,226 @@ end
 -- Element Finding
 --------------------------------------------------------------------------------
 
----Checks if an element is visible
+---Checks if an element is partially visible
 ---@param element table
 ---@return boolean
-function ElementFinder.is_element_visible(element)
-  if not element then
-    return false
-  end
+function ElementFinder.is_element_partially_visible(element)
+  local axHidden = Utils.get_attribute(element, "AXHidden")
+  local axFrame = Utils.get_attribute(element, "AXFrame")
 
-  -- Cache common attribute checks
-  local frame = Utils.get_attribute(element, "AXFrame")
+  local frame = element and not axHidden and axFrame
+
   if not frame or frame.w <= 0 or frame.h <= 0 then
     return false
   end
 
-  -- Quick bounds check (most elements fail here)
-  if frame.x < -100 or frame.y < -100 or frame.x > 4000 or frame.y > 3000 then
+  local fullArea = Elements.get_full_area()
+
+  if not fullArea then
     return false
   end
+  local vx, vy, vw, vh = fullArea.x, fullArea.y, fullArea.w, fullArea.h
+  local fx, fy, fw, fh = frame.x, frame.y, frame.w, frame.h
 
-  -- Only check hidden if we passed basic checks
-  local hidden = Utils.get_attribute(element, "AXHidden")
-  return not hidden
+  return fx < vx + vw and fx + fw > vx and fy < vy + vh and fy + fh > vy
 end
 
----Checks if an element is actionable
+---Checks if an element contains a specific role
 ---@param element table
+---@param rolesToCheck string[]
 ---@return boolean
-function ElementFinder.is_element_actionable(element)
+function ElementFinder.is_element_contain_roles(element, rolesToCheck)
   if not element then
     return false
   end
 
   local role = Utils.get_attribute(element, "AXRole")
-  return (role and Utils.tbl_contains(M.config.ax_jumpable_roles, role)) or false
+  if not role then
+    return false
+  end
+
+  return Utils.tbl_contains(rolesToCheck or {}, role)
 end
 
----Processes the children of an element
+---Checks if an element is an image
 ---@param element table
----@param callback fun(element: table, depth: number): boolean
----@param depth number
----@return nil
-function ElementFinder.process_children(element, callback, depth)
-  if not element or depth > M.config.depth then
-    return
+---@return boolean
+function ElementFinder.is_element_image(element)
+  if not element then
+    return false
   end
 
-  local children = Utils.get_attribute(element, "AXChildren") or {}
-  local chunkSize = M.config.chunk_size
+  local role = Utils.get_attribute(element, "AXRole")
+  local url = Utils.get_attribute(element, "AXURL")
 
-  -- Process in chunks to prevent blocking
-  for i = 1, #children, chunkSize do
-    local endIdx = math.min(i + chunkSize - 1, #children)
+  if not role then
+    return false
+  end
 
-    for j = i, endIdx do
-      if Utils.is_element_valid(children[j]) then
-        callback(children[j], depth + 1)
-      end
-    end
+  return role == "AXImage" and url ~= nil
+end
 
-    -- Yield control briefly for large element trees
-    if i > chunkSize then
-      Utils.yield()
+---Gets all descendants of an element
+---@param elements table[]
+---@param cb fun(element: table)
+---@return nil
+function ElementFinder.get_descendants(elements, cb)
+  local chunk_size = M.config.chunk_size or 20
+  for i = 1, #elements, chunk_size do
+    local end_idx = math.min(i + chunk_size - 1, #elements)
+    for j = i, end_idx do
+      cb(elements[j])
     end
   end
 end
 
----Finds elements with a predicate
----@param rootElement table
----@param predicate fun(element: table): boolean
----@param callback fun(element: table): nil
+---Gets all children of an element
+---@param mainElement table
+---@param cb fun(element: table)
 ---@return nil
-function ElementFinder.find_elements(rootElement, predicate, callback)
-  if not rootElement then
+function ElementFinder.get_childrens(mainElement, cb)
+  local role = Utils.get_attribute(mainElement, "AXRole")
+  local main = Utils.get_attribute(mainElement, "AXMain")
+
+  if role == "AXWindow" and main == false then
     return
   end
 
-  local processedCount = 0
-  local maxProcessTime = 0.001 -- 1ms max processing time per chunk
-  local startTime = timer.absoluteTime()
+  local sourceTypes = {
+    "AXVisibleRows",
+    "AXVisibleChildren",
+    "AXChildrenInNavigationOrder",
+    "AXChildren",
+  }
 
-  -- Use iterative approach instead of recursive to avoid stack overflow
-  local stack = { { element = rootElement, depth = 0 } }
-
-  while #stack > 0 and processedCount < M.config.max_elements do
-    local current = table.remove(stack, 1)
-    local element = current.element
-    local depth = current.depth
-
-    if depth > M.config.depth then
-      goto continue
-    end
-
-    -- Process current element
-    if Utils.is_element_valid(element) then
-      -- Cache the role once per element - it's used multiple times
-      local role = Utils.get_attribute(element, "AXRole")
-
-      -- Skip irrelevant containers early
-      if role == "AXApplication" or role == "AXWindow" then
-        -- Just add children, don't process these containers
-      elseif ElementFinder.is_element_visible(element) then
-        if predicate(element) then
-          callback(element)
-          processedCount = processedCount + 1
-        end
-      end
-
-      -- Add children to stack (process in reverse order for depth-first)
-      local children = Utils.get_attribute(element, "AXChildren")
-      if children and depth < M.config.depth then
-        for i = #children, 1, -1 do
-          if Utils.is_element_valid(children[i]) then
-            table.insert(stack, 1, { element = children[i], depth = depth + 1 })
-          end
-        end
-      end
-    end
-
-    ::continue::
-
-    -- Yield control if we've been processing too long
-    if (timer.absoluteTime() - startTime) / 1e9 > maxProcessTime then
-      Utils.yield()
-      startTime = timer.absoluteTime()
-
-      -- Clear cache periodically during long operations to prevent memory bloat
-      if processedCount % 100 == 0 then
-        collectgarbage("step", 100) -- Incremental GC
-      end
+  for _, sourceType in ipairs(sourceTypes) do
+    local elements = Utils.get_attribute(mainElement, sourceType)
+    if elements and #elements > 0 then
+      ElementFinder.get_descendants(elements, cb)
+      return
     end
   end
+end
+
+---Walks an element and matches it with a predicate
+---@param opts Hs.Vimium.WalkAndMatchOpts
+---@return nil
+function ElementFinder.walk_and_match(opts)
+  local element = opts.element
+  local depth = opts.depth
+  local extra = opts.extra
+  local matcher = opts.matcher
+  local cb = opts.cb
+
+  if not element or (depth and depth > M.config.depth) then
+    return
+  end
+
+  local role = Utils.get_attribute(element, "AXRole")
+  local frame = Utils.get_attribute(element, "AXFrame")
+
+  if role == "AXApplication" then
+    ElementFinder.get_childrens(element, function(child)
+      ElementFinder.walk_and_match({
+        element = child,
+        depth = (depth or 0) + 1,
+        extra = extra,
+        matcher = matcher,
+        cb = cb,
+      })
+    end)
+    return
+  end
+
+  if not frame or not ElementFinder.is_element_partially_visible(element) then
+    return
+  end
+
+  if matcher(element, extra) then
+    cb(element)
+  end
+
+  ElementFinder.get_childrens(element, function(child)
+    ElementFinder.walk_and_match({
+      element = child,
+      depth = (depth or 0) + 1,
+      extra = extra,
+      matcher = matcher,
+      cb = cb,
+    })
+  end)
+end
+
+---Finds clickable elements
+---@param opts Hs.Vimium.FindElementOpts
+---@return nil
+function ElementFinder.find_clickable_elements(opts)
+  ElementFinder.walk_and_match({
+    element = opts.element,
+    depth = opts.depth,
+    extra = opts.withUrls,
+    matcher = function(el, needUrl)
+      local url = Utils.get_attribute(el, "AXURL")
+      return ElementFinder.is_element_contain_roles(el, M.config.ax_jumpable_roles) and (not needUrl or url ~= nil)
+    end,
+    cb = opts.cb,
+  })
+end
+
+---Finds scrollable elements
+---@param opts Hs.Vimium.FindElementOpts
+---@return nil
+function ElementFinder.find_scrollable_elements(opts)
+  ElementFinder.walk_and_match({
+    element = opts.element,
+    depth = opts.depth,
+    matcher = function(el)
+      return ElementFinder.is_element_contain_roles(el, M.config.ax_scrollable_roles)
+    end,
+    cb = opts.cb,
+  })
+end
+
+---Finds URL elements
+---@param opts Hs.Vimium.FindElementOpts
+---@return nil
+function ElementFinder.find_url_elements(opts)
+  ElementFinder.walk_and_match({
+    element = opts.element,
+    depth = opts.depth,
+    matcher = function(el)
+      return ElementFinder.is_element_contain_roles(el, { "AXURL" })
+    end,
+    cb = opts.cb,
+  })
+end
+
+---Finds input elements
+---@param opts Hs.Vimium.FindElementOpts
+---@return nil
+function ElementFinder.find_input_elements(opts)
+  ElementFinder.walk_and_match({
+    element = opts.element,
+    depth = opts.depth,
+    matcher = function(el)
+      return ElementFinder.is_element_contain_roles(el, M.config.ax_editable_roles)
+    end,
+    cb = opts.cb,
+  })
+end
+
+---Finds image elements
+---@param opts Hs.Vimium.FindElementOpts
+---@return nil
+function ElementFinder.find_image_elements(opts)
+  ElementFinder.walk_and_match({
+    element = opts.element,
+    depth = opts.depth,
+    matcher = function(el)
+      return ElementFinder.is_element_image(el)
+    end,
+    cb = opts.cb,
+  })
 end
 
 --------------------------------------------------------------------------------
@@ -835,7 +937,7 @@ end
 
 ---Shows the marks
 ---@param withUrls boolean
----@param elementType string
+---@param elementType "link"|"scroll"|"url"|"input"|"image" # The type of elements to find ("link", "scroll", "url", "input").
 ---@return nil
 function Marks.show(withUrls, elementType)
   local axApp = Elements.get_ax_app()
@@ -847,37 +949,23 @@ function Marks.show(withUrls, elementType)
   State.marks = {}
 
   local predicates = {
-    link = function(el)
-      local role = Utils.get_attribute(el, "AXRole")
-      if not Utils.tbl_contains(M.config.ax_jumpable_roles, role or "") then
-        return false
-      end
-
-      if withUrls then
-        local url = Utils.get_attribute(el, "AXURL")
-        return url ~= nil
-      end
-      return true
-    end,
-    input = function(el)
-      local role = Utils.get_attribute(el, "AXRole")
-      return Utils.tbl_contains(M.config.ax_editable_roles, role or "")
-    end,
-    image = function(el)
-      local role = Utils.get_attribute(el, "AXRole")
-      if role ~= "AXImage" then
-        return false
-      end
-      return Utils.get_attribute(el, "AXURL") ~= nil
-    end,
+    link = ElementFinder.find_clickable_elements,
+    scroll = ElementFinder.find_scrollable_elements,
+    url = ElementFinder.find_url_elements,
+    input = ElementFinder.find_input_elements,
+    image = ElementFinder.find_image_elements,
   }
 
-  local predicate = predicates[elementType]
-  if not predicate then
-    return
-  end
+  local predicates_fn = predicates[elementType]
 
-  ElementFinder.find_elements(axApp, predicate, Marks.add)
+  if predicates_fn then
+    predicates_fn({
+      element = axApp,
+      depth = 0,
+      cb = Marks.add,
+      withUrls = elementType == "link" and withUrls or nil,
+    })
+  end
 
   if #State.marks == 0 then
     hs.alert.show("No " .. elementType .. "s found", nil, nil, 2)
