@@ -646,6 +646,19 @@ function Actions.set_clipboard_contents(contents)
   end
 end
 
+function Actions.force_unfocus()
+  Utils.log("forced unfocus on escape")
+
+  local focused_el = Elements.get_ax_focused_element()
+  if not focused_el then
+    return
+  end
+
+  focused_el:setAttributeValue("AXFocused", false)
+
+  hs.alert.show("Force unfocused!")
+end
+
 --------------------------------------------------------------------------------
 -- Element Finding
 --------------------------------------------------------------------------------
@@ -1576,6 +1589,7 @@ local function event_handler(event)
     State.last_escape = timer.absoluteTime()
 
     if Utils.is_in_browser() and delaySinceLastEscape < M.config.double_press_delay then
+      Actions.force_unfocus()
       ModeManager.set_mode(MODES.NORMAL)
       return true
     end
