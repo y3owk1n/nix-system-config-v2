@@ -35,9 +35,12 @@ end
 
 -- Central event handler that distributes events to all registered callbacks
 local function central_event_handler(app_name, event_type, app_object)
-  log(
-    string.format("Broadcasting event: %s - %s to %d callbacks", app_name or "nil", event_type, #registered_callbacks)
-  )
+  local callback_count = 0
+  for _ in pairs(registered_callbacks) do
+    callback_count = callback_count + 1
+  end
+
+  log(string.format("Broadcasting event: %s - %s to %d callbacks", app_name or "nil", event_type, callback_count))
 
   -- Call all registered callbacks
   for module_name, callback in pairs(registered_callbacks) do
