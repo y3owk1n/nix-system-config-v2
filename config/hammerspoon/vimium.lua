@@ -659,6 +659,8 @@ function Actions.set_clipboard_contents(contents)
   end
 end
 
+---Force unfocus
+---@return nil
 function Actions.force_unfocus()
   Utils.log("forced unfocus on escape")
 
@@ -670,6 +672,26 @@ function Actions.force_unfocus()
   focused_element:setAttributeValue("AXFocused", false)
 
   hs.alert.show("Force unfocused!")
+end
+
+---Tries to click on a frame
+---@param frame table
+---@param type? string "left"|"right"
+---@return nil
+function Actions.try_click(frame, type)
+  type = type or "left"
+
+  local click_x, click_y = frame.x + frame.w / 2, frame.y + frame.h / 2
+  local original_pos = mouse.absolutePosition()
+  mouse.absolutePosition({ x = click_x, y = click_y })
+  if type == "left" then
+    eventtap.leftClick({ x = click_x, y = click_y })
+  elseif type == "right" then
+    eventtap.rightClick({ x = click_x, y = click_y })
+  end
+  timer.doAfter(0.1, function()
+    mouse.absolutePosition(original_pos)
+  end)
 end
 
 --------------------------------------------------------------------------------
@@ -1295,21 +1317,12 @@ function Commands.cmd_goto_link()
   State.on_click_callback = function(mark)
     local element = mark.element
 
-    local actions = element and element:actionNames() or {}
+    local press_ok = element:performAction("AXPress")
 
-    if Utils.tbl_contains(actions, "AXPress") then
-      element:performAction("AXPress")
-    else
-      -- Fallback to mouse click
-      local frame = mark.frame or Utils.get_attribute(element, "AXFrame")
+    if not press_ok then
+      local frame = mark.frame
       if frame then
-        local click_x, click_y = frame.x + frame.w / 2, frame.y + frame.h / 2
-        local original_pos = mouse.absolutePosition()
-        mouse.absolutePosition({ x = click_x, y = click_y })
-        eventtap.leftClick({ x = click_x, y = click_y })
-        timer.doAfter(0.1, function()
-          mouse.absolutePosition(original_pos)
-        end)
+        Actions.try_click(frame)
       end
     end
   end
@@ -1324,23 +1337,18 @@ function Commands.cmd_goto_input()
   ModeManager.set_mode(MODES.LINKS)
   State.on_click_callback = function(mark)
     local element = mark.element
-    local actions = element and element:actionNames() or {}
 
-    if Utils.tbl_contains(actions, "AXPress") then
-      element:performAction("AXPress")
-    else
-      -- Fallback to mouse click
-      local frame = Utils.get_attribute(element, "AXFrame")
-      if frame then
-        local click_x, click_y = frame.x + frame.w / 2, frame.y + frame.h / 2
-        local original_pos = mouse.absolutePosition()
-        mouse.absolutePosition({ x = click_x, y = click_y })
-        eventtap.leftClick({ x = click_x, y = click_y })
-        timer.doAfter(0.1, function()
-          mouse.absolutePosition(original_pos)
-        end)
+    local press_ok = element:performAction("AXPress")
+
+    if press_ok then
+      local focused = Utils.get_attribute(element, "AXFocused")
+      if not focused then
+        Actions.try_click(mark.frame)
+        return
       end
     end
+
+    Actions.try_click(mark.frame)
   end
   timer.doAfter(0, function()
     Marks.show(false, "input")
@@ -1353,20 +1361,13 @@ function Commands.cmd_right_click()
   ModeManager.set_mode(MODES.LINKS)
   State.on_click_callback = function(mark)
     local element = mark.element
-    local actions = element and element:actionNames() or {}
 
-    if Utils.tbl_contains(actions, "AXShowMenu") then
-      element:performAction("AXShowMenu")
-    else
-      local frame = Utils.get_attribute(element, "AXFrame")
+    local press_ok = element:performAction("AXShowMenu")
+
+    if not press_ok then
+      local frame = mark.frame
       if frame then
-        local click_x, click_y = frame.x + frame.w / 2, frame.y + frame.h / 2
-        local original_pos = mouse.absolutePosition()
-        mouse.absolutePosition({ x = click_x, y = click_y })
-        eventtap.rightClick({ x = click_x, y = click_y })
-        timer.doAfter(0.05, function()
-          mouse.absolutePosition(original_pos)
-        end)
+        Actions.try_click(frame, "right")
       end
     end
   end
@@ -1467,7 +1468,7 @@ end
 function Commands.cmd_move_mouse_to_link()
   ModeManager.set_mode(MODES.LINKS)
   State.on_click_callback = function(mark)
-    local frame = Utils.get_attribute(mark.element, "AXFrame")
+    local frame = mark.frame
     if frame then
       mouse.absolutePosition({
         x = frame.x + frame.w / 2,
