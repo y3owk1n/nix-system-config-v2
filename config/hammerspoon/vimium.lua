@@ -6,6 +6,7 @@
 ---@diagnostic disable: undefined-global
 
 local _utils = require("utils")
+local app_watcher = require("app_watcher")
 
 local M = {}
 
@@ -31,6 +32,8 @@ local mouse = hs.mouse
 local eventtap = hs.eventtap
 local axuielement = hs.axuielement
 local watcher = hs.application.watcher
+
+local app_watcher_name = "vimium_module"
 
 --------------------------------------------------------------------------------
 -- Types
@@ -66,7 +69,6 @@ local watcher = hs.application.watcher
 ---@field event_loop table|nil
 ---@field canvas table|nil
 ---@field on_click_callback fun(any)|nil
----@field app_watcher table|nil
 ---@field focus_watcher table|nil
 ---@field cleanup_timer table|nil
 
@@ -179,7 +181,6 @@ State = {
   event_loop = nil,
   canvas = nil,
   on_click_callback = nil,
-  app_watcher = nil,
   focus_watcher = nil,
   cleanup_timer = nil,
 }
@@ -209,7 +210,7 @@ function Utils.log(message)
 
   local timestamp = os.date("%Y-%m-%d %H:%M:%S")
   local ms = floor(timer.absoluteTime() / 1e6) % 1000
-  hs.printf("[%s.%03d] %s", timestamp, ms, message)
+  hs.printf("[Vimium][%s.%03d] %s", timestamp, ms, message)
 end
 
 ---Checks if a table contains a value
@@ -1663,13 +1664,7 @@ end
 ---Starts the app watcher
 ---@return nil
 local function start_watcher()
-  Utils.log(string.format("App event: %s - %s", appName, event_type))
-
-  if State.app_watcher then
-    State.app_watcher:stop()
-  end
-
-  State.app_watcher = watcher.new(function(appName, event_type, appObject)
+  app_watcher.register(app_watcher_name, function(appName, event_type, appObject)
     Utils.log(string.format("App event: %s - %s", appName, event_type))
 
     if event_type == watcher.activated then
@@ -1696,7 +1691,6 @@ local function start_watcher()
     end
   end)
 
-  State.app_watcher:start()
   Utils.log("App watcher started")
 end
 
@@ -1752,10 +1746,7 @@ end
 ---Clean up timers and watchers
 ---@return nil
 local function cleanup_watchers()
-  if State.app_watcher then
-    State.app_watcher:stop()
-    State.app_watcher = nil
-  end
+  app_watcher.unregister(app_watcher_name)
 
   if State.focus_watcher then
     State.focus_watcher:stop()
