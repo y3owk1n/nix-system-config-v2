@@ -6,7 +6,7 @@
 ---@diagnostic disable: undefined-global
 
 local _utils = require("utils")
-local app_watcher = require("app_watcher")
+local app_watcher = require("app-watcher")
 
 ---@class Hs.Vimium
 local M = {}
@@ -23,26 +23,17 @@ local State = {}
 
 M.__index = M
 
-local floor = math.floor
-local insert = table.insert
-local format = string.format
-local sub = string.sub
-local pcall = pcall
-local timer = hs.timer
-local mouse = hs.mouse
-local eventtap = hs.eventtap
-local axuielement = hs.axuielement
-local watcher = hs.application.watcher
+M.mod_name = "vimium"
 
-local app_watcher_name = "vimium_module"
+local log
 
 --------------------------------------------------------------------------------
 -- Types
 --------------------------------------------------------------------------------
 
 ---@class Hs.Vimium.Config
+---@field log_level string
 ---@field double_press_delay number
----@field show_logs boolean
 ---@field mapping table<string, string|table>
 ---@field scroll_step number
 ---@field scroll_step_half_page number
@@ -124,8 +115,8 @@ local DEFAULT_MAPPING = {
 }
 
 local DEFAULT_CONFIG = {
+  log_level = "warning",
   double_press_delay = 0.3,
-  show_logs = false,
   mapping = DEFAULT_MAPPING,
   scroll_step = 50,
   scroll_step_half_page = 500,
@@ -188,7 +179,7 @@ State = {
   elements = {},
   marks = {},
   link_capture = "",
-  last_escape = timer.absoluteTime(),
+  last_escape = hs.timer.absoluteTime(),
   mapping_prefixes = {},
   all_combinations = {},
   event_loop = nil,
@@ -210,20 +201,7 @@ local attribute_cache = setmetatable({}, { __mode = "k" })
 ---Yields the current thread for 1µs
 ---@return nil
 function Utils.yield()
-  timer.usleep(1)
-end
-
----Logs a message to the console
----@param message string
----@return nil
-function Utils.log(message)
-  if not M.config.show_logs then
-    return
-  end
-
-  local timestamp = os.date("%Y-%m-%d %H:%M:%S")
-  local ms = floor(timer.absoluteTime() / 1e6) % 1000
-  hs.printf("[Vimium][%s.%03d] %s", timestamp, ms, message)
+  hs.timer.usleep(1)
 end
 
 ---Checks if a table contains a value
@@ -247,7 +225,7 @@ function Utils.tbl_filter(tbl, predicate)
   local result = {}
   for _, v in ipairs(tbl) do
     if predicate(v) then
-      insert(result, v)
+      table.insert(result, v)
     end
   end
   return result
@@ -331,7 +309,7 @@ function Utils.generate_combinations()
   local chars = "abcdefghijklmnopqrstuvwxyz"
   for i = 1, #chars do
     for j = 1, #chars do
-      insert(State.all_combinations, chars:sub(i, i) .. chars:sub(j, j))
+      table.insert(State.all_combinations, chars:sub(i, i) .. chars:sub(j, j))
       if #State.all_combinations >= M.config.max_elements then
         return
       end
@@ -345,7 +323,7 @@ function Utils.fetch_mapping_prefixes()
   State.mapping_prefixes = {}
   for k, _ in pairs(M.config.mapping) do
     if #k == 2 then
-      State.mapping_prefixes[sub(k, 1, 1)] = true
+      State.mapping_prefixes[string.sub(k, 1, 1)] = true
     end
   end
 end
@@ -364,7 +342,7 @@ function Utils.is_launcher_active()
   for _, launcher in ipairs(M.config.launchers) do
     local app = hs.application.get(launcher)
     if app then
-      local appElement = axuielement.applicationElement(app)
+      local appElement = hs.axuielement.applicationElement(app)
       if appElement then
         local windows = Utils.get_attribute(appElement, "AXWindows") or {}
         if #windows > 0 then
@@ -400,7 +378,7 @@ end
 function Elements.get_ax_app()
   return Utils.get_cached_element("axApp", function()
     local app = Elements.get_app()
-    return app and axuielement.applicationElement(app)
+    return app and hs.axuielement.applicationElement(app)
   end)
 end
 
@@ -418,7 +396,7 @@ end
 function Elements.get_ax_window()
   return Utils.get_cached_element("axWindow", function()
     local window = Elements.get_window()
-    return window and axuielement.windowElement(window)
+    return window and hs.axuielement.windowElement(window)
   end)
 end
 
@@ -556,7 +534,7 @@ function ModeManager.set_mode(mode, char)
     State.link_capture = ""
     Marks.clear()
   elseif previous_mode == MODES.LINKS and mode ~= MODES.LINKS then
-    timer.doAfter(0, Marks.clear)
+    hs.timer.doAfter(0, Marks.clear)
   end
 
   if mode == MODES.MULTI then
@@ -566,19 +544,11 @@ function ModeManager.set_mode(mode, char)
   end
 
   if MenuBar.item then
-    local current_app = Elements.get_app()
     local mode_char = char or default_mode_chars[mode] or "?"
-
-    -- Show app context in menu bar for debugging
-    if M.config.show_logs then
-      local appName = current_app and current_app:name() or "Unknown"
-      MenuBar.item:setTitle(mode_char .. ":" .. appName:sub(1, 3))
-    else
-      MenuBar.item:setTitle(mode_char)
-    end
+    MenuBar.item:setTitle(mode_char)
   end
 
-  Utils.log(string.format("Mode changed: %s -> %s", previous_mode, mode))
+  log.df(string.format("Mode changed: %s -> %s", previous_mode, mode))
 end
 
 --------------------------------------------------------------------------------
@@ -592,7 +562,7 @@ end
 ---@return nil
 function Actions.smooth_scroll(x, y, smooth)
   if not smooth then
-    eventtap.event.newScrollEvent({ x or 0, y or 0 }, {}, "pixel"):post()
+    hs.eventtap.event.newScrollEvent({ x or 0, y or 0 }, {}, "pixel"):post()
     return
   end
 
@@ -609,8 +579,8 @@ function Actions.smooth_scroll(x, y, smooth)
     end
 
     local factor = frame <= steps / 2 and 2 or 0.5
-    eventtap.event.newScrollEvent({ dx * factor, dy * factor }, {}, "pixel"):post()
-    timer.doAfter(interval, animate)
+    hs.eventtap.event.newScrollEvent({ dx * factor, dy * factor }, {}, "pixel"):post()
+    hs.timer.doAfter(interval, animate)
   end
 
   animate()
@@ -640,7 +610,7 @@ function Actions.open_url_in_new_tab(url)
   local appName = current_app:name()
   local script = browser_scripts[appName] or browser_scripts["Safari"]
 
-  hs.osascript.applescript(format(script, url))
+  hs.osascript.applescript(string.format(script, url))
 end
 
 ---Sets the clipboard contents
@@ -662,7 +632,7 @@ end
 ---Force unfocus
 ---@return nil
 function Actions.force_unfocus()
-  Utils.log("forced unfocus on escape")
+  log.df("forced unfocus on escape")
 
   local focused_element = Elements.get_ax_focused_element()
   if not focused_element then
@@ -682,15 +652,15 @@ function Actions.try_click(frame, type)
   type = type or "left"
 
   local click_x, click_y = frame.x + frame.w / 2, frame.y + frame.h / 2
-  local original_pos = mouse.absolutePosition()
-  mouse.absolutePosition({ x = click_x, y = click_y })
+  local original_pos = hs.mouse.absolutePosition()
+  hs.mouse.absolutePosition({ x = click_x, y = click_y })
   if type == "left" then
-    eventtap.leftClick({ x = click_x, y = click_y })
+    hs.eventtap.leftClick({ x = click_x, y = click_y })
   elseif type == "right" then
-    eventtap.rightClick({ x = click_x, y = click_y })
+    hs.eventtap.rightClick({ x = click_x, y = click_y })
   end
-  timer.doAfter(0.1, function()
-    mouse.absolutePosition(original_pos)
+  hs.timer.doAfter(0.1, function()
+    hs.mouse.absolutePosition(original_pos)
   end)
 end
 
@@ -1245,7 +1215,7 @@ function Marks.click(combination)
     if c == combination and State.marks[i] and State.on_click_callback then
       local success, err = pcall(State.on_click_callback, State.marks[i])
       if not success then
-        Utils.log("Error clicking element: " .. tostring(err))
+        log.df("Error clicking element: " .. tostring(err))
       end
       break
     end
@@ -1295,13 +1265,13 @@ end
 ---Scrolls to top
 ---@return nil
 function Commands.cmd_scroll_to_top()
-  eventtap.keyStroke({ "command" }, "up", 0)
+  hs.eventtap.keyStroke({ "command" }, "up", 0)
 end
 
 ---Scrolls to bottom
 ---@return nil
 function Commands.cmd_scroll_to_bottom()
-  eventtap.keyStroke({ "command" }, "down", 0)
+  hs.eventtap.keyStroke({ "command" }, "down", 0)
 end
 
 ---Switches to insert mode
@@ -1326,7 +1296,7 @@ function Commands.cmd_goto_link()
       end
     end
   end
-  timer.doAfter(0, function()
+  hs.timer.doAfter(0, function()
     Marks.show(false, "link")
   end)
 end
@@ -1350,7 +1320,7 @@ function Commands.cmd_goto_input()
 
     Actions.try_click(mark.frame)
   end
-  timer.doAfter(0, function()
+  hs.timer.doAfter(0, function()
     Marks.show(false, "input")
   end)
 end
@@ -1371,7 +1341,7 @@ function Commands.cmd_right_click()
       end
     end
   end
-  timer.doAfter(0, function()
+  hs.timer.doAfter(0, function()
     Marks.show(false, "link")
   end)
 end
@@ -1391,7 +1361,7 @@ function Commands.cmd_goto_link_new_tab()
       Actions.open_url_in_new_tab(url.url)
     end
   end
-  timer.doAfter(0, function()
+  hs.timer.doAfter(0, function()
     Marks.show(true, "link")
   end)
 end
@@ -1458,7 +1428,7 @@ function Commands.cmd_download_image()
       end
     end
   end
-  timer.doAfter(0, function()
+  hs.timer.doAfter(0, function()
     Marks.show(false, "image")
   end)
 end
@@ -1470,13 +1440,13 @@ function Commands.cmd_move_mouse_to_link()
   State.on_click_callback = function(mark)
     local frame = mark.frame
     if frame then
-      mouse.absolutePosition({
+      hs.mouse.absolutePosition({
         x = frame.x + frame.w / 2,
         y = frame.y + frame.h / 2,
       })
     end
   end
-  timer.doAfter(0, function()
+  hs.timer.doAfter(0, function()
     Marks.show(false, "link")
   end)
 end
@@ -1498,7 +1468,7 @@ function Commands.cmd_copy_link_url_to_clipboard()
       hs.alert.show("No URL found", nil, nil, 2)
     end
   end
-  timer.doAfter(0, function()
+  hs.timer.doAfter(0, function()
     Marks.show(true, "link")
   end)
 end
@@ -1571,7 +1541,7 @@ function Commands.cmd_move_mouse_to_center()
   end
 
   local frame = window:frame()
-  mouse.absolutePosition({
+  hs.mouse.absolutePosition({
     x = frame.x + frame.w / 2,
     y = frame.y + frame.h / 2,
   })
@@ -1586,7 +1556,7 @@ end
 ---@param modifiers table
 ---@return nil
 local function handle_vim_input(char, modifiers)
-  Utils.log("handleVimInput: " .. char .. " modifiers: " .. hs.inspect(modifiers))
+  log.df("handleVimInput: " .. char .. " modifiers: " .. hs.inspect(modifiers))
 
   if State.mode == MODES.LINKS then
     if char == "backspace" then
@@ -1656,10 +1626,10 @@ local function handle_vim_input(char, modifiers)
       if cmd then
         cmd()
       else
-        Utils.log("Unknown command: " .. mapping)
+        log.df("Unknown command: " .. mapping)
       end
     elseif type(mapping) == "table" then
-      eventtap.keyStroke(mapping[1], mapping[2], 0)
+      hs.eventtap.keyStroke(mapping[1], mapping[2], 0)
     end
   elseif State.mapping_prefixes[key_combo] then
     ModeManager.set_mode(MODES.MULTI, key_combo)
@@ -1682,8 +1652,8 @@ local function event_handler(event)
 
   -- Handle escape key
   if key_code == hs.keycodes.map["escape"] then
-    local delay_since_last_escape = (timer.absoluteTime() - State.last_escape) / 1e9
-    State.last_escape = timer.absoluteTime()
+    local delay_since_last_escape = (hs.timer.absoluteTime() - State.last_escape) / 1e9
+    State.last_escape = hs.timer.absoluteTime()
 
     if Utils.is_in_browser() and delay_since_last_escape < M.config.double_press_delay then
       Actions.force_unfocus()
@@ -1706,7 +1676,7 @@ local function event_handler(event)
 
   -- Handle backspace in LINKS mode
   if State.mode == MODES.LINKS and key_code == hs.keycodes.map["delete"] then
-    timer.doAfter(0, function()
+    hs.timer.doAfter(0, function()
       handle_vim_input("backspace", { ctrl = flags.ctrl })
     end)
     return true
@@ -1743,7 +1713,7 @@ local function event_handler(event)
     end
   end
 
-  timer.doAfter(0, function()
+  hs.timer.doAfter(0, function()
     handle_vim_input(char, modifiers)
   end)
 
@@ -1769,45 +1739,45 @@ local function cleanup_on_app_switch()
   -- Force garbage collection to free up memory
   collectgarbage("collect")
 
-  Utils.log("Cleaned up caches and state for app switch")
+  log.df("Cleaned up caches and state for app switch")
 end
 
 ---Starts the app watcher
 ---@return nil
 local function start_watcher()
-  app_watcher.register(app_watcher_name, function(app_name, event_type, app_object)
-    Utils.log(string.format("App event: %s - %s", app_name, event_type))
+  app_watcher.register(M.mod_name, function(app_name, event_type, app_object)
+    log.df(string.format("App event: %s - %s", app_name, event_type))
 
-    if event_type == watcher.activated then
+    if event_type == hs.application.watcher.activated then
       cleanup_on_app_switch()
 
       if not State.event_loop then
-        State.event_loop = eventtap.new({ eventtap.event.types.keyDown }, event_handler):start()
-        Utils.log("Started event loop for app: " .. app_name)
+        State.event_loop = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, event_handler):start()
+        log.df("Started event loop for app: " .. app_name)
       end
 
       if Utils.tbl_contains(M.config.excluded_apps, app_name) then
         ModeManager.set_mode(MODES.DISABLED)
-        Utils.log("Disabled mode for excluded app: " .. app_name)
+        log.df("Disabled mode for excluded app: " .. app_name)
       end
     end
   end)
 
-  Utils.log("App watcher started")
+  log.df("App watcher started")
 end
 
 ---Monitor focus changes within the same app
 ---@return nil
 local function setup_focus_watcher()
   -- Watch for focus changes to automatically switch between normal/insert modes
-  State.focus_watcher = eventtap
-    .new({ eventtap.event.types.leftMouseDown, eventtap.event.types.tabKeyDown }, function(event)
+  State.focus_watcher = hs.eventtap
+    .new({ hs.eventtap.event.types.leftMouseDown, hs.eventtap.event.types.tabKeyDown }, function(event)
       if State.mode == MODES.DISABLED then
         return false
       end
 
       -- Delay slightly to let focus change complete
-      timer.doAfter(0.05, function()
+      hs.timer.doAfter(0.05, function()
         if Elements.is_editable_control_in_focus() then
           if State.mode ~= MODES.INSERT then
             ModeManager.set_mode(MODES.INSERT)
@@ -1823,7 +1793,7 @@ local function setup_focus_watcher()
     end)
     :start()
 
-  Utils.log("Focus watcher started")
+  log.df("Focus watcher started")
 end
 
 ---Periodic cache cleanup to prevent memory leaks
@@ -1833,13 +1803,13 @@ local function setup_periodic_cleanup()
     State.cleanup_timer:stop()
   end
 
-  State.cleanup_timer = timer
+  State.cleanup_timer = hs.timer
     .new(30, function() -- Every 30 seconds
       -- Only clean up if we're not actively showing marks
       if State.mode ~= MODES.LINKS then
         Utils.clear_cache()
         collectgarbage("collect")
-        Utils.log("Periodic cache cleanup completed")
+        log.df("Periodic cache cleanup completed")
       end
     end)
     :start()
@@ -1848,7 +1818,7 @@ end
 ---Clean up timers and watchers
 ---@return nil
 local function cleanup_watchers()
-  app_watcher.unregister(app_watcher_name)
+  app_watcher.unregister(M.mod_name)
 
   if State.focus_watcher then
     State.focus_watcher:stop()
@@ -1875,6 +1845,8 @@ M.config = {}
 function M.setup(userConfig)
   M.config = _utils.tbl_deep_extend("force", DEFAULT_CONFIG, userConfig or {})
 
+  log = hs.logger.new(M.mod_name, M.config.log_level)
+
   Utils.fetch_mapping_prefixes()
   Utils.generate_combinations()
 
@@ -1900,7 +1872,7 @@ function M:start()
     ModeManager.set_mode(MODES.NORMAL)
   end
 
-  Utils.log("Vim navigation started")
+  log.df("Vim navigation started")
 end
 
 ---Stops the module
@@ -1918,19 +1890,7 @@ function M:stop()
 
   cleanup_on_app_switch()
 
-  Utils.log("Vim navigation stopped")
+  log.df("Vim navigation stopped")
 end
-
--- Expose useful functions for debugging
-M.debug = {
-  get_state = function()
-    return State
-  end,
-  get_elements = function()
-    return Elements
-  end,
-  clear_cache = Utils.clear_cache,
-  log = Utils.log,
-}
 
 return M

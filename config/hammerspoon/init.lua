@@ -2,7 +2,7 @@
 
 local utils = require("utils")
 local global_pref = require("global-pref")
-local app_watcher = require("app_watcher")
+local app_watcher = require("app-watcher")
 local system = require("system")
 local vimium = require("vimium")
 
@@ -16,9 +16,7 @@ global_pref.setup()
 -- App Watcher
 -- ------------------------------------------------------------------
 
-local app_watcher_config = {
-  show_logs = false,
-}
+local app_watcher_config = {}
 
 app_watcher.setup(app_watcher_config)
 
@@ -28,7 +26,6 @@ app_watcher.setup(app_watcher_config)
 
 ---@type Hs.System.Config
 local system_config = {
-  show_logs = false,
   apps = {
     modifier = utils.hyper,
     bindings = {
@@ -135,7 +132,6 @@ system.setup(system_config)
 ---@type Hs.Vimium.Config
 ---@diagnostic disable-next-line: missing-fields
 local vimium_config = {
-  show_logs = false,
   excluded_apps = {
     "Terminal",
     "Ghostty",

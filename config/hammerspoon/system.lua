@@ -1,36 +1,19 @@
 ---@diagnostic disable: undefined-global
 
 local utils = require("utils")
-local app_watcher = require("app_watcher")
+local app_watcher = require("app-watcher")
 
 local M = {}
 
 M.__index = M
 
-local floor = math.floor
-local bind = hs.hotkey.bind
-local launch_or_focus = hs.application.launchOrFocus
-local notify = hs.alert.show
-local frontmost_application = hs.application.frontmostApplication
-local do_after = hs.timer.doAfter
-local watcher = hs.application.watcher
-local printf = hs.printf
-local timer = hs.timer
+M.mod_name = "system"
+
+local log
 
 -- ------------------------------------------------------------------
 -- Helpers
 -- ------------------------------------------------------------------
-
---- @param message string # The message to log.
-local function log(message)
-  if not M.config.show_logs then
-    return
-  end
-
-  local timestamp = os.date("%Y-%m-%d %H:%M:%S")
-  local ms = floor(timer.absoluteTime() / 1e6) % 1000
-  printf("[System][%s.%03d] %s", timestamp, ms, message)
-end
 
 ---@param mods Hs.System.Modifier|Hs.System.Modifier[]
 ---@param key string
@@ -43,10 +26,10 @@ end
 ---@param items string[]
 ---@return nil
 local function safe_select_menu_item(items)
-  local app = frontmost_application()
+  local app = hs.application.frontmostApplication()
   local success = app:selectMenuItem(items)
   if not success then
-    notify("Menu item not found")
+    hs.alert.show("Menu item not found")
   end
 end
 
@@ -59,7 +42,7 @@ end
 ---@field custom_bindings? table<string, Hs.System.Config.CustomBindings> Custom bindings configuration
 ---@field contextual_bindings? table<string,  Hs.System.Config.ContextualBindings[]> Contextual bindings configuration
 ---@field watcher? Hs.System.Config.Watcher Watcher configuration
----@field show_logs? boolean Whether to show logs
+---@field log_level? string The log level to use
 
 ---@alias Hs.System.Modifier "cmd"|"ctrl"|"alt"|"shift"|"fn"
 
@@ -99,7 +82,7 @@ end
 
 ---@type Hs.System.Config
 local default_config = {
-  show_logs = false,
+  log_level = "warning",
   apps = {
     modifier = utils.hyper,
     bindings = {},
@@ -122,8 +105,8 @@ local default_config = {
 
 local function setup_launchers()
   for appName, shortcut in pairs(M.config.apps.bindings) do
-    bind(M.config.apps.modifier, shortcut, function()
-      launch_or_focus(appName)
+    hs.hotkey.bind(M.config.apps.modifier, shortcut, function()
+      hs.application.launchOrFocus(appName)
     end)
   end
 end
@@ -134,7 +117,7 @@ end
 
 local function setup_custom_bindings()
   for _, custom_action in pairs(M.config.custom_bindings) do
-    bind(custom_action.modifier, custom_action.key, custom_action.action)
+    hs.hotkey.bind(custom_action.modifier, custom_action.key, custom_action.action)
   end
 end
 
@@ -154,7 +137,7 @@ local function clear_contextual_bindings()
     end
   end
   active_contextual_hotkeys = {}
-  log("Cleared " .. #active_contextual_hotkeys .. " contextual bindings")
+  log.df("Cleared " .. #active_contextual_hotkeys .. " contextual bindings")
 end
 
 ---Function to activate contextual bindings for a specific app
@@ -165,14 +148,14 @@ local function activate_contextual_bindings(app_name)
 
   local bindings = M.config.contextual_bindings[app_name]
   if not bindings then
-    log("No contextual bindings defined for: " .. (app_name or "Unknown"))
+    log.df("No contextual bindings defined for: " .. (app_name or "Unknown"))
     return
   end
 
-  log("Activating " .. #bindings .. " contextual bindings for: " .. app_name)
+  log.df("Activating " .. #bindings .. " contextual bindings for: " .. app_name)
 
   for _, binding in ipairs(bindings) do
-    local hotkey = bind(binding.modifier, binding.key, binding.action)
+    local hotkey = hs.hotkey.bind(binding.modifier, binding.key, binding.action)
     table.insert(active_contextual_hotkeys, hotkey)
   end
 end
@@ -190,59 +173,59 @@ local function setup_watcher()
 
   _auto_maximize_window_status = M.config.watcher.auto_maximize_window.enabled or false
 
-  app_watcher.register("system_module", function(app_name, event_type, app_object)
+  app_watcher.register(M.mod_name, function(app_name, event_type, app_object)
     -- Wrap the entire callback in pcall to prevent crashes
     local success, error = pcall(function()
-      log("Watcher event: App=" .. (app_name or "nil") .. ", Event=" .. event_type)
+      log.df("Watcher event: App=" .. (app_name or "nil") .. ", Event=" .. event_type)
 
-      if event_type == watcher.activated then
-        log("App activated: " .. (app_name or "Unknown"))
+      if event_type == hs.application.watcher.activated then
+        log.df("App activated: " .. (app_name or "Unknown"))
 
-        do_after(0.1, function()
+        hs.timer.doAfter(0.1, function()
           activate_contextual_bindings(app_name)
         end)
 
         if _hide_all_window_except_front_status then
-          do_after(0.1, function()
+          hs.timer.doAfter(0.1, function()
             -- hide all windows except the frontmost one
             key_stroke({ "cmd", "alt" }, "h")
           end)
         end
 
         if _hide_all_window_except_front_status and _auto_maximize_window_status then
-          do_after(0.1, function()
+          hs.timer.doAfter(0.1, function()
             -- maximize window
             key_stroke({ "fn", "ctrl" }, "f")
           end)
         end
       end
 
-      if event_type == watcher.deactivated then
-        log("App deactivated: " .. (app_name or "Unknown"))
+      if event_type == hs.application.watcher.deactivated then
+        log.df("App deactivated: " .. (app_name or "Unknown"))
         clear_contextual_bindings()
       end
     end)
 
     if not success then
-      log("Error in watcher callback: " .. error)
+      log.df("Error in watcher callback: " .. error)
       -- Restart the watcher after an error
-      do_after(1.0, start_watcher)
+      hs.timer.doAfter(1.0, start_watcher)
     end
   end)
 
-  log("System watcher registered with centralized manager")
+  log.df("System watcher registered with centralized manager")
 
   -- Bind `hideAllWindowExceptFront` toggle
   if M.config.watcher.hide_all_window_except_front.enabled then
     local bindings = M.config.watcher.hide_all_window_except_front.bindings
     if bindings and type(bindings) == "table" then
-      bind(bindings.modifier, bindings.key, function()
+      hs.hotkey.bind(bindings.modifier, bindings.key, function()
         _hide_all_window_except_front_status = not _hide_all_window_except_front_status
-        notify(string.format("hide_all_window_except_front: %s", _hide_all_window_except_front_status))
-        log(string.format("hide_all_window_except_front: %s", _hide_all_window_except_front_status))
+        hs.alert.show(string.format("hide_all_window_except_front: %s", _hide_all_window_except_front_status))
+        log.df(string.format("hide_all_window_except_front: %s", _hide_all_window_except_front_status))
       end)
     else
-      log("No watcher hide_all_window_except_front bindings defined")
+      log.df("No watcher hide_all_window_except_front bindings defined")
     end
   end
 
@@ -250,13 +233,13 @@ local function setup_watcher()
   if M.config.watcher.auto_maximize_window.enabled then
     local bindings = M.config.watcher.auto_maximize_window.bindings
     if bindings and type(bindings) == "table" then
-      bind(bindings.modifier, bindings.key, function()
+      hs.hotkey.bind(bindings.modifier, bindings.key, function()
         _auto_maximize_window_status = not _auto_maximize_window_status
-        notify(string.format("auto_maximize_window: %s", _auto_maximize_window_status))
-        log(string.format("auto_maximize_window: %s", _auto_maximize_window_status))
+        hs.alert.show(string.format("auto_maximize_window: %s", _auto_maximize_window_status))
+        log.df(string.format("auto_maximize_window: %s", _auto_maximize_window_status))
       end)
     else
-      log("No watcher auto_maximize_window bindings defined")
+      log.df("No watcher auto_maximize_window bindings defined")
     end
   end
 end
@@ -272,6 +255,8 @@ M.config = {}
 ---@return nil
 function M.setup(user_config)
   M.config = utils.tbl_deep_extend("force", default_config, user_config or {})
+
+  log = hs.logger.new(M.mod_name, M.config.log_level)
 
   setup_launchers()
   setup_custom_bindings()
