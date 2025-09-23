@@ -251,7 +251,7 @@ local function setup_watcher()
       bind(bindings.modifier, bindings.key, function()
         _hide_all_window_except_front_status = not _hide_all_window_except_front_status
         notify(string.format("hide_all_window_except_front: %s", _hide_all_window_except_front_status))
-        log("hide_all_window_except_front: " .. _hide_all_window_except_front_status)
+        log(string.format("hide_all_window_except_front: %s", _hide_all_window_except_front_status))
       end)
     else
       log("No watcher hide_all_window_except_front bindings defined")
@@ -265,7 +265,7 @@ local function setup_watcher()
       bind(bindings.modifier, bindings.key, function()
         _auto_maximize_window_status = not _auto_maximize_window_status
         notify(string.format("auto_maximize_window: %s", _auto_maximize_window_status))
-        log("auto_maximize_window: " .. _auto_maximize_window_status)
+        log(string.format("auto_maximize_window: %s", _auto_maximize_window_status))
       end)
     else
       log("No watcher auto_maximize_window bindings defined")
