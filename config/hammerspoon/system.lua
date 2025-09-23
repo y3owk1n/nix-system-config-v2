@@ -158,18 +158,18 @@ local function clear_contextual_bindings()
 end
 
 ---Function to activate contextual bindings for a specific app
----@param appName string
+---@param app_name string
 ---@return nil
-local function activate_contextual_bindings(appName)
+local function activate_contextual_bindings(app_name)
   clear_contextual_bindings()
 
-  local bindings = M.config.contextual_bindings[appName]
+  local bindings = M.config.contextual_bindings[app_name]
   if not bindings then
-    log("No contextual bindings defined for: " .. (appName or "Unknown"))
+    log("No contextual bindings defined for: " .. (app_name or "Unknown"))
     return
   end
 
-  log("Activating " .. #bindings .. " contextual bindings for: " .. appName)
+  log("Activating " .. #bindings .. " contextual bindings for: " .. app_name)
 
   for _, binding in ipairs(bindings) do
     local hotkey = bind(binding.modifier, binding.key, binding.action)
