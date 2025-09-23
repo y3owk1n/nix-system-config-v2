@@ -284,28 +284,28 @@ end
 
 ---Gets an attribute from an element
 ---@param element table
----@param attributeName string
+---@param attribute_name string
 ---@return table|nil
-function Utils.get_attribute(element, attributeName)
+function Utils.get_attribute(element, attribute_name)
   if not element then
     return nil
   end
 
-  local cacheKey = tostring(element) .. ":" .. attributeName
-  local cached = attribute_cache[cacheKey]
+  local cache_key = tostring(element) .. ":" .. attribute_name
+  local cached = attribute_cache[cache_key]
 
   if cached ~= nil then
     return cached == "NIL_VALUE" and nil or cached
   end
 
   local success, result = pcall(function()
-    return element:attributeValue(attributeName)
+    return element:attributeValue(attribute_name)
   end)
 
   result = success and result or nil
 
   -- Store nil as a special marker to distinguish from uncached
-  attribute_cache[cacheKey] = result == nil and "NIL_VALUE" or result
+  attribute_cache[cache_key] = result == nil and "NIL_VALUE" or result
   return result
 end
 
@@ -426,8 +426,8 @@ end
 ---@return table|nil
 function Elements.get_ax_focused_element()
   return Utils.get_cached_element("axFocusedElement", function()
-    local axApp = Elements.get_ax_app()
-    return axApp and Utils.get_attribute(axApp, "AXFocusedUIElement")
+    local ax_app = Elements.get_ax_app()
+    return ax_app and Utils.get_attribute(ax_app, "AXFocusedUIElement")
   end)
 end
 
@@ -435,8 +435,8 @@ end
 ---@return table|nil
 function Elements.get_ax_web_area()
   return Utils.get_cached_element("axWebArea", function()
-    local axWindow = Elements.get_ax_window()
-    return axWindow and Elements.find_ax_role(axWindow, "AXWebArea")
+    local ax_window = Elements.get_ax_window()
+    return ax_window and Elements.find_ax_role(ax_window, "AXWebArea")
   end)
 end
 
@@ -444,8 +444,8 @@ end
 ---@return table|nil
 function Elements.get_ax_menu_bar()
   return Utils.get_cached_element("axMenuBar", function()
-    local axApp = Elements.get_ax_app()
-    return axApp and Utils.get_attribute(axApp, "AXMenuBar")
+    local ax_app = Elements.get_ax_app()
+    return ax_app and Utils.get_attribute(ax_app, "AXMenuBar")
   end)
 end
 
@@ -460,33 +460,33 @@ function Elements.get_full_area()
       return nil
     end
 
-    local winFrame = Utils.get_attribute(ax_win, "AXFrame") or {}
-    local menuBarFrame = Utils.get_attribute(ax_menu_bar, "AXFrame") or {}
+    local win_frame = Utils.get_attribute(ax_win, "AXFrame") or {}
+    local menu_bar_frame = Utils.get_attribute(ax_menu_bar, "AXFrame") or {}
 
     return {
       x = 0,
       y = 0,
-      w = menuBarFrame.w,
-      h = winFrame.h + winFrame.y + menuBarFrame.h,
+      w = menu_bar_frame.w,
+      h = win_frame.h + win_frame.y + menu_bar_frame.h,
     }
   end)
 end
 
 ---Finds an element with a specific AXRole
----@param rootElement table
+---@param root_element table
 ---@param role string
 ---@return table|nil
-function Elements.find_ax_role(rootElement, role)
-  if not rootElement then
+function Elements.find_ax_role(root_element, role)
+  if not root_element then
     return nil
   end
 
-  local axRole = Utils.get_attribute(rootElement, "AXRole")
+  local axRole = Utils.get_attribute(root_element, "AXRole")
   if axRole == role then
-    return rootElement
+    return root_element
   end
 
-  local axChildren = Utils.get_attribute(rootElement, "AXChildren") or {}
+  local axChildren = Utils.get_attribute(root_element, "AXChildren") or {}
   for _, child in ipairs(axChildren) do
     local result = Elements.find_ax_role(child, role)
     if result then
@@ -500,12 +500,12 @@ end
 ---Checks if an editable control is in focus
 ---@return boolean
 function Elements.is_editable_control_in_focus()
-  local focusedElement = Elements.get_ax_focused_element()
-  if not focusedElement then
+  local focused_element = Elements.get_ax_focused_element()
+  if not focused_element then
     return false
   end
 
-  local role = Utils.get_attribute(focusedElement, "AXRole")
+  local role = Utils.get_attribute(focused_element, "AXRole")
   return (role and Utils.tbl_contains(M.config.ax_editable_roles, role)) or false
 end
 
@@ -541,7 +541,7 @@ end
 ---@param char string|nil
 ---@return nil
 function ModeManager.set_mode(mode, char)
-  local defaultModeChars = {
+  local default_mode_chars = {
     [MODES.DISABLED] = "X",
     [MODES.INSERT] = "I",
     [MODES.LINKS] = "L",
@@ -549,13 +549,13 @@ function ModeManager.set_mode(mode, char)
     [MODES.NORMAL] = "N",
   }
 
-  local previousMode = State.mode
+  local previous_mode = State.mode
   State.mode = mode
 
-  if mode == MODES.LINKS and previousMode ~= MODES.LINKS then
+  if mode == MODES.LINKS and previous_mode ~= MODES.LINKS then
     State.link_capture = ""
     Marks.clear()
-  elseif previousMode == MODES.LINKS and mode ~= MODES.LINKS then
+  elseif previous_mode == MODES.LINKS and mode ~= MODES.LINKS then
     timer.doAfter(0, Marks.clear)
   end
 
@@ -566,19 +566,19 @@ function ModeManager.set_mode(mode, char)
   end
 
   if MenuBar.item then
-    local currentApp = Elements.get_app()
-    local modeChar = char or defaultModeChars[mode] or "?"
+    local current_app = Elements.get_app()
+    local mode_char = char or default_mode_chars[mode] or "?"
 
     -- Show app context in menu bar for debugging
     if M.config.show_logs then
-      local appName = currentApp and currentApp:name() or "Unknown"
-      MenuBar.item:setTitle(modeChar .. ":" .. appName:sub(1, 3))
+      local appName = current_app and current_app:name() or "Unknown"
+      MenuBar.item:setTitle(mode_char .. ":" .. appName:sub(1, 3))
     else
-      MenuBar.item:setTitle(modeChar)
+      MenuBar.item:setTitle(mode_char)
     end
   end
 
-  Utils.log(string.format("Mode changed: %s -> %s", previousMode, mode))
+  Utils.log(string.format("Mode changed: %s -> %s", previous_mode, mode))
 end
 
 --------------------------------------------------------------------------------
@@ -624,7 +624,7 @@ function Actions.open_url_in_new_tab(url)
     return
   end
 
-  local browserScripts = {
+  local browser_scripts = {
     Safari = 'tell application "Safari" to tell window 1 to set current tab to (make new tab with properties {URL:"%s"})',
     ["Google Chrome"] = 'tell application "Google Chrome" to tell window 1 to make new tab with properties {URL:"%s"}',
     Firefox = 'tell application "Firefox" to tell window 1 to open location "%s"',
@@ -632,13 +632,13 @@ function Actions.open_url_in_new_tab(url)
     ["Brave Browser"] = 'tell application "Brave Browser" to tell window 1 to make new tab with properties {URL:"%s"}',
   }
 
-  local currentApp = Elements.get_app()
-  if not currentApp then
+  local current_app = Elements.get_app()
+  if not current_app then
     return
   end
 
-  local appName = currentApp:name()
-  local script = browserScripts[appName] or browserScripts["Safari"]
+  local appName = current_app:name()
+  local script = browser_scripts[appName] or browser_scripts["Safari"]
 
   hs.osascript.applescript(format(script, url))
 end
@@ -662,12 +662,12 @@ end
 function Actions.force_unfocus()
   Utils.log("forced unfocus on escape")
 
-  local focused_el = Elements.get_ax_focused_element()
-  if not focused_el then
+  local focused_element = Elements.get_ax_focused_element()
+  if not focused_element then
     return
   end
 
-  focused_el:setAttributeValue("AXFocused", false)
+  focused_element:setAttributeValue("AXFocused", false)
 
   hs.alert.show("Force unfocused!")
 end
@@ -680,10 +680,10 @@ end
 ---@param element table
 ---@return boolean
 function ElementFinder.is_element_partially_visible(element)
-  local axHidden = Utils.get_attribute(element, "AXHidden")
-  local axFrame = Utils.get_attribute(element, "AXFrame")
+  local ax_hidden = Utils.get_attribute(element, "AXHidden")
+  local ax_frame = Utils.get_attribute(element, "AXFrame")
 
-  local frame = element and not axHidden and axFrame
+  local frame = element and not ax_hidden and ax_frame
 
   if not frame or frame.w <= 0 or frame.h <= 0 then
     return false
@@ -702,9 +702,9 @@ end
 
 ---Checks if an element contains a specific role
 ---@param element table
----@param rolesToCheck string[]
+---@param roles_to_check string[]
 ---@return boolean
-function ElementFinder.is_element_contain_roles(element, rolesToCheck)
+function ElementFinder.is_element_contain_roles(element, roles_to_check)
   if not element then
     return false
   end
@@ -714,7 +714,7 @@ function ElementFinder.is_element_contain_roles(element, rolesToCheck)
     return false
   end
 
-  return Utils.tbl_contains(rolesToCheck or {}, role)
+  return Utils.tbl_contains(roles_to_check or {}, role)
 end
 
 ---Checks if an element is an image
@@ -750,26 +750,26 @@ function ElementFinder.get_descendants(elements, cb)
 end
 
 ---Gets all children of an element
----@param mainElement table
+---@param main_element table
 ---@param cb fun(element: table)
 ---@return nil
-function ElementFinder.get_childrens(mainElement, cb)
-  local role = Utils.get_attribute(mainElement, "AXRole")
-  local main = Utils.get_attribute(mainElement, "AXMain")
+function ElementFinder.get_childrens(main_element, cb)
+  local role = Utils.get_attribute(main_element, "AXRole")
+  local main = Utils.get_attribute(main_element, "AXMain")
 
   if role == "AXWindow" and main == false then
     return
   end
 
-  local sourceTypes = {
+  local source_types = {
     "AXVisibleRows",
     "AXVisibleChildren",
     "AXChildrenInNavigationOrder",
     "AXChildren",
   }
 
-  for _, sourceType in ipairs(sourceTypes) do
-    local elements = Utils.get_attribute(mainElement, sourceType)
+  for _, source_type in ipairs(source_types) do
+    local elements = Utils.get_attribute(main_element, source_type)
     if elements and #elements > 0 then
       ElementFinder.get_descendants(elements, cb)
       return
@@ -898,6 +898,52 @@ function ElementFinder.find_image_elements(opts)
   })
 end
 
+---Finds next button
+---@param opts Hs.Vimium.FindElementOpts
+---@return nil
+function ElementFinder.find_next_button(opts)
+  ElementFinder.walk_and_match({
+    element = opts.element,
+    depth = opts.depth,
+    matcher = function(el)
+      local role = Utils.get_attribute(el, "AXRole")
+      local title = Utils.get_attribute(el, "AXTitle")
+
+      if (role == "AXLink" or role == "AXButton") and title then
+        if title:lower():find("next") then
+          return true
+        end
+      end
+
+      return false
+    end,
+    cb = opts.cb,
+  })
+end
+
+---Finds prev button
+---@param opts Hs.Vimium.FindElementOpts
+---@return nil
+function ElementFinder.find_prev_button(opts)
+  ElementFinder.walk_and_match({
+    element = opts.element,
+    depth = opts.depth,
+    matcher = function(el)
+      local role = Utils.get_attribute(el, "AXRole")
+      local title = Utils.get_attribute(el, "AXTitle")
+
+      if (role == "AXLink" or role == "AXButton") and title then
+        if title:lower():find("prev") or title:lower():find("previous") then
+          return true
+        end
+      end
+
+      return false
+    end,
+    cb = opts.cb,
+  })
+end
+
 --------------------------------------------------------------------------------
 -- Marks System
 --------------------------------------------------------------------------------
@@ -940,8 +986,8 @@ end
 ---@param elementType "link"|"scroll"|"url"|"input"|"image" # The type of elements to find ("link", "scroll", "url", "input").
 ---@return nil
 function Marks.show(withUrls, elementType)
-  local axApp = Elements.get_ax_app()
-  if not axApp then
+  local ax_app = Elements.get_ax_app()
+  if not ax_app then
     return
   end
 
@@ -960,7 +1006,7 @@ function Marks.show(withUrls, elementType)
 
   if predicates_fn then
     predicates_fn({
-      element = axApp,
+      element = ax_app,
       depth = 0,
       cb = Marks.add,
       withUrls = elementType == "link" and withUrls or nil,
@@ -996,44 +1042,44 @@ function Marks.draw()
   end
 
   -- Pre-calculate visible marks to avoid redundant work
-  local visibleMarks = {}
-  local captureLen = #State.link_capture
+  local visible_marks = {}
+  local capture_len = #State.link_capture
 
   for i, mark in ipairs(State.marks) do
     if i > #State.all_combinations then
       break
     end
 
-    local markText = State.all_combinations[i]:upper()
+    local mark_text = State.all_combinations[i]:upper()
 
-    if captureLen == 0 or (captureLen <= #markText and markText:sub(1, captureLen) == State.link_capture) then
-      visibleMarks[#visibleMarks + 1] = {
+    if capture_len == 0 or (capture_len <= #mark_text and mark_text:sub(1, capture_len) == State.link_capture) then
+      visible_marks[#visible_marks + 1] = {
         mark = mark,
-        text = markText,
+        text = mark_text,
         frame = mark.frame or Utils.get_attribute(mark.element, "AXFrame"),
       }
     end
   end
 
-  if #visibleMarks == 0 then
+  if #visible_marks == 0 then
     State.canvas:hide()
     return
   end
 
-  local elementsToDraw = {}
+  local elements_to_draw = {}
 
-  for _, visibleMark in ipairs(visibleMarks) do
-    if visibleMark.frame then
-      local markElements = Marks.create_mark_element(visibleMark.frame, visibleMark.text)
-      if markElements then
-        for _, element in ipairs(markElements) do
-          elementsToDraw[#elementsToDraw + 1] = element
+  for _, visible_mark in ipairs(visible_marks) do
+    if visible_mark.frame then
+      local mark_elements = Marks.create_mark_element(visible_mark.frame, visible_mark.text)
+      if mark_elements then
+        for _, element in ipairs(mark_elements) do
+          elements_to_draw[#elements_to_draw + 1] = element
         end
       end
     end
   end
 
-  State.canvas:replaceElements(elementsToDraw)
+  State.canvas:replaceElements(elements_to_draw)
   State.canvas:show()
 end
 
@@ -1047,108 +1093,108 @@ function Marks.create_mark_element(frame, text)
   end
 
   local padding = 2
-  local fontSize = 10
-  local textWidth = #text * (fontSize * 1.1)
-  local textHeight = fontSize * 1.1
-  local containerWidth = textWidth + (padding * 2)
-  local containerHeight = textHeight + (padding * 2)
+  local font_size = 10
+  local text_width = #text * (font_size * 1.1)
+  local text_height = font_size * 1.1
+  local container_width = text_width + (padding * 2)
+  local container_height = text_height + (padding * 2)
 
-  local arrowHeight = 3
-  local arrowWidth = 6
-  local cornerRadius = 2
+  local arrow_height = 3
+  local arrow_width = 6
+  local corner_radius = 2
 
-  local fillColor = { red = 1, green = 0.96, blue = 0.52, alpha = 1 }
-  local borderColor = { red = 0, green = 0, blue = 0, alpha = 1 }
-  local gradientColor = {
+  local fill_color = { red = 1, green = 0.96, blue = 0.52, alpha = 1 }
+  local border_color = { red = 0, green = 0, blue = 0, alpha = 1 }
+  local gradient_color = {
     red = 1,
     green = 0.77,
     blue = 0.26,
     alpha = 1,
   }
 
-  local bgRect = hs.geometry.rect(
-    frame.x + (frame.w / 2) - (containerWidth / 2),
-    frame.y + (frame.h / 3 * 2) + arrowHeight,
-    containerWidth,
-    containerHeight
+  local bg_rect = hs.geometry.rect(
+    frame.x + (frame.w / 2) - (container_width / 2),
+    frame.y + (frame.h / 3 * 2) + arrow_height,
+    container_width,
+    container_height
   )
 
-  local rx = bgRect.x
-  local ry = bgRect.y
-  local rw = bgRect.w
-  local rh = bgRect.h
+  local rx = bg_rect.x
+  local ry = bg_rect.y
+  local rw = bg_rect.w
+  local rh = bg_rect.h
 
-  local arrowLeft = rx + (rw / 2) - (arrowWidth / 2)
-  local arrowRight = arrowLeft + arrowWidth
-  local arrowTop = ry - arrowHeight
-  local arrowBottom = ry
-  local arrowMiddle = arrowLeft + (arrowWidth / 2)
+  local arrow_left = rx + (rw / 2) - (arrow_width / 2)
+  local arrow_right = arrow_left + arrow_width
+  local arrow_top = ry - arrow_height
+  local arrow_bottom = ry
+  local arrow_middle = arrow_left + (arrow_width / 2)
 
   return {
     {
       type = "segments",
       fillGradient = "linear",
-      fillGradientColors = { fillColor, gradientColor },
+      fillGradientColors = { fill_color, gradient_color },
       fillGradientAngle = 135,
-      strokeColor = borderColor,
+      strokeColor = border_color,
       strokeWidth = 1,
       withShadow = true,
       shadow = { blurRadius = 5.0, color = { alpha = 1 / 3 }, offset = { h = -1.0, w = 1.0 } },
       closed = true,
       coordinates = {
         -- Draw arrow
-        { x = arrowLeft, y = arrowBottom },
-        { x = arrowMiddle, y = arrowTop },
-        { x = arrowRight, y = arrowBottom },
+        { x = arrow_left, y = arrow_bottom },
+        { x = arrow_middle, y = arrow_top },
+        { x = arrow_right, y = arrow_bottom },
         -- Top right corner
         {
-          x = rx + rw - cornerRadius,
+          x = rx + rw - corner_radius,
           y = ry,
-          c1x = rx + rw - cornerRadius,
+          c1x = rx + rw - corner_radius,
           c1y = ry,
           c2x = rx + rw,
           c2y = ry,
         },
-        { x = rx + rw, y = ry + cornerRadius, c1x = rx + rw, c1y = ry, c2x = rx + rw, c2y = ry + cornerRadius },
+        { x = rx + rw, y = ry + corner_radius, c1x = rx + rw, c1y = ry, c2x = rx + rw, c2y = ry + corner_radius },
         -- Bottom right corner
         {
           x = rx + rw,
-          y = ry + rh - cornerRadius,
+          y = ry + rh - corner_radius,
           c1x = rx + rw,
-          c1y = ry + rh - cornerRadius,
+          c1y = ry + rh - corner_radius,
           c2x = rx + rw,
           c2y = ry + rh,
         },
         {
-          x = rx + rw - cornerRadius,
+          x = rx + rw - corner_radius,
           y = ry + rh,
           c1x = rx + rw,
           c1y = ry + rh,
-          c2x = rx + rw - cornerRadius,
+          c2x = rx + rw - corner_radius,
           c2y = ry + rh,
         },
         -- Bottom left corner
         {
-          x = rx + cornerRadius,
+          x = rx + corner_radius,
           y = ry + rh,
-          c1x = rx + cornerRadius,
+          c1x = rx + corner_radius,
           c1y = ry + rh,
           c2x = rx,
           c2y = ry + rh,
         },
         {
           x = rx,
-          y = ry + rh - cornerRadius,
+          y = ry + rh - corner_radius,
           c1x = rx,
           c1y = ry + rh,
           c2x = rx,
-          c2y = ry + rh - cornerRadius,
+          c2y = ry + rh - corner_radius,
         },
         -- Top left corner
-        { x = rx, y = ry + cornerRadius, c1x = rx, c1y = ry + cornerRadius, c2x = rx, c2y = ry },
-        { x = rx + cornerRadius, y = ry, c1x = rx, c1y = ry, c2x = rx + cornerRadius, c2y = ry },
+        { x = rx, y = ry + corner_radius, c1x = rx, c1y = ry + corner_radius, c2x = rx, c2y = ry },
+        { x = rx + corner_radius, y = ry, c1x = rx, c1y = ry, c2x = rx + corner_radius, c2y = ry },
         -- Back to start
-        { x = arrowLeft, y = arrowBottom },
+        { x = arrow_left, y = arrow_bottom },
       },
     },
     {
@@ -1156,14 +1202,14 @@ function Marks.create_mark_element(frame, text)
       text = text,
       textAlignment = "center",
       textColor = { ["red"] = 0, ["green"] = 0, ["blue"] = 0, ["alpha"] = 1 },
-      textSize = fontSize,
+      textSize = font_size,
       textFont = ".AppleSystemUIFontHeavy",
       textLineBreak = "clip",
       frame = {
         x = rx,
-        y = ry - (arrowHeight / 2) + ((rh - textHeight) / 2), -- Vertically center
+        y = ry - (arrow_height / 2) + ((rh - text_height) / 2), -- Vertically center
         w = rw,
-        h = textHeight,
+        h = text_height,
       },
     },
   }
@@ -1257,12 +1303,12 @@ function Commands.cmd_goto_link()
       -- Fallback to mouse click
       local frame = mark.frame or Utils.get_attribute(element, "AXFrame")
       if frame then
-        local clickX, clickY = frame.x + frame.w / 2, frame.y + frame.h / 2
-        local originalPos = mouse.absolutePosition()
-        mouse.absolutePosition({ x = clickX, y = clickY })
-        eventtap.leftClick({ x = clickX, y = clickY })
+        local click_x, click_y = frame.x + frame.w / 2, frame.y + frame.h / 2
+        local original_pos = mouse.absolutePosition()
+        mouse.absolutePosition({ x = click_x, y = click_y })
+        eventtap.leftClick({ x = click_x, y = click_y })
         timer.doAfter(0.1, function()
-          mouse.absolutePosition(originalPos)
+          mouse.absolutePosition(original_pos)
         end)
       end
     end
@@ -1286,12 +1332,12 @@ function Commands.cmd_goto_input()
       -- Fallback to mouse click
       local frame = Utils.get_attribute(element, "AXFrame")
       if frame then
-        local clickX, clickY = frame.x + frame.w / 2, frame.y + frame.h / 2
-        local originalPos = mouse.absolutePosition()
-        mouse.absolutePosition({ x = clickX, y = clickY })
-        eventtap.leftClick({ x = clickX, y = clickY })
+        local click_x, click_y = frame.x + frame.w / 2, frame.y + frame.h / 2
+        local original_pos = mouse.absolutePosition()
+        mouse.absolutePosition({ x = click_x, y = click_y })
+        eventtap.leftClick({ x = click_x, y = click_y })
         timer.doAfter(0.1, function()
-          mouse.absolutePosition(originalPos)
+          mouse.absolutePosition(original_pos)
         end)
       end
     end
@@ -1314,12 +1360,12 @@ function Commands.cmd_right_click()
     else
       local frame = Utils.get_attribute(element, "AXFrame")
       if frame then
-        local clickX, clickY = frame.x + frame.w / 2, frame.y + frame.h / 2
-        local originalPos = mouse.absolutePosition()
-        mouse.absolutePosition({ x = clickX, y = clickY })
-        eventtap.rightClick({ x = clickX, y = clickY })
+        local click_x, click_y = frame.x + frame.w / 2, frame.y + frame.h / 2
+        local original_pos = mouse.absolutePosition()
+        mouse.absolutePosition({ x = click_x, y = click_y })
+        eventtap.rightClick({ x = click_x, y = click_y })
         timer.doAfter(0.05, function()
-          mouse.absolutePosition(originalPos)
+          mouse.absolutePosition(original_pos)
         end)
       end
     end
@@ -1365,44 +1411,44 @@ function Commands.cmd_download_image()
     if role == "AXImage" then
       local description = Utils.get_attribute(element, "AXDescription") or "image"
 
-      local downloadUrlAttr = Utils.get_attribute(element, "AXURL")
+      local download_url_attr = Utils.get_attribute(element, "AXURL")
 
-      if downloadUrlAttr then
-        local url = downloadUrlAttr.url
+      if download_url_attr then
+        local url = download_url_attr.url
 
         if url and url:match("^data:image/") then
           -- Handle base64 images
-          local base64Data = url:match("^data:image/[^;]+;base64,(.+)$")
-          if base64Data then
-            local decodedData = hs.base64.decode(base64Data)
+          local base64_data = url:match("^data:image/[^;]+;base64,(.+)$")
+          if base64_data then
+            local decoded_data = hs.base64.decode(base64_data)
             ---@diagnostic disable-next-line: param-type-mismatch
-            local fileName = description:gsub("%W+", "_") .. ".jpg"
-            local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
+            local file_name = description:gsub("%W+", "_") .. ".jpg"
+            local file_path = os.getenv("HOME") .. "/Downloads/" .. file_name
 
-            local file = io.open(filePath, "wb")
+            local file = io.open(file_path, "wb")
             if file then
-              file:write(decodedData)
+              file:write(decoded_data)
               file:close()
-              hs.alert.show("Image saved: " .. fileName, nil, nil, 2)
+              hs.alert.show("Image saved: " .. file_name, nil, nil, 2)
             end
           end
         else
           -- Handle regular URLs
           hs.http.asyncGet(url, nil, function(status, body, headers)
             if status == 200 then
-              local contentType = headers["Content-Type"] or ""
-              if contentType:match("^image/") then
-                local fileName = url:match("^.+/(.+)$") or "image.jpg"
-                if not fileName:match("%.%w+$") then
-                  fileName = fileName .. ".jpg"
+              local content_type = headers["Content-Type"] or ""
+              if content_type:match("^image/") then
+                local file_name = url:match("^.+/(.+)$") or "image.jpg"
+                if not file_name:match("%.%w+$") then
+                  file_name = file_name .. ".jpg"
                 end
 
-                local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
-                local file = io.open(filePath, "wb")
+                local file_path = os.getenv("HOME") .. "/Downloads/" .. file_name
+                local file = io.open(file_path, "wb")
                 if file then
                   file:write(body)
                   file:close()
-                  hs.alert.show("Image downloaded: " .. fileName, nil, nil, 2)
+                  hs.alert.show("Image downloaded: " .. file_name, nil, nil, 2)
                 end
               end
             end
@@ -1464,37 +1510,18 @@ function Commands.cmd_next_page()
     return
   end
 
-  local function findNextButton(element, depth)
-    if not element or depth > M.config.depth then
-      return false
-    end
-
-    local role = Utils.get_attribute(element, "AXRole")
-    local title = Utils.get_attribute(element, "AXTitle")
-
-    if (role == "AXLink" or role == "AXButton") and title then
-      if title:lower():find("next") then
-        element:performAction("AXPress")
-        return true
-      end
-    end
-
-    local children = Utils.get_attribute(element, "AXChildren") or {}
-    for _, child in ipairs(children) do
-      if findNextButton(child, depth + 1) then
-        return true
-      end
-    end
-
-    return false
+  local ax_window = Elements.get_ax_window()
+  if not ax_window then
+    return
   end
 
-  local axWindow = Elements.get_ax_window()
-  if axWindow then
-    if not findNextButton(axWindow, 0) then
-      hs.alert.show("No Next button found", nil, nil, 2)
-    end
-  end
+  ElementFinder.find_next_button({
+    element = ax_window,
+    depth = 0,
+    cb = function(element)
+      element:performAction("AXPress")
+    end,
+  })
 end
 
 ---Prev page
@@ -1505,37 +1532,18 @@ function Commands.cmd_prev_page()
     return
   end
 
-  local function findPrevButton(element, depth)
-    if not element or depth > M.config.depth then
-      return false
-    end
-
-    local role = Utils.get_attribute(element, "AXRole")
-    local title = Utils.get_attribute(element, "AXTitle")
-
-    if (role == "AXLink" or role == "AXButton") and title then
-      if title:lower():find("prev") or title:lower():find("previous") then
-        element:performAction("AXPress")
-        return true
-      end
-    end
-
-    local children = Utils.get_attribute(element, "AXChildren") or {}
-    for _, child in ipairs(children) do
-      if findPrevButton(child, depth + 1) then
-        return true
-      end
-    end
-
-    return false
+  local ax_window = Elements.get_ax_window()
+  if not ax_window then
+    return
   end
 
-  local axWindow = Elements.get_ax_window()
-  if axWindow then
-    if not findPrevButton(axWindow, 0) then
-      hs.alert.show("No Previous button found", nil, nil, 2)
-    end
-  end
+  ElementFinder.find_prev_button({
+    element = ax_window,
+    depth = 0,
+    cb = function(element)
+      element:performAction("AXPress")
+    end,
+  })
 end
 
 ---Copy page URL to clipboard
@@ -1546,8 +1554,8 @@ function Commands.cmd_copy_page_url_to_clipboard()
     return
   end
 
-  local webArea = Elements.get_ax_web_area()
-  local url = webArea and Utils.get_attribute(webArea, "AXURL")
+  local ax_web_area = Elements.get_ax_web_area()
+  local url = ax_web_area and Utils.get_attribute(ax_web_area, "AXURL")
   if url then
     Actions.set_clipboard_contents(url.url)
   end
@@ -1606,7 +1614,7 @@ local function handle_vim_input(char, modifiers)
     end
 
     -- Check for partial matches
-    local hasPartialMatches = false
+    local has_partial_matches = false
     for i, _ in ipairs(State.marks) do
       if i > #State.all_combinations then
         break
@@ -1614,12 +1622,12 @@ local function handle_vim_input(char, modifiers)
 
       local markText = State.all_combinations[i]:upper()
       if markText:sub(1, #State.link_capture) == State.link_capture then
-        hasPartialMatches = true
+        has_partial_matches = true
         break
       end
     end
 
-    if not hasPartialMatches then
+    if not has_partial_matches then
       State.link_capture = ""
       Marks.draw()
     end
@@ -1627,18 +1635,18 @@ local function handle_vim_input(char, modifiers)
   end
 
   -- Build key combination
-  local keyCombo = ""
+  local key_combo = ""
   if modifiers and modifiers.ctrl then
-    keyCombo = "C-"
+    key_combo = "C-"
   end
-  keyCombo = keyCombo .. char
+  key_combo = key_combo .. char
 
   if State.mode == MODES.MULTI then
-    keyCombo = State.multi .. keyCombo
+    key_combo = State.multi .. key_combo
   end
 
   -- Execute mapping
-  local mapping = M.config.mapping[keyCombo]
+  local mapping = M.config.mapping[key_combo]
   if mapping then
     ModeManager.set_mode(MODES.NORMAL)
 
@@ -1652,8 +1660,8 @@ local function handle_vim_input(char, modifiers)
     elseif type(mapping) == "table" then
       eventtap.keyStroke(mapping[1], mapping[2], 0)
     end
-  elseif State.mapping_prefixes[keyCombo] then
-    ModeManager.set_mode(MODES.MULTI, keyCombo)
+  elseif State.mapping_prefixes[key_combo] then
+    ModeManager.set_mode(MODES.MULTI, key_combo)
   end
 end
 
@@ -1668,15 +1676,15 @@ local function event_handler(event)
   end
 
   local flags = event:getFlags()
-  local keyCode = event:getKeyCode()
+  local key_code = event:getKeyCode()
   local modifiers = { ctrl = flags.ctrl }
 
   -- Handle escape key
-  if keyCode == hs.keycodes.map["escape"] then
-    local delaySinceLastEscape = (timer.absoluteTime() - State.last_escape) / 1e9
+  if key_code == hs.keycodes.map["escape"] then
+    local delay_since_last_escape = (timer.absoluteTime() - State.last_escape) / 1e9
     State.last_escape = timer.absoluteTime()
 
-    if Utils.is_in_browser() and delaySinceLastEscape < M.config.double_press_delay then
+    if Utils.is_in_browser() and delay_since_last_escape < M.config.double_press_delay then
       Actions.force_unfocus()
       ModeManager.set_mode(MODES.NORMAL)
       return true
@@ -1696,14 +1704,14 @@ local function event_handler(event)
   end
 
   -- Handle backspace in LINKS mode
-  if State.mode == MODES.LINKS and keyCode == hs.keycodes.map["delete"] then
+  if State.mode == MODES.LINKS and key_code == hs.keycodes.map["delete"] then
     timer.doAfter(0, function()
       handle_vim_input("backspace", { ctrl = flags.ctrl })
     end)
     return true
   end
 
-  local char = hs.keycodes.map[keyCode]
+  local char = hs.keycodes.map[key_code]
 
   for key, modifier in pairs(flags) do
     if modifier and key ~= "shift" and key ~= "ctrl" then
@@ -1766,29 +1774,20 @@ end
 ---Starts the app watcher
 ---@return nil
 local function start_watcher()
-  app_watcher.register(app_watcher_name, function(appName, event_type, appObject)
-    Utils.log(string.format("App event: %s - %s", appName, event_type))
+  app_watcher.register(app_watcher_name, function(app_name, event_type, app_object)
+    Utils.log(string.format("App event: %s - %s", app_name, event_type))
 
     if event_type == watcher.activated then
       cleanup_on_app_switch()
 
       if not State.event_loop then
         State.event_loop = eventtap.new({ eventtap.event.types.keyDown }, event_handler):start()
-        Utils.log("Started event loop for app: " .. appName)
+        Utils.log("Started event loop for app: " .. app_name)
       end
 
-      if Utils.tbl_contains(M.config.excluded_apps, appName) then
+      if Utils.tbl_contains(M.config.excluded_apps, app_name) then
         ModeManager.set_mode(MODES.DISABLED)
-        Utils.log("Disabled mode for excluded app: " .. appName)
-      else
-        -- Check if we're switching to an editable field
-        timer.doAfter(0.1, function()
-          if Elements.is_editable_control_in_focus() then
-            ModeManager.set_mode(MODES.INSERT)
-          else
-            ModeManager.set_mode(MODES.NORMAL)
-          end
-        end)
+        Utils.log("Disabled mode for excluded app: " .. app_name)
       end
     end
   end)
@@ -1893,8 +1892,8 @@ function M:start()
 
   MenuBar.create()
 
-  local currentApp = Elements.get_app()
-  if currentApp and Utils.tbl_contains(M.config.excluded_apps, currentApp:name()) then
+  local current_app = Elements.get_app()
+  if current_app and Utils.tbl_contains(M.config.excluded_apps, current_app:name()) then
     ModeManager.set_mode(MODES.DISABLED)
   else
     ModeManager.set_mode(MODES.NORMAL)
