@@ -1,6 +1,7 @@
 ---@diagnostic disable: undefined-global
 
 local utils = require("utils")
+local app_watcher = require("app_watcher")
 
 local M = {}
 
@@ -28,7 +29,7 @@ local function log(message)
 
   local timestamp = os.date("%Y-%m-%d %H:%M:%S")
   local ms = floor(timer.absoluteTime() / 1e6) % 1000
-  printf("[%s.%03d] %s", timestamp, ms, message)
+  printf("[System][%s.%03d] %s", timestamp, ms, message)
 end
 
 ---@param mods Hs.System.Modifier|Hs.System.Modifier[]
@@ -181,19 +182,15 @@ end
 -- ------------------------------------------------------------------
 
 -- Global variable to track watcher
-local _app_watcher = nil
 local _hide_all_window_except_front_status = false
 local _auto_maximize_window_status = false
 
----Function to create and start the watcher
----@return nil
-local function start_watcher()
-  -- Stop existing watcher if it exists
-  if _app_watcher then
-    _app_watcher:stop()
-  end
+local function setup_watcher()
+  _hide_all_window_except_front_status = M.config.watcher.hide_all_window_except_front.enabled or false
 
-  _app_watcher = watcher.new(function(app_name, event_type, app_object)
+  _auto_maximize_window_status = M.config.watcher.auto_maximize_window.enabled or false
+
+  app_watcher.register("system_module", function(app_name, event_type, app_object)
     -- Wrap the entire callback in pcall to prevent crashes
     local success, error = pcall(function()
       log("Watcher event: App=" .. (app_name or "nil") .. ", Event=" .. event_type)
@@ -233,16 +230,7 @@ local function start_watcher()
     end
   end)
 
-  _app_watcher:start()
-  log("Watcher started/restarted")
-end
-
-local function setup_watcher()
-  _hide_all_window_except_front_status = M.config.watcher.hide_all_window_except_front.enabled or false
-
-  _auto_maximize_window_status = M.config.watcher.auto_maximize_window.enabled or false
-
-  start_watcher()
+  log("System watcher registered with centralized manager")
 
   -- Bind `hideAllWindowExceptFront` toggle
   if M.config.watcher.hide_all_window_except_front.enabled then
