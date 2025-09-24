@@ -2,7 +2,6 @@
 
 local utils = require("utils")
 local global_pref = require("global-pref")
-local app_watcher = require("app-watcher")
 local system = require("system")
 local vimium = require("vimium")
 
@@ -11,14 +10,6 @@ local vimium = require("vimium")
 -- ------------------------------------------------------------------
 
 global_pref:init()
-
--- ------------------------------------------------------------------
--- App Watcher
--- ------------------------------------------------------------------
-
-local app_watcher_config = {}
-
-app_watcher:init(app_watcher_config)
 
 -- ------------------------------------------------------------------
 -- System

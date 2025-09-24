@@ -1,7 +1,6 @@
 ---@diagnostic disable: undefined-global
 
 local utils = require("utils")
-local app_watcher = require("app-watcher")
 
 local M = {}
 
@@ -113,6 +112,7 @@ local function setup_launchers()
     end)
     table.insert(active_launcher_hotkeys, hotkey)
   end
+  log.df(string.format("Initialized launcher %s hotkeys", #active_launcher_hotkeys))
 end
 
 local function clear_launchers()
@@ -121,6 +121,7 @@ local function clear_launchers()
       hotkey:delete()
     end
   end
+  log.df(string.format("Cleared %s launcher hotkeys", #active_launcher_hotkeys))
   active_launcher_hotkeys = {}
 end
 
@@ -135,6 +136,7 @@ local function setup_custom_bindings()
     local hotkey = hs.hotkey.bind(custom_action.modifier, custom_action.key, custom_action.action)
     table.insert(active_custom_bindings, hotkey)
   end
+  log.df(string.format("Initialized custom %s hotkeys", #active_custom_bindings))
 end
 
 local function clear_custom_bindings()
@@ -144,6 +146,7 @@ local function clear_custom_bindings()
     end
   end
 
+  log.df(string.format("Cleared %s custom hotkeys", #active_custom_bindings))
   active_custom_bindings = {}
 end
 
@@ -155,35 +158,54 @@ end
 local active_contextual_hotkeys = {}
 
 ---Function to clear all contextual bindings
+---@param app_name? string
 ---@return nil
-local function clear_contextual_bindings()
-  for _, hotkey in ipairs(active_contextual_hotkeys) do
-    if hotkey then
-      hotkey:delete()
+local function clear_contextual_bindings(app_name)
+  if not app_name then
+    for _, hotkeys in ipairs(active_contextual_hotkeys) do
+      for _, hotkey in ipairs(hotkeys) do
+        if hotkey then
+          hotkey:delete()
+        end
+      end
     end
+    log.df(string.format("Cleared %s contextual hotkeys", #active_contextual_hotkeys))
+    active_contextual_hotkeys = {}
+  else
+    if not active_contextual_hotkeys[app_name] then
+      log.df(string.format("No contextual hotkeys defined for: %s", app_name))
+      return
+    end
+    for _, hotkey in ipairs(active_contextual_hotkeys[app_name]) do
+      if hotkey then
+        hotkey:delete()
+      end
+    end
+    log.df(string.format("Cleared %s contextual hotkeys", #active_contextual_hotkeys[app_name]))
+    active_contextual_hotkeys[app_name] = {}
   end
-  active_contextual_hotkeys = {}
-  log.df("Cleared " .. #active_contextual_hotkeys .. " contextual bindings")
 end
 
 ---Function to activate contextual bindings for a specific app
 ---@param app_name string
 ---@return nil
 local function activate_contextual_bindings(app_name)
-  clear_contextual_bindings()
+  clear_contextual_bindings(app_name)
 
   local bindings = M.config.contextual_bindings[app_name]
   if not bindings then
-    log.df("No contextual bindings defined for: " .. (app_name or "Unknown"))
+    log.df(string.format("No contextual bindings defined for: %s", app_name))
     return
   end
 
-  log.df("Activating " .. #bindings .. " contextual bindings for: " .. app_name)
-
   for _, binding in ipairs(bindings) do
     local hotkey = hs.hotkey.bind(binding.modifier, binding.key, binding.action)
-    table.insert(active_contextual_hotkeys, hotkey)
+    if not active_contextual_hotkeys[app_name] then
+      active_contextual_hotkeys[app_name] = {}
+    end
+    table.insert(active_contextual_hotkeys[app_name], hotkey)
   end
+  log.df(string.format("Activated %s contextual hotkeys for: %s", #active_contextual_hotkeys[app_name], app_name))
 end
 
 -- ------------------------------------------------------------------
@@ -194,6 +216,8 @@ end
 local _hide_all_window_except_front_status = false
 local _auto_maximize_window_status = false
 
+local app_watcher = nil
+
 local active_watcher_hotkeys = {}
 
 local function setup_watcher()
@@ -201,49 +225,41 @@ local function setup_watcher()
 
   _auto_maximize_window_status = M.config.watcher.auto_maximize_window.enabled or false
 
-  app_watcher.register(M.mod_name, function(app_name, event_type, app_object)
-    -- Wrap the entire callback in pcall to prevent crashes
-    local success, error = pcall(function()
-      log.df("Watcher event: App=" .. (app_name or "nil") .. ", Event=" .. event_type)
+  if app_watcher then
+    app_watcher:stop()
+    app_watcher = nil
+  end
 
-      if event_type == hs.application.watcher.activated then
-        log.df("App activated: " .. (app_name or "Unknown"))
+  app_watcher = hs.application.watcher.new(function(app_name, event_type)
+    log.df(string.format("Watcher event: App=%s, Event=%s", app_name, event_type))
 
-        hs.timer.doAfter(0.1, function()
-          activate_contextual_bindings(app_name)
-        end)
+    if event_type == hs.application.watcher.activated then
+      log.df(string.format("App activated: %s", app_name))
 
-        if _hide_all_window_except_front_status then
-          hs.timer.doAfter(0.1, function()
-            -- hide all windows except the frontmost one
-            key_stroke({ "cmd", "alt" }, "h")
-            log.df("Hide all windows except the frontmost one")
-          end)
-        end
+      activate_contextual_bindings(app_name)
 
-        if _hide_all_window_except_front_status and _auto_maximize_window_status then
-          hs.timer.doAfter(0.1, function()
-            -- maximize window
-            key_stroke({ "fn", "ctrl" }, "f")
-            log.df("Maximize window")
-          end)
-        end
+      if _hide_all_window_except_front_status then
+        -- hide all windows except the frontmost one
+        key_stroke({ "cmd", "alt" }, "h")
+        log.df("Hide all windows except the frontmost one")
       end
 
-      if event_type == hs.application.watcher.deactivated then
-        log.df("App deactivated: " .. (app_name or "Unknown"))
-        clear_contextual_bindings()
+      if _hide_all_window_except_front_status and _auto_maximize_window_status then
+        -- maximize window
+        key_stroke({ "fn", "ctrl" }, "f")
+        log.df("Maximize window")
       end
-    end)
+    end
 
-    if not success then
-      log.df("Error in watcher callback: " .. error)
-      -- Restart the watcher after an error
-      hs.timer.doAfter(1.0, start_watcher)
+    if event_type == hs.application.watcher.deactivated then
+      log.df(string.format("App deactivated: %s", app_name))
+      clear_contextual_bindings(app_name)
     end
   end)
 
-  log.df("System watcher registered with centralized manager")
+  app_watcher:start()
+
+  log.df("App watcher started")
 
   -- Bind `hideAllWindowExceptFront` toggle
   if M.config.watcher.hide_all_window_except_front.enabled then
@@ -255,6 +271,7 @@ local function setup_watcher()
         log.df(string.format("hide_all_window_except_front: %s", _hide_all_window_except_front_status))
       end)
       table.insert(active_watcher_hotkeys, hotkey)
+      log.df(string.format("Initialized watcher hide_all_window_except_front hotkey"))
     else
       log.df("No watcher hide_all_window_except_front bindings defined")
     end
@@ -270,6 +287,7 @@ local function setup_watcher()
         log.df(string.format("auto_maximize_window: %s", _auto_maximize_window_status))
       end)
       table.insert(active_watcher_hotkeys, hotkey)
+      log.df(string.format("Initialized watcher auto_maximize_window hotkey"))
     else
       log.df("No watcher auto_maximize_window bindings defined")
     end
@@ -277,13 +295,18 @@ local function setup_watcher()
 end
 
 local function clear_watcher()
-  app_watcher.unregister(M.mod_name)
+  if app_watcher then
+    app_watcher:stop()
+    app_watcher = nil
+    log.df("Stopped app watcher")
+  end
 
   for _, hotkey in ipairs(active_watcher_hotkeys) do
     if hotkey then
       hotkey:delete()
     end
   end
+  log.df(string.format("Cleared %s watcher hotkeys", #active_watcher_hotkeys))
   active_watcher_hotkeys = {}
 end
 
