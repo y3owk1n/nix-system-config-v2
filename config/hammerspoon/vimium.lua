@@ -6,7 +6,6 @@
 ---@diagnostic disable: undefined-global
 
 local _utils = require("utils")
-local app_watcher = require("app-watcher")
 
 ---@class Hs.Vimium
 local M = {}
@@ -64,7 +63,6 @@ local log
 ---@field event_loop table|nil
 ---@field canvas table|nil
 ---@field on_click_callback fun(any)|nil
----@field focus_watcher table|nil
 ---@field cleanup_timer table|nil
 
 ---@alias Hs.Vimium.Element table|string
@@ -167,7 +165,6 @@ State = {
   event_loop = nil,
   canvas = nil,
   on_click_callback = nil,
-  focus_watcher = nil,
   cleanup_timer = nil,
 }
 
@@ -348,6 +345,7 @@ function RoleMaps.init()
     AXLayoutItem = true,
     AXStaticText = true, -- Usually not interactive
   }
+  log.df("Initialized role maps")
 end
 
 ---Checks if the role is jumpable
@@ -519,6 +517,7 @@ end
 ---@return nil
 function Utils.generate_combinations()
   if #State.all_combinations > 0 then
+    log.df("Already generated combinations")
     return
   end -- Already generated
 
@@ -531,6 +530,7 @@ function Utils.generate_combinations()
       end
     end
   end
+  log.df("Generated " .. #State.all_combinations .. " combinations")
 end
 
 ---Fetches all mapping prefixes
@@ -542,6 +542,7 @@ function Utils.fetch_mapping_prefixes()
       State.mapping_prefixes[string.sub(k, 1, 1)] = true
     end
   end
+  log.df("Fetched mapping prefixes")
 end
 
 ---Checks if the current application is excluded
@@ -720,6 +721,7 @@ function MenuBar.create()
   end
   MenuBar.item = hs.menubar.new()
   MenuBar.item:setTitle("N")
+  log.df("Created menu bar item")
 end
 
 ---Destroys the menu bar item
@@ -728,6 +730,7 @@ function MenuBar.destroy()
   if MenuBar.item then
     MenuBar.item:delete()
     MenuBar.item = nil
+    log.df("Destroyed menu bar item")
   end
 end
 
@@ -1020,6 +1023,7 @@ function Marks.clear()
   State.marks = {}
   State.link_capture = ""
   MarkPool.release_all()
+  log.df("Cleared marks")
 end
 
 ---Adds a mark to the list
@@ -1775,18 +1779,27 @@ local function cleanup_on_app_switch()
   log.df("Cleaned up caches and state for app switch")
 end
 
+local app_watcher = nil
+
 ---Starts the app watcher
 ---@return nil
 local function start_watcher()
-  app_watcher.register(M.mod_name, function(app_name, event_type)
+  if app_watcher then
+    app_watcher:stop()
+    app_watcher = nil
+  end
+
+  app_watcher = hs.application.watcher.new(function(app_name, event_type)
     log.df(string.format("App event: %s - %s", app_name, event_type))
 
     if event_type == hs.application.watcher.activated then
+      log.df(string.format("App activated: %s", app_name))
+
       cleanup_on_app_switch()
 
       if not State.event_loop then
         State.event_loop = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, event_handler):start()
-        log.df("Started event loop for app: " .. app_name)
+        log.df("Started event loop")
       end
 
       if Utils.tbl_contains(M.config.excluded_apps, app_name) then
@@ -1797,6 +1810,8 @@ local function start_watcher()
       end
     end
   end)
+
+  app_watcher:start()
 
   log.df("App watcher started")
 end
@@ -1823,16 +1838,16 @@ end
 ---Clean up timers and watchers
 ---@return nil
 local function cleanup_watchers()
-  app_watcher.unregister(M.mod_name)
-
-  if State.focus_watcher then
-    State.focus_watcher:stop()
-    State.focus_watcher = nil
+  if app_watcher then
+    app_watcher:stop()
+    app_watcher = nil
+    log.df("Stopped app watcher")
   end
 
   if State.cleanup_timer then
     State.cleanup_timer:stop()
     State.cleanup_timer = nil
+    log.df("Stopped cleanup timer")
   end
 end
 
@@ -1885,6 +1900,7 @@ function M:stop()
   if State.event_loop then
     State.event_loop:stop()
     State.event_loop = nil
+    log.df("Stopped event loop")
   end
 
   MenuBar.destroy()
