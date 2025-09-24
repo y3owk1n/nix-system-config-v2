@@ -20,6 +20,11 @@ local ElementFinder = {}
 local Marks = {}
 local Commands = {}
 local State = {}
+local SpatialIndex = {}
+local AsyncTraversal = {}
+local RoleMaps = {}
+local MarkPool = {}
+local CanvasCache = {}
 
 M.__index = M
 
@@ -70,7 +75,7 @@ local log
 ---@field cb fun(element: table)
 
 ---@class Hs.Vimium.FindElementOpts : Hs.Vimium.WalkElementOpts
----@field withUrls? boolean
+---@field with_urls? boolean
 
 ---@class Hs.Vimium.WalkAndMatchOpts : Hs.Vimium.WalkElementOpts
 ---@field matcher fun(element: table, extra: any): boolean
@@ -195,14 +200,274 @@ local element_cache = setmetatable({}, { __mode = "k" })
 local attribute_cache = setmetatable({}, { __mode = "k" })
 
 --------------------------------------------------------------------------------
--- Utility Functions
+-- Spatial Indexing
 --------------------------------------------------------------------------------
 
----Yields the current thread for 1µs
----@return nil
-function Utils.yield()
-  hs.timer.usleep(1)
+---Quad-tree like spatial indexing for viewport culling
+---@return table|nil
+function SpatialIndex.create_viewport_regions()
+  local fullArea = Elements.get_full_area()
+  if not fullArea then
+    return nil
+  end
+
+  return {
+    x = fullArea.x,
+    y = fullArea.y,
+    w = fullArea.w,
+    h = fullArea.h,
+    center_x = fullArea.x + fullArea.w / 2,
+    center_y = fullArea.y + fullArea.h / 2,
+  }
 end
+
+---Checks if the element is in the viewport
+---@param fx number
+---@param fy number
+---@param fw number
+---@param fh number
+---@param viewport table
+---@return boolean
+function SpatialIndex.is_in_viewport(fx, fy, fw, fh, viewport)
+  return fx < viewport.x + viewport.w
+    and fx + fw > viewport.x
+    and fy < viewport.y + viewport.h
+    and fy + fh > viewport.y
+    and fw > 2
+    and fh > 2 -- Skip tiny elements
+end
+
+--------------------------------------------------------------------------------
+-- Coroutine-based Async Traversal
+--------------------------------------------------------------------------------
+
+---Process elements in background coroutine to avoid UI blocking
+---@param element table
+---@param matcher fun(element: table, extra: any): boolean
+---@param callback fun(results: table)
+---@param max_results number
+---@return nil
+function AsyncTraversal.traverse_async(element, matcher, callback, max_results)
+  local results = {}
+  local viewport = SpatialIndex.create_viewport_regions()
+
+  if not viewport then
+    callback({})
+    return
+  end
+
+  local traverse_coroutine = coroutine.create(function()
+    AsyncTraversal.walk_element(element, 0, matcher, function(el)
+      results[#results + 1] = el
+      return #results >= max_results
+    end, viewport)
+  end)
+
+  -- Resume coroutine in chunks
+  local function resume_work()
+    if coroutine.status(traverse_coroutine) == "dead" then
+      callback(results)
+      return
+    end
+
+    local success, should_stop = coroutine.resume(traverse_coroutine)
+    if success and not should_stop then
+      hs.timer.doAfter(0.001, resume_work) -- 1ms pause
+    else
+      callback(results)
+    end
+  end
+
+  resume_work()
+end
+
+---Walks an element with a matcher
+---@param element table
+---@param depth number
+---@param matcher fun(element: table, extra: any): boolean
+---@param callback fun(element: table): boolean
+---@param viewport table
+---@return boolean|nil
+function AsyncTraversal.walk_element(element, depth, matcher, callback, viewport)
+  if depth > 20 then
+    return
+  end -- Hard depth limit
+
+  local batch_size = 0
+  local function process_element(el)
+    batch_size = batch_size + 1
+
+    -- Batch yield every 30 elements to stay responsive
+    if batch_size % 30 == 0 then
+      coroutine.yield(false) -- Don't stop, just yield
+    end
+
+    -- Get frame once, reuse everywhere
+    local frame = Utils.get_attribute(el, "AXFrame")
+    if not frame then
+      return
+    end
+
+    -- Ultra-fast viewport check
+    if not SpatialIndex.is_in_viewport(frame.x, frame.y, frame.w, frame.h, viewport) then
+      return
+    end
+
+    -- Test element
+    if matcher(el, frame) then
+      if callback(el) then -- callback returns true to stop
+        return true
+      end
+    end
+
+    -- Process children
+    local children = Utils.get_attribute(el, "AXVisibleChildren") or Utils.get_attribute(el, "AXChildren") or {}
+
+    for i = 1, #children do
+      if AsyncTraversal.walk_element(children[i], depth + 1, matcher, callback, viewport) then
+        return true
+      end
+    end
+  end
+
+  local role = Utils.get_attribute(element, "AXRole")
+  if role == "AXApplication" then
+    local children = Utils.get_attribute(element, "AXChildren") or {}
+    for i = 1, #children do
+      if process_element(children[i]) then
+        return true
+      end
+    end
+  else
+    return process_element(element)
+  end
+end
+
+--------------------------------------------------------------------------------
+-- Pre-computed Role Maps and Lookup Tables
+--------------------------------------------------------------------------------
+
+---Pre-compute role sets as hash maps for O(1) lookup
+---@return nil
+function RoleMaps.init()
+  RoleMaps.jumpable_set = {}
+  for _, role in ipairs(M.config.ax_jumpable_roles) do
+    RoleMaps.jumpable_set[role] = true
+  end
+
+  RoleMaps.editable_set = {}
+  for _, role in ipairs(M.config.ax_editable_roles) do
+    RoleMaps.editable_set[role] = true
+  end
+
+  RoleMaps.skip_set = {
+    AXGenericElement = true,
+    AXUnknown = true,
+    AXSeparator = true,
+    AXSplitter = true,
+    AXProgressIndicator = true,
+    AXValueIndicator = true,
+    AXLayoutArea = true,
+    AXLayoutItem = true,
+    AXStaticText = true, -- Usually not interactive
+  }
+end
+
+---Checks if the role is jumpable
+---@param role string
+---@return boolean
+function RoleMaps.is_jumpable(role)
+  return RoleMaps.jumpable_set and RoleMaps.jumpable_set[role] == true
+end
+
+---Checks if the role is editable
+---@param role string
+---@return boolean
+function RoleMaps.is_editable(role)
+  return RoleMaps.editable_set and RoleMaps.editable_set[role] == true
+end
+
+---Checks if the role should be skipped
+---@param role string
+---@return boolean
+function RoleMaps.should_skip(role)
+  return RoleMaps.skip_set and RoleMaps.skip_set[role] == true
+end
+
+--------------------------------------------------------------------------------
+-- Memory Pool for Mark Elements
+--------------------------------------------------------------------------------
+
+MarkPool.pool = {}
+MarkPool.active = {}
+
+---Reuse mark objects to avoid GC pressure
+---@return table
+function MarkPool.get_mark()
+  local mark = table.remove(MarkPool.pool)
+  if not mark then
+    mark = { element = nil, frame = nil, role = nil }
+  end
+  MarkPool.active[#MarkPool.active + 1] = mark
+  return mark
+end
+
+---Release all marks
+---@return nil
+function MarkPool.release_all()
+  for i = 1, #MarkPool.active do
+    local mark = MarkPool.active[i]
+    mark.element = nil
+    mark.frame = nil
+    mark.role = nil
+    MarkPool.pool[#MarkPool.pool + 1] = mark
+  end
+  MarkPool.active = {}
+end
+
+--------------------------------------------------------------------------------
+-- Canvas Element Caching
+--------------------------------------------------------------------------------
+
+---Returns the mark template
+---@return table
+function CanvasCache.get_mark_template()
+  if CanvasCache.template then
+    return CanvasCache.template
+  end
+
+  CanvasCache.template = {
+    background = {
+      type = "segments",
+      fillGradient = "linear",
+      fillGradientColors = {
+        { red = 1, green = 0.96, blue = 0.52, alpha = 1 },
+        {
+          red = 1,
+          green = 0.77,
+          blue = 0.26,
+          alpha = 1,
+        },
+      },
+      strokeColor = { red = 0, green = 0, blue = 0, alpha = 1 },
+      strokeWidth = 1,
+      closed = true,
+    },
+    text = {
+      type = "text",
+      textAlignment = "center",
+      textColor = { red = 0, green = 0, blue = 0, alpha = 1 },
+      textSize = 10,
+      textFont = ".AppleSystemUIFontHeavy",
+    },
+  }
+
+  return CanvasCache.template
+end
+
+--------------------------------------------------------------------------------
+-- Utility Functions
+--------------------------------------------------------------------------------
 
 ---Checks if a table contains a value
 ---@param tbl table
@@ -217,21 +482,7 @@ function Utils.tbl_contains(tbl, val)
   return false
 end
 
----Filters a table using a predicate
----@param tbl table
----@param predicate fun(val: any): boolean
----@return table
-function Utils.tbl_filter(tbl, predicate)
-  local result = {}
-  for _, v in ipairs(tbl) do
-    if predicate(v) then
-      table.insert(result, v)
-    end
-  end
-  return result
-end
-
----Improved caching with validation
+---Gets an element from the cache
 ---@param key string
 ---@param factory fun(): table|nil
 ---@return table|nil
@@ -285,18 +536,6 @@ function Utils.get_attribute(element, attribute_name)
   -- Store nil as a special marker to distinguish from uncached
   attribute_cache[cache_key] = result == nil and "NIL_VALUE" or result
   return result
-end
-
-function Utils.is_element_valid(element)
-  if not element then
-    return false
-  end
-
-  local success = pcall(function()
-    return element:isValid()
-  end)
-
-  return success
 end
 
 ---Generates all combinations of letters
@@ -665,275 +904,117 @@ function Actions.try_click(frame, type)
 end
 
 --------------------------------------------------------------------------------
--- Element Finding
+-- Hyper-optimized Element Finders
 --------------------------------------------------------------------------------
 
----Checks if an element is partially visible
----@param element table
----@return boolean
-function ElementFinder.is_element_partially_visible(element)
-  local ax_hidden = Utils.get_attribute(element, "AXHidden")
-  local ax_frame = Utils.get_attribute(element, "AXFrame")
-
-  local frame = element and not ax_hidden and ax_frame
-
-  if not frame or frame.w <= 0 or frame.h <= 0 then
-    return false
-  end
-
-  local fullArea = Elements.get_full_area()
-
-  if not fullArea then
-    return false
-  end
-  local vx, vy, vw, vh = fullArea.x, fullArea.y, fullArea.w, fullArea.h
-  local fx, fy, fw, fh = frame.x, frame.y, frame.w, frame.h
-
-  return fx < vx + vw and fx + fw > vx and fy < vy + vh and fy + fh > vy
-end
-
----Checks if an element contains a specific role
----@param element table
----@param roles_to_check string[]
----@return boolean
-function ElementFinder.is_element_contain_roles(element, roles_to_check)
-  if not element then
-    return false
-  end
-
-  local role = Utils.get_attribute(element, "AXRole")
-  if not role then
-    return false
-  end
-
-  return Utils.tbl_contains(roles_to_check or {}, role)
-end
-
----Checks if an element is an image
----@param element table
----@return boolean
-function ElementFinder.is_element_image(element)
-  if not element then
-    return false
-  end
-
-  local role = Utils.get_attribute(element, "AXRole")
-  local url = Utils.get_attribute(element, "AXURL")
-
-  if not role then
-    return false
-  end
-
-  return role == "AXImage" and url ~= nil
-end
-
----Gets all descendants of an element
----@param elements table[]
----@param cb fun(element: table)
----@return nil
-function ElementFinder.get_descendants(elements, cb)
-  local chunk_size = M.config.chunk_size or 20
-  for i = 1, #elements, chunk_size do
-    local end_idx = math.min(i + chunk_size - 1, #elements)
-    for j = i, end_idx do
-      cb(elements[j])
-    end
-  end
-end
-
----Gets all children of an element
----@param main_element table
----@param cb fun(element: table)
----@return nil
-function ElementFinder.get_childrens(main_element, cb)
-  local role = Utils.get_attribute(main_element, "AXRole")
-  local main = Utils.get_attribute(main_element, "AXMain")
-
-  if role == "AXWindow" and main == false then
-    return
-  end
-
-  local source_types = {
-    "AXVisibleRows",
-    "AXVisibleChildren",
-    "AXChildrenInNavigationOrder",
-    "AXChildren",
-  }
-
-  for _, source_type in ipairs(source_types) do
-    local elements = Utils.get_attribute(main_element, source_type)
-    if elements and #elements > 0 then
-      ElementFinder.get_descendants(elements, cb)
-      return
-    end
-  end
-end
-
----Walks an element and matches it with a predicate
----@param opts Hs.Vimium.WalkAndMatchOpts
----@return nil
-function ElementFinder.walk_and_match(opts)
-  local element = opts.element
-  local depth = opts.depth
-  local extra = opts.extra
-  local matcher = opts.matcher
-  local cb = opts.cb
-
-  if not element or (depth and depth > M.config.depth) then
-    return
-  end
-
-  local role = Utils.get_attribute(element, "AXRole")
-  local frame = Utils.get_attribute(element, "AXFrame")
-
-  if role == "AXApplication" then
-    ElementFinder.get_childrens(element, function(child)
-      ElementFinder.walk_and_match({
-        element = child,
-        depth = (depth or 0) + 1,
-        extra = extra,
-        matcher = matcher,
-        cb = cb,
-      })
-    end)
-    return
-  end
-
-  if not frame or not ElementFinder.is_element_partially_visible(element) then
-    return
-  end
-
-  if matcher(element, extra) then
-    cb(element)
-  end
-
-  ElementFinder.get_childrens(element, function(child)
-    ElementFinder.walk_and_match({
-      element = child,
-      depth = (depth or 0) + 1,
-      extra = extra,
-      matcher = matcher,
-      cb = cb,
-    })
-  end)
-end
-
 ---Finds clickable elements
----@param opts Hs.Vimium.FindElementOpts
+---@param ax_app table
+---@param with_urls boolean
+---@param callback fun(elements: table)
 ---@return nil
-function ElementFinder.find_clickable_elements(opts)
-  ElementFinder.walk_and_match({
-    element = opts.element,
-    depth = opts.depth,
-    extra = opts.withUrls,
-    matcher = function(el, needUrl)
-      local url = Utils.get_attribute(el, "AXURL")
-      return ElementFinder.is_element_contain_roles(el, M.config.ax_jumpable_roles) and (not needUrl or url ~= nil)
-    end,
-    cb = opts.cb,
-  })
-end
+function ElementFinder.find_clickable_elements(ax_app, with_urls, callback)
+  if not RoleMaps.jumpable_set then
+    RoleMaps.init()
+  end
 
----Finds scrollable elements
----@param opts Hs.Vimium.FindElementOpts
----@return nil
-function ElementFinder.find_scrollable_elements(opts)
-  ElementFinder.walk_and_match({
-    element = opts.element,
-    depth = opts.depth,
-    matcher = function(el)
-      return ElementFinder.is_element_contain_roles(el, M.config.ax_scrollable_roles)
-    end,
-    cb = opts.cb,
-  })
-end
+  AsyncTraversal.traverse_async(ax_app, function(element, frame)
+    local role = Utils.get_attribute(element, "AXRole")
 
----Finds URL elements
----@param opts Hs.Vimium.FindElementOpts
----@return nil
-function ElementFinder.find_url_elements(opts)
-  ElementFinder.walk_and_match({
-    element = opts.element,
-    depth = opts.depth,
-    matcher = function(el)
-      return ElementFinder.is_element_contain_roles(el, { "AXURL" })
-    end,
-    cb = opts.cb,
-  })
+    if with_urls then
+      local url = Utils.get_attribute(element, "AXURL")
+      return url ~= nil
+    end
+
+    -- Ultra-fast role check
+    if not role or not RoleMaps.is_jumpable(role) then
+      return false
+    end
+
+    -- Skip obviously non-interactive elements quickly
+    if RoleMaps.should_skip(role) then
+      return false
+    end
+
+    return true
+  end, callback, M.config.max_elements)
 end
 
 ---Finds input elements
----@param opts Hs.Vimium.FindElementOpts
+---@param ax_app table
+---@param callback fun(elements: table)
 ---@return nil
-function ElementFinder.find_input_elements(opts)
-  ElementFinder.walk_and_match({
-    element = opts.element,
-    depth = opts.depth,
-    matcher = function(el)
-      return ElementFinder.is_element_contain_roles(el, M.config.ax_editable_roles)
-    end,
-    cb = opts.cb,
-  })
+function ElementFinder.find_input_elements(ax_app, callback)
+  if not RoleMaps.editable_set then
+    RoleMaps.init()
+  end
+
+  AsyncTraversal.traverse_async(ax_app, function(element, frame)
+    local role = Utils.get_attribute(element, "AXRole")
+    return role and RoleMaps.is_editable(role)
+  end, function(results)
+    -- Auto-click if single input found
+    if #results == 1 then
+      State.on_click_callback({ element = results[1], frame = Utils.get_attribute(results[1], "AXFrame") })
+      ModeManager.set_mode(MODES.NORMAL)
+    else
+      callback(results)
+    end
+  end, 10) -- Limit inputs to 10 max
+end
+
+---Finds scrollable elements
+---@param ax_app table
+---@param callback fun(elements: table)
+---@return nil
+function ElementFinder.find_scrollable_elements(ax_app, callback)
+  AsyncTraversal.traverse_async(ax_app, function(element, frame)
+    local role = Utils.get_attribute(element, "AXRole")
+    return role and Utils.tbl_contains(M.config.ax_scrollable_roles, role)
+  end, callback, 50) -- Limit scrollable elements
 end
 
 ---Finds image elements
----@param opts Hs.Vimium.FindElementOpts
+---@param ax_app table
+---@param callback fun(elements: table)
 ---@return nil
-function ElementFinder.find_image_elements(opts)
-  ElementFinder.walk_and_match({
-    element = opts.element,
-    depth = opts.depth,
-    matcher = function(el)
-      return ElementFinder.is_element_image(el)
-    end,
-    cb = opts.cb,
-  })
+function ElementFinder.find_image_elements(ax_app, callback)
+  AsyncTraversal.traverse_async(ax_app, function(element, frame)
+    local role = Utils.get_attribute(element, "AXRole")
+    local url = Utils.get_attribute(element, "AXURL")
+    return role == "AXImage" and url ~= nil
+  end, callback, 100) -- Limit images
 end
 
----Finds next button
----@param opts Hs.Vimium.FindElementOpts
+---Finds next button elemets
+---@param ax_app table
+---@param callback fun(elements: table)
 ---@return nil
-function ElementFinder.find_next_button(opts)
-  ElementFinder.walk_and_match({
-    element = opts.element,
-    depth = opts.depth,
-    matcher = function(el)
-      local role = Utils.get_attribute(el, "AXRole")
-      local title = Utils.get_attribute(el, "AXTitle")
+function ElementFinder.find_next_button_elements(ax_app, callback)
+  AsyncTraversal.traverse_async(ax_app, function(element, frame)
+    local role = Utils.get_attribute(element, "AXRole")
+    local title = Utils.get_attribute(element, "AXTitle")
 
-      if (role == "AXLink" or role == "AXButton") and title then
-        if title:lower():find("next") then
-          return true
-        end
-      end
-
-      return false
-    end,
-    cb = opts.cb,
-  })
+    if (role == "AXLink" or role == "AXButton") and title then
+      return title:lower():find("next") ~= nil
+    end
+    return false
+  end, callback, 5) -- Only need a few next buttons
 end
 
----Finds prev button
----@param opts Hs.Vimium.FindElementOpts
+---Finds previous button elemets
+---@param ax_app table
+---@param callback fun(elements: table)
 ---@return nil
-function ElementFinder.find_prev_button(opts)
-  ElementFinder.walk_and_match({
-    element = opts.element,
-    depth = opts.depth,
-    matcher = function(el)
-      local role = Utils.get_attribute(el, "AXRole")
-      local title = Utils.get_attribute(el, "AXTitle")
+function ElementFinder.find_prev_button_elements(ax_app, callback)
+  AsyncTraversal.traverse_async(ax_app, function(element, frame)
+    local role = Utils.get_attribute(element, "AXRole")
+    local title = Utils.get_attribute(element, "AXTitle")
 
-      if (role == "AXLink" or role == "AXButton") and title then
-        if title:lower():find("prev") or title:lower():find("previous") then
-          return true
-        end
-      end
-
-      return false
-    end,
-    cb = opts.cb,
-  })
+    if (role == "AXLink" or role == "AXButton") and title then
+      return title:lower():find("prev") or title:lower():find("previous")
+    end
+    return false
+  end, callback, 5) -- Only need a few prev buttons
 end
 
 --------------------------------------------------------------------------------
@@ -949,9 +1030,10 @@ function Marks.clear()
   end
   State.marks = {}
   State.link_capture = ""
+  MarkPool.release_all()
 end
 
----Adds a mark
+---Adds a mark to the list
 ---@param element table
 ---@return nil
 function Marks.add(element)
@@ -959,25 +1041,24 @@ function Marks.add(element)
     return
   end
 
-  -- Pre-validate frame to avoid processing invalid elements later
   local frame = Utils.get_attribute(element, "AXFrame")
-  if frame and frame.w > 0 and frame.h > 0 then
-    -- Also cache the role since we'll need it for click actions
-    local role = Utils.get_attribute(element, "AXRole")
-
-    State.marks[#State.marks + 1] = {
-      element = element,
-      frame = frame, -- Cache frame for later use
-      role = role,
-    }
+  if not frame or frame.w <= 2 or frame.h <= 2 then
+    return
   end
+
+  local mark = MarkPool.get_mark()
+  mark.element = element
+  mark.frame = frame
+  mark.role = Utils.get_attribute(element, "AXRole")
+
+  State.marks[#State.marks + 1] = mark
 end
 
----Shows the marks
----@param withUrls boolean
----@param elementType "link"|"scroll"|"url"|"input"|"image" # The type of elements to find ("link", "scroll", "url", "input").
+---Show marks
+---@param with_urls boolean
+---@param element_type string
 ---@return nil
-function Marks.show(withUrls, elementType)
+function Marks.show(with_urls, element_type)
   local ax_app = Elements.get_ax_app()
   if not ax_app then
     return
@@ -985,40 +1066,59 @@ function Marks.show(withUrls, elementType)
 
   Marks.clear()
   State.marks = {}
+  MarkPool.release_all()
 
-  local predicates = {
-    link = ElementFinder.find_clickable_elements,
-    scroll = ElementFinder.find_scrollable_elements,
-    url = ElementFinder.find_url_elements,
-    input = ElementFinder.find_input_elements,
-    image = ElementFinder.find_image_elements,
-  }
+  if element_type == "link" then
+    ElementFinder.find_clickable_elements(ax_app, with_urls, function(elements)
+      -- Convert to marks
+      for i = 1, math.min(#elements, M.config.max_elements) do
+        Marks.add(elements[i])
+      end
 
-  local predicates_fn = predicates[elementType]
-
-  if predicates_fn then
-    predicates_fn({
-      element = ax_app,
-      depth = 0,
-      cb = Marks.add,
-      withUrls = elementType == "link" and withUrls or nil,
-    })
+      if #State.marks > 0 then
+        Marks.draw()
+      else
+        hs.alert.show("No links found", nil, nil, 1)
+        ModeManager.set_mode(MODES.NORMAL)
+      end
+    end)
+  elseif element_type == "input" then
+    ElementFinder.find_input_elements(ax_app, function(elements)
+      for i = 1, #elements do
+        Marks.add(elements[i])
+      end
+      if #State.marks > 0 then
+        Marks.draw()
+      else
+        hs.alert.show("No inputs found", nil, nil, 1)
+        ModeManager.set_mode(MODES.NORMAL)
+      end
+    end)
+  elseif element_type == "scroll" then
+    ElementFinder.find_scrollable_elements(ax_app, function(elements)
+      for i = 1, #elements do
+        Marks.add(elements[i])
+      end
+      if #State.marks > 0 then
+        Marks.draw()
+      else
+        hs.alert.show("No scrollable areas found", nil, nil, 1)
+        ModeManager.set_mode(MODES.NORMAL)
+      end
+    end)
+  elseif element_type == "image" then
+    ElementFinder.find_image_elements(ax_app, function(elements)
+      for i = 1, #elements do
+        Marks.add(elements[i])
+      end
+      if #State.marks > 0 then
+        Marks.draw()
+      else
+        hs.alert.show("No images found", nil, nil, 1)
+        ModeManager.set_mode(MODES.NORMAL)
+      end
+    end)
   end
-
-  if #State.marks == 0 then
-    hs.alert.show("No " .. elementType .. "s found", nil, nil, 2)
-    ModeManager.set_mode(MODES.NORMAL)
-    return
-  end
-
-  -- Auto-click if only one input element
-  if elementType == "input" and #State.marks == 1 then
-    State.on_click_callback(State.marks[1])
-    ModeManager.set_mode(MODES.NORMAL)
-    return
-  end
-
-  Marks.draw()
 end
 
 ---Draws the marks
@@ -1029,182 +1129,138 @@ function Marks.draw()
     if not frame then
       return
     end
-
     State.canvas = hs.canvas.new(frame)
   end
 
-  -- Pre-calculate visible marks to avoid redundant work
-  local visible_marks = {}
   local capture_len = #State.link_capture
+  local elements_to_draw = {}
+  local template = CanvasCache.get_mark_template()
 
-  for i, mark in ipairs(State.marks) do
-    if i > #State.all_combinations then
+  local count = 0
+  for i = 1, #State.marks do
+    if count >= #State.all_combinations then
       break
     end
 
+    local mark = State.marks[i]
     local mark_text = State.all_combinations[i]:upper()
 
-    if capture_len == 0 or (capture_len <= #mark_text and mark_text:sub(1, capture_len) == State.link_capture) then
-      visible_marks[#visible_marks + 1] = {
-        mark = mark,
-        text = mark_text,
-        frame = mark.frame or Utils.get_attribute(mark.element, "AXFrame"),
-      }
-    end
-  end
+    if capture_len == 0 or mark_text:sub(1, capture_len) == State.link_capture then
+      -- Clone template and update coordinates
+      local bg = {}
+      local text = {}
 
-  if #visible_marks == 0 then
-    State.canvas:hide()
-    return
-  end
+      for k, v in pairs(template.background) do
+        bg[k] = v
+      end
+      for k, v in pairs(template.text) do
+        text[k] = v
+      end
 
-  local elements_to_draw = {}
+      -- Quick coordinate calculation
+      local frame = mark.frame
+      if frame then
+        local padding = 2
+        local font_size = 10
+        local text_width = #mark_text * (font_size * 1.1)
+        local text_height = font_size * 1.1
+        local container_width = text_width + (padding * 2)
+        local container_height = text_height + (padding * 2)
 
-  for _, visible_mark in ipairs(visible_marks) do
-    if visible_mark.frame then
-      local mark_elements = Marks.create_mark_element(visible_mark.frame, visible_mark.text)
-      if mark_elements then
-        for _, element in ipairs(mark_elements) do
-          elements_to_draw[#elements_to_draw + 1] = element
-        end
+        local arrow_height = 3
+        local arrow_width = 6
+        local corner_radius = 2
+
+        local bg_rect = hs.geometry.rect(
+          frame.x + (frame.w / 2) - (container_width / 2),
+          frame.y + (frame.h / 3 * 2) + arrow_height,
+          container_width,
+          container_height
+        )
+
+        local rx = bg_rect.x
+        local ry = bg_rect.y
+        local rw = bg_rect.w
+        local rh = bg_rect.h
+
+        local arrow_left = rx + (rw / 2) - (arrow_width / 2)
+        local arrow_right = arrow_left + arrow_width
+        local arrow_top = ry - arrow_height
+        local arrow_bottom = ry
+        local arrow_middle = arrow_left + (arrow_width / 2)
+
+        bg.coordinates = {
+          -- Draw arrow
+          { x = arrow_left, y = arrow_bottom },
+          { x = arrow_middle, y = arrow_top },
+          { x = arrow_right, y = arrow_bottom },
+          -- Top right corner
+          {
+            x = rx + rw - corner_radius,
+            y = ry,
+            c1x = rx + rw - corner_radius,
+            c1y = ry,
+            c2x = rx + rw,
+            c2y = ry,
+          },
+          { x = rx + rw, y = ry + corner_radius, c1x = rx + rw, c1y = ry, c2x = rx + rw, c2y = ry + corner_radius },
+          -- Bottom right corner
+          {
+            x = rx + rw,
+            y = ry + rh - corner_radius,
+            c1x = rx + rw,
+            c1y = ry + rh - corner_radius,
+            c2x = rx + rw,
+            c2y = ry + rh,
+          },
+          {
+            x = rx + rw - corner_radius,
+            y = ry + rh,
+            c1x = rx + rw,
+            c1y = ry + rh,
+            c2x = rx + rw - corner_radius,
+            c2y = ry + rh,
+          },
+          -- Bottom left corner
+          {
+            x = rx + corner_radius,
+            y = ry + rh,
+            c1x = rx + corner_radius,
+            c1y = ry + rh,
+            c2x = rx,
+            c2y = ry + rh,
+          },
+          {
+            x = rx,
+            y = ry + rh - corner_radius,
+            c1x = rx,
+            c1y = ry + rh,
+            c2x = rx,
+            c2y = ry + rh - corner_radius,
+          },
+          -- Top left corner
+          { x = rx, y = ry + corner_radius, c1x = rx, c1y = ry + corner_radius, c2x = rx, c2y = ry },
+          { x = rx + corner_radius, y = ry, c1x = rx, c1y = ry, c2x = rx + corner_radius, c2y = ry },
+          -- Back to start
+          { x = arrow_left, y = arrow_bottom },
+        }
+        text.text = mark_text
+        text.frame = {
+          x = rx,
+          y = ry - (arrow_height / 2) + ((rh - text_height) / 2), -- Vertically center
+          w = rw,
+          h = text_height,
+        }
+
+        elements_to_draw[#elements_to_draw + 1] = bg
+        elements_to_draw[#elements_to_draw + 1] = text
+        count = count + 1
       end
     end
   end
 
   State.canvas:replaceElements(elements_to_draw)
   State.canvas:show()
-end
-
----Creates a mark element
----@param frame table
----@param text string
----@return table|nil
-function Marks.create_mark_element(frame, text)
-  if not frame then
-    return nil
-  end
-
-  local padding = 2
-  local font_size = 10
-  local text_width = #text * (font_size * 1.1)
-  local text_height = font_size * 1.1
-  local container_width = text_width + (padding * 2)
-  local container_height = text_height + (padding * 2)
-
-  local arrow_height = 3
-  local arrow_width = 6
-  local corner_radius = 2
-
-  local fill_color = { red = 1, green = 0.96, blue = 0.52, alpha = 1 }
-  local border_color = { red = 0, green = 0, blue = 0, alpha = 1 }
-  local gradient_color = {
-    red = 1,
-    green = 0.77,
-    blue = 0.26,
-    alpha = 1,
-  }
-
-  local bg_rect = hs.geometry.rect(
-    frame.x + (frame.w / 2) - (container_width / 2),
-    frame.y + (frame.h / 3 * 2) + arrow_height,
-    container_width,
-    container_height
-  )
-
-  local rx = bg_rect.x
-  local ry = bg_rect.y
-  local rw = bg_rect.w
-  local rh = bg_rect.h
-
-  local arrow_left = rx + (rw / 2) - (arrow_width / 2)
-  local arrow_right = arrow_left + arrow_width
-  local arrow_top = ry - arrow_height
-  local arrow_bottom = ry
-  local arrow_middle = arrow_left + (arrow_width / 2)
-
-  return {
-    {
-      type = "segments",
-      fillGradient = "linear",
-      fillGradientColors = { fill_color, gradient_color },
-      fillGradientAngle = 135,
-      strokeColor = border_color,
-      strokeWidth = 1,
-      withShadow = true,
-      shadow = { blurRadius = 5.0, color = { alpha = 1 / 3 }, offset = { h = -1.0, w = 1.0 } },
-      closed = true,
-      coordinates = {
-        -- Draw arrow
-        { x = arrow_left, y = arrow_bottom },
-        { x = arrow_middle, y = arrow_top },
-        { x = arrow_right, y = arrow_bottom },
-        -- Top right corner
-        {
-          x = rx + rw - corner_radius,
-          y = ry,
-          c1x = rx + rw - corner_radius,
-          c1y = ry,
-          c2x = rx + rw,
-          c2y = ry,
-        },
-        { x = rx + rw, y = ry + corner_radius, c1x = rx + rw, c1y = ry, c2x = rx + rw, c2y = ry + corner_radius },
-        -- Bottom right corner
-        {
-          x = rx + rw,
-          y = ry + rh - corner_radius,
-          c1x = rx + rw,
-          c1y = ry + rh - corner_radius,
-          c2x = rx + rw,
-          c2y = ry + rh,
-        },
-        {
-          x = rx + rw - corner_radius,
-          y = ry + rh,
-          c1x = rx + rw,
-          c1y = ry + rh,
-          c2x = rx + rw - corner_radius,
-          c2y = ry + rh,
-        },
-        -- Bottom left corner
-        {
-          x = rx + corner_radius,
-          y = ry + rh,
-          c1x = rx + corner_radius,
-          c1y = ry + rh,
-          c2x = rx,
-          c2y = ry + rh,
-        },
-        {
-          x = rx,
-          y = ry + rh - corner_radius,
-          c1x = rx,
-          c1y = ry + rh,
-          c2x = rx,
-          c2y = ry + rh - corner_radius,
-        },
-        -- Top left corner
-        { x = rx, y = ry + corner_radius, c1x = rx, c1y = ry + corner_radius, c2x = rx, c2y = ry },
-        { x = rx + corner_radius, y = ry, c1x = rx, c1y = ry, c2x = rx + corner_radius, c2y = ry },
-        -- Back to start
-        { x = arrow_left, y = arrow_bottom },
-      },
-    },
-    {
-      type = "text",
-      text = text,
-      textAlignment = "center",
-      textColor = { ["red"] = 0, ["green"] = 0, ["blue"] = 0, ["alpha"] = 1 },
-      textSize = font_size,
-      textFont = ".AppleSystemUIFontHeavy",
-      textLineBreak = "clip",
-      frame = {
-        x = rx,
-        y = ry - (arrow_height / 2) + ((rh - text_height) / 2), -- Vertically center
-        w = rw,
-        h = text_height,
-      },
-    },
-  }
 end
 
 ---Clicks a mark
@@ -1486,13 +1542,13 @@ function Commands.cmd_next_page()
     return
   end
 
-  ElementFinder.find_next_button({
-    element = ax_window,
-    depth = 0,
-    cb = function(element)
-      element:performAction("AXPress")
-    end,
-  })
+  ElementFinder.find_next_button_elements(ax_window, function(elements)
+    if #elements > 0 then
+      elements[1]:performAction("AXPress")
+    else
+      hs.alert.show("No next button found", nil, nil, 2)
+    end
+  end)
 end
 
 ---Prev page
@@ -1508,13 +1564,13 @@ function Commands.cmd_prev_page()
     return
   end
 
-  ElementFinder.find_prev_button({
-    element = ax_window,
-    depth = 0,
-    cb = function(element)
-      element:performAction("AXPress")
-    end,
-  })
+  ElementFinder.find_prev_button_elements(ax_window, function(elements)
+    if #elements > 0 then
+      elements[1]:performAction("AXPress")
+    else
+      hs.alert.show("No previous button found", nil, nil, 2)
+    end
+  end)
 end
 
 ---Copy page URL to clipboard
@@ -1851,6 +1907,7 @@ function M.setup(userConfig)
 
   Utils.fetch_mapping_prefixes()
   Utils.generate_combinations()
+  RoleMaps.init() -- Initialize role maps for performance
 
   M:start()
 end
