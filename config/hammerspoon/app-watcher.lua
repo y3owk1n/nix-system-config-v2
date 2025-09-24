@@ -34,7 +34,7 @@ local function central_event_handler(app_name, event_type, app_object)
   for module_name, callback in pairs(registered_callbacks) do
     local success, error_msg = pcall(callback, app_name, event_type, app_object)
     if not success then
-      log.df(string.format("Error in %s callback: %s", module_name, error_msg))
+      log.ef(string.format("Error in %s callback: %s", module_name, error_msg))
     end
   end
 end
@@ -47,7 +47,7 @@ local function ensure_watcher_running()
 
   global_watcher = hs.application.watcher.new(central_event_handler)
   global_watcher:start()
-  log.df("Global application watcher started")
+  print("-- Global application watcher started")
 end
 
 -- Stop the global watcher if no callbacks are registered
@@ -55,7 +55,7 @@ local function maybe_stop_watcher()
   if global_watcher and next(registered_callbacks) == nil then
     global_watcher:stop()
     global_watcher = nil
-    log.df("Global application watcher stopped (no more callbacks)")
+    print("-- Global application watcher stopped (no more callbacks)")
   end
 end
 
@@ -66,6 +66,7 @@ end
 M.config = {}
 
 function M:init(user_config)
+  print("-- Initializing AppWatcherManager...")
   M.config = utils.tbl_deep_extend("force", default_config, user_config or {})
   log = hs.logger.new(M.mod_name, M.config.log_level)
 end
@@ -85,7 +86,7 @@ function M.register(module_name, callback)
   registered_callbacks[module_name] = callback
   ensure_watcher_running()
 
-  log.df(string.format("Registered callback for module: %s", module_name))
+  print(string.format("-- Registered callback for module: %s", module_name))
 end
 
 -- Unregister a callback
@@ -93,7 +94,7 @@ end
 function M.unregister(module_name)
   if registered_callbacks[module_name] then
     registered_callbacks[module_name] = nil
-    log.df(string.format("Unregistered callback for module: %s", module_name))
+    print(string.format("-- Unregistered callback for module: %s", module_name))
 
     maybe_stop_watcher()
   end
