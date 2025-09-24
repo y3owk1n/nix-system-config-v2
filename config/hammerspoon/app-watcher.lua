@@ -65,9 +65,8 @@ end
 
 M.config = {}
 
-function M.setup(user_config)
+function M:init(user_config)
   M.config = utils.tbl_deep_extend("force", default_config, user_config or {})
-
   log = hs.logger.new(M.mod_name, M.config.log_level)
 end
 

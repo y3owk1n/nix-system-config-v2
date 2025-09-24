@@ -10,7 +10,7 @@ local vimium = require("vimium")
 -- Global Preferences
 -- ------------------------------------------------------------------
 
-global_pref.setup()
+global_pref:init()
 
 -- ------------------------------------------------------------------
 -- App Watcher
@@ -18,7 +18,7 @@ global_pref.setup()
 
 local app_watcher_config = {}
 
-app_watcher.setup(app_watcher_config)
+app_watcher:init(app_watcher_config)
 
 -- ------------------------------------------------------------------
 -- System
@@ -123,7 +123,8 @@ local system_config = {
   },
 }
 
-system.setup(system_config)
+system:init(system_config)
+system:start()
 
 -- ------------------------------------------------------------------
 -- Vimium
@@ -140,4 +141,5 @@ local vimium_config = {
   },
 }
 
-vimium.setup(vimium_config)
+vimium:init(vimium_config)
+vimium:start()
