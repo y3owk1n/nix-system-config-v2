@@ -30,6 +30,7 @@ local function safe_select_menu_item(items)
   local success = app:selectMenuItem(items)
   if not success then
     hs.alert.show("Menu item not found")
+    log.ef("Menu item not found")
   end
 end
 
@@ -216,6 +217,7 @@ local function setup_watcher()
           hs.timer.doAfter(0.1, function()
             -- hide all windows except the frontmost one
             key_stroke({ "cmd", "alt" }, "h")
+            log.df("Hide all windows except the frontmost one")
           end)
         end
 
@@ -223,6 +225,7 @@ local function setup_watcher()
           hs.timer.doAfter(0.1, function()
             -- maximize window
             key_stroke({ "fn", "ctrl" }, "f")
+            log.df("Maximize window")
           end)
         end
       end
@@ -294,18 +297,21 @@ M.config = {}
 ---@param user_config? Hs.System.Config
 ---@return nil
 function M:init(user_config)
+  print("-- Initializing System...")
   M.config = utils.tbl_deep_extend("force", default_config, user_config or {})
   log = hs.logger.new(M.mod_name, M.config.log_level)
 end
 
 ---@return nil
 function M:start()
+  print("-- Starting System...")
   setup_launchers()
   setup_custom_bindings()
   setup_watcher()
 end
 
 function M:stop()
+  print("-- Stopping System...")
   clear_launchers()
   clear_custom_bindings()
   clear_contextual_bindings()

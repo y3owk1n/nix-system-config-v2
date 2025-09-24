@@ -853,8 +853,6 @@ end
 ---Force unfocus
 ---@return nil
 function Actions.force_unfocus()
-  log.df("forced unfocus on escape")
-
   local focused_element = Elements.get_ax_focused_element()
   if not focused_element then
     return
@@ -1250,7 +1248,7 @@ function Marks.click(combination)
     if c == combination and State.marks[i] and State.on_click_callback then
       local success, err = pcall(State.on_click_callback, State.marks[i])
       if not success then
-        log.df("Error clicking element: " .. tostring(err))
+        log.ef("Error clicking element: " .. tostring(err))
       end
       break
     end
@@ -1661,7 +1659,7 @@ local function handle_vim_input(char, modifiers)
       if cmd then
         cmd()
       else
-        log.df("Unknown command: " .. mapping)
+        log.wf("Unknown command: " .. mapping)
       end
     elseif type(mapping) == "table" then
       hs.eventtap.keyStroke(mapping[1], mapping[2], 0)
@@ -1850,6 +1848,7 @@ M.config = {}
 ---@param userConfig Hs.Vimium.Config
 ---@return nil
 function M:init(userConfig)
+  print("-- Initializing Vimium...")
   M.config = _utils.tbl_deep_extend("force", DEFAULT_CONFIG, userConfig or {})
   log = hs.logger.new(M.mod_name, M.config.log_level)
 
@@ -1861,12 +1860,11 @@ end
 ---Starts the module
 ---@return nil
 function M:start()
+  print("-- Starting Vimium...")
+
   cleanup_watchers()
-
   start_watcher()
-
   setup_periodic_cleanup()
-
   MenuBar.create()
 
   local current_app = Elements.get_app()
@@ -1875,13 +1873,13 @@ function M:start()
   else
     ModeManager.set_mode(MODES.NORMAL)
   end
-
-  log.df("Vim navigation started")
 end
 
 ---Stops the module
 ---@return nil
 function M:stop()
+  print("-- Stopping Vimium...")
+
   cleanup_watchers()
 
   if State.event_loop then
@@ -1893,8 +1891,6 @@ function M:stop()
   Marks.clear()
 
   cleanup_on_app_switch()
-
-  log.df("Vim navigation stopped")
 end
 
 return M
