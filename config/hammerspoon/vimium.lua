@@ -46,10 +46,8 @@ local log
 ---@field smooth_scroll_framerate number
 ---@field depth number
 ---@field max_elements number
----@field chunk_size number
 ---@field ax_editable_roles string[]
 ---@field ax_jumpable_roles string[]
----@field ax_scrollable_roles string[]
 ---@field excluded_apps string[]
 ---@field browsers string[]
 ---@field launchers string[]
@@ -117,9 +115,8 @@ local DEFAULT_CONFIG = {
   scroll_step_half_page = 500,
   smooth_scroll = true,
   smooth_scroll_framerate = 120,
-  depth = 50,
+  depth = 20,
   max_elements = 676, -- 26*26 combinations
-  chunk_size = 20, -- Process elements in chunks for better performance
   ax_editable_roles = { "AXTextField", "AXComboBox", "AXTextArea", "AXSearchField" },
   ax_jumpable_roles = {
     "AXLink",
@@ -147,16 +144,6 @@ local DEFAULT_CONFIG = {
     -- "AXSlider",
     -- "AXIncrementor",
     -- "AXDecrementor",
-  },
-  ax_scrollable_roles = {
-    "AXScrollArea",
-    -- "AXScrollView",
-    -- "AXOverflow",
-    "AXGroup", -- use AXGroup seems to be making the most sense to me
-    -- "AXScrollable",
-    -- "AXHorizontalScroll",
-    -- "AXVerticalScroll",
-    -- "AXWebArea",
   },
   excluded_apps = { "Terminal" },
   browsers = { "Safari", "Google Chrome", "Firefox", "Microsoft Edge", "Brave Browser" },
@@ -279,7 +266,7 @@ end
 ---@param viewport table
 ---@return boolean|nil
 function AsyncTraversal.walk_element(element, depth, matcher, callback, viewport)
-  if depth > 20 then
+  if depth > M.config.depth then
     return
   end -- Hard depth limit
 
@@ -298,7 +285,7 @@ function AsyncTraversal.walk_element(element, depth, matcher, callback, viewport
       return
     end
 
-    -- Ultra-fast viewport check
+    -- Viewport check
     if not SpatialIndex.is_in_viewport(frame.x, frame.y, frame.w, frame.h, viewport) then
       return
     end
@@ -899,7 +886,7 @@ function Actions.try_click(frame, type)
 end
 
 --------------------------------------------------------------------------------
--- Hyper-optimized Element Finders
+-- Element Finders
 --------------------------------------------------------------------------------
 
 ---Finds clickable elements
@@ -924,7 +911,7 @@ function ElementFinder.find_clickable_elements(ax_app, with_urls, callback)
       return url ~= nil
     end
 
-    -- Ultra-fast role check
+    -- Role check
     if not role or type(role) ~= "string" or not RoleMaps.is_jumpable(role) then
       return false
     end
@@ -963,21 +950,6 @@ function ElementFinder.find_input_elements(ax_app, callback)
       callback(results)
     end
   end, 10) -- Limit inputs to 10 max
-end
-
----Finds scrollable elements
----@param ax_app Hs.Vimium.Element
----@param callback fun(elements: table)
----@return nil
-function ElementFinder.find_scrollable_elements(ax_app, callback)
-  if type(ax_app) == "string" then
-    return
-  end
-
-  AsyncTraversal.traverse_async(ax_app, function(element)
-    local role = Utils.get_attribute(element, "AXRole")
-    return role and Utils.tbl_contains(M.config.ax_scrollable_roles, role) or false
-  end, callback, 50) -- Limit scrollable elements
 end
 
 ---Finds image elements
@@ -1075,7 +1047,7 @@ end
 
 ---Show marks
 ---@param with_urls boolean
----@param element_type string
+---@param element_type "link"|"input"|"image"
 ---@return nil
 function Marks.show(with_urls, element_type)
   local ax_app = Elements.get_ax_app()
@@ -1110,18 +1082,6 @@ function Marks.show(with_urls, element_type)
         Marks.draw()
       else
         hs.alert.show("No inputs found", nil, nil, 1)
-        ModeManager.set_mode(MODES.NORMAL)
-      end
-    end)
-  elseif element_type == "scroll" then
-    ElementFinder.find_scrollable_elements(ax_app, function(elements)
-      for i = 1, #elements do
-        Marks.add(elements[i])
-      end
-      if #State.marks > 0 then
-        Marks.draw()
-      else
-        hs.alert.show("No scrollable areas found", nil, nil, 1)
         ModeManager.set_mode(MODES.NORMAL)
       end
     end)
@@ -1843,36 +1803,6 @@ local function start_watcher()
   log.df("App watcher started")
 end
 
----Monitor focus changes within the same app
----@return nil
-local function setup_focus_watcher()
-  -- Watch for focus changes to automatically switch between normal/insert modes
-  State.focus_watcher = hs.eventtap
-    .new({ hs.eventtap.event.types.leftMouseDown, hs.eventtap.event.types.tabKeyDown }, function()
-      if State.mode == MODES.DISABLED then
-        return false
-      end
-
-      -- Delay slightly to let focus change complete
-      hs.timer.doAfter(0.05, function()
-        if Elements.is_editable_control_in_focus() then
-          if State.mode ~= MODES.INSERT then
-            ModeManager.set_mode(MODES.INSERT)
-          end
-        else
-          if State.mode == MODES.INSERT then
-            ModeManager.set_mode(MODES.NORMAL)
-          end
-        end
-      end)
-
-      return false -- Don't consume the event
-    end)
-    :start()
-
-  log.df("Focus watcher started")
-end
-
 ---Periodic cache cleanup to prevent memory leaks
 ---@return nil
 local function setup_periodic_cleanup()
@@ -1938,7 +1868,6 @@ function M:start()
 
   start_watcher()
 
-  setup_focus_watcher()
   setup_periodic_cleanup()
 
   MenuBar.create()
