@@ -69,17 +69,7 @@ local log
 ---@field focus_watcher table|nil
 ---@field cleanup_timer table|nil
 
----@class Hs.Vimium.WalkElementOpts
----@field element table
----@field depth number
----@field cb fun(element: table)
-
----@class Hs.Vimium.FindElementOpts : Hs.Vimium.WalkElementOpts
----@field with_urls? boolean
-
----@class Hs.Vimium.WalkAndMatchOpts : Hs.Vimium.WalkElementOpts
----@field matcher fun(element: table, extra: any): boolean
----@field extra any
+---@alias Hs.Vimium.Element table|string
 
 --------------------------------------------------------------------------------
 -- Constants and Configuration
@@ -243,7 +233,7 @@ end
 
 ---Process elements in background coroutine to avoid UI blocking
 ---@param element table
----@param matcher fun(element: table, extra: any): boolean
+---@param matcher fun(element: table): boolean
 ---@param callback fun(results: table)
 ---@param max_results number
 ---@return nil
@@ -284,7 +274,7 @@ end
 ---Walks an element with a matcher
 ---@param element table
 ---@param depth number
----@param matcher fun(element: table, extra: any): boolean
+---@param matcher fun(element: table): boolean
 ---@param callback fun(element: table): boolean
 ---@param viewport table
 ---@return boolean|nil
@@ -314,7 +304,7 @@ function AsyncTraversal.walk_element(element, depth, matcher, callback, viewport
     end
 
     -- Test element
-    if matcher(el, frame) then
+    if matcher(el) then
       if callback(el) then -- callback returns true to stop
         return true
       end
@@ -484,8 +474,8 @@ end
 
 ---Gets an element from the cache
 ---@param key string
----@param factory fun(): table|nil
----@return table|nil
+---@param factory fun(): Hs.Vimium.Element|nil
+---@return Hs.Vimium.Element|nil
 function Utils.get_cached_element(key, factory)
   if
     element_cache[key]
@@ -512,9 +502,9 @@ function Utils.clear_cache()
 end
 
 ---Gets an attribute from an element
----@param element table
+---@param element Hs.Vimium.Element
 ---@param attribute_name string
----@return table|nil
+---@return Hs.Vimium.Element|nil
 function Utils.get_attribute(element, attribute_name)
   if not element then
     return nil
@@ -605,7 +595,7 @@ end
 --------------------------------------------------------------------------------
 
 ---Returns the application element
----@return table|nil
+---@return Hs.Vimium.Element|nil
 function Elements.get_app()
   return Utils.get_cached_element("app", function()
     return hs.application.frontmostApplication()
@@ -613,7 +603,7 @@ function Elements.get_app()
 end
 
 ---Returns the application element for AXUIElement
----@return table|nil
+---@return Hs.Vimium.Element|nil
 function Elements.get_ax_app()
   return Utils.get_cached_element("axApp", function()
     local app = Elements.get_app()
@@ -622,7 +612,7 @@ function Elements.get_ax_app()
 end
 
 ---Returns the window element
----@return table|nil
+---@return Hs.Vimium.Element|nil
 function Elements.get_window()
   return Utils.get_cached_element("window", function()
     local app = Elements.get_app()
@@ -631,7 +621,7 @@ function Elements.get_window()
 end
 
 ---Returns the window element for AXUIElement
----@return table|nil
+---@return Hs.Vimium.Element|nil
 function Elements.get_ax_window()
   return Utils.get_cached_element("axWindow", function()
     local window = Elements.get_window()
@@ -640,7 +630,7 @@ function Elements.get_ax_window()
 end
 
 ---Returns the focused element for AXUIElement
----@return table|nil
+---@return Hs.Vimium.Element|nil
 function Elements.get_ax_focused_element()
   return Utils.get_cached_element("axFocusedElement", function()
     local ax_app = Elements.get_ax_app()
@@ -649,7 +639,7 @@ function Elements.get_ax_focused_element()
 end
 
 ---Returns the web area element for AXUIElement
----@return table|nil
+---@return Hs.Vimium.Element|nil
 function Elements.get_ax_web_area()
   return Utils.get_cached_element("axWebArea", function()
     local ax_window = Elements.get_ax_window()
@@ -658,7 +648,7 @@ function Elements.get_ax_web_area()
 end
 
 ---Returns the menu bar element for AXUIElement
----@return table|nil
+---@return Hs.Vimium.Element|nil
 function Elements.get_ax_menu_bar()
   return Utils.get_cached_element("axMenuBar", function()
     local ax_app = Elements.get_ax_app()
@@ -667,7 +657,7 @@ function Elements.get_ax_menu_bar()
 end
 
 ---Returns the full area element
----@return table|nil
+---@return Hs.Vimium.Element|nil
 function Elements.get_full_area()
   return Utils.get_cached_element("fullArea", function()
     local ax_win = Elements.get_ax_window()
@@ -690,9 +680,9 @@ function Elements.get_full_area()
 end
 
 ---Finds an element with a specific AXRole
----@param root_element table
+---@param root_element Hs.Vimium.Element
 ---@param role string
----@return table|nil
+---@return Hs.Vimium.Element|nil
 function Elements.find_ax_role(root_element, role)
   if not root_element then
     return nil
@@ -704,6 +694,11 @@ function Elements.find_ax_role(root_element, role)
   end
 
   local axChildren = Utils.get_attribute(root_element, "AXChildren") or {}
+
+  if type(axChildren) == "string" then
+    return nil
+  end
+
   for _, child in ipairs(axChildren) do
     local result = Elements.find_ax_role(child, role)
     if result then
@@ -908,16 +903,20 @@ end
 --------------------------------------------------------------------------------
 
 ---Finds clickable elements
----@param ax_app table
+---@param ax_app Hs.Vimium.Element
 ---@param with_urls boolean
 ---@param callback fun(elements: table)
 ---@return nil
 function ElementFinder.find_clickable_elements(ax_app, with_urls, callback)
+  if type(ax_app) == "string" then
+    return
+  end
+
   if not RoleMaps.jumpable_set then
     RoleMaps.init()
   end
 
-  AsyncTraversal.traverse_async(ax_app, function(element, frame)
+  AsyncTraversal.traverse_async(ax_app, function(element)
     local role = Utils.get_attribute(element, "AXRole")
 
     if with_urls then
@@ -926,7 +925,7 @@ function ElementFinder.find_clickable_elements(ax_app, with_urls, callback)
     end
 
     -- Ultra-fast role check
-    if not role or not RoleMaps.is_jumpable(role) then
+    if not role or type(role) ~= "string" or not RoleMaps.is_jumpable(role) then
       return false
     end
 
@@ -940,17 +939,21 @@ function ElementFinder.find_clickable_elements(ax_app, with_urls, callback)
 end
 
 ---Finds input elements
----@param ax_app table
+---@param ax_app Hs.Vimium.Element
 ---@param callback fun(elements: table)
 ---@return nil
 function ElementFinder.find_input_elements(ax_app, callback)
+  if type(ax_app) == "string" then
+    return
+  end
+
   if not RoleMaps.editable_set then
     RoleMaps.init()
   end
 
-  AsyncTraversal.traverse_async(ax_app, function(element, frame)
+  AsyncTraversal.traverse_async(ax_app, function(element)
     local role = Utils.get_attribute(element, "AXRole")
-    return role and RoleMaps.is_editable(role)
+    return (role and type(role) == "string" and RoleMaps.is_editable(role)) or false
   end, function(results)
     -- Auto-click if single input found
     if #results == 1 then
@@ -963,22 +966,30 @@ function ElementFinder.find_input_elements(ax_app, callback)
 end
 
 ---Finds scrollable elements
----@param ax_app table
+---@param ax_app Hs.Vimium.Element
 ---@param callback fun(elements: table)
 ---@return nil
 function ElementFinder.find_scrollable_elements(ax_app, callback)
-  AsyncTraversal.traverse_async(ax_app, function(element, frame)
+  if type(ax_app) == "string" then
+    return
+  end
+
+  AsyncTraversal.traverse_async(ax_app, function(element)
     local role = Utils.get_attribute(element, "AXRole")
-    return role and Utils.tbl_contains(M.config.ax_scrollable_roles, role)
+    return role and Utils.tbl_contains(M.config.ax_scrollable_roles, role) or false
   end, callback, 50) -- Limit scrollable elements
 end
 
 ---Finds image elements
----@param ax_app table
+---@param ax_app Hs.Vimium.Element
 ---@param callback fun(elements: table)
 ---@return nil
 function ElementFinder.find_image_elements(ax_app, callback)
-  AsyncTraversal.traverse_async(ax_app, function(element, frame)
+  if type(ax_app) == "string" then
+    return
+  end
+
+  AsyncTraversal.traverse_async(ax_app, function(element)
     local role = Utils.get_attribute(element, "AXRole")
     local url = Utils.get_attribute(element, "AXURL")
     return role == "AXImage" and url ~= nil
@@ -986,15 +997,19 @@ function ElementFinder.find_image_elements(ax_app, callback)
 end
 
 ---Finds next button elemets
----@param ax_app table
+---@param ax_app Hs.Vimium.Element
 ---@param callback fun(elements: table)
 ---@return nil
 function ElementFinder.find_next_button_elements(ax_app, callback)
-  AsyncTraversal.traverse_async(ax_app, function(element, frame)
+  if type(ax_app) == "string" then
+    return
+  end
+
+  AsyncTraversal.traverse_async(ax_app, function(element)
     local role = Utils.get_attribute(element, "AXRole")
     local title = Utils.get_attribute(element, "AXTitle")
 
-    if (role == "AXLink" or role == "AXButton") and title then
+    if (role == "AXLink" or role == "AXButton") and title and type(title) == "string" then
       return title:lower():find("next") ~= nil
     end
     return false
@@ -1002,16 +1017,20 @@ function ElementFinder.find_next_button_elements(ax_app, callback)
 end
 
 ---Finds previous button elemets
----@param ax_app table
+---@param ax_app Hs.Vimium.Element
 ---@param callback fun(elements: table)
 ---@return nil
 function ElementFinder.find_prev_button_elements(ax_app, callback)
-  AsyncTraversal.traverse_async(ax_app, function(element, frame)
+  if type(ax_app) == "string" then
+    return
+  end
+
+  AsyncTraversal.traverse_async(ax_app, function(element)
     local role = Utils.get_attribute(element, "AXRole")
     local title = Utils.get_attribute(element, "AXTitle")
 
-    if (role == "AXLink" or role == "AXButton") and title then
-      return title:lower():find("prev") or title:lower():find("previous")
+    if (role == "AXLink" or role == "AXButton") and title and type(title) == "string" then
+      return title:lower():find("prev") ~= nil or title:lower():find("previous") ~= nil or false
     end
     return false
   end, callback, 5) -- Only need a few prev buttons
@@ -1801,7 +1820,7 @@ end
 ---Starts the app watcher
 ---@return nil
 local function start_watcher()
-  app_watcher.register(M.mod_name, function(app_name, event_type, app_object)
+  app_watcher.register(M.mod_name, function(app_name, event_type)
     log.df(string.format("App event: %s - %s", app_name, event_type))
 
     if event_type == hs.application.watcher.activated then
@@ -1829,7 +1848,7 @@ end
 local function setup_focus_watcher()
   -- Watch for focus changes to automatically switch between normal/insert modes
   State.focus_watcher = hs.eventtap
-    .new({ hs.eventtap.event.types.leftMouseDown, hs.eventtap.event.types.tabKeyDown }, function(event)
+    .new({ hs.eventtap.event.types.leftMouseDown, hs.eventtap.event.types.tabKeyDown }, function()
       if State.mode == MODES.DISABLED then
         return false
       end
