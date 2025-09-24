@@ -1759,6 +1759,8 @@ local function start_watcher()
       if Utils.tbl_contains(M.config.excluded_apps, app_name) then
         ModeManager.set_mode(MODES.DISABLED)
         log.df("Disabled mode for excluded app: " .. app_name)
+      else
+        ModeManager.set_mode(MODES.NORMAL)
       end
     end
   end)
