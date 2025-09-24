@@ -6,7 +6,7 @@ local M = {}
 
 M.__index = M
 
-function M.setup()
+function M:init()
   hs.autoLaunch(true)
   hs.automaticallyCheckForUpdates(true)
   hs.consoleOnTop(false)

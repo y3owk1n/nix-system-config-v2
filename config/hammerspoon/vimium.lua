@@ -1849,16 +1849,13 @@ M.config = {}
 ---Sets up the module
 ---@param userConfig Hs.Vimium.Config
 ---@return nil
-function M.setup(userConfig)
+function M:init(userConfig)
   M.config = _utils.tbl_deep_extend("force", DEFAULT_CONFIG, userConfig or {})
-
   log = hs.logger.new(M.mod_name, M.config.log_level)
 
   Utils.fetch_mapping_prefixes()
   Utils.generate_combinations()
   RoleMaps.init() -- Initialize role maps for performance
-
-  M:start()
 end
 
 ---Starts the module

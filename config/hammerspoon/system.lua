@@ -103,22 +103,47 @@ local default_config = {
 -- App Launchers
 -- ------------------------------------------------------------------
 
+local active_launcher_hotkeys = {}
+
 local function setup_launchers()
   for appName, shortcut in pairs(M.config.apps.bindings) do
-    hs.hotkey.bind(M.config.apps.modifier, shortcut, function()
+    local hotkey = hs.hotkey.bind(M.config.apps.modifier, shortcut, function()
       hs.application.launchOrFocus(appName)
     end)
+    table.insert(active_launcher_hotkeys, hotkey)
   end
+end
+
+local function clear_launchers()
+  for _, hotkey in ipairs(active_launcher_hotkeys) do
+    if hotkey then
+      hotkey:delete()
+    end
+  end
+  active_launcher_hotkeys = {}
 end
 
 -- ------------------------------------------------------------------
 -- Custom Bindings
 -- ------------------------------------------------------------------
 
+local active_custom_bindings = {}
+
 local function setup_custom_bindings()
   for _, custom_action in pairs(M.config.custom_bindings) do
-    hs.hotkey.bind(custom_action.modifier, custom_action.key, custom_action.action)
+    local hotkey = hs.hotkey.bind(custom_action.modifier, custom_action.key, custom_action.action)
+    table.insert(active_custom_bindings, hotkey)
   end
+end
+
+local function clear_custom_bindings()
+  for _, custom_action in ipairs(active_custom_bindings) do
+    if custom_action then
+      custom_action:delete()
+    end
+  end
+
+  active_custom_bindings = {}
 end
 
 -- ------------------------------------------------------------------
@@ -167,6 +192,8 @@ end
 -- Global variable to track watcher
 local _hide_all_window_except_front_status = false
 local _auto_maximize_window_status = false
+
+local active_watcher_hotkeys = {}
 
 local function setup_watcher()
   _hide_all_window_except_front_status = M.config.watcher.hide_all_window_except_front.enabled or false
@@ -219,11 +246,12 @@ local function setup_watcher()
   if M.config.watcher.hide_all_window_except_front.enabled then
     local bindings = M.config.watcher.hide_all_window_except_front.bindings
     if bindings and type(bindings) == "table" then
-      hs.hotkey.bind(bindings.modifier, bindings.key, function()
+      local hotkey = hs.hotkey.bind(bindings.modifier, bindings.key, function()
         _hide_all_window_except_front_status = not _hide_all_window_except_front_status
         hs.alert.show(string.format("hide_all_window_except_front: %s", _hide_all_window_except_front_status))
         log.df(string.format("hide_all_window_except_front: %s", _hide_all_window_except_front_status))
       end)
+      table.insert(active_watcher_hotkeys, hotkey)
     else
       log.df("No watcher hide_all_window_except_front bindings defined")
     end
@@ -233,15 +261,27 @@ local function setup_watcher()
   if M.config.watcher.auto_maximize_window.enabled then
     local bindings = M.config.watcher.auto_maximize_window.bindings
     if bindings and type(bindings) == "table" then
-      hs.hotkey.bind(bindings.modifier, bindings.key, function()
+      local hotkey = hs.hotkey.bind(bindings.modifier, bindings.key, function()
         _auto_maximize_window_status = not _auto_maximize_window_status
         hs.alert.show(string.format("auto_maximize_window: %s", _auto_maximize_window_status))
         log.df(string.format("auto_maximize_window: %s", _auto_maximize_window_status))
       end)
+      table.insert(active_watcher_hotkeys, hotkey)
     else
       log.df("No watcher auto_maximize_window bindings defined")
     end
   end
+end
+
+local function clear_watcher()
+  app_watcher.unregister(M.mod_name)
+
+  for _, hotkey in ipairs(active_watcher_hotkeys) do
+    if hotkey then
+      hotkey:delete()
+    end
+  end
+  active_watcher_hotkeys = {}
 end
 
 -- ------------------------------------------------------------------
@@ -253,15 +293,23 @@ M.config = {}
 
 ---@param user_config? Hs.System.Config
 ---@return nil
-function M.setup(user_config)
+function M:init(user_config)
   M.config = utils.tbl_deep_extend("force", default_config, user_config or {})
-
   log = hs.logger.new(M.mod_name, M.config.log_level)
+end
 
+---@return nil
+function M:start()
   setup_launchers()
   setup_custom_bindings()
-
   setup_watcher()
+end
+
+function M:stop()
+  clear_launchers()
+  clear_custom_bindings()
+  clear_contextual_bindings()
+  clear_watcher()
 end
 
 M.key_stroke = key_stroke
