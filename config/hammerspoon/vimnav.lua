@@ -1,14 +1,22 @@
+-- Vimnav.spoon
+--
+-- Think of it like vimium, but available for system wide. Probably won't work on electron apps though, I don't use them.
+--
 -- This module is originated and credits to `dzirtuss` at `https://github.com/dzirtusss/vifari`
 -- I had made lots of modifications to the original code including performance and supporting for system wide instead
 -- of just within Safari. In my opinion, there are too many changes that made it hard to contribute back to the original
--- project.
+-- project, and Vifari is meant for only for Safari, not system wide.
 
 ---@diagnostic disable: undefined-global
 
-local _utils = require("utils")
-
----@class Hs.Vimium
+---@class Hs.Vimnav
 local M = {}
+
+M.__index = M
+
+M.name = "vimnav"
+
+local _utils = require("utils")
 
 local Utils = {}
 local Elements = {}
@@ -25,48 +33,46 @@ local RoleMaps = {}
 local MarkPool = {}
 local CanvasCache = {}
 
-M.__index = M
-
-M.mod_name = "vimium"
-
 local log
 
 --------------------------------------------------------------------------------
 -- Types
 --------------------------------------------------------------------------------
 
----@class Hs.Vimium.Config
----@field log_level string
----@field double_press_delay number
+---@class Hs.Vimnav.Config
+---@field logLevel string
+---@field doublePressDelay number
 ---@field mapping table<string, string|table>
----@field scroll_step number
----@field scroll_step_half_page number
----@field scroll_step_full_page number
----@field smooth_scroll boolean
----@field smooth_scroll_framerate number
+---@field scrollStep number
+---@field scrollStepHalfPage number
+---@field scrollStepFullPage number
+---@field smoothScroll boolean
+---@field smoothScrollFramerate number
 ---@field depth number
----@field max_elements number
----@field ax_editable_roles string[]
----@field ax_jumpable_roles string[]
----@field excluded_apps string[]
+---@field maxElements number
+---@field axEditableRoles string[]
+---@field axJumpableRoles string[]
+---@field excludedApps string[]
 ---@field browsers string[]
 ---@field launchers string[]
 
----@class Hs.Vimium.State
+---@class Hs.Vimnav.State
 ---@field mode number
 ---@field multi string|nil
 ---@field elements table<string, table>
 ---@field marks table<number, table<string, table|nil>>
----@field link_capture string
----@field last_escape number
----@field mapping_prefixes table<string, boolean>
----@field all_combinations string[]
----@field event_loop table|nil
+---@field linkCapture string
+---@field lastEscape number
+---@field mappingPrefixes table<string, boolean>
+---@field allCombinations string[]
+---@field eventLoop table|nil
 ---@field canvas table|nil
----@field on_click_callback fun(any)|nil
----@field cleanup_timer table|nil
+---@field onClickCallback fun(any)|nil
+---@field cleanupTimer table|nil
 
----@alias Hs.Vimium.Element table|string
+---@alias Hs.Vimnav.Element table|string
+
+---@alias Hs.Vimnav.Modifier "cmd"|"ctrl"|"alt"|"shift"|"fn"
 
 --------------------------------------------------------------------------------
 -- Constants and Configuration
@@ -81,44 +87,45 @@ local MODES = {
 }
 
 local DEFAULT_MAPPING = {
-  ["i"] = "cmd_insert_mode",
+  ["i"] = "cmdInsertMode",
   -- movements
-  ["h"] = "cmd_scroll_left",
-  ["j"] = "cmd_scroll_down",
-  ["k"] = "cmd_scroll_up",
-  ["l"] = "cmd_scroll_right",
-  ["C-d"] = "cmd_scroll_half_page_down",
-  ["C-u"] = "cmd_scroll_half_page_up",
-  ["G"] = "cmd_scroll_to_bottom",
-  ["gg"] = "cmd_scroll_to_top",
+  ["h"] = "cmdScrollLeft",
+  ["j"] = "cmdScrollDown",
+  ["k"] = "cmdScrollUp",
+  ["l"] = "cmdScrollRight",
+  ["C-d"] = "cmdScrollHalfPageDown",
+  ["C-u"] = "cmdScrollHalfPageUp",
+  ["G"] = "cmdScrollToBottom",
+  ["gg"] = "cmdScrollToTop",
   ["H"] = { "cmd", "[" }, -- history back
   ["L"] = { "cmd", "]" }, -- history forward
-  ["f"] = "cmd_goto_link",
-  ["r"] = "cmd_right_click",
-  ["F"] = "cmd_goto_link_new_tab",
-  ["di"] = "cmd_download_image",
-  ["gf"] = "cmd_move_mouse_to_link",
-  ["gi"] = "cmd_goto_input",
-  ["zz"] = "cmd_move_mouse_to_center",
-  ["yy"] = "cmd_copy_page_url_to_clipboard",
-  ["yf"] = "cmd_copy_link_url_to_clipboard",
-  ["]]"] = "cmd_next_page",
-  ["[["] = "cmd_prev_page",
+  ["f"] = "cmdGotoLink",
+  ["r"] = "cmdRightClick",
+  ["F"] = "cmdGotoLinkNewTab",
+  ["di"] = "cmdDownloadImage",
+  ["gf"] = "cmdMoveMouseToLink",
+  ["gi"] = "cmdGotoInput",
+  ["zz"] = "cmdMoveMouseToCenter",
+  ["yy"] = "cmdCopyPageUrlToClipboard",
+  ["yf"] = "cmdCopyLinkUrlToClipboard",
+  ["]]"] = "cmdNextPage",
+  ["[["] = "cmdPrevPage",
 }
 
+---@type Hs.Vimnav.Config
 local DEFAULT_CONFIG = {
-  log_level = "warning",
-  double_press_delay = 0.3,
+  logLevel = "warning",
+  doublePressDelay = 0.3,
   mapping = DEFAULT_MAPPING,
-  scroll_step = 50,
-  scroll_step_half_page = 500,
-  scroll_step_full_page = 1e6,
-  smooth_scroll = true,
-  smooth_scroll_framerate = 120,
+  scrollStep = 50,
+  scrollStepHalfPage = 500,
+  scrollStepFullPage = 1e6,
+  smoothScroll = true,
+  smoothScrollFramerate = 120,
   depth = 20,
-  max_elements = 676, -- 26*26 combinations
-  ax_editable_roles = { "AXTextField", "AXComboBox", "AXTextArea", "AXSearchField" },
-  ax_jumpable_roles = {
+  maxElements = 676, -- 26*26 combinations
+  axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea", "AXSearchField" },
+  axJumpableRoles = {
     "AXLink",
     "AXButton",
     "AXPopUpButton",
@@ -145,35 +152,35 @@ local DEFAULT_CONFIG = {
     -- "AXIncrementor",
     -- "AXDecrementor",
   },
-  excluded_apps = { "Terminal" },
+  excludedApps = { "Terminal" },
   browsers = { "Safari", "Google Chrome", "Firefox", "Microsoft Edge", "Brave Browser", "Zen" },
-  launchers = { "Spotlight" },
+  launchers = { "Spotlight", "Raycast", "Alfred" },
 }
 
 --------------------------------------------------------------------------------
 -- State Management
 --------------------------------------------------------------------------------
 
----@type Hs.Vimium.State
+---@type Hs.Vimnav.State
 State = {
   mode = MODES.DISABLED,
   multi = nil,
   elements = {},
   marks = {},
-  link_capture = "",
-  last_escape = hs.timer.absoluteTime(),
-  mapping_prefixes = {},
-  all_combinations = {},
-  event_loop = nil,
+  linkCapture = "",
+  lastEscape = hs.timer.absoluteTime(),
+  mappingPrefixes = {},
+  allCombinations = {},
+  eventLoop = nil,
   canvas = nil,
-  on_click_callback = nil,
-  cleanup_timer = nil,
+  onClickCallback = nil,
+  cleanupTimer = nil,
 }
 
 -- Element cache with weak references for garbage collection
-local element_cache = setmetatable({}, { __mode = "k" })
+local elementCache = setmetatable({}, { __mode = "k" })
 
-local attribute_cache = setmetatable({}, { __mode = "k" })
+local attributeCache = setmetatable({}, { __mode = "k" })
 
 --------------------------------------------------------------------------------
 -- Spatial Indexing
@@ -181,8 +188,8 @@ local attribute_cache = setmetatable({}, { __mode = "k" })
 
 ---Quad-tree like spatial indexing for viewport culling
 ---@return table|nil
-function SpatialIndex.create_viewport_regions()
-  local fullArea = Elements.get_full_area()
+function SpatialIndex.createViewportRegions()
+  local fullArea = Elements.getFullArea()
   if not fullArea then
     return nil
   end
@@ -192,8 +199,8 @@ function SpatialIndex.create_viewport_regions()
     y = fullArea.y,
     w = fullArea.w,
     h = fullArea.h,
-    center_x = fullArea.x + fullArea.w / 2,
-    center_y = fullArea.y + fullArea.h / 2,
+    centerX = fullArea.x + fullArea.w / 2,
+    centerY = fullArea.y + fullArea.h / 2,
   }
 end
 
@@ -204,7 +211,7 @@ end
 ---@param fh number
 ---@param viewport table
 ---@return boolean
-function SpatialIndex.is_in_viewport(fx, fy, fw, fh, viewport)
+function SpatialIndex.isInViewport(fx, fy, fw, fh, viewport)
   return fx < viewport.x + viewport.w
     and fx + fw > viewport.x
     and fy < viewport.y + viewport.h
@@ -221,40 +228,40 @@ end
 ---@param element table
 ---@param matcher fun(element: table): boolean
 ---@param callback fun(results: table)
----@param max_results number
+---@param maxResults number
 ---@return nil
-function AsyncTraversal.traverse_async(element, matcher, callback, max_results)
+function AsyncTraversal.traverseAsync(element, matcher, callback, maxResults)
   local results = {}
-  local viewport = SpatialIndex.create_viewport_regions()
+  local viewport = SpatialIndex.createViewportRegions()
 
   if not viewport then
     callback({})
     return
   end
 
-  local traverse_coroutine = coroutine.create(function()
-    AsyncTraversal.walk_element(element, 0, matcher, function(el)
+  local traverseCoroutine = coroutine.create(function()
+    AsyncTraversal.walkElement(element, 0, matcher, function(el)
       results[#results + 1] = el
-      return #results >= max_results
+      return #results >= maxResults
     end, viewport)
   end)
 
   -- Resume coroutine in chunks
-  local function resume_work()
-    if coroutine.status(traverse_coroutine) == "dead" then
+  local function resumeWork()
+    if coroutine.status(traverseCoroutine) == "dead" then
       callback(results)
       return
     end
 
-    local success, should_stop = coroutine.resume(traverse_coroutine)
-    if success and not should_stop then
-      hs.timer.doAfter(0.001, resume_work) -- 1ms pause
+    local success, shouldStop = coroutine.resume(traverseCoroutine)
+    if success and not shouldStop then
+      hs.timer.doAfter(0.001, resumeWork) -- 1ms pause
     else
       callback(results)
     end
   end
 
-  resume_work()
+  resumeWork()
 end
 
 ---Walks an element with a matcher
@@ -264,28 +271,28 @@ end
 ---@param callback fun(element: table): boolean
 ---@param viewport table
 ---@return boolean|nil
-function AsyncTraversal.walk_element(element, depth, matcher, callback, viewport)
+function AsyncTraversal.walkElement(element, depth, matcher, callback, viewport)
   if depth > M.config.depth then
     return
   end -- Hard depth limit
 
-  local batch_size = 0
-  local function process_element(el)
-    batch_size = batch_size + 1
+  local batchSize = 0
+  local function processElement(el)
+    batchSize = batchSize + 1
 
     -- Batch yield every 30 elements to stay responsive
-    if batch_size % 30 == 0 then
+    if batchSize % 30 == 0 then
       coroutine.yield(false) -- Don't stop, just yield
     end
 
     -- Get frame once, reuse everywhere
-    local frame = Utils.get_attribute(el, "AXFrame")
+    local frame = Utils.getAttribute(el, "AXFrame")
     if not frame then
       return
     end
 
     -- Viewport check
-    if not SpatialIndex.is_in_viewport(frame.x, frame.y, frame.w, frame.h, viewport) then
+    if not SpatialIndex.isInViewport(frame.x, frame.y, frame.w, frame.h, viewport) then
       return
     end
 
@@ -297,25 +304,25 @@ function AsyncTraversal.walk_element(element, depth, matcher, callback, viewport
     end
 
     -- Process children
-    local children = Utils.get_attribute(el, "AXVisibleChildren") or Utils.get_attribute(el, "AXChildren") or {}
+    local children = Utils.getAttribute(el, "AXVisibleChildren") or Utils.getAttribute(el, "AXChildren") or {}
 
     for i = 1, #children do
-      if AsyncTraversal.walk_element(children[i], depth + 1, matcher, callback, viewport) then
+      if AsyncTraversal.walkElement(children[i], depth + 1, matcher, callback, viewport) then
         return true
       end
     end
   end
 
-  local role = Utils.get_attribute(element, "AXRole")
+  local role = Utils.getAttribute(element, "AXRole")
   if role == "AXApplication" then
-    local children = Utils.get_attribute(element, "AXChildren") or {}
+    local children = Utils.getAttribute(element, "AXChildren") or {}
     for i = 1, #children do
-      if process_element(children[i]) then
+      if processElement(children[i]) then
         return true
       end
     end
   else
-    return process_element(element)
+    return processElement(element)
   end
 end
 
@@ -326,17 +333,17 @@ end
 ---Pre-compute role sets as hash maps for O(1) lookup
 ---@return nil
 function RoleMaps.init()
-  RoleMaps.jumpable_set = {}
-  for _, role in ipairs(M.config.ax_jumpable_roles) do
-    RoleMaps.jumpable_set[role] = true
+  RoleMaps.jumpableSet = {}
+  for _, role in ipairs(M.config.axJumpableRoles) do
+    RoleMaps.jumpableSet[role] = true
   end
 
-  RoleMaps.editable_set = {}
-  for _, role in ipairs(M.config.ax_editable_roles) do
-    RoleMaps.editable_set[role] = true
+  RoleMaps.editableSet = {}
+  for _, role in ipairs(M.config.axEditableRoles) do
+    RoleMaps.editableSet[role] = true
   end
 
-  RoleMaps.skip_set = {
+  RoleMaps.skipSet = {
     AXGenericElement = true,
     AXUnknown = true,
     AXSeparator = true,
@@ -353,22 +360,22 @@ end
 ---Checks if the role is jumpable
 ---@param role string
 ---@return boolean
-function RoleMaps.is_jumpable(role)
-  return RoleMaps.jumpable_set and RoleMaps.jumpable_set[role] == true
+function RoleMaps.isJumpable(role)
+  return RoleMaps.jumpableSet and RoleMaps.jumpableSet[role] == true
 end
 
 ---Checks if the role is editable
 ---@param role string
 ---@return boolean
-function RoleMaps.is_editable(role)
-  return RoleMaps.editable_set and RoleMaps.editable_set[role] == true
+function RoleMaps.isEditable(role)
+  return RoleMaps.editableSet and RoleMaps.editableSet[role] == true
 end
 
 ---Checks if the role should be skipped
 ---@param role string
 ---@return boolean
-function RoleMaps.should_skip(role)
-  return RoleMaps.skip_set and RoleMaps.skip_set[role] == true
+function RoleMaps.shouldSkip(role)
+  return RoleMaps.skipSet and RoleMaps.skipSet[role] == true
 end
 
 --------------------------------------------------------------------------------
@@ -380,7 +387,7 @@ MarkPool.active = {}
 
 ---Reuse mark objects to avoid GC pressure
 ---@return table
-function MarkPool.get_mark()
+function MarkPool.getMark()
   local mark = table.remove(MarkPool.pool)
   if not mark then
     mark = { element = nil, frame = nil, role = nil }
@@ -391,7 +398,7 @@ end
 
 ---Release all marks
 ---@return nil
-function MarkPool.release_all()
+function MarkPool.releaseAll()
   for i = 1, #MarkPool.active do
     local mark = MarkPool.active[i]
     mark.element = nil
@@ -408,7 +415,7 @@ end
 
 ---Returns the mark template
 ---@return table
-function CanvasCache.get_mark_template()
+function CanvasCache.getMarkTemplate()
   if CanvasCache.template then
     return CanvasCache.template
   end
@@ -446,79 +453,72 @@ end
 -- Utility Functions
 --------------------------------------------------------------------------------
 
----Checks if a table contains a value
----@param tbl table
----@param val any
----@return boolean
-function Utils.tbl_contains(tbl, val)
-  for _, v in ipairs(tbl) do
-    if v == val then
-      return true
-    end
-  end
-  return false
-end
+---imports from utils
+---can be implemented in this file if publishing as a module
+Utils.tblContains = _utils.tblContains
+Utils.tblDeepExtend = _utils.tblDeepExtend
+Utils.keyStroke = _utils.keyStroke
 
 ---Gets an element from the cache
 ---@param key string
----@param factory fun(): Hs.Vimium.Element|nil
----@return Hs.Vimium.Element|nil
-function Utils.get_cached_element(key, factory)
+---@param factory fun(): Hs.Vimnav.Element|nil
+---@return Hs.Vimnav.Element|nil
+function Utils.getCachedElement(key, factory)
   if
-    element_cache[key]
+    elementCache[key]
     and pcall(function()
-      return element_cache[key]:isValid()
+      return elementCache[key]:isValid()
     end)
-    and element_cache[key]:isValid()
+    and elementCache[key]:isValid()
   then
-    return element_cache[key]
+    return elementCache[key]
   end
 
   local element = factory()
   if element then
-    element_cache[key] = element
+    elementCache[key] = element
   end
   return element
 end
 
 ---Clears the element cache
 ---@return nil
-function Utils.clear_cache()
-  element_cache = setmetatable({}, { __mode = "k" })
-  attribute_cache = setmetatable({}, { __mode = "k" })
+function Utils.clearCache()
+  elementCache = setmetatable({}, { __mode = "k" })
+  attributeCache = setmetatable({}, { __mode = "k" })
 end
 
 ---Gets an attribute from an element
----@param element Hs.Vimium.Element
----@param attribute_name string
----@return Hs.Vimium.Element|nil
-function Utils.get_attribute(element, attribute_name)
+---@param element Hs.Vimnav.Element
+---@param attributeName string
+---@return Hs.Vimnav.Element|nil
+function Utils.getAttribute(element, attributeName)
   if not element then
     return nil
   end
 
-  local cache_key = tostring(element) .. ":" .. attribute_name
-  local cached = attribute_cache[cache_key]
+  local cacheKey = tostring(element) .. ":" .. attributeName
+  local cached = attributeCache[cacheKey]
 
   if cached ~= nil then
     return cached == "NIL_VALUE" and nil or cached
   end
 
   local success, result = pcall(function()
-    return element:attributeValue(attribute_name)
+    return element:attributeValue(attributeName)
   end)
 
   result = success and result or nil
 
   -- Store nil as a special marker to distinguish from uncached
-  attribute_cache[cache_key] = result == nil and "NIL_VALUE" or result
+  attributeCache[cacheKey] = result == nil and "NIL_VALUE" or result
   return result
 end
 
 ---Generates all combinations of letters
 ---@return nil
-function Utils.generate_combinations()
-  if #State.all_combinations > 0 then
+function Utils.generateCombinations()
+  if #State.allCombinations > 0 then
     log.df("Already generated combinations")
     return
   end -- Already generated
@@ -526,22 +526,22 @@ function Utils.generate_combinations()
   local chars = "abcdefghijklmnopqrstuvwxyz"
   for i = 1, #chars do
     for j = 1, #chars do
-      table.insert(State.all_combinations, chars:sub(i, i) .. chars:sub(j, j))
-      if #State.all_combinations >= M.config.max_elements then
+      table.insert(State.allCombinations, chars:sub(i, i) .. chars:sub(j, j))
+      if #State.allCombinations >= M.config.maxElements then
         return
       end
     end
   end
-  log.df("Generated " .. #State.all_combinations .. " combinations")
+  log.df("Generated " .. #State.allCombinations .. " combinations")
 end
 
 ---Fetches all mapping prefixes
 ---@return nil
-function Utils.fetch_mapping_prefixes()
-  State.mapping_prefixes = {}
+function Utils.fetchMappingPrefixes()
+  State.mappingPrefixes = {}
   for k, _ in pairs(M.config.mapping) do
     if #k == 2 then
-      State.mapping_prefixes[string.sub(k, 1, 1)] = true
+      State.mappingPrefixes[string.sub(k, 1, 1)] = true
     end
   end
   log.df("Fetched mapping prefixes")
@@ -549,21 +549,21 @@ end
 
 ---Checks if the current application is excluded
 ---@return boolean
-function Utils.is_excluded_app()
+function Utils.isExcludedApp()
   local app = hs.application.frontmostApplication()
-  return app and Utils.tbl_contains(M.config.excluded_apps, app:name())
+  return app and Utils.tblContains(M.config.excludedApps, app:name())
 end
 
 ---Checks if the launcher is active
 ---@return boolean
 ---@return string|nil
-function Utils.is_launcher_active()
+function Utils.isLauncherActive()
   for _, launcher in ipairs(M.config.launchers) do
     local app = hs.application.get(launcher)
     if app then
       local appElement = hs.axuielement.applicationElement(app)
       if appElement then
-        local windows = Utils.get_attribute(appElement, "AXWindows") or {}
+        local windows = Utils.getAttribute(appElement, "AXWindows") or {}
         if #windows > 0 then
           return true, launcher
         end
@@ -575,9 +575,9 @@ end
 
 ---Checks if the application is in the browser list
 ---@return boolean
-function Utils.is_in_browser()
+function Utils.isInBrowser()
   local app = hs.application.frontmostApplication()
-  return app and Utils.tbl_contains(M.config.browsers, app:name())
+  return app and Utils.tblContains(M.config.browsers, app:name())
 end
 
 --------------------------------------------------------------------------------
@@ -585,112 +585,112 @@ end
 --------------------------------------------------------------------------------
 
 ---Returns the application element
----@return Hs.Vimium.Element|nil
-function Elements.get_app()
-  return Utils.get_cached_element("app", function()
+---@return Hs.Vimnav.Element|nil
+function Elements.getApp()
+  return Utils.getCachedElement("app", function()
     return hs.application.frontmostApplication()
   end)
 end
 
 ---Returns the application element for AXUIElement
----@return Hs.Vimium.Element|nil
-function Elements.get_ax_app()
-  return Utils.get_cached_element("axApp", function()
-    local app = Elements.get_app()
+---@return Hs.Vimnav.Element|nil
+function Elements.getAxApp()
+  return Utils.getCachedElement("axApp", function()
+    local app = Elements.getApp()
     return app and hs.axuielement.applicationElement(app)
   end)
 end
 
 ---Returns the window element
----@return Hs.Vimium.Element|nil
-function Elements.get_window()
-  return Utils.get_cached_element("window", function()
-    local app = Elements.get_app()
+---@return Hs.Vimnav.Element|nil
+function Elements.getWindow()
+  return Utils.getCachedElement("window", function()
+    local app = Elements.getApp()
     return app and app:focusedWindow()
   end)
 end
 
 ---Returns the window element for AXUIElement
----@return Hs.Vimium.Element|nil
-function Elements.get_ax_window()
-  return Utils.get_cached_element("axWindow", function()
-    local window = Elements.get_window()
+---@return Hs.Vimnav.Element|nil
+function Elements.getAxWindow()
+  return Utils.getCachedElement("axWindow", function()
+    local window = Elements.getWindow()
     return window and hs.axuielement.windowElement(window)
   end)
 end
 
 ---Returns the focused element for AXUIElement
----@return Hs.Vimium.Element|nil
-function Elements.get_ax_focused_element()
-  return Utils.get_cached_element("axFocusedElement", function()
-    local ax_app = Elements.get_ax_app()
-    return ax_app and Utils.get_attribute(ax_app, "AXFocusedUIElement")
+---@return Hs.Vimnav.Element|nil
+function Elements.getAxFocusedElement()
+  return Utils.getCachedElement("axFocusedElement", function()
+    local axApp = Elements.getAxApp()
+    return axApp and Utils.getAttribute(axApp, "AXFocusedUIElement")
   end)
 end
 
 ---Returns the web area element for AXUIElement
----@return Hs.Vimium.Element|nil
-function Elements.get_ax_web_area()
-  return Utils.get_cached_element("axWebArea", function()
-    local ax_window = Elements.get_ax_window()
-    return ax_window and Elements.find_ax_role(ax_window, "AXWebArea")
+---@return Hs.Vimnav.Element|nil
+function Elements.getAxWebArea()
+  return Utils.getCachedElement("axWebArea", function()
+    local axWindow = Elements.getAxWindow()
+    return axWindow and Elements.findAxRole(axWindow, "AXWebArea")
   end)
 end
 
 ---Returns the menu bar element for AXUIElement
----@return Hs.Vimium.Element|nil
-function Elements.get_ax_menu_bar()
-  return Utils.get_cached_element("axMenuBar", function()
-    local ax_app = Elements.get_ax_app()
-    return ax_app and Utils.get_attribute(ax_app, "AXMenuBar")
+---@return Hs.Vimnav.Element|nil
+function Elements.getAxMenuBar()
+  return Utils.getCachedElement("axMenuBar", function()
+    local axApp = Elements.getAxApp()
+    return axApp and Utils.getAttribute(axApp, "AXMenuBar")
   end)
 end
 
 ---Returns the full area element
----@return Hs.Vimium.Element|nil
-function Elements.get_full_area()
-  return Utils.get_cached_element("fullArea", function()
-    local ax_win = Elements.get_ax_window()
-    local ax_menu_bar = Elements.get_ax_menu_bar()
+---@return Hs.Vimnav.Element|nil
+function Elements.getFullArea()
+  return Utils.getCachedElement("fullArea", function()
+    local axWin = Elements.getAxWindow()
+    local axMenuBar = Elements.getAxMenuBar()
 
-    if not ax_win or not ax_menu_bar then
+    if not axWin or not axMenuBar then
       return nil
     end
 
-    local win_frame = Utils.get_attribute(ax_win, "AXFrame") or {}
-    local menu_bar_frame = Utils.get_attribute(ax_menu_bar, "AXFrame") or {}
+    local winFrame = Utils.getAttribute(axWin, "AXFrame") or {}
+    local menuBarFrame = Utils.getAttribute(axMenuBar, "AXFrame") or {}
 
     return {
       x = 0,
       y = 0,
-      w = menu_bar_frame.w,
-      h = win_frame.h + win_frame.y + menu_bar_frame.h,
+      w = menuBarFrame.w,
+      h = winFrame.h + winFrame.y + menuBarFrame.h,
     }
   end)
 end
 
 ---Finds an element with a specific AXRole
----@param root_element Hs.Vimium.Element
+---@param rootElement Hs.Vimnav.Element
 ---@param role string
----@return Hs.Vimium.Element|nil
-function Elements.find_ax_role(root_element, role)
-  if not root_element then
+---@return Hs.Vimnav.Element|nil
+function Elements.findAxRole(rootElement, role)
+  if not rootElement then
     return nil
   end
 
-  local axRole = Utils.get_attribute(root_element, "AXRole")
+  local axRole = Utils.getAttribute(rootElement, "AXRole")
   if axRole == role then
-    return root_element
+    return rootElement
   end
 
-  local axChildren = Utils.get_attribute(root_element, "AXChildren") or {}
+  local axChildren = Utils.getAttribute(rootElement, "AXChildren") or {}
 
   if type(axChildren) == "string" then
     return nil
   end
 
   for _, child in ipairs(axChildren) do
-    local result = Elements.find_ax_role(child, role)
+    local result = Elements.findAxRole(child, role)
     if result then
       return result
     end
@@ -701,14 +701,14 @@ end
 
 ---Checks if an editable control is in focus
 ---@return boolean
-function Elements.is_editable_control_in_focus()
-  local focused_element = Elements.get_ax_focused_element()
-  if not focused_element then
+function Elements.isEditableControlInFocus()
+  local focusedElement = Elements.getAxFocusedElement()
+  if not focusedElement then
     return false
   end
 
-  local role = Utils.get_attribute(focused_element, "AXRole")
-  return (role and Utils.tbl_contains(M.config.ax_editable_roles, role)) or false
+  local role = Utils.getAttribute(focusedElement, "AXRole")
+  return (role and Utils.tblContains(M.config.axEditableRoles, role)) or false
 end
 
 --------------------------------------------------------------------------------
@@ -744,8 +744,8 @@ end
 ---@param mode number
 ---@param char string|nil
 ---@return nil
-function ModeManager.set_mode(mode, char)
-  local default_mode_chars = {
+function ModeManager.setMode(mode, char)
+  local defaultModeChars = {
     [MODES.DISABLED] = "X",
     [MODES.INSERT] = "I",
     [MODES.LINKS] = "L",
@@ -753,13 +753,13 @@ function ModeManager.set_mode(mode, char)
     [MODES.NORMAL] = "N",
   }
 
-  local previous_mode = State.mode
+  local previousMode = State.mode
   State.mode = mode
 
-  if mode == MODES.LINKS and previous_mode ~= MODES.LINKS then
-    State.link_capture = ""
+  if mode == MODES.LINKS and previousMode ~= MODES.LINKS then
+    State.linkCapture = ""
     Marks.clear()
-  elseif previous_mode == MODES.LINKS and mode ~= MODES.LINKS then
+  elseif previousMode == MODES.LINKS and mode ~= MODES.LINKS then
     hs.timer.doAfter(0, Marks.clear)
   end
 
@@ -770,11 +770,11 @@ function ModeManager.set_mode(mode, char)
   end
 
   if MenuBar.item then
-    local mode_char = char or default_mode_chars[mode] or "?"
-    MenuBar.item:setTitle(mode_char)
+    local modeChar = char or defaultModeChars[mode] or "?"
+    MenuBar.item:setTitle(modeChar)
   end
 
-  log.df(string.format("Mode changed: %s -> %s", previous_mode, mode))
+  log.df(string.format("Mode changed: %s -> %s", previousMode, mode))
 end
 
 --------------------------------------------------------------------------------
@@ -786,7 +786,7 @@ end
 ---@param y number|nil
 ---@param smooth boolean
 ---@return nil
-function Actions.smooth_scroll(x, y, smooth)
+function Actions.smoothScroll(x, y, smooth)
   if not smooth then
     hs.eventtap.event.newScrollEvent({ x or 0, y or 0 }, {}, "pixel"):post()
     return
@@ -796,7 +796,7 @@ function Actions.smooth_scroll(x, y, smooth)
   local dx = x and (x / steps) or 0
   local dy = y and (y / steps) or 0
   local frame = 0
-  local interval = 1 / M.config.smooth_scroll_framerate
+  local interval = 1 / M.config.smoothScrollFramerate
 
   local function animate()
     frame = frame + 1
@@ -815,12 +815,12 @@ end
 ---Opens a URL in a new tab
 ---@param url string
 ---@return nil
-function Actions.open_url_in_new_tab(url)
+function Actions.openUrlInNewTab(url)
   if not url then
     return
   end
 
-  local browser_scripts = {
+  local browserScripts = {
     Safari = 'tell application "Safari" to tell window 1 to set current tab to (make new tab with properties {URL:"%s"})',
     ["Google Chrome"] = 'tell application "Google Chrome" to tell window 1 to make new tab with properties {URL:"%s"}',
     Firefox = 'tell application "Firefox" to tell window 1 to open location "%s"',
@@ -829,13 +829,13 @@ function Actions.open_url_in_new_tab(url)
     Zen = 'tell application "Zen" to open location "%s"',
   }
 
-  local current_app = Elements.get_app()
-  if not current_app then
+  local currentApp = Elements.getApp()
+  if not currentApp then
     return
   end
 
-  local appName = current_app:name()
-  local script = browser_scripts[appName] or browser_scripts["Safari"]
+  local appName = currentApp:name()
+  local script = browserScripts[appName] or browserScripts["Safari"]
 
   hs.osascript.applescript(string.format(script, url))
 end
@@ -843,7 +843,7 @@ end
 ---Sets the clipboard contents
 ---@param contents string
 ---@return nil
-function Actions.set_clipboard_contents(contents)
+function Actions.setClipboardContents(contents)
   if not contents then
     hs.alert.show("Nothing to copy", nil, nil, 2)
     return
@@ -858,13 +858,13 @@ end
 
 ---Force unfocus
 ---@return nil
-function Actions.force_unfocus()
-  local focused_element = Elements.get_ax_focused_element()
-  if not focused_element then
+function Actions.forceUnfocus()
+  local focusedElement = Elements.getAxFocusedElement()
+  if not focusedElement then
     return
   end
 
-  focused_element:setAttributeValue("AXFocused", false)
+  focusedElement:setAttributeValue("AXFocused", false)
 
   hs.alert.show("Force unfocused!")
 end
@@ -873,19 +873,19 @@ end
 ---@param frame table
 ---@param type? string "left"|"right"
 ---@return nil
-function Actions.try_click(frame, type)
+function Actions.tryClick(frame, type)
   type = type or "left"
 
-  local click_x, click_y = frame.x + frame.w / 2, frame.y + frame.h / 2
-  local original_pos = hs.mouse.absolutePosition()
-  hs.mouse.absolutePosition({ x = click_x, y = click_y })
+  local clickX, clickY = frame.x + frame.w / 2, frame.y + frame.h / 2
+  local originalPos = hs.mouse.absolutePosition()
+  hs.mouse.absolutePosition({ x = clickX, y = clickY })
   if type == "left" then
-    hs.eventtap.leftClick({ x = click_x, y = click_y })
+    hs.eventtap.leftClick({ x = clickX, y = clickY })
   elseif type == "right" then
-    hs.eventtap.rightClick({ x = click_x, y = click_y })
+    hs.eventtap.rightClick({ x = clickX, y = clickY })
   end
   hs.timer.doAfter(0.1, function()
-    hs.mouse.absolutePosition(original_pos)
+    hs.mouse.absolutePosition(originalPos)
   end)
 end
 
@@ -894,62 +894,62 @@ end
 --------------------------------------------------------------------------------
 
 ---Finds clickable elements
----@param ax_app Hs.Vimium.Element
----@param with_urls boolean
+---@param axApp Hs.Vimnav.Element
+---@param withUrls boolean
 ---@param callback fun(elements: table)
 ---@return nil
-function ElementFinder.find_clickable_elements(ax_app, with_urls, callback)
-  if type(ax_app) == "string" then
+function ElementFinder.findClickableElements(axApp, withUrls, callback)
+  if type(axApp) == "string" then
     return
   end
 
-  if not RoleMaps.jumpable_set then
+  if not RoleMaps.jumpableSet then
     RoleMaps.init()
   end
 
-  AsyncTraversal.traverse_async(ax_app, function(element)
-    local role = Utils.get_attribute(element, "AXRole")
+  AsyncTraversal.traverseAsync(axApp, function(element)
+    local role = Utils.getAttribute(element, "AXRole")
 
-    if with_urls then
-      local url = Utils.get_attribute(element, "AXURL")
+    if withUrls then
+      local url = Utils.getAttribute(element, "AXURL")
       return url ~= nil
     end
 
     -- Role check
-    if not role or type(role) ~= "string" or not RoleMaps.is_jumpable(role) then
+    if not role or type(role) ~= "string" or not RoleMaps.isJumpable(role) then
       return false
     end
 
     -- Skip obviously non-interactive elements quickly
-    if RoleMaps.should_skip(role) then
+    if RoleMaps.shouldSkip(role) then
       return false
     end
 
     return true
-  end, callback, M.config.max_elements)
+  end, callback, M.config.maxElements)
 end
 
 ---Finds input elements
----@param ax_app Hs.Vimium.Element
+---@param axApp Hs.Vimnav.Element
 ---@param callback fun(elements: table)
 ---@return nil
-function ElementFinder.find_input_elements(ax_app, callback)
-  if type(ax_app) == "string" then
+function ElementFinder.findInputElements(axApp, callback)
+  if type(axApp) == "string" then
     return
   end
 
-  if not RoleMaps.editable_set then
+  if not RoleMaps.editableSet then
     RoleMaps.init()
   end
 
-  AsyncTraversal.traverse_async(ax_app, function(element)
-    local role = Utils.get_attribute(element, "AXRole")
-    return (role and type(role) == "string" and RoleMaps.is_editable(role)) or false
+  AsyncTraversal.traverseAsync(axApp, function(element)
+    local role = Utils.getAttribute(element, "AXRole")
+    return (role and type(role) == "string" and RoleMaps.isEditable(role)) or false
   end, function(results)
     -- Auto-click if single input found
     if #results == 1 then
-      State.on_click_callback({ element = results[1], frame = Utils.get_attribute(results[1], "AXFrame") })
-      ModeManager.set_mode(MODES.NORMAL)
+      State.onClickCallback({ element = results[1], frame = Utils.getAttribute(results[1], "AXFrame") })
+      ModeManager.setMode(MODES.NORMAL)
     else
       callback(results)
     end
@@ -957,33 +957,33 @@ function ElementFinder.find_input_elements(ax_app, callback)
 end
 
 ---Finds image elements
----@param ax_app Hs.Vimium.Element
+---@param axApp Hs.Vimnav.Element
 ---@param callback fun(elements: table)
 ---@return nil
-function ElementFinder.find_image_elements(ax_app, callback)
-  if type(ax_app) == "string" then
+function ElementFinder.findImageElements(axApp, callback)
+  if type(axApp) == "string" then
     return
   end
 
-  AsyncTraversal.traverse_async(ax_app, function(element)
-    local role = Utils.get_attribute(element, "AXRole")
-    local url = Utils.get_attribute(element, "AXURL")
+  AsyncTraversal.traverseAsync(axApp, function(element)
+    local role = Utils.getAttribute(element, "AXRole")
+    local url = Utils.getAttribute(element, "AXURL")
     return role == "AXImage" and url ~= nil
   end, callback, 100) -- Limit images
 end
 
 ---Finds next button elemets
----@param ax_app Hs.Vimium.Element
+---@param axApp Hs.Vimnav.Element
 ---@param callback fun(elements: table)
 ---@return nil
-function ElementFinder.find_next_button_elements(ax_app, callback)
-  if type(ax_app) == "string" then
+function ElementFinder.findNextButtonElements(axApp, callback)
+  if type(axApp) == "string" then
     return
   end
 
-  AsyncTraversal.traverse_async(ax_app, function(element)
-    local role = Utils.get_attribute(element, "AXRole")
-    local title = Utils.get_attribute(element, "AXTitle")
+  AsyncTraversal.traverseAsync(axApp, function(element)
+    local role = Utils.getAttribute(element, "AXRole")
+    local title = Utils.getAttribute(element, "AXTitle")
 
     if (role == "AXLink" or role == "AXButton") and title and type(title) == "string" then
       return title:lower():find("next") ~= nil
@@ -993,17 +993,17 @@ function ElementFinder.find_next_button_elements(ax_app, callback)
 end
 
 ---Finds previous button elemets
----@param ax_app Hs.Vimium.Element
+---@param axApp Hs.Vimnav.Element
 ---@param callback fun(elements: table)
 ---@return nil
-function ElementFinder.find_prev_button_elements(ax_app, callback)
-  if type(ax_app) == "string" then
+function ElementFinder.findPrevButtonElements(axApp, callback)
+  if type(axApp) == "string" then
     return
   end
 
-  AsyncTraversal.traverse_async(ax_app, function(element)
-    local role = Utils.get_attribute(element, "AXRole")
-    local title = Utils.get_attribute(element, "AXTitle")
+  AsyncTraversal.traverseAsync(axApp, function(element)
+    local role = Utils.getAttribute(element, "AXRole")
+    local title = Utils.getAttribute(element, "AXTitle")
 
     if (role == "AXLink" or role == "AXButton") and title and type(title) == "string" then
       return title:lower():find("prev") ~= nil or title:lower():find("previous") ~= nil or false
@@ -1024,8 +1024,8 @@ function Marks.clear()
     State.canvas = nil
   end
   State.marks = {}
-  State.link_capture = ""
-  MarkPool.release_all()
+  State.linkCapture = ""
+  MarkPool.releaseAll()
   log.df("Cleared marks")
 end
 
@@ -1033,41 +1033,41 @@ end
 ---@param element table
 ---@return nil
 function Marks.add(element)
-  if #State.marks >= M.config.max_elements then
+  if #State.marks >= M.config.maxElements then
     return
   end
 
-  local frame = Utils.get_attribute(element, "AXFrame")
+  local frame = Utils.getAttribute(element, "AXFrame")
   if not frame or frame.w <= 2 or frame.h <= 2 then
     return
   end
 
-  local mark = MarkPool.get_mark()
+  local mark = MarkPool.getMark()
   mark.element = element
   mark.frame = frame
-  mark.role = Utils.get_attribute(element, "AXRole")
+  mark.role = Utils.getAttribute(element, "AXRole")
 
   State.marks[#State.marks + 1] = mark
 end
 
 ---Show marks
----@param with_urls boolean
----@param element_type "link"|"input"|"image"
+---@param withUrls boolean
+---@param elementType "link"|"input"|"image"
 ---@return nil
-function Marks.show(with_urls, element_type)
-  local ax_app = Elements.get_ax_app()
-  if not ax_app then
+function Marks.show(withUrls, elementType)
+  local axApp = Elements.getAxApp()
+  if not axApp then
     return
   end
 
   Marks.clear()
   State.marks = {}
-  MarkPool.release_all()
+  MarkPool.releaseAll()
 
-  if element_type == "link" then
-    ElementFinder.find_clickable_elements(ax_app, with_urls, function(elements)
+  if elementType == "link" then
+    ElementFinder.findClickableElements(axApp, withUrls, function(elements)
       -- Convert to marks
-      for i = 1, math.min(#elements, M.config.max_elements) do
+      for i = 1, math.min(#elements, M.config.maxElements) do
         Marks.add(elements[i])
       end
 
@@ -1075,11 +1075,11 @@ function Marks.show(with_urls, element_type)
         Marks.draw()
       else
         hs.alert.show("No links found", nil, nil, 1)
-        ModeManager.set_mode(MODES.NORMAL)
+        ModeManager.setMode(MODES.NORMAL)
       end
     end)
-  elseif element_type == "input" then
-    ElementFinder.find_input_elements(ax_app, function(elements)
+  elseif elementType == "input" then
+    ElementFinder.findInputElements(axApp, function(elements)
       for i = 1, #elements do
         Marks.add(elements[i])
       end
@@ -1087,11 +1087,11 @@ function Marks.show(with_urls, element_type)
         Marks.draw()
       else
         hs.alert.show("No inputs found", nil, nil, 1)
-        ModeManager.set_mode(MODES.NORMAL)
+        ModeManager.setMode(MODES.NORMAL)
       end
     end)
-  elseif element_type == "image" then
-    ElementFinder.find_image_elements(ax_app, function(elements)
+  elseif elementType == "image" then
+    ElementFinder.findImageElements(axApp, function(elements)
       for i = 1, #elements do
         Marks.add(elements[i])
       end
@@ -1099,7 +1099,7 @@ function Marks.show(with_urls, element_type)
         Marks.draw()
       else
         hs.alert.show("No images found", nil, nil, 1)
-        ModeManager.set_mode(MODES.NORMAL)
+        ModeManager.setMode(MODES.NORMAL)
       end
     end)
   end
@@ -1109,27 +1109,27 @@ end
 ---@return nil
 function Marks.draw()
   if not State.canvas then
-    local frame = Elements.get_full_area()
+    local frame = Elements.getFullArea()
     if not frame then
       return
     end
     State.canvas = hs.canvas.new(frame)
   end
 
-  local capture_len = #State.link_capture
-  local elements_to_draw = {}
-  local template = CanvasCache.get_mark_template()
+  local captureLen = #State.linkCapture
+  local elementsToDraw = {}
+  local template = CanvasCache.getMarkTemplate()
 
   local count = 0
   for i = 1, #State.marks do
-    if count >= #State.all_combinations then
+    if count >= #State.allCombinations then
       break
     end
 
     local mark = State.marks[i]
-    local mark_text = State.all_combinations[i]:upper()
+    local markText = State.allCombinations[i]:upper()
 
-    if capture_len == 0 or mark_text:sub(1, capture_len) == State.link_capture then
+    if captureLen == 0 or markText:sub(1, captureLen) == State.linkCapture then
       -- Clone template and update coordinates
       local bg = {}
       local text = {}
@@ -1145,105 +1145,105 @@ function Marks.draw()
       local frame = mark.frame
       if frame then
         local padding = 2
-        local font_size = 10
-        local text_width = #mark_text * (font_size * 1.1)
-        local text_height = font_size * 1.1
-        local container_width = text_width + (padding * 2)
-        local container_height = text_height + (padding * 2)
+        local fontSize = 10
+        local textWidth = #markText * (fontSize * 1.1)
+        local textHeight = fontSize * 1.1
+        local containerWidth = textWidth + (padding * 2)
+        local containerHeight = textHeight + (padding * 2)
 
-        local arrow_height = 3
-        local arrow_width = 6
-        local corner_radius = 2
+        local arrowHeight = 3
+        local arrowWidth = 6
+        local cornerRadius = 2
 
-        local bg_rect = hs.geometry.rect(
-          frame.x + (frame.w / 2) - (container_width / 2),
-          frame.y + (frame.h / 3 * 2) + arrow_height,
-          container_width,
-          container_height
+        local bgRect = hs.geometry.rect(
+          frame.x + (frame.w / 2) - (containerWidth / 2),
+          frame.y + (frame.h / 3 * 2) + arrowHeight,
+          containerWidth,
+          containerHeight
         )
 
-        local rx = bg_rect.x
-        local ry = bg_rect.y
-        local rw = bg_rect.w
-        local rh = bg_rect.h
+        local rx = bgRect.x
+        local ry = bgRect.y
+        local rw = bgRect.w
+        local rh = bgRect.h
 
-        local arrow_left = rx + (rw / 2) - (arrow_width / 2)
-        local arrow_right = arrow_left + arrow_width
-        local arrow_top = ry - arrow_height
-        local arrow_bottom = ry
-        local arrow_middle = arrow_left + (arrow_width / 2)
+        local arrowLeft = rx + (rw / 2) - (arrowWidth / 2)
+        local arrowRight = arrowLeft + arrowWidth
+        local arrowTop = ry - arrowHeight
+        local arrowBottom = ry
+        local arrowMiddle = arrowLeft + (arrowWidth / 2)
 
         bg.coordinates = {
           -- Draw arrow
-          { x = arrow_left, y = arrow_bottom },
-          { x = arrow_middle, y = arrow_top },
-          { x = arrow_right, y = arrow_bottom },
+          { x = arrowLeft, y = arrowBottom },
+          { x = arrowMiddle, y = arrowTop },
+          { x = arrowRight, y = arrowBottom },
           -- Top right corner
           {
-            x = rx + rw - corner_radius,
+            x = rx + rw - cornerRadius,
             y = ry,
-            c1x = rx + rw - corner_radius,
+            c1x = rx + rw - cornerRadius,
             c1y = ry,
             c2x = rx + rw,
             c2y = ry,
           },
-          { x = rx + rw, y = ry + corner_radius, c1x = rx + rw, c1y = ry, c2x = rx + rw, c2y = ry + corner_radius },
+          { x = rx + rw, y = ry + cornerRadius, c1x = rx + rw, c1y = ry, c2x = rx + rw, c2y = ry + cornerRadius },
           -- Bottom right corner
           {
             x = rx + rw,
-            y = ry + rh - corner_radius,
+            y = ry + rh - cornerRadius,
             c1x = rx + rw,
-            c1y = ry + rh - corner_radius,
+            c1y = ry + rh - cornerRadius,
             c2x = rx + rw,
             c2y = ry + rh,
           },
           {
-            x = rx + rw - corner_radius,
+            x = rx + rw - cornerRadius,
             y = ry + rh,
             c1x = rx + rw,
             c1y = ry + rh,
-            c2x = rx + rw - corner_radius,
+            c2x = rx + rw - cornerRadius,
             c2y = ry + rh,
           },
           -- Bottom left corner
           {
-            x = rx + corner_radius,
+            x = rx + cornerRadius,
             y = ry + rh,
-            c1x = rx + corner_radius,
+            c1x = rx + cornerRadius,
             c1y = ry + rh,
             c2x = rx,
             c2y = ry + rh,
           },
           {
             x = rx,
-            y = ry + rh - corner_radius,
+            y = ry + rh - cornerRadius,
             c1x = rx,
             c1y = ry + rh,
             c2x = rx,
-            c2y = ry + rh - corner_radius,
+            c2y = ry + rh - cornerRadius,
           },
           -- Top left corner
-          { x = rx, y = ry + corner_radius, c1x = rx, c1y = ry + corner_radius, c2x = rx, c2y = ry },
-          { x = rx + corner_radius, y = ry, c1x = rx, c1y = ry, c2x = rx + corner_radius, c2y = ry },
+          { x = rx, y = ry + cornerRadius, c1x = rx, c1y = ry + cornerRadius, c2x = rx, c2y = ry },
+          { x = rx + cornerRadius, y = ry, c1x = rx, c1y = ry, c2x = rx + cornerRadius, c2y = ry },
           -- Back to start
-          { x = arrow_left, y = arrow_bottom },
+          { x = arrowLeft, y = arrowBottom },
         }
-        text.text = mark_text
+        text.text = markText
         text.frame = {
           x = rx,
-          y = ry - (arrow_height / 2) + ((rh - text_height) / 2), -- Vertically center
+          y = ry - (arrowHeight / 2) + ((rh - textHeight) / 2), -- Vertically center
           w = rw,
-          h = text_height,
+          h = textHeight,
         }
 
-        elements_to_draw[#elements_to_draw + 1] = bg
-        elements_to_draw[#elements_to_draw + 1] = text
+        elementsToDraw[#elementsToDraw + 1] = bg
+        elementsToDraw[#elementsToDraw + 1] = text
         count = count + 1
       end
     end
   end
 
-  State.canvas:replaceElements(elements_to_draw)
+  State.canvas:replaceElements(elementsToDraw)
   State.canvas:show()
 end
 
@@ -1251,9 +1251,9 @@ end
 ---@param combination string
 ---@return nil
 function Marks.click(combination)
-  for i, c in ipairs(State.all_combinations) do
-    if c == combination and State.marks[i] and State.on_click_callback then
-      local success, err = pcall(State.on_click_callback, State.marks[i])
+  for i, c in ipairs(State.allCombinations) do
+    if c == combination and State.marks[i] and State.onClickCallback then
+      local success, err = pcall(State.onClickCallback, State.marks[i])
       if not success then
         log.ef("Error clicking element: " .. tostring(err))
       end
@@ -1268,71 +1268,71 @@ end
 
 ---Scrolls left
 ---@return nil
-function Commands.cmd_scroll_left()
-  Actions.smooth_scroll(M.config.scroll_step, 0, M.config.smooth_scroll)
+function Commands.cmdScrollLeft()
+  Actions.smoothScroll(M.config.scrollStep, 0, M.config.smoothScroll)
 end
 
 ---Scrolls right
 ---@return nil
-function Commands.cmd_scroll_right()
-  Actions.smooth_scroll(-M.config.scroll_step, 0, M.config.smooth_scroll)
+function Commands.cmdScrollRight()
+  Actions.smoothScroll(-M.config.scrollStep, 0, M.config.smoothScroll)
 end
 
 ---Scrolls up
 ---@return nil
-function Commands.cmd_scroll_up()
-  Actions.smooth_scroll(0, M.config.scroll_step, M.config.smooth_scroll)
+function Commands.cmdScrollUp()
+  Actions.smoothScroll(0, M.config.scrollStep, M.config.smoothScroll)
 end
 
 ---Scrolls down
 ---@return nil
-function Commands.cmd_scroll_down()
-  Actions.smooth_scroll(0, -M.config.scroll_step, M.config.smooth_scroll)
+function Commands.cmdScrollDown()
+  Actions.smoothScroll(0, -M.config.scrollStep, M.config.smoothScroll)
 end
 
 ---Scrolls half page down
 ---@return nil
-function Commands.cmd_scroll_half_page_down()
-  Actions.smooth_scroll(0, -M.config.scroll_step_half_page, M.config.smooth_scroll)
+function Commands.cmdScrollHalfPageDown()
+  Actions.smoothScroll(0, -M.config.scrollStepHalfPage, M.config.smoothScroll)
 end
 
 ---Scrolls half page up
 ---@return nil
-function Commands.cmd_scroll_half_page_up()
-  Actions.smooth_scroll(0, M.config.scroll_step_half_page, M.config.smooth_scroll)
+function Commands.cmdScrollHalfPageUp()
+  Actions.smoothScroll(0, M.config.scrollStepHalfPage, M.config.smoothScroll)
 end
 
 ---Scrolls to top
 ---@return nil
-function Commands.cmd_scroll_to_top()
-  Actions.smooth_scroll(0, M.config.scroll_step_full_page, M.config.smooth_scroll)
+function Commands.cmdScrollToTop()
+  Actions.smoothScroll(0, M.config.scrollStepFullPage, M.config.smoothScroll)
 end
 
 ---Scrolls to bottom
 ---@return nil
-function Commands.cmd_scroll_to_bottom()
-  Actions.smooth_scroll(0, -M.config.scroll_step_full_page, M.config.smooth_scroll)
+function Commands.cmdScrollToBottom()
+  Actions.smoothScroll(0, -M.config.scrollStepFullPage, M.config.smoothScroll)
 end
 
 ---Switches to insert mode
 ---@return nil
-function Commands.cmd_insert_mode()
-  ModeManager.set_mode(MODES.INSERT)
+function Commands.cmdInsertMode()
+  ModeManager.setMode(MODES.INSERT)
 end
 
 ---Switches to links mode
 ---@return nil
-function Commands.cmd_goto_link()
-  ModeManager.set_mode(MODES.LINKS)
-  State.on_click_callback = function(mark)
+function Commands.cmdGotoLink()
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = function(mark)
     local element = mark.element
 
-    local press_ok = element:performAction("AXPress")
+    local pressOk = element:performAction("AXPress")
 
-    if not press_ok then
+    if not pressOk then
       local frame = mark.frame
       if frame then
-        Actions.try_click(frame)
+        Actions.tryClick(frame)
       end
     end
   end
@@ -1343,22 +1343,22 @@ end
 
 ---Go to input mode
 ---@return nil
-function Commands.cmd_goto_input()
-  ModeManager.set_mode(MODES.LINKS)
-  State.on_click_callback = function(mark)
+function Commands.cmdGotoInput()
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = function(mark)
     local element = mark.element
 
-    local press_ok = element:performAction("AXPress")
+    local pressOk = element:performAction("AXPress")
 
-    if press_ok then
-      local focused = Utils.get_attribute(element, "AXFocused")
+    if pressOk then
+      local focused = Utils.getAttribute(element, "AXFocused")
       if not focused then
-        Actions.try_click(mark.frame)
+        Actions.tryClick(mark.frame)
         return
       end
     end
 
-    Actions.try_click(mark.frame)
+    Actions.tryClick(mark.frame)
   end
   hs.timer.doAfter(0, function()
     Marks.show(false, "input")
@@ -1367,17 +1367,17 @@ end
 
 ---Right click
 ---@return nil
-function Commands.cmd_right_click()
-  ModeManager.set_mode(MODES.LINKS)
-  State.on_click_callback = function(mark)
+function Commands.cmdRightClick()
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = function(mark)
     local element = mark.element
 
-    local press_ok = element:performAction("AXShowMenu")
+    local pressOk = element:performAction("AXShowMenu")
 
-    if not press_ok then
+    if not pressOk then
       local frame = mark.frame
       if frame then
-        Actions.try_click(frame, "right")
+        Actions.tryClick(frame, "right")
       end
     end
   end
@@ -1388,17 +1388,17 @@ end
 
 ---Go to link in new tab
 ---@return nil
-function Commands.cmd_goto_link_new_tab()
-  if not Utils.is_in_browser() then
+function Commands.cmdGotoLinkNewTab()
+  if not Utils.isInBrowser() then
     hs.alert.show("Only available in browser", nil, nil, 2)
     return
   end
 
-  ModeManager.set_mode(MODES.LINKS)
-  State.on_click_callback = function(mark)
-    local url = Utils.get_attribute(mark.element, "AXURL")
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = function(mark)
+    local url = Utils.getAttribute(mark.element, "AXURL")
     if url then
-      Actions.open_url_in_new_tab(url.url)
+      Actions.openUrlInNewTab(url.url)
     end
   end
   hs.timer.doAfter(0, function()
@@ -1408,58 +1408,58 @@ end
 
 ---Download image
 ---@return nil
-function Commands.cmd_download_image()
-  if not Utils.is_in_browser() then
+function Commands.cmdDownloadImage()
+  if not Utils.isInBrowser() then
     hs.alert.show("Only available in browser", nil, nil, 2)
     return
   end
 
-  ModeManager.set_mode(MODES.LINKS)
-  State.on_click_callback = function(mark)
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = function(mark)
     local element = mark.element
-    local role = Utils.get_attribute(element, "AXRole")
+    local role = Utils.getAttribute(element, "AXRole")
 
     if role == "AXImage" then
-      local description = Utils.get_attribute(element, "AXDescription") or "image"
+      local description = Utils.getAttribute(element, "AXDescription") or "image"
 
-      local download_url_attr = Utils.get_attribute(element, "AXURL")
+      local downloadUrlAttr = Utils.getAttribute(element, "AXURL")
 
-      if download_url_attr then
-        local url = download_url_attr.url
+      if downloadUrlAttr then
+        local url = downloadUrlAttr.url
 
         if url and url:match("^data:image/") then
           -- Handle base64 images
-          local base64_data = url:match("^data:image/[^;]+;base64,(.+)$")
-          if base64_data then
-            local decoded_data = hs.base64.decode(base64_data)
+          local base64Data = url:match("^data:image/[^;]+;base64,(.+)$")
+          if base64Data then
+            local decodedData = hs.base64.decode(base64Data)
             ---@diagnostic disable-next-line: param-type-mismatch
-            local file_name = description:gsub("%W+", "_") .. ".jpg"
-            local file_path = os.getenv("HOME") .. "/Downloads/" .. file_name
+            local fileName = description:gsub("%W+", "_") .. ".jpg"
+            local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
 
-            local file = io.open(file_path, "wb")
+            local file = io.open(filePath, "wb")
             if file then
-              file:write(decoded_data)
+              file:write(decodedData)
               file:close()
-              hs.alert.show("Image saved: " .. file_name, nil, nil, 2)
+              hs.alert.show("Image saved: " .. fileName, nil, nil, 2)
             end
           end
         else
           -- Handle regular URLs
           hs.http.asyncGet(url, nil, function(status, body, headers)
             if status == 200 then
-              local content_type = headers["Content-Type"] or ""
-              if content_type:match("^image/") then
-                local file_name = url:match("^.+/(.+)$") or "image.jpg"
-                if not file_name:match("%.%w+$") then
-                  file_name = file_name .. ".jpg"
+              local contentType = headers["Content-Type"] or ""
+              if contentType:match("^image/") then
+                local fileName = url:match("^.+/(.+)$") or "image.jpg"
+                if not fileName:match("%.%w+$") then
+                  fileName = fileName .. ".jpg"
                 end
 
-                local file_path = os.getenv("HOME") .. "/Downloads/" .. file_name
-                local file = io.open(file_path, "wb")
+                local filePath = os.getenv("HOME") .. "/Downloads/" .. fileName
+                local file = io.open(filePath, "wb")
                 if file then
                   file:write(body)
                   file:close()
-                  hs.alert.show("Image downloaded: " .. file_name, nil, nil, 2)
+                  hs.alert.show("Image downloaded: " .. fileName, nil, nil, 2)
                 end
               end
             end
@@ -1475,9 +1475,9 @@ end
 
 ---Move mouse to link
 ---@return nil
-function Commands.cmd_move_mouse_to_link()
-  ModeManager.set_mode(MODES.LINKS)
-  State.on_click_callback = function(mark)
+function Commands.cmdMoveMouseToLink()
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = function(mark)
     local frame = mark.frame
     if frame then
       hs.mouse.absolutePosition({
@@ -1493,17 +1493,17 @@ end
 
 ---Copy link URL to clipboard
 ---@return nil
-function Commands.cmd_copy_link_url_to_clipboard()
-  if not Utils.is_in_browser() then
+function Commands.cmdCopyLinkUrlToClipboard()
+  if not Utils.isInBrowser() then
     hs.alert.show("Only available in browser", nil, nil, 2)
     return
   end
 
-  ModeManager.set_mode(MODES.LINKS)
-  State.on_click_callback = function(mark)
-    local url = Utils.get_attribute(mark.element, "AXURL")
+  ModeManager.setMode(MODES.LINKS)
+  State.onClickCallback = function(mark)
+    local url = Utils.getAttribute(mark.element, "AXURL")
     if url then
-      Actions.set_clipboard_contents(url.url)
+      Actions.setClipboardContents(url.url)
     else
       hs.alert.show("No URL found", nil, nil, 2)
     end
@@ -1515,18 +1515,18 @@ end
 
 ---Next page
 ---@return nil
-function Commands.cmd_next_page()
-  if not Utils.is_in_browser() then
+function Commands.cmdNextPage()
+  if not Utils.isInBrowser() then
     hs.alert.show("Only available in browser", nil, nil, 2)
     return
   end
 
-  local ax_window = Elements.get_ax_window()
-  if not ax_window then
+  local axWindow = Elements.getAxWindow()
+  if not axWindow then
     return
   end
 
-  ElementFinder.find_next_button_elements(ax_window, function(elements)
+  ElementFinder.findNextButtonElements(axWindow, function(elements)
     if #elements > 0 then
       elements[1]:performAction("AXPress")
     else
@@ -1537,18 +1537,18 @@ end
 
 ---Prev page
 ---@return nil
-function Commands.cmd_prev_page()
-  if not Utils.is_in_browser() then
+function Commands.cmdPrevPage()
+  if not Utils.isInBrowser() then
     hs.alert.show("Only available in browser", nil, nil, 2)
     return
   end
 
-  local ax_window = Elements.get_ax_window()
-  if not ax_window then
+  local axWindow = Elements.getAxWindow()
+  if not axWindow then
     return
   end
 
-  ElementFinder.find_prev_button_elements(ax_window, function(elements)
+  ElementFinder.findPrevButtonElements(axWindow, function(elements)
     if #elements > 0 then
       elements[1]:performAction("AXPress")
     else
@@ -1559,23 +1559,23 @@ end
 
 ---Copy page URL to clipboard
 ---@return nil
-function Commands.cmd_copy_page_url_to_clipboard()
-  if not Utils.is_in_browser() then
+function Commands.cmdCopyPageUrlToClipboard()
+  if not Utils.isInBrowser() then
     hs.alert.show("Only available in browser", nil, nil, 2)
     return
   end
 
-  local ax_web_area = Elements.get_ax_web_area()
-  local url = ax_web_area and Utils.get_attribute(ax_web_area, "AXURL")
+  local axWebArea = Elements.getAxWebArea()
+  local url = axWebArea and Utils.getAttribute(axWebArea, "AXURL")
   if url then
-    Actions.set_clipboard_contents(url.url)
+    Actions.setClipboardContents(url.url)
   end
 end
 
 ---Move mouse to center
 ---@return nil
-function Commands.cmd_move_mouse_to_center()
-  local window = Elements.get_window()
+function Commands.cmdMoveMouseToCenter()
+  local window = Elements.getWindow()
   if not window then
     return
   end
@@ -1595,71 +1595,71 @@ end
 ---@param char string
 ---@param modifiers table
 ---@return nil
-local function handle_vim_input(char, modifiers)
+local function handleVimInput(char, modifiers)
   log.df("handleVimInput: " .. char .. " modifiers: " .. hs.inspect(modifiers))
 
   if State.mode == MODES.LINKS then
     if char == "backspace" then
-      if #State.link_capture > 0 then
-        State.link_capture = State.link_capture:sub(1, -2)
+      if #State.linkCapture > 0 then
+        State.linkCapture = State.linkCapture:sub(1, -2)
         Marks.draw()
       end
       return
     end
 
-    State.link_capture = State.link_capture .. char:upper()
+    State.linkCapture = State.linkCapture .. char:upper()
     Marks.draw()
 
     -- Check for exact match
     for i, _ in ipairs(State.marks) do
-      if i > #State.all_combinations then
+      if i > #State.allCombinations then
         break
       end
 
-      local markText = State.all_combinations[i]:upper()
-      if markText == State.link_capture then
+      local markText = State.allCombinations[i]:upper()
+      if markText == State.linkCapture then
         Marks.click(markText:lower())
-        ModeManager.set_mode(MODES.NORMAL)
+        ModeManager.setMode(MODES.NORMAL)
         return
       end
     end
 
     -- Check for partial matches
-    local has_partial_matches = false
+    local hasPartialMatches = false
     for i, _ in ipairs(State.marks) do
-      if i > #State.all_combinations then
+      if i > #State.allCombinations then
         break
       end
 
-      local markText = State.all_combinations[i]:upper()
-      if markText:sub(1, #State.link_capture) == State.link_capture then
-        has_partial_matches = true
+      local markText = State.allCombinations[i]:upper()
+      if markText:sub(1, #State.linkCapture) == State.linkCapture then
+        hasPartialMatches = true
         break
       end
     end
 
-    if not has_partial_matches then
-      State.link_capture = ""
+    if not hasPartialMatches then
+      State.linkCapture = ""
       Marks.draw()
     end
     return
   end
 
   -- Build key combination
-  local key_combo = ""
+  local keyCombo = ""
   if modifiers and modifiers.ctrl then
-    key_combo = "C-"
+    keyCombo = "C-"
   end
-  key_combo = key_combo .. char
+  keyCombo = keyCombo .. char
 
   if State.mode == MODES.MULTI then
-    key_combo = State.multi .. key_combo
+    keyCombo = State.multi .. keyCombo
   end
 
   -- Execute mapping
-  local mapping = M.config.mapping[key_combo]
+  local mapping = M.config.mapping[keyCombo]
   if mapping then
-    ModeManager.set_mode(MODES.NORMAL)
+    ModeManager.setMode(MODES.NORMAL)
 
     if type(mapping) == "string" then
       local cmd = Commands[mapping]
@@ -1669,40 +1669,40 @@ local function handle_vim_input(char, modifiers)
         log.wf("Unknown command: " .. mapping)
       end
     elseif type(mapping) == "table" then
-      hs.eventtap.keyStroke(mapping[1], mapping[2], 0)
+      Utils.keyStroke(mapping[1], mapping[2])
     end
-  elseif State.mapping_prefixes[key_combo] then
-    ModeManager.set_mode(MODES.MULTI, key_combo)
+  elseif State.mappingPrefixes[keyCombo] then
+    ModeManager.setMode(MODES.MULTI, keyCombo)
   end
 end
 
 ---Handles events
 ---@param event table
 ---@return boolean
-local function event_handler(event)
-  Utils.clear_cache()
+local function eventHandler(event)
+  Utils.clearCache()
 
-  if Utils.is_excluded_app() or Utils.is_launcher_active() then
+  if Utils.isExcludedApp() or Utils.isLauncherActive() then
     return false
   end
 
   local flags = event:getFlags()
-  local key_code = event:getKeyCode()
+  local keyCode = event:getKeyCode()
   local modifiers = { ctrl = flags.ctrl }
 
   -- Handle escape key
-  if key_code == hs.keycodes.map["escape"] then
-    local delay_since_last_escape = (hs.timer.absoluteTime() - State.last_escape) / 1e9
-    State.last_escape = hs.timer.absoluteTime()
+  if keyCode == hs.keycodes.map["escape"] then
+    local delaySinceLastEscape = (hs.timer.absoluteTime() - State.lastEscape) / 1e9
+    State.lastEscape = hs.timer.absoluteTime()
 
-    if Utils.is_in_browser() and delay_since_last_escape < M.config.double_press_delay then
-      Actions.force_unfocus()
-      ModeManager.set_mode(MODES.NORMAL)
+    if Utils.isInBrowser() and delaySinceLastEscape < M.config.doublePressDelay then
+      Actions.forceUnfocus()
+      ModeManager.setMode(MODES.NORMAL)
       return true
     end
 
     if State.mode ~= MODES.NORMAL then
-      ModeManager.set_mode(MODES.NORMAL)
+      ModeManager.setMode(MODES.NORMAL)
       return true
     end
 
@@ -1710,19 +1710,19 @@ local function event_handler(event)
   end
 
   -- Skip if in insert mode or editable control has focus
-  if State.mode == MODES.INSERT or Elements.is_editable_control_in_focus() then
+  if State.mode == MODES.INSERT or Elements.isEditableControlInFocus() then
     return false
   end
 
   -- Handle backspace in LINKS mode
-  if State.mode == MODES.LINKS and key_code == hs.keycodes.map["delete"] then
+  if State.mode == MODES.LINKS and keyCode == hs.keycodes.map["delete"] then
     hs.timer.doAfter(0, function()
-      handle_vim_input("backspace", { ctrl = flags.ctrl })
+      handleVimInput("backspace", { ctrl = flags.ctrl })
     end)
     return true
   end
 
-  local char = hs.keycodes.map[key_code]
+  local char = hs.keycodes.map[keyCode]
 
   for key, modifier in pairs(flags) do
     if modifier and key ~= "shift" and key ~= "ctrl" then
@@ -1740,21 +1740,21 @@ local function event_handler(event)
   end
 
   if modifiers and modifiers.ctrl then
-    local filtered_mappings = {}
+    local filteredMappings = {}
 
     for _key, _ in pairs(M.config.mapping) do
       if _key:sub(1, 2) == "C-" then
-        table.insert(filtered_mappings, _key:sub(3))
+        table.insert(filteredMappings, _key:sub(3))
       end
     end
 
-    if Utils.tbl_contains(filtered_mappings, char) == false then
+    if Utils.tblContains(filteredMappings, char) == false then
       return false
     end
   end
 
   hs.timer.doAfter(0, function()
-    handle_vim_input(char, modifiers)
+    handleVimInput(char, modifiers)
   end)
 
   return true
@@ -1766,15 +1766,15 @@ end
 
 ---Clears all caches and state when switching apps
 ---@return nil
-local function cleanup_on_app_switch()
+local function cleanupOnAppSwitch()
   -- Clear all element caches
-  Utils.clear_cache()
+  Utils.clearCache()
 
   -- Clear any active marks and canvas
   Marks.clear()
 
   -- Reset link capture state
-  State.link_capture = ""
+  State.linkCapture = ""
 
   -- Force garbage collection to free up memory
   collectgarbage("collect")
@@ -1782,55 +1782,55 @@ local function cleanup_on_app_switch()
   log.df("Cleaned up caches and state for app switch")
 end
 
-local app_watcher = nil
+local appWatcher = nil
 
 ---Starts the app watcher
 ---@return nil
-local function start_watcher()
-  if app_watcher then
-    app_watcher:stop()
-    app_watcher = nil
+local function startAppWatcher()
+  if appWatcher then
+    appWatcher:stop()
+    appWatcher = nil
   end
 
-  app_watcher = hs.application.watcher.new(function(app_name, event_type)
-    log.df(string.format("App event: %s - %s", app_name, event_type))
+  appWatcher = hs.application.watcher.new(function(appName, eventType)
+    log.df(string.format("App event: %s - %s", appName, eventType))
 
-    if event_type == hs.application.watcher.activated then
-      log.df(string.format("App activated: %s", app_name))
+    if eventType == hs.application.watcher.activated then
+      log.df(string.format("App activated: %s", appName))
 
-      cleanup_on_app_switch()
+      cleanupOnAppSwitch()
 
-      if not State.event_loop then
-        State.event_loop = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, event_handler):start()
+      if not State.eventLoop then
+        State.eventLoop = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, eventHandler):start()
         log.df("Started event loop")
       end
 
-      if Utils.tbl_contains(M.config.excluded_apps, app_name) then
-        ModeManager.set_mode(MODES.DISABLED)
-        log.df("Disabled mode for excluded app: " .. app_name)
+      if Utils.tblContains(M.config.excludedApps, appName) then
+        ModeManager.setMode(MODES.DISABLED)
+        log.df("Disabled mode for excluded app: " .. appName)
       else
-        ModeManager.set_mode(MODES.NORMAL)
+        ModeManager.setMode(MODES.NORMAL)
       end
     end
   end)
 
-  app_watcher:start()
+  appWatcher:start()
 
   log.df("App watcher started")
 end
 
 ---Periodic cache cleanup to prevent memory leaks
 ---@return nil
-local function setup_periodic_cleanup()
-  if State.cleanup_timer then
-    State.cleanup_timer:stop()
+local function setupPeriodicCleanup()
+  if State.cleanupTimer then
+    State.cleanupTimer:stop()
   end
 
-  State.cleanup_timer = hs.timer
+  State.cleanupTimer = hs.timer
     .new(30, function() -- Every 30 seconds
       -- Only clean up if we're not actively showing marks
       if State.mode ~= MODES.LINKS then
-        Utils.clear_cache()
+        Utils.clearCache()
         collectgarbage("collect")
         log.df("Periodic cache cleanup completed")
       end
@@ -1840,16 +1840,16 @@ end
 
 ---Clean up timers and watchers
 ---@return nil
-local function cleanup_watchers()
-  if app_watcher then
-    app_watcher:stop()
-    app_watcher = nil
+local function cleanupWatchers()
+  if appWatcher then
+    appWatcher:stop()
+    appWatcher = nil
     log.df("Stopped app watcher")
   end
 
-  if State.cleanup_timer then
-    State.cleanup_timer:stop()
-    State.cleanup_timer = nil
+  if State.cleanupTimer then
+    State.cleanupTimer:stop()
+    State.cleanupTimer = nil
     log.df("Stopped cleanup timer")
   end
 end
@@ -1858,58 +1858,58 @@ end
 -- Public API
 --------------------------------------------------------------------------------
 
----@type Hs.Vimium.Config
+---@type Hs.Vimnav.Config
 ---@diagnostic disable-next-line: missing-fields
 M.config = {}
 
 ---Sets up the module
----@param userConfig Hs.Vimium.Config
+---@param userConfig Hs.Vimnav.Config
 ---@return nil
 function M:init(userConfig)
-  print("-- Initializing Vimium...")
-  M.config = _utils.tbl_deep_extend("force", DEFAULT_CONFIG, userConfig or {})
-  log = hs.logger.new(M.mod_name, M.config.log_level)
+  print("-- Initializing Vimnav...")
+  M.config = Utils.tblDeepExtend("force", DEFAULT_CONFIG, userConfig or {})
+  log = hs.logger.new(M.name, M.config.logLevel)
 
-  Utils.fetch_mapping_prefixes()
-  Utils.generate_combinations()
+  Utils.fetchMappingPrefixes()
+  Utils.generateCombinations()
   RoleMaps.init() -- Initialize role maps for performance
 end
 
 ---Starts the module
 ---@return nil
 function M:start()
-  print("-- Starting Vimium...")
+  print("-- Starting Vimnav...")
 
-  cleanup_watchers()
-  start_watcher()
-  setup_periodic_cleanup()
+  cleanupWatchers()
+  startAppWatcher()
+  setupPeriodicCleanup()
   MenuBar.create()
 
-  local current_app = Elements.get_app()
-  if current_app and Utils.tbl_contains(M.config.excluded_apps, current_app:name()) then
-    ModeManager.set_mode(MODES.DISABLED)
+  local currentApp = Elements.getApp()
+  if currentApp and Utils.tblContains(M.config.excludedApps, currentApp:name()) then
+    ModeManager.setMode(MODES.DISABLED)
   else
-    ModeManager.set_mode(MODES.NORMAL)
+    ModeManager.setMode(MODES.NORMAL)
   end
 end
 
 ---Stops the module
 ---@return nil
 function M:stop()
-  print("-- Stopping Vimium...")
+  print("-- Stopping Vimnav...")
 
-  cleanup_watchers()
+  cleanupWatchers()
 
-  if State.event_loop then
-    State.event_loop:stop()
-    State.event_loop = nil
+  if State.eventLoop then
+    State.eventLoop:stop()
+    State.eventLoop = nil
     log.df("Stopped event loop")
   end
 
   MenuBar.destroy()
   Marks.clear()
 
-  cleanup_on_app_switch()
+  cleanupOnAppSwitch()
 end
 
 return M

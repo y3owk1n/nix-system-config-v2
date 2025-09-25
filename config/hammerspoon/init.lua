@@ -1,24 +1,24 @@
 ---@diagnostic disable: undefined-global
 
-local utils = require("utils")
-local global_pref = require("global-pref")
+local globalPref = require("global-pref")
 local system = require("system")
-local vimium = require("vimium")
+local vimnav = require("vimnav")
+local keys = require("utils").keys
 
 -- ------------------------------------------------------------------
 -- Global Preferences
 -- ------------------------------------------------------------------
 
-global_pref:init()
+globalPref:init()
 
 -- ------------------------------------------------------------------
 -- System
 -- ------------------------------------------------------------------
 
 ---@type Hs.System.Config
-local system_config = {
+local systemConfig = {
   apps = {
-    modifier = utils.hyper,
+    modifier = keys.hyper,
     bindings = {
       ["Safari"] = "b",
       ["Ghostty"] = "t",
@@ -30,101 +30,101 @@ local system_config = {
       ["Passwords"] = "p",
     },
   },
-  custom_bindings = {
-    spotlight_remap = {
-      modifier = utils.hyper,
+  customBindings = {
+    spotlightRemap = {
+      modifier = keys.hyper,
       key = "return",
       action = function()
-        system.key_stroke("cmd", "space")
+        system.keyStroke("cmd", "space")
       end,
     },
-    toggle_curr_prev_app = {
-      modifier = utils.hyper,
+    toggleCurrPrevApp = {
+      modifier = keys.hyper,
       key = "l",
       action = function()
-        system.key_stroke({ "cmd" }, "tab")
+        system.keyStroke({ "cmd" }, "tab")
 
         hs.timer.doAfter(0.01, function()
-          system.key_stroke({}, "return")
+          system.keyStroke({}, "return")
         end)
       end,
     },
-    maximize_window = {
+    maximizeWindow = {
       modifier = { "ctrl", "shift" },
       key = "m",
       action = function()
-        system.key_stroke({ "fn", "ctrl" }, "f")
+        system.keyStroke({ "fn", "ctrl" }, "f")
       end,
     },
-    move_window = {
+    moveWindow = {
       modifier = { "ctrl", "shift" },
       key = "h",
       action = function()
-        system.safe_select_menu_item({ "Window", "Move & Resize", "Left" })
+        system.safeSelectMenuItem({ "Window", "Move & Resize", "Left" })
       end,
     },
-    move_window_right = {
+    moveWindowRight = {
       modifier = { "ctrl", "shift" },
       key = "l",
       action = function()
-        system.safe_select_menu_item({ "Window", "Move & Resize", "Right" })
+        system.safeSelectMenuItem({ "Window", "Move & Resize", "Right" })
       end,
     },
-    move_window_bottom = {
+    moveWindowBottom = {
       modifier = { "ctrl", "shift" },
       key = "j",
       action = function()
-        system.safe_select_menu_item({ "Window", "Move & Resize", "Bottom" })
+        system.safeSelectMenuItem({ "Window", "Move & Resize", "Bottom" })
       end,
     },
-    move_window_top = {
+    moveWindowTop = {
       modifier = { "ctrl", "shift" },
       key = "k",
       action = function()
-        system.safe_select_menu_item({ "Window", "Move & Resize", "Top" })
+        system.safeSelectMenuItem({ "Window", "Move & Resize", "Top" })
       end,
     },
   },
-  contextual_bindings = {
+  contextualBindings = {
     ["Finder"] = {
       {
         modifier = { "cmd" },
         key = "q",
         action = function()
-          system.key_stroke({ "cmd" }, "w")
+          system.keyStroke({ "cmd" }, "w")
         end,
       },
     },
   },
   watcher = {
-    hide_all_window_except_front = {
+    hideAllWindowExceptFront = {
       enabled = true,
       bindings = {
-        modifier = utils.hyper,
+        modifier = keys.hyper,
         key = "1",
       },
     },
-    auto_maximize_window = {
+    autoMaximizeWindow = {
       enabled = true,
       bindings = {
-        modifier = utils.hyper,
+        modifier = keys.hyper,
         key = "2",
       },
     },
   },
 }
 
-system:init(system_config)
+system:init(systemConfig)
 system:start()
 
 -- ------------------------------------------------------------------
 -- Vimium
 -- ------------------------------------------------------------------
 
----@type Hs.Vimium.Config
+---@type Hs.Vimnav.Config
 ---@diagnostic disable-next-line: missing-fields
-local vimium_config = {
-  excluded_apps = {
+local vimnavConfig = {
+  excludedApps = {
     "Terminal",
     "Ghostty",
     "Screen Sharing",
@@ -132,5 +132,5 @@ local vimium_config = {
   },
 }
 
-vimium:init(vimium_config)
-vimium:start()
+vimnav:init(vimnavConfig)
+vimnav:start()
