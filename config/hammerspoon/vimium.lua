@@ -41,6 +41,7 @@ local log
 ---@field mapping table<string, string|table>
 ---@field scroll_step number
 ---@field scroll_step_half_page number
+---@field scroll_step_full_page number
 ---@field smooth_scroll boolean
 ---@field smooth_scroll_framerate number
 ---@field depth number
@@ -111,6 +112,7 @@ local DEFAULT_CONFIG = {
   mapping = DEFAULT_MAPPING,
   scroll_step = 50,
   scroll_step_half_page = 500,
+  scroll_step_full_page = 1e6,
   smooth_scroll = true,
   smooth_scroll_framerate = 120,
   depth = 20,
@@ -1302,13 +1304,13 @@ end
 ---Scrolls to top
 ---@return nil
 function Commands.cmd_scroll_to_top()
-  hs.eventtap.keyStroke({ "command" }, "up", 0)
+  Actions.smooth_scroll(0, M.config.scroll_step_full_page, M.config.smooth_scroll)
 end
 
 ---Scrolls to bottom
 ---@return nil
 function Commands.cmd_scroll_to_bottom()
-  hs.eventtap.keyStroke({ "command" }, "down", 0)
+  Actions.smooth_scroll(0, -M.config.scroll_step_full_page, M.config.smooth_scroll)
 end
 
 ---Switches to insert mode
