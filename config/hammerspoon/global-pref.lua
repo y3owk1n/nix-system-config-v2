@@ -1,6 +1,6 @@
 ---@diagnostic disable: undefined-global
 
-local utils = require("utils")
+local keys = require("utils").keys
 
 local M = {}
 
@@ -29,7 +29,7 @@ function M:init()
   hs.logger.defaultLogLevel = "warning"
 
   -- toggle console
-  hs.hotkey.bind(utils.hyper, "h", function()
+  hs.hotkey.bind(keys.hyper, "h", function()
     hs.toggleConsole()
   end)
 end
