@@ -241,15 +241,17 @@ local function setupWatcher()
 
       activateContextualBindings(appName)
 
+      local activatedApp = hs.application.get(appName)
+
       if _hideAllWindowExceptFrontStatus then
         -- hide all windows except the frontmost one
-        Utils.keyStroke({ "cmd", "alt" }, "h")
+        Utils.keyStroke({ "cmd", "alt" }, "h", 0, activatedApp)
         log.df("Hide all windows except the frontmost one")
       end
 
       if _hideAllWindowExceptFrontStatus and _autoMaximizeWindowStatus then
         -- maximize window
-        Utils.keyStroke({ "fn", "ctrl" }, "f")
+        Utils.keyStroke({ "fn", "ctrl" }, "f", 0, activatedApp)
         log.df("Maximize window")
       end
     end
