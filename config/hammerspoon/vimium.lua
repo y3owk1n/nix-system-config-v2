@@ -146,7 +146,7 @@ local DEFAULT_CONFIG = {
     -- "AXDecrementor",
   },
   excluded_apps = { "Terminal" },
-  browsers = { "Safari", "Google Chrome", "Firefox", "Microsoft Edge", "Brave Browser" },
+  browsers = { "Safari", "Google Chrome", "Firefox", "Microsoft Edge", "Brave Browser", "Zen" },
   launchers = { "Spotlight" },
 }
 
@@ -826,6 +826,7 @@ function Actions.open_url_in_new_tab(url)
     Firefox = 'tell application "Firefox" to tell window 1 to open location "%s"',
     ["Microsoft Edge"] = 'tell application "Microsoft Edge" to tell window 1 to make new tab with properties {URL:"%s"}',
     ["Brave Browser"] = 'tell application "Brave Browser" to tell window 1 to make new tab with properties {URL:"%s"}',
+    Zen = 'tell application "Zen" to open location "%s"',
   }
 
   local current_app = Elements.get_app()
