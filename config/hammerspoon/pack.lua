@@ -2,9 +2,9 @@ local M = {}
 
 -- Configuration
 M.config = {
-  repo_dir = os.getenv("HOME") .. "/.hammerspoon-pack/plugins",
-  spoon_dir = os.getenv("HOME") .. "/.hammerspoon-pack/Spoons",
-  state_dir = os.getenv("HOME") .. "/.hammerspoon-pack/state",
+  repo_dir = os.getenv("HOME") .. "/.local/state/hammerspoon/pack/plugins",
+  spoon_dir = os.getenv("HOME") .. "/.local/share/hammerspoon/site/Spoons",
+  state_dir = os.getenv("HOME") .. "/.local/state/hammerspoon/pack/state",
   git = {
     spoon_repo = "https://github.com/Hammerspoon/Spoons.git",
     timeout = 60,
