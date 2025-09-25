@@ -1862,23 +1862,18 @@ end
 ---@diagnostic disable-next-line: missing-fields
 M.config = {}
 
----Sets up the module
+---Starts the module
 ---@param userConfig Hs.Vimnav.Config
 ---@return nil
-function M:init(userConfig)
-  print("-- Initializing Vimnav...")
+function M:start(userConfig)
+  print("-- Starting Vimnav...")
   M.config = Utils.tblDeepExtend("force", DEFAULT_CONFIG, userConfig or {})
+
   log = hs.logger.new(M.name, M.config.logLevel)
 
   Utils.fetchMappingPrefixes()
   Utils.generateCombinations()
   RoleMaps.init() -- Initialize role maps for performance
-end
-
----Starts the module
----@return nil
-function M:start()
-  print("-- Starting Vimnav...")
 
   cleanupWatchers()
   startAppWatcher()
