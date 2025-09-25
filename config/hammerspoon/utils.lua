@@ -108,12 +108,13 @@ end
 ---@param mods "cmd"|"ctrl"|"alt"|"shift"|"fn"|("cmd"|"ctrl"|"alt"|"shift"|"fn")[]
 ---@param key string
 ---@param delay? number
+---@param application? table
 ---@return nil
-function M.keyStroke(mods, key, delay)
+function M.keyStroke(mods, key, delay, application)
   if type(mods) == "string" then
     mods = { mods }
   end
-  hs.eventtap.keyStroke(mods, key, delay or 0)
+  hs.eventtap.keyStroke(mods, key, delay or 0, application)
 end
 
 return M
