@@ -4,7 +4,7 @@ local M = {}
 
 M.__index = M
 
-M.name = "system"
+M.name = "bindery"
 
 local _utils = require("utils")
 
@@ -40,50 +40,50 @@ end
 -- Types
 -- ------------------------------------------------------------------
 
----@class Hs.System.Config
----@field apps? Hs.System.Config.Apps Apps configuration
----@field customBindings? table<string, Hs.System.Config.CustomBindings> Custom bindings configuration
----@field contextualBindings? table<string,  Hs.System.Config.ContextualBindings[]> Contextual bindings configuration
----@field watcher? Hs.System.Config.Watcher Watcher configuration
+---@class Hs.Bindery.Config
+---@field apps? Hs.Bindery.Config.Apps Apps configuration
+---@field customBindings? table<string, Hs.Bindery.Config.CustomBindings> Custom bindings configuration
+---@field contextualBindings? table<string,  Hs.Bindery.Config.ContextualBindings[]> Contextual bindings configuration
+---@field watcher? Hs.Bindery.Config.Watcher Watcher configuration
 ---@field logLevel? string The log level to use
 
----@alias Hs.System.Modifier "cmd"|"ctrl"|"alt"|"shift"|"fn"
+---@alias Hs.Bindery.Modifier "cmd"|"ctrl"|"alt"|"shift"|"fn"
 
----@class Hs.System.Config.Apps
----@field modifier Hs.System.Modifier|Hs.System.Modifier[] Modifiers to use for the app launchers
+---@class Hs.Bindery.Config.Apps
+---@field modifier Hs.Bindery.Modifier|Hs.Bindery.Modifier[] Modifiers to use for the app launchers
 ---@field bindings table<string, string> App launchers
 
----@class Hs.System.Config.CustomBindings
----@field modifier Hs.System.Modifier|Hs.System.Modifier[] Modifiers to use for the custom bindings
+---@class Hs.Bindery.Config.CustomBindings
+---@field modifier Hs.Bindery.Modifier|Hs.Bindery.Modifier[] Modifiers to use for the custom bindings
 ---@field key string Key to use for the custom bindings
 ---@field action function Action to perform for the custom bindings
 
----@class Hs.System.Config.ContextualBindings
----@field modifier Hs.System.Modifier|Hs.System.Modifier[] Modifiers to use for the contextual bindings
+---@class Hs.Bindery.Config.ContextualBindings
+---@field modifier Hs.Bindery.Modifier|Hs.Bindery.Modifier[] Modifiers to use for the contextual bindings
 ---@field key string Key to use for the contextual bindings
 ---@field action function Action to perform for the contextual bindings
 
----@class Hs.System.Config.Watcher
----@field hideAllWindowExceptFront Hs.System.Config.Watcher.HideAllWindowExceptFront Whether to hide all windows except the frontmost one
----@field autoMaximizeWindow Hs.System.Config.Watcher.AutoMaximizeWindow Whether to maximize the window when it is activated
+---@class Hs.Bindery.Config.Watcher
+---@field hideAllWindowExceptFront Hs.Bindery.Config.Watcher.HideAllWindowExceptFront Whether to hide all windows except the frontmost one
+---@field autoMaximizeWindow Hs.Bindery.Config.Watcher.AutoMaximizeWindow Whether to maximize the window when it is activated
 
----@class Hs.System.Config.Watcher.Bindings
----@field modifier Hs.System.Modifier|Hs.System.Modifier[] Modifiers to use for the watcher bindings
+---@class Hs.Bindery.Config.Watcher.Bindings
+---@field modifier Hs.Bindery.Modifier|Hs.Bindery.Modifier[] Modifiers to use for the watcher bindings
 ---@field key string Key to use for the watcher bindings
 
----@class Hs.System.Config.Watcher.HideAllWindowExceptFront
+---@class Hs.Bindery.Config.Watcher.HideAllWindowExceptFront
 ---@field enabled boolean Whether to hide all windows except the frontmost one
----@field bindings? Hs.System.Config.Watcher.Bindings Bindings to use for the watcher hide all window except front bindings
+---@field bindings? Hs.Bindery.Config.Watcher.Bindings Bindings to use for the watcher hide all window except front bindings
 
----@class Hs.System.Config.Watcher.AutoMaximizeWindow
+---@class Hs.Bindery.Config.Watcher.AutoMaximizeWindow
 ---@field enabled boolean Whether to maximize the window when it is activated
----@field bindings? Hs.System.Config.Watcher.Bindings Bindings to use for the watcher auto maximize window bindings
+---@field bindings? Hs.Bindery.Config.Watcher.Bindings Bindings to use for the watcher auto maximize window bindings
 
 -- ------------------------------------------------------------------
 -- Configuration
 -- ------------------------------------------------------------------
 
----@type Hs.System.Config
+---@type Hs.Bindery.Config
 local default_config = {
   logLevel = "warning",
   apps = {
@@ -317,27 +317,23 @@ end
 -- API
 -- ------------------------------------------------------------------
 
----@type Hs.System.Config
+---@type Hs.Bindery.Config
 M.config = {}
 
----@param userConfig? Hs.System.Config
+---@param userConfig? Hs.Bindery.Config
 ---@return nil
-function M:init(userConfig)
-  print("-- Initializing System...")
+function M:start(userConfig)
+  print("-- Starting Bindery...")
   M.config = Utils.tblDeepExtend("force", default_config, userConfig or {})
   log = hs.logger.new(M.name, M.config.logLevel)
-end
 
----@return nil
-function M:start()
-  print("-- Starting System...")
   setupLaunchers()
   setupCustomBindings()
   setupWatcher()
 end
 
 function M:stop()
-  print("-- Stopping System...")
+  print("-- Stopping Bindery...")
   clearLaunchers()
   clearCustomBindings()
   clearContextualBindings()
