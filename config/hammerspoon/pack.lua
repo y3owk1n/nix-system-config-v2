@@ -1047,6 +1047,9 @@ function Plugins.load(plugin, loadingStack)
   -- Load dependencies first
   for _, depSpec in ipairs(plugin.dependencies) do
     local dep = Plugins.normalizeSpec(depSpec)
+    if not configuredPlugins[dep.name] then
+      configuredPlugins[dep.name] = dep
+    end
     if not Plugins.load(dep, loadingStack) then
       log.ef("Failed to load dependency %s for %s", dep.name, plugin.name)
       loadingStack[plugin.name] = nil
@@ -1152,6 +1155,21 @@ function M:init(userConfig)
         log.ef("Failed to normalize plugin spec: %s", plugin or "unknown error")
       end
     end
+  end
+
+  -- Pre-resolve dependencies to prevent cleanup
+  local function resolveDependenciesRecursively(plugin)
+    for _, depSpec in ipairs(plugin.dependencies or {}) do
+      local dep = Plugins.normalizeSpec(depSpec)
+      if not configuredPlugins[dep.name] then
+        configuredPlugins[dep.name] = dep
+        resolveDependenciesRecursively(dep) -- handle nested deps
+      end
+    end
+  end
+
+  for _, plugin in pairs(configuredPlugins) do
+    resolveDependenciesRecursively(plugin)
   end
 
   log.i(string.format("Configured %d plugins", Utils.tableLength(configuredPlugins)))
