@@ -1,48 +1,113 @@
+---@diagnostic disable: undefined-global
+
 local M = {}
 
+M.__index = M
+
+M.name = "pack"
+
+local _utils = require("utils")
+
+local Utils = {}
+local Git = {}
+local Spoons = {}
+local Lockfile = {}
+local Plugins = {}
+
+-- ------------------------------------------------------------------
+-- Internal state
+-- ------------------------------------------------------------------
+
+local log
+local configuredPlugins = {}
+local spoonsRepoCloned = false
+local lockfileName = "pack-lock.lua"
+local lockfilePath = hs.configdir .. "/" .. lockfileName
+
+-- ------------------------------------------------------------------
 -- Configuration
-M.config = {
-  repo_dir = os.getenv("HOME") .. "/.local/state/hammerspoon/pack/plugins",
-  spoon_dir = os.getenv("HOME") .. "/.local/share/hammerspoon/site/Spoons",
-  state_dir = os.getenv("HOME") .. "/.local/state/hammerspoon/pack/state",
+-- ------------------------------------------------------------------
+
+---@type Hs.Pack.Config
+local defaultConfig = {
+  dir = hs.configdir .. "/pack",
+  repoDir = os.getenv("HOME") .. "/.local/state/hammerspoon/pack/plugins",
+  spoonDir = os.getenv("HOME") .. "/.local/share/hammerspoon/site/Spoons",
   git = {
-    spoon_repo = "https://github.com/Hammerspoon/Spoons.git",
+    spoonRepo = "https://github.com/Hammerspoon/Spoons.git",
     timeout = 60,
   },
-  auto_install = true,
-  auto_cleanup = true,
-  log_level = "info",
+  autoInstall = true,
+  autoCleanup = true,
+  logLevel = "info",
 }
 
--- Internal state
-local plugins = {}
-local spoons_repo_cloned = false
-local state_file_name = "state.lua"
+-- ------------------------------------------------------------------
+-- Types
+-- ------------------------------------------------------------------
 
--- Log levels
-local LOG_LEVELS = { debug = 1, info = 2, warn = 3, error = 4 }
-local function should_log(level)
-  return LOG_LEVELS[level] >= LOG_LEVELS[M.config.log_level]
-end
+---@class Hs.Pack.Config
+---@field dir? string The directory to scan for plugin files
+---@field repoDir? string The directory to use for the Spoon repository
+---@field spoonDir? string The directory to use for the Spoon files
+---@field git? Hs.Pack.Config.Git The Git configuration
+---@field autoInstall? boolean Whether to automatically install plugins
+---@field autoCleanup? boolean Whether to automatically clean up unused plugins
+---@field logLevel? string The log level to use
+---@field plugins? Hs.Pack.PluginSpec[] The plugins to use
 
--- Utility functions
-local function log(level, msg, ...)
-  if not should_log(level) then
-    return
-  end
-  local message = string.format(msg, ...)
-  local timestamp = os.date("%H:%M:%S")
-  print(string.format("[%s pack.hs:%s] %s", timestamp, level:upper(), message))
-end
+---@class Hs.Pack.Config.Git
+---@field spoonRepo? string The Spoon repository URL to install official Spoons from
+---@field timeout? number The timeout to use for Git operations
 
-local function normalize_path(path)
+---@class Hs.Pack.Version
+---@field major integer
+---@field minor integer
+---@field patch integer
+---@field prerelease? string
+---@field original? string
+
+---@class Hs.Pack.PluginSpec
+---@field name string The name of the plugin
+---@field url? string The URL to use for the plugin
+---@field branch? string The branch to use for the plugin
+---@field tag? string The tag to use for the plugin
+---@field commit? string The commit to use for the plugin
+---@field version? string The version to use for the plugin
+---@field dir? string The directory to use for the plugin
+---@field spoon? boolean Whether it's a Spoon from official repo
+---@field config? function The configuration function to use for the plugin
+---@field dependencies? Hs.Pack.PluginSpec[] The dependencies to use for the plugin
+---@field enabled? boolean Whether to enable the plugin
+---@field resolvedCommit? string [Internal only] The resolved commit to use for the plugin
+
+---@class Hs.Pack.PluginInfo
+---@field name string The name of the plugin
+---@field path string The path to the plugin
+---@field isSymlink boolean Whether the plugin is a symlink
+
+-- ------------------------------------------------------------------
+-- Helpers
+-- ------------------------------------------------------------------
+
+---imports from utils
+---can be implemented in this file if publishing as a module
+Utils.tblDeepExtend = _utils.tblDeepExtend
+
+---Normalizes a path by expanding `~` and removing trailing slashes
+---@param path string
+---@return string
+function Utils.normalizePath(path)
   path = path:gsub("^~", os.getenv("HOME") or "~")
   path = path:gsub("/+$", "")
   return path
 end
 
-local function path_exists(path)
-  path = normalize_path(path)
+---Checks if a path exists
+---@param path string
+---@return boolean
+function Utils.pathExists(path)
+  path = Utils.normalizePath(path)
   local f = io.open(path, "r")
   if f then
     f:close()
@@ -51,84 +116,73 @@ local function path_exists(path)
   return false
 end
 
-local function dir_exists(path)
-  path = normalize_path(path)
-  local ok, how, code = os.execute(string.format('[ -d "%s" ]', path))
+---Checks if a directory exists including symlinks directory
+---@param path string
+---@return boolean
+function Utils.dirExists(path)
+  path = Utils.normalizePath(path)
+  local ok, _, code = os.execute(string.format('[ -d "%s" ]', path))
   return ok == true and code == 0
 end
 
-local function mkdir_p(path)
-  path = normalize_path(path)
+---Creates a directory recursively
+---@param path string
+---@return boolean|nil
+function Utils.mkdirP(path)
+  path = Utils.normalizePath(path)
   local success, err = os.execute(string.format("mkdir -p '%s'", path))
   if not success then
-    log("error", "Failed to create directory %s: %s", path, err or "unknown error")
+    log.ef("Failed to create directory %s: %s", path, err or "unknown error")
   end
   return success
 end
 
-local function exec(cmd, timeout, cwd)
+---Executes a command and returns the result
+---@param cmd string
+---@param timeout? number
+---@param cwd? string
+---@return boolean? success
+---@return string result
+---@return integer? exitCode
+function Utils.exec(cmd, timeout, cwd)
   timeout = timeout or 10
 
-  local full_cmd = cmd
+  local fullCmd = cmd
   if cwd then
-    full_cmd = string.format("cd '%s' && %s", normalize_path(cwd), cmd)
+    fullCmd = string.format("cd '%s' && %s", Utils.normalizePath(cwd), cmd)
   end
 
-  log("debug", "Executing: %s", full_cmd)
+  log.df("Executing: %s", fullCmd)
 
-  local handle = io.popen(full_cmd .. " 2>&1")
+  local handle = io.popen(fullCmd .. " 2>&1")
   if not handle then
     return false, "Failed to execute command", 1
   end
 
   local result = handle:read("*all") or ""
-  local success, exit_type, exit_code = handle:close()
+  local success, _, exitCode = handle:close()
 
   result = result:gsub("^%s*(.-)%s*$", "%1")
 
   if not success then
-    log("debug", "Command failed with exit code %s: %s", exit_code or "unknown", result)
+    log.df("Command failed with exit code %s: %s", exitCode or "unknown", result)
   else
-    log("debug", "Command succeeded: %s", result:sub(1, 100) .. (result:len() > 100 and "..." or ""))
+    log.df("Command succeeded: %s", result:sub(1, 100) .. (result:len() > 100 and "..." or ""))
   end
 
-  return success, result, exit_code
+  return success, result, exitCode
 end
 
--- Git operations
-local function git_clone(url, path, branch)
-  local parent_dir = path:match("(.+)/[^/]+$")
-  if parent_dir and not dir_exists(parent_dir) then
-    mkdir_p(parent_dir)
-  end
-
-  local cmd = string.format(
-    "git clone --depth 1 %s '%s' '%s'",
-    branch and string.format("--branch '%s'", branch) or "",
-    url,
-    path
-  )
-
-  log("info", "Cloning %s to %s%s", url, path, branch and " (branch: " .. branch .. ")" or "")
-  return exec(cmd, M.config.git.timeout)
-end
-
-local function git_pull(path)
-  if not dir_exists(path .. "/.git") then
-    log("warn", "Directory %s is not a git repository", path)
-    return false, "Not a git repository"
-  end
-
-  log("info", "Updating %s", path)
-  return exec("git pull --ff-only", M.config.git.timeout, path)
-end
-
--- Table serialization for state saving
-local function serialize_table(t, indent, max_depth)
+---Serializes a table to a string
+---@param t table
+---@param indent? string
+---@param maxDepth? number
+---@return string
+function Utils.serializeTable(t, indent, maxDepth)
   indent = indent or ""
-  max_depth = max_depth or 10
+  maxDepth = maxDepth or 10
 
-  if max_depth <= 0 then
+  if maxDepth <= 0 then
     return "{ --[[max depth reached]] }"
   end
 
@@ -145,26 +199,29 @@ local function serialize_table(t, indent, max_depth)
   end
 
   local result = "{\n"
-  local sorted_keys = {}
+  local sortedKeys = {}
 
   for k in pairs(t) do
-    table.insert(sorted_keys, k)
+    table.insert(sortedKeys, k)
   end
-  table.sort(sorted_keys, function(a, b)
+  table.sort(sortedKeys, function(a, b)
     return tostring(a) < tostring(b)
   end)
 
-  for _, k in ipairs(sorted_keys) do
+  for _, k in ipairs(sortedKeys) do
     local v = t[k]
     local key = type(k) == "string" and string.match(k, "^[%a_][%w_]*$") and k
-      or string.format("[%s]", serialize_table(k, "", 1))
-    result = result .. indent .. "  " .. key .. " = " .. serialize_table(v, indent .. "  ", max_depth - 1) .. ",\n"
+      or string.format("[%s]", Utils.serializeTable(k, "", 1))
+    result = result .. indent .. "  " .. key .. " = " .. Utils.serializeTable(v, indent .. "  ", maxDepth - 1) .. ",\n"
   end
   result = result .. indent .. "}"
   return result
 end
 
-local function table_length(t)
+---Returns the number of elements in a table
+---@param t table
+---@return integer
+function Utils.tableLength(t)
   local count = 0
   for _ in pairs(t) do
     count = count + 1
@@ -172,79 +229,559 @@ local function table_length(t)
   return count
 end
 
--- State management
-local function save_plugin_state()
-  local state = {}
-  for name, plugin in pairs(plugins) do
-    state[name] = {
-      name = plugin.name,
-      dir = plugin.dir,
-      dependencies = plugin.dependencies,
-      spoon = plugin.spoon,
-      url = plugin.url,
-      branch = plugin.branch,
-      installed_at = os.time(),
-    }
+---Safely removes a path, including symlinks
+---@param path string
+---@return boolean?
+function Utils.safeRemove(path)
+  path = Utils.normalizePath(path)
+
+  if not Utils.pathExists(path) and not Utils.dirExists(path) then
+    return false
   end
 
-  mkdir_p(M.config.state_dir)
-  local config_file_path = M.config.state_dir .. "/" .. state_file_name
+  local isLink = os.execute(string.format('[ -L "%s" ]', path)) == true
+  local cmd = isLink and string.format('rm "%s"', path:gsub('"', '\\"'))
+    or string.format('rm -rf "%s"', path:gsub('"', '\\"'))
 
-  local file, err = io.open(config_file_path, "w")
+  log.df("Removing %s (symlink: %s)", path, isLink)
+  local ok, _, code = os.execute(cmd)
+
+  if not ok then
+    log.wf("Failed to remove %s: exit code %s", path, code or "unknown")
+  end
+
+  return ok
+end
+
+---Parses a semantic version string
+---@param versionStr string
+---@return Hs.Pack.Version?
+function Utils.parseVersion(versionStr)
+  if not versionStr then
+    return nil
+  end
+
+  -- Remove 'v' prefix if present
+  local cleanVersion = versionStr:gsub("^v", "")
+
+  -- Parse major.minor.patch with optional pre-release and build metadata
+  local major, minor, patch, prerelease = cleanVersion:match("^(%d+)%.?(%d*)%.?(%d*)%-?([^%+]*)")
+
+  if not major then
+    return nil
+  end
+
+  return {
+    major = tonumber(major) or 0,
+    minor = tonumber(minor) or 0,
+    patch = tonumber(patch) or 0,
+    prerelease = prerelease and prerelease ~= "" and prerelease or nil,
+    original = versionStr,
+  }
+end
+
+---Compares two semantic versions
+---@param v1 Hs.Pack.Version
+---@param v2 Hs.Pack.Version
+---@return integer
+function Utils.compareVersions(v1, v2)
+  -- Returns: -1 if v1 < v2, 0 if v1 == v2, 1 if v1 > v2
+  if v1.major ~= v2.major then
+    return v1.major < v2.major and -1 or 1
+  end
+
+  if v1.minor ~= v2.minor then
+    return v1.minor < v2.minor and -1 or 1
+  end
+
+  if v1.patch ~= v2.patch then
+    return v1.patch < v2.patch and -1 or 1
+  end
+
+  -- Handle prerelease versions (1.0.0-alpha < 1.0.0)
+  if v1.prerelease and not v2.prerelease then
+    return -1
+  elseif not v1.prerelease and v2.prerelease then
+    return 1
+  elseif v1.prerelease and v2.prerelease then
+    return v1.prerelease < v2.prerelease and -1 or (v1.prerelease > v2.prerelease and 1 or 0)
+  end
+
+  return 0
+end
+
+---Checks if a version satisfies a constraint
+---@param version string
+---@param constraint string
+---@return boolean
+function Utils.versionSatisfies(version, constraint)
+  local v = Utils.parseVersion(version)
+  if not v then
+    return false
+  end
+
+  -- Handle different constraint patterns
+  if constraint == "*" then
+    -- Latest stable (no prerelease)
+    return not v.prerelease
+  elseif constraint:match("^%d+%.%d+%.x$") then
+    -- Pattern like "1.2.x"
+    local major, minor = constraint:match("^(%d+)%.(%d+)%.x$")
+    return v.major == tonumber(major) and v.minor == tonumber(minor)
+  elseif constraint:match("^%d+%.x$") then
+    -- Pattern like "1.x"
+    local major = constraint:match("^(%d+)%.x$")
+    return v.major == tonumber(major)
+  elseif constraint:match("^%^") then
+    -- Caret range: ^1.2.3 (compatible, same major)
+    local constraintVersion = Utils.parseVersion(constraint:sub(2))
+    if not constraintVersion then
+      return false
+    end
+    return v.major == constraintVersion.major and Utils.compareVersions(v, constraintVersion) >= 0
+  elseif constraint:match("^~") then
+    -- Tilde range: ~1.2.3 (reasonably close, same major.minor)
+    local constraintVersion = Utils.parseVersion(constraint:sub(2))
+    if not constraintVersion then
+      return false
+    end
+    return v.major == constraintVersion.major
+      and v.minor == constraintVersion.minor
+      and Utils.compareVersions(v, constraintVersion) >= 0
+  elseif constraint:match("^>=") then
+    -- Greater than or equal
+    local constraintVersion = Utils.parseVersion(constraint:sub(3))
+    if not constraintVersion then
+      return false
+    end
+    return Utils.compareVersions(v, constraintVersion) >= 0
+  elseif constraint:match("^>") then
+    -- Greater than
+    local constraintVersion = Utils.parseVersion(constraint:sub(2))
+    if not constraintVersion then
+      return false
+    end
+    return Utils.compareVersions(v, constraintVersion) > 0
+  elseif constraint:match("^<=") then
+    -- Less than or equal
+    local constraintVersion = Utils.parseVersion(constraint:sub(3))
+    if not constraintVersion then
+      return false
+    end
+    return Utils.compareVersions(v, constraintVersion) <= 0
+  elseif constraint:match("^<") then
+    -- Less than
+    local constraintVersion = Utils.parseVersion(constraint:sub(2))
+    if not constraintVersion then
+      return false
+    end
+    return Utils.compareVersions(v, constraintVersion) < 0
+  else
+    -- Exact match
+    local constraintVersion = Utils.parseVersion(constraint)
+    if not constraintVersion then
+      return false
+    end
+    return Utils.compareVersions(v, constraintVersion) == 0
+  end
+end
+
+---Resolves a version reference for a plugin
+---@param plugin Hs.Pack.PluginSpec
+---@param repoPath? string
+---@return string?
+function Utils.resolveVersionRef(plugin, repoPath)
+  -- Priority: commit > resolved tag from version constraint > tag > version > branch
+  if plugin.commit then
+    return plugin.commit
+  elseif plugin.version and plugin.version:match("[%*%^~<>=x]") then
+    -- This is a version constraint, resolve it
+    local resolvedTag
+
+    if repoPath and Utils.dirExists(repoPath) then
+      -- Repository exists locally, get tags from it
+      resolvedTag = Git.getMatchingTag(repoPath, plugin.version)
+    elseif plugin.url then
+      -- No local repo, get tags remotely
+      resolvedTag = Git.resolveRemoteTag(plugin.url, plugin.version)
+    end
+
+    if resolvedTag then
+      return resolvedTag
+    else
+      log.wf("Could not resolve version constraint %s for %s", plugin.version, plugin.name)
+      return nil
+    end
+  elseif plugin.tag then
+    return plugin.tag
+  elseif plugin.version then
+    -- Simple version, convert to tag if it looks like a version
+    if plugin.version:match("^v?%d+") then
+      return plugin.version:match("^v") and plugin.version or ("v" .. plugin.version)
+    end
+    return plugin.version
+  elseif plugin.branch then
+    return plugin.branch
+  end
+  return nil
+end
+
+-- ------------------------------------------------------------------
+-- Git
+-- ------------------------------------------------------------------
+
+---Gets the commit of a Git repository
+---@param path string
+---@return string?
+function Git.getCommit(path)
+  local success, result = Utils.exec("git rev-parse HEAD", 10, path)
+  if success then
+    return result
+  end
+  return nil
+end
+
+---Checks out a Git reference
+---@param path string
+---@param ref string
+---@return boolean?
+---@return string?
+function Git.checkout(path, ref)
+  if not ref then
+    return true, "HEAD"
+  end
+
+  log.i(string.format("Checking out %s in %s", ref, path))
+  local success, result = Utils.exec(string.format("git checkout '%s'", ref), M.config.git.timeout, path)
+  if success then
+    return true, Git.getCommit(path) or ref
+  end
+  return false, result
+end
+
+function Git.clone(url, path, ref)
+  local parentDir = path:match("(.+)/[^/]+$")
+  if parentDir and not Utils.dirExists(parentDir) then
+    Utils.mkdirP(parentDir)
+  end
+
+  -- Clone with full history if we need to checkout a specific ref
+  local depthFlag = ref and "" or "--depth 1"
+  local cmd = string.format("git clone %s '%s' '%s'", depthFlag, url, path)
+
+  log.i(string.format("Cloning %s to %s", url, path))
+  local success, result = Utils.exec(cmd, M.config.git.timeout)
+
+  if not success then
+    return false, result, nil
+  end
+
+  if ref then
+    local checkoutSuccess, commitOrError = Git.checkout(path, ref)
+    if checkoutSuccess then
+      return true, result, commitOrError
+    else
+      return false, commitOrError, nil
+    end
+  end
+
+  return true, result, Git.getCommit(path)
+end
+
+---Pulls a Git repository
+---@param path string
+---@param ref? string
+---@return boolean?
+---@return string?
+---@return string?
+function Git.pull(path, ref)
+  if not Utils.dirExists(path .. "/.git") then
+    log.wf("Directory %s is not a git repository", path)
+    return false, "Not a git repository", nil
+  end
+
+  log.i(string.format("Updating %s", path))
+
+  -- Fetch all updates
+  local success, result = Utils.exec("git fetch --all", M.config.git.timeout, path)
+  if not success then
+    return false, result, nil
+  end
+
+  if ref then
+    local checkoutSuccess, commitOrError = Git.checkout(path, ref)
+    if checkoutSuccess then
+      return true, result, commitOrError
+    else
+      return false, commitOrError, nil
+    end
+  else
+    local pullSuccess, pullResult = Utils.exec("git pull --ff-only", M.config.git.timeout, path)
+    if pullSuccess then
+      return true, pullResult, Git.getCommit(path)
+    else
+      return false, pullResult, nil
+    end
+  end
+end
+
+function Git.getMatchingTag(pluginPath, versionConstraint)
+  -- Get all tags from the repository
+  local success, result = Utils.exec("git tag --list --sort=-version:refname", 10, pluginPath)
+  if not success then
+    log.wf("Failed to get tags from %s", pluginPath)
+    return nil
+  end
+
+  local tags = {}
+  for tag in result:gmatch("[^\r\n]+") do
+    if tag and tag ~= "" then
+      table.insert(tags, tag)
+    end
+  end
+
+  -- Find the best matching tag
+  for _, tag in ipairs(tags) do
+    if Utils.versionSatisfies(tag, versionConstraint) then
+      log.df("Found matching tag %s for constraint %s", tag, versionConstraint)
+      return tag
+    end
+  end
+
+  log.wf("No tag found matching constraint %s", versionConstraint)
+  return nil
+end
+
+---Resolves a remote tag for a Git repository
+---@param url string
+---@param versionConstraint string
+---@return string?
+function Git.resolveRemoteTag(url, versionConstraint)
+  -- Get remote tags without cloning the entire repo
+  local success, result = Utils.exec(string.format("git ls-remote --tags '%s'", url), M.config.git.timeout)
+  if not success then
+    log.wf("Failed to get remote tags from %s", url)
+    return nil
+  end
+
+  local tags = {}
+  for line in result:gmatch("[^\r\n]+") do
+    local tag = line:match("refs/tags/([^%^]+)")
+    if tag then
+      table.insert(tags, tag)
+    end
+  end
+
+  -- Sort tags by version (descending)
+  table.sort(tags, function(a, b)
+    local va, vb = Utils.parseVersion(a), Utils.parseVersion(b)
+    if va and vb then
+      return Utils.compareVersions(va, vb) > 0
+    end
+    return a > b
+  end)
+
+  -- Find the best matching tag
+  for _, tag in ipairs(tags) do
+    if Utils.versionSatisfies(tag, versionConstraint) then
+      log.df("Found remote matching tag %s for constraint %s", tag, versionConstraint)
+      return tag
+    end
+  end
+
+  log.wf("No remote tag found matching constraint %s", versionConstraint)
+  return nil
+end
+
+-- ------------------------------------------------------------------
+-- Spoon
+-- ------------------------------------------------------------------
+
+---Gets the path to a Spoon
+---@param spoonName string
+---@return string
+function Spoons.getSpoonPath(spoonName)
+  return M.config.spoonDir .. "/" .. spoonName .. ".spoon"
+end
+
+---Copies a Spoon
+---@param spoonName string
+---@param sourcePath string
+---@param destPath string
+---@return boolean?
+---@return string?
+function Spoons.copy(spoonName, sourcePath, destPath)
+  local parentDir = destPath:match("(.+)/[^/]+$")
+  if parentDir then
+    Utils.mkdirP(parentDir)
+  end
+
+  local sourceSpoon = sourcePath .. "/" .. spoonName .. ".spoon"
+  if not Utils.dirExists(sourceSpoon) then
+    return false, "Source spoon directory not found: " .. sourceSpoon
+  end
+
+  log.i(string.format("Copying %s.spoon to %s", spoonName, destPath))
+  return Utils.exec(string.format("cp -r '%s' '%s'", sourceSpoon, destPath), 10)
+end
+
+---Creates a symlink to a Spoon
+---@param spoonName string
+---@param targetPath string
+---@return boolean?
+function Spoons.symlink(spoonName, targetPath)
+  local symlinkPath = Spoons.getSpoonPath(spoonName)
+  targetPath = Utils.normalizePath(targetPath)
+
+  Utils.safeRemove(symlinkPath)
+  Utils.mkdirP(symlinkPath:match("(.+)/[^/]+$"))
+
+  log.i(string.format("Creating symlink: %s -> %s", symlinkPath, targetPath))
+  return hs.fs.link(targetPath, symlinkPath, true)
+end
+
+---Ensures the Spoons repository is cloned
+---@return boolean
+function Spoons.ensureSpoonsRepo()
+  if spoonsRepoCloned then
+    return true
+  end
+
+  local spoonsTemp = M.config.repoDir .. "/spoons-repo"
+
+  if not Utils.dirExists(spoonsTemp) then
+    local success, err = Git.clone(M.config.git.spoonRepo, spoonsTemp)
+    if not success then
+      log.ef("Failed to clone Spoons repository: %s", err or "unknown error")
+      return false
+    end
+  end
+
+  spoonsRepoCloned = true
+  return true
+end
+
+-- ------------------------------------------------------------------
+-- Lockfile
+-- ------------------------------------------------------------------
+
+---Saves the current configuration to the lockfile
+---@return boolean
+function Lockfile.save()
+  local lockfileData = {
+    version = "1.0.0",
+    generatedAt = os.date("%Y-%m-%dT%H:%M:%SZ"),
+    plugins = {},
+  }
+
+  for name, plugin in pairs(configuredPlugins) do
+    if plugin.enabled then
+      local spoonPath = Spoons.getSpoonPath(plugin.name)
+      local lockEntry = {
+        name = plugin.name,
+        url = plugin.url,
+        branch = plugin.branch,
+        tag = plugin.tag,
+        commit = plugin.commit,
+        version = plugin.version,
+        spoon = plugin.spoon,
+        dir = plugin.dir,
+      }
+
+      -- Get actual commit if it's a git repo
+      if plugin.url and Utils.dirExists(spoonPath) then
+        lockEntry.resolvedCommit = Git.getCommit(spoonPath)
+      end
+
+      lockfileData.plugins[name] = lockEntry
+    end
+  end
+
+  local file, err = io.open(lockfilePath, "w")
   if file then
-    file:write("-- Auto-generated plugin state - do not edit manually\n")
+    file:write("-- Pack lockfile - tracks exact versions of installed plugins\n")
+    file:write("-- This file should be committed to version control\n")
     file:write("-- Generated at: " .. os.date() .. "\n")
-    file:write("return " .. serialize_table(state) .. "\n")
+    file:write("return " .. Utils.serializeTable(lockfileData) .. "\n")
     file:close()
-    log("debug", "Saved plugin state to %s (%d plugins)", config_file_path, table_length(state))
+    log.i(string.format("Saved lockfile to %s (%d plugins)", lockfilePath, Utils.tableLength(lockfileData.plugins)))
     return true
   else
-    log("error", "Failed to save plugin state to %s: %s", config_file_path, err or "unknown error")
+    log.ef("Failed to save lockfile to %s: %s", lockfilePath, err or "unknown error")
     return false
   end
 end
 
-local function load_plugin_state()
-  local config_file_path = M.config.state_dir .. "/" .. state_file_name
-
-  if not path_exists(config_file_path) then
-    log("debug", "No previous plugin state file found at %s", config_file_path)
+---Loads the current configuration from the lockfile
+---@return table<string, Hs.Pack.PluginSpec>
+function Lockfile.load()
+  if not lockfilePath or not Utils.pathExists(lockfilePath) then
+    log.df("No lockfile found at %s", lockfilePath or "unset")
     return {}
   end
 
-  local chunk, err = loadfile(config_file_path)
+  local chunk, err = loadfile(lockfilePath)
   if chunk then
-    local success, state = pcall(chunk)
-    if success and type(state) == "table" then
-      log("debug", "Loaded plugin state from %s (%d plugins)", config_file_path, table_length(state))
-      return state
+    local success, lockfileData = pcall(chunk)
+    if success and type(lockfileData) == "table" and lockfileData.plugins then
+      log.df("Loaded lockfile from %s (%d plugins)", lockfilePath, Utils.tableLength(lockfileData.plugins))
+      return lockfileData.plugins
     else
-      log("warn", "Failed to load plugin state: %s", tostring(state))
+      log.wf("Failed to load lockfile data: %s", tostring(lockfileData))
     end
   else
-    log("warn", "Failed to parse plugin state file: %s", err or "unknown error")
+    log.wf("Failed to parse lockfile: %s", err or "unknown error")
   end
-
-  local backup_path = config_file_path .. ".backup." .. os.time()
-  os.execute(string.format("cp '%s' '%s'", config_file_path, backup_path))
-  log("info", "Backed up corrupted state file to %s", backup_path)
 
   return {}
 end
 
--- Directory scanning for plugin files
-local function scan_plugin_directory(dir_path)
-  dir_path = normalize_path(dir_path)
+-- ------------------------------------------------------------------
+-- Plugins
+-- ------------------------------------------------------------------
 
-  if not dir_exists(dir_path) then
-    log("debug", "Plugin directory not found: %s", dir_path)
+---Gets the installed plugins
+---@return table<string, Hs.Pack.PluginInfo>
+function Plugins.getInstalled()
+  local installed = {}
+
+  if not Utils.dirExists(M.config.spoonDir) then
+    return installed
+  end
+
+  local handle = io.popen(string.format('find "%s" -maxdepth 1 -name "*.spoon" -type d', M.config.spoonDir))
+  if handle then
+    for path in handle:lines() do
+      local pluginName = path:match("([^/]+)%.spoon$")
+      if pluginName then
+        installed[pluginName] = {
+          name = pluginName,
+          path = path,
+          isSymlink = os.execute(string.format('[ -L "%s" ]', path)) == true,
+        }
+      end
+    end
+    handle:close()
+  end
+
+  return installed
+end
+
+---Scans a directory for plugin files
+---@param dirPath string
+---@return Hs.Pack.PluginSpec[]
+function Plugins.scanDirectory(dirPath)
+  dirPath = Utils.normalizePath(dirPath)
+
+  if not Utils.dirExists(dirPath) then
+    log.df("Plugin directory not found: %s", dirPath)
     return {}
   end
 
-  log("info", "Scanning for plugin configs in: %s", dir_path)
+  log.i(string.format("Scanning for plugin configs in: %s", dirPath))
 
   local files = {}
-  local handle = io.popen(string.format('find "%s" -name "*.lua" -type f', dir_path))
+  local handle = io.popen(string.format('find "%s" -name "*.lua" -type f', dirPath))
 
   if handle then
     for file in handle:lines() do
@@ -253,101 +790,59 @@ local function scan_plugin_directory(dir_path)
     handle:close()
   end
 
-  local plugins = {}
-  local loaded_count = 0
+  ---@type Hs.Pack.PluginSpec[]
+  local foundPlugins = {}
+  local loadedCount = 0
 
-  for _, file_path in ipairs(files) do
-    local relative_path = file_path:match(".+/(.+)%.lua$") or file_path
-    log("debug", "Loading plugin config from %s", relative_path)
+  for _, filePath in ipairs(files) do
+    local relativePath = filePath:match(".+/(.+)%.lua$") or filePath
+    log.df("Loading plugin config from %s", relativePath)
 
-    local chunk, err = loadfile(file_path)
+    local chunk, err = loadfile(filePath)
     if chunk then
-      local success, plugin_spec = pcall(chunk)
+      local success, pluginSpec = pcall(chunk)
       if success then
         -- Handle function returns
-        if type(plugin_spec) == "function" then
-          success, plugin_spec = pcall(plugin_spec)
+        if type(pluginSpec) == "function" then
+          success, pluginSpec = pcall(pluginSpec)
         end
 
-        if success and type(plugin_spec) == "table" then
+        if success and type(pluginSpec) == "table" then
+          -- if empty table, skip
+          if next(pluginSpec) == nil then
+            log.df("Skipping empty plugin spec")
+            loadedCount = loadedCount + 1
+            goto continue
+          end
           -- Auto-detect plugin name from filename if not specified
-          if not plugin_spec.name and not plugin_spec[1] then
-            local filename = file_path:match(".+/(.+)%.lua$") or file_path:match("([^/]+)%.lua$")
-            plugin_spec.name = filename
+          if not pluginSpec.name and not pluginSpec[1] then
+            local filename = filePath:match(".+/(.+)%.lua$") or filePath:match("([^/]+)%.lua$")
+            pluginSpec.name = filename
           end
 
-          table.insert(plugins, plugin_spec)
-          loaded_count = loaded_count + 1
-          log("debug", "Loaded plugin: %s", plugin_spec.name or plugin_spec[1] or "unnamed")
+          table.insert(foundPlugins, pluginSpec)
+          loadedCount = loadedCount + 1
+          log.df("Loaded plugin: %s", pluginSpec.name or pluginSpec[1] or "unnamed")
         else
-          log("error", "Plugin file %s must return a table: %s", relative_path, tostring(plugin_spec))
+          log.ef("Plugin file %s must return a table: %s", relativePath, tostring(pluginSpec))
         end
       else
-        log("error", "Failed to execute plugin file %s: %s", relative_path, tostring(plugin_spec))
+        log.ef("Failed to execute plugin file %s: %s", relativePath, tostring(pluginSpec))
       end
+      ::continue::
     else
-      log("error", "Failed to parse plugin file %s: %s", relative_path, err or "unknown")
+      log.ef("Failed to parse plugin file %s: %s", relativePath, err or "unknown")
     end
   end
 
-  log("info", "Loaded %d plugin configurations from %d files", loaded_count, #files)
-  return plugins
+  log.i(string.format("Loaded %d plugin configurations from %d files", loadedCount, #files))
+  return foundPlugins
 end
 
--- Spoon operations
-local function copy_spoon(spoon_name, source_path, dest_path)
-  local parent_dir = dest_path:match("(.+)/[^/]+$")
-  if parent_dir then
-    mkdir_p(parent_dir)
-  end
-
-  local source_spoon = source_path .. "/" .. spoon_name .. ".spoon"
-  if not dir_exists(source_spoon) then
-    return false, "Source spoon directory not found: " .. source_spoon
-  end
-
-  log("info", "Copying %s.spoon to %s", spoon_name, dest_path)
-  return exec(string.format("cp -r '%s' '%s'", source_spoon, dest_path), 10)
-end
-
-local function get_spoon_path(spoon_name)
-  return M.config.spoon_dir .. "/" .. spoon_name .. ".spoon"
-end
-
-local function safe_remove(path)
-  path = normalize_path(path)
-
-  if not path_exists(path) and not dir_exists(path) then
-    return true
-  end
-
-  local is_link = os.execute(string.format('[ -L "%s" ]', path)) == true
-  local cmd = is_link and string.format('rm "%s"', path:gsub('"', '\\"'))
-    or string.format('rm -rf "%s"', path:gsub('"', '\\"'))
-
-  log("debug", "Removing %s (symlink: %s)", path, is_link)
-  local ok, how, code = os.execute(cmd)
-
-  if not ok then
-    log("warn", "Failed to remove %s: exit code %s", path, code or "unknown")
-  end
-
-  return ok, how, code
-end
-
-local function create_spoon_symlink(spoon_name, target_path)
-  local symlink_path = get_spoon_path(spoon_name)
-  target_path = normalize_path(target_path)
-
-  safe_remove(symlink_path)
-  mkdir_p(symlink_path:match("(.+)/[^/]+$"))
-
-  log("info", "Creating symlink: %s -> %s", symlink_path, target_path)
-  return hs.fs.link(target_path, symlink_path, true)
-end
-
--- Plugin spec normalization
-local function normalize_plugin_spec(spec)
+---Normalizes a plugin spec
+---@param spec Hs.Pack.PluginSpec|string
+---@return Hs.Pack.PluginSpec
+function Plugins.normalizeSpec(spec)
   if type(spec) == "string" then
     return { name = spec }
   end
@@ -356,6 +851,9 @@ local function normalize_plugin_spec(spec)
     name = spec[1] or spec.name,
     url = spec.url,
     branch = spec.branch,
+    tag = spec.tag,
+    commit = spec.commit,
+    version = spec.version,
     dir = spec.dir,
     spoon = spec.spoon or false,
     config = spec.config,
@@ -375,363 +873,490 @@ local function normalize_plugin_spec(spec)
   return plugin
 end
 
--- Repository management
-local function ensure_spoons_repo()
-  if spoons_repo_cloned then
-    return true
-  end
-
-  local spoons_temp = M.config.repo_dir .. "/spoons-repo"
-
-  if not dir_exists(spoons_temp) then
-    local success, err = git_clone(M.config.git.spoon_repo, spoons_temp)
-    if not success then
-      log("error", "Failed to clone Spoons repository: %s", err or "unknown error")
-      return false
-    end
-  end
-
-  spoons_repo_cloned = true
-  return true
-end
-
--- Plugin installation
-local function install_plugin(plugin)
+---Installs a plugin
+---@param plugin Hs.Pack.PluginSpec
+---@return boolean
+function Plugins.install(plugin)
   if not plugin.enabled then
-    log("debug", "Skipping disabled plugin %s", plugin.name)
+    log.df("Skipping disabled plugin %s", plugin.name)
     return true
   end
 
   if plugin.spoon then
-    if not ensure_spoons_repo() then
+    if not Spoons.ensureSpoonsRepo() then
       return false
     end
 
-    local spoons_temp = M.config.repo_dir .. "/spoons-repo"
-    local spoon_source = spoons_temp .. "/Source/" .. plugin.name
-    local spoon_path = get_spoon_path(plugin.name)
+    local spoonsTemp = M.config.repoDir .. "/spoons-repo"
+    local spoonSource = spoonsTemp .. "/Source/" .. plugin.name
+    local spoonPath = Spoons.getSpoonPath(plugin.name)
 
-    if not dir_exists(spoon_source .. ".spoon") then
-      log("error", "Spoon %s not found in repository", plugin.name)
+    if not Utils.dirExists(spoonSource .. ".spoon") then
+      log.ef("Spoon %s not found in repository", plugin.name)
       return false
     end
 
-    local success, err = copy_spoon(plugin.name, spoons_temp .. "/Source", spoon_path)
+    local success, err = Spoons.copy(plugin.name, spoonsTemp .. "/Source", spoonPath)
     if not success then
-      log("error", "Failed to install spoon %s: %s", plugin.name, err or "unknown error")
+      log.ef("Failed to install spoon %s: %s", plugin.name, err or "unknown error")
       return false
     end
   else
     if plugin.dir then
       -- Local plugin - create symlink
-      if not dir_exists(plugin.dir) then
-        log("error", "Local plugin directory not found: %s", plugin.dir)
+      if not Utils.dirExists(plugin.dir) then
+        log.ef("Local plugin directory not found: %s", plugin.dir)
         return false
       end
 
-      local symlink_success, symlink_err = create_spoon_symlink(plugin.name, plugin.dir)
-      if not symlink_success then
-        log("error", "Failed to create symlink for plugin %s: %s", plugin.name, symlink_err or "unknown error")
+      local symlinkSuccess, symlinkErr = Spoons.symlink(plugin.name, plugin.dir)
+      if not symlinkSuccess then
+        log.ef("Failed to create symlink for plugin %s: %s", plugin.name, symlinkErr or "unknown error")
         return false
       end
     elseif plugin.url then
-      -- Git plugin
-      local target_path = get_spoon_path(plugin.name)
-      local success, err = git_clone(plugin.url, target_path, plugin.branch)
+      -- Git plugin with version support
+      local targetPath = Spoons.getSpoonPath(plugin.name)
+      local versionRef = Utils.resolveVersionRef(plugin, nil) -- No repo path for initial install
+      local success, err, commit = Git.clone(plugin.url, targetPath, versionRef)
       if not success then
-        log("error", "Failed to install plugin %s: %s", plugin.name, err or "unknown error")
+        log.ef("Failed to install plugin %s: %s", plugin.name, err or "unknown error")
         return false
       end
+
+      -- Update plugin with resolved commit
+      if commit then
+        plugin.resolvedCommit = commit
+      end
+
+      -- Log the resolved version
+      if versionRef and versionRef ~= commit then
+        log.i(
+          string.format(
+            "Installed %s at %s (commit: %s)",
+            plugin.name,
+            versionRef,
+            commit and commit:sub(1, 7) or "unknown"
+          )
+        )
+      end
     else
-      log("error", "Plugin %s has no URL or directory specified", plugin.name)
+      log.ef("Plugin %s has no URL or directory specified", plugin.name)
       return false
     end
   end
 
-  log("info", "Successfully installed %s", plugin.name)
+  log.i(string.format("Successfully installed %s", plugin.name))
   return true
 end
 
-local function update_plugin(plugin)
-  local spoon_path = get_spoon_path(plugin.name)
+---Updates a plugin
+---@param plugin Hs.Pack.PluginSpec
+---@param useLockfile? boolean Whether to use the lockfile for version resolution
+---@return boolean
+function Plugins.update(plugin, useLockfile)
+  local spoonPath = Spoons.getSpoonPath(plugin.name)
 
-  if not dir_exists(spoon_path) then
-    log("warn", "Plugin %s not installed, installing...", plugin.name)
-    return install_plugin(plugin)
+  if not Utils.dirExists(spoonPath) then
+    log.wf("Plugin %s not installed, installing...", plugin.name)
+    return Plugins.install(plugin)
   end
 
   if plugin.spoon then
-    if not ensure_spoons_repo() then
+    if not Spoons.ensureSpoonsRepo() then
       return false
     end
 
-    local spoons_temp = M.config.repo_dir .. "/spoons-repo"
-    local success, err = git_pull(spoons_temp)
+    local spoonsTemp = M.config.repoDir .. "/spoons-repo"
+    local success, err = Git.pull(spoonsTemp)
     if not success then
-      log("warn", "Failed to update Spoons repository: %s", err or "unknown error")
+      log.wf("Failed to update Spoons repository: %s", err or "unknown error")
     end
 
-    safe_remove(spoon_path)
-    return install_plugin(plugin)
+    Utils.safeRemove(spoonPath)
+    return Plugins.install(plugin)
   elseif plugin.url then
-    local success, err = git_pull(spoon_path)
+    local versionRef
+    if useLockfile then
+      versionRef = plugin.resolvedCommit
+    else
+      versionRef = Utils.resolveVersionRef(plugin, spoonPath)
+    end
+
+    local success, err, commit = Git.pull(spoonPath, versionRef)
     if not success then
-      log("error", "Failed to update plugin %s: %s", plugin.name, err or "unknown error")
+      log.ef("Failed to update plugin %s: %s", plugin.name, err or "unknown error")
       return false
+    end
+
+    -- Update plugin with resolved commit
+    if commit then
+      plugin.resolvedCommit = commit
+    end
+
+    -- Log the resolved version
+    if versionRef and versionRef ~= commit then
+      log.i(
+        string.format(
+          "Updated %s to %s (commit: %s)",
+          plugin.name,
+          versionRef,
+          commit and commit:sub(1, 7) or "unknown"
+        )
+      )
     end
   elseif plugin.dir then
-    local symlink_success, symlink_err = create_spoon_symlink(plugin.name, plugin.dir)
-    if not symlink_success then
-      log("warn", "Failed to update symlink for plugin %s: %s", plugin.name, symlink_err or "unknown error")
+    local symlinkSuccess, symlinkErr = Spoons.symlink(plugin.name, plugin.dir)
+    if not symlinkSuccess then
+      log.wf("Failed to update symlink for plugin %s: %s", plugin.name, symlinkErr or "unknown error")
       return false
     end
   end
 
-  log("info", "Successfully updated %s", plugin.name)
+  log.i(string.format("Successfully updated %s", plugin.name))
   return true
 end
 
--- Plugin loading with dependency resolution
-local function load_plugin(plugin, loading_stack)
-  loading_stack = loading_stack or {}
+---Loads a plugin with dependency resolution
+---@param plugin Hs.Pack.PluginSpec
+---@param loadingStack? table<string, boolean> The loading stack
+---@return boolean
+function Plugins.load(plugin, loadingStack)
+  loadingStack = loadingStack or {}
 
   -- Detect circular dependencies
-  if loading_stack[plugin.name] then
+  if loadingStack[plugin.name] then
     local cycle = {}
     local found = false
-    for name in pairs(loading_stack) do
+    for name in pairs(loadingStack) do
       if found or name == plugin.name then
         found = true
         table.insert(cycle, name)
       end
     end
     table.insert(cycle, plugin.name)
-    log("error", "Circular dependency detected: %s", table.concat(cycle, " -> "))
+    log.ef("Circular dependency detected: %s", table.concat(cycle, " -> "))
     return false
   end
 
   if not plugin.enabled then
-    log("debug", "Skipping disabled plugin %s", plugin.name)
+    log.df("Skipping disabled plugin %s", plugin.name)
     return true
   end
 
-  loading_stack[plugin.name] = true
+  loadingStack[plugin.name] = true
 
   -- Load dependencies first
-  for _, dep_spec in ipairs(plugin.dependencies) do
-    local dep = normalize_plugin_spec(dep_spec)
-    if not load_plugin(dep, loading_stack) then
-      log("error", "Failed to load dependency %s for %s", dep.name, plugin.name)
-      loading_stack[plugin.name] = nil
+  for _, depSpec in ipairs(plugin.dependencies) do
+    local dep = Plugins.normalizeSpec(depSpec)
+    if not Plugins.load(dep, loadingStack) then
+      log.ef("Failed to load dependency %s for %s", dep.name, plugin.name)
+      loadingStack[plugin.name] = nil
       return false
     end
   end
 
-  local spoon_path = get_spoon_path(plugin.name)
+  local spoonPath = Spoons.getSpoonPath(plugin.name)
 
-  if not dir_exists(spoon_path) then
-    if M.config.auto_install then
-      log("info", "Plugin %s not found, installing...", plugin.name)
-      if not install_plugin(plugin) then
-        loading_stack[plugin.name] = nil
+  if not Utils.dirExists(spoonPath) then
+    if M.config.autoInstall then
+      log.i(string.format("Plugin %s not found, installing...", plugin.name))
+      if not Plugins.install(plugin) then
+        loadingStack[plugin.name] = nil
         return false
       end
     else
-      log("error", "Plugin %s not installed and auto_install is disabled", plugin.name)
-      loading_stack[plugin.name] = nil
+      log.ef("Plugin %s not installed and autoInstall is disabled", plugin.name)
+      loadingStack[plugin.name] = nil
       return false
     end
   end
 
   -- Load the spoon
-  local load_success, load_error = pcall(hs.loadSpoon, plugin.name)
-  if not load_success then
-    log("error", "Failed to load spoon %s: %s", plugin.name, load_error or "unknown error")
-    loading_stack[plugin.name] = nil
+  local loadSuccess, loadError = pcall(hs.loadSpoon, plugin.name)
+  if not loadSuccess then
+    log.ef("Failed to load spoon %s: %s", plugin.name, loadError or "unknown error")
+    loadingStack[plugin.name] = nil
     return false
   end
 
   -- Run configuration
   if type(plugin.config) == "function" then
-    local config_success, config_error = pcall(plugin.config)
-    if not config_success then
-      log("error", "Failed to configure plugin %s: %s", plugin.name, config_error or "unknown error")
-      loading_stack[plugin.name] = nil
+    local configSuccess, configError = pcall(plugin.config)
+    if not configSuccess then
+      log.ef("Failed to configure plugin %s: %s", plugin.name, configError or "unknown error")
+      loadingStack[plugin.name] = nil
       return false
     end
   end
 
-  loading_stack[plugin.name] = nil
-  log("info", "Successfully loaded %s", plugin.name)
+  loadingStack[plugin.name] = nil
+  log.i(string.format("Successfully loaded %s", plugin.name))
   return true
 end
 
--- Public API
-function M:init(spec)
-  print("Initializing pack")
-  spec = spec or {}
+-- ------------------------------------------------------------------
+-- API
+-- ------------------------------------------------------------------
 
-  -- Merge user config
-  if spec.config then
-    for k, v in pairs(spec.config) do
-      if type(v) == "table" and type(M.config[k]) == "table" then
-        for sub_k, sub_v in pairs(v) do
-          M.config[k][sub_k] = sub_v
-        end
-      else
-        M.config[k] = v
-      end
-    end
-  end
+---@type Hs.Pack.Config
+M.config = {}
+
+---Initializes the Pack module
+---@param userConfig? Hs.Pack.Config
+---@return nil
+function M:init(userConfig)
+  print("-- Starting Pack...")
+  M.config = Utils.tblDeepExtend("force", defaultConfig, userConfig or {})
+  log = hs.logger.new(M.name, M.config.logLevel)
 
   -- Create directories
-  mkdir_p(M.config.repo_dir)
-  mkdir_p(M.config.spoon_dir)
-  mkdir_p(M.config.state_dir)
+  Utils.mkdirP(M.config.repoDir)
+  Utils.mkdirP(M.config.spoonDir)
 
   -- Setup Hammerspoon load path
-  package.path = package.path .. ";" .. M.config.spoon_dir .. "/?.spoon/init.lua"
+  package.path = package.path .. ";" .. M.config.spoonDir .. "/?.spoon/init.lua"
 
   -- Handle plugin sources
-  plugins = {}
+  configuredPlugins = {}
+
+  -- Load lockfile for version pinning
+  local lockfileData = Lockfile.load()
 
   -- If directory is specified, scan it for plugin files
-  if spec.dir then
-    local dir_plugins = scan_plugin_directory(spec.dir)
-    for _, plugin_spec in ipairs(dir_plugins) do
-      local success, plugin = pcall(normalize_plugin_spec, plugin_spec)
+  if M.config.dir then
+    local dirPlugins = Plugins.scanDirectory(M.config.dir)
+    for _, pluginSpec in ipairs(dirPlugins) do
+      local success, plugin = pcall(Plugins.normalizeSpec, pluginSpec)
       if success then
-        plugins[plugin.name] = plugin
+        -- Merge lockfile data if available
+        if lockfileData[plugin.name] then
+          plugin.resolvedCommit = lockfileData[plugin.name].resolvedCommit
+        end
+        configuredPlugins[plugin.name] = plugin
       else
-        log("error", "Failed to normalize plugin spec: %s", plugin or "unknown error")
+        log.ef("Failed to normalize plugin spec: %s", plugin or "unknown error")
       end
     end
   end
 
   -- Add inline plugins
-  if spec.plugins then
-    for _, plugin_spec in ipairs(spec.plugins) do
-      local success, plugin = pcall(normalize_plugin_spec, plugin_spec)
+  if M.config.plugins then
+    for _, pluginSpec in ipairs(M.config.plugins) do
+      local success, plugin = pcall(Plugins.normalizeSpec, pluginSpec)
       if success then
-        plugins[plugin.name] = plugin
+        -- Merge lockfile data if available
+        if lockfileData[plugin.name] then
+          plugin.resolvedCommit = lockfileData[plugin.name].resolvedCommit
+        end
+        configuredPlugins[plugin.name] = plugin
       else
-        log("error", "Failed to normalize plugin spec: %s", plugin or "unknown error")
+        log.ef("Failed to normalize plugin spec: %s", plugin or "unknown error")
       end
     end
   end
 
-  log("info", "Configured %d plugins", table_length(plugins))
+  log.i(string.format("Configured %d plugins", Utils.tableLength(configuredPlugins)))
 
   -- Cleanup if enabled
-  if M.config.auto_cleanup then
+  if M.config.autoCleanup then
     M.clean()
   end
 
-  -- Load all plugins
-  local loaded_count = 0
-  local failed_count = 0
+  -- Load all enabled plugins
+  local loadedCount = 0
+  local failedCount = 0
+  local disabledCount = 0
 
-  for name, plugin in pairs(plugins) do
-    if load_plugin(plugin) then
-      loaded_count = loaded_count + 1
+  for _, plugin in pairs(configuredPlugins) do
+    if not plugin.enabled then
+      disabledCount = disabledCount + 1
+    elseif Plugins.load(plugin) then
+      loadedCount = loadedCount + 1
     else
-      failed_count = failed_count + 1
+      failedCount = failedCount + 1
     end
   end
 
-  log("info", "Plugin loading complete: %d loaded, %d failed", loaded_count, failed_count)
-  save_plugin_state()
+  log.i(
+    string.format("Plugin loading complete: %d loaded, %d failed, %d disabled", loadedCount, failedCount, disabledCount)
+  )
+
+  -- Save lockfile with current state
+  if lockfilePath then
+    Lockfile.save()
+  end
 end
 
+---Updates a plugin
+---@param name? string The name of the plugin to update
+---@return boolean
 function M.update(name)
-  local previous_state = load_plugin_state()
+  local lockfileData = Lockfile.load()
 
   if name then
-    local plugin = plugins[name] or previous_state[name]
+    local plugin = configuredPlugins[name]
     if not plugin then
-      log("error", "Plugin %s not found", name)
+      log.ef("Plugin %s not found in current configuration", name)
       return false
     end
-    plugin = normalize_plugin_spec(plugin)
-    return update_plugin(plugin)
+
+    -- Merge lockfile data
+    if lockfileData[name] then
+      plugin.resolvedCommit = lockfileData[name].resolvedCommit
+    end
+
+    return Plugins.update(plugin, false) -- Don't use lockfile for explicit updates
   else
     local success = true
-    local updated_count = 0
+    local updatedCount = 0
 
-    for plugin_name, plugin in pairs(previous_state) do
-      plugin = normalize_plugin_spec(plugin)
-      if update_plugin(plugin) then
-        updated_count = updated_count + 1
+    for pluginName, plugin in pairs(configuredPlugins) do
+      -- Merge lockfile data
+      if lockfileData[pluginName] then
+        plugin.resolvedCommit = lockfileData[pluginName].resolvedCommit
+      end
+
+      if Plugins.update(plugin, false) then
+        updatedCount = updatedCount + 1
       else
         success = false
       end
     end
 
-    log("info", "Update complete: %d plugins updated", updated_count)
+    log.i(string.format("Update complete: %d plugins updated", updatedCount))
+
+    -- Update lockfile after successful updates
+    if success and lockfilePath then
+      Lockfile.save()
+    end
+
     return success
   end
 end
 
-function M.clean()
-  log("info", "Cleaning unused plugins...")
+---Restores the plugins from the lockfile
+---@return boolean
+function M.restore()
+  local lockfileData = Lockfile.load()
 
-  local previous_state = load_plugin_state()
-  local current_plugins = {}
-
-  for name, plugin in pairs(plugins) do
-    current_plugins[name] = true
+  if Utils.tableLength(lockfileData) == 0 then
+    log.ef("No lockfile found, cannot restore")
+    return false
   end
 
-  local cleaned_count = 0
+  log.i("Restoring plugins from lockfile...")
 
-  for old_name, old_plugin in pairs(previous_state) do
-    if not current_plugins[old_name] then
-      log("info", "Removing unused plugin %s", old_name)
+  local success = true
+  local restoredCount = 0
 
-      local spoon_path = get_spoon_path(old_plugin.name)
-      local ok, _, _ = safe_remove(spoon_path)
+  for _, lockEntry in pairs(lockfileData) do
+    local plugin = Plugins.normalizeSpec(lockEntry)
+    plugin.resolvedCommit = lockEntry.resolvedCommit
+
+    if Plugins.update(plugin, true) then
+      restoredCount = restoredCount + 1
+    else
+      success = false
+    end
+  end
+
+  log.i(string.format("Restore complete: %d plugins restored", restoredCount))
+  return success
+end
+
+---Enables a plugin
+---@param name string The name of the plugin to enable
+---@return boolean
+function M.enable(name)
+  if not configuredPlugins[name] then
+    log.ef("Plugin %s not found", name)
+    return false
+  end
+
+  if configuredPlugins[name].enabled then
+    log.i(string.format("Plugin %s is already enabled", name))
+    return true
+  end
+
+  configuredPlugins[name].enabled = true
+  log.i(string.format("Enabled plugin %s", name))
+
+  -- Install and load if needed
+  if M.config.autoInstall then
+    if Plugins.install(configuredPlugins[name]) then
+      Plugins.load(configuredPlugins[name])
+    end
+  end
+
+  if lockfilePath then
+    Lockfile.save()
+  end
+
+  return true
+end
+
+---Disables a plugin
+---@param name string The name of the plugin to disable
+function M.disable(name)
+  if not configuredPlugins[name] then
+    log.ef("Plugin %s not found", name)
+    return false
+  end
+
+  if not configuredPlugins[name].enabled then
+    log.i(string.format("Plugin %s is already disabled", name))
+    return true
+  end
+
+  configuredPlugins[name].enabled = false
+  log.i(string.format("Disabled plugin %s", name))
+
+  if lockfilePath then
+    Lockfile.save()
+  end
+
+  return true
+end
+
+---Cleans up unused plugins
+---@return integer The number of plugins cleaned up
+function M.clean()
+  log.i("Cleaning unused plugins...")
+
+  local installedPlugins = Plugins.getInstalled()
+  local currentPlugins = {}
+
+  -- Build set of currently configured plugins
+  for name, _ in pairs(configuredPlugins) do
+    currentPlugins[name] = true
+  end
+
+  local cleanedCount = 0
+
+  -- Remove any installed plugins that aren't in the current configuration
+  for pluginName, pluginInfo in pairs(installedPlugins) do
+    if not currentPlugins[pluginName] then
+      log.i(string.format("Removing unused plugin %s", pluginName))
+
+      local ok = Utils.safeRemove(pluginInfo.path)
 
       if ok then
-        cleaned_count = cleaned_count + 1
-        log("info", "Removed plugin: %s", spoon_path)
+        cleanedCount = cleanedCount + 1
+        log.i(string.format("Removed plugin: %s", pluginInfo.path))
       else
-        log("error", "Failed to remove %s", spoon_path)
+        log.ef("Failed to remove %s", pluginInfo.path)
       end
     end
   end
 
-  if cleaned_count > 0 then
-    log("info", "Cleanup complete: removed %d plugins", cleaned_count)
+  if cleanedCount > 0 then
+    log.i(string.format("Cleanup complete: removed %d plugins", cleanedCount))
   else
-    log("info", "No unused plugins found")
+    log.i("No unused plugins found")
   end
 
-  return cleaned_count
-end
-
-function M.list()
-  log("info", "Configured plugins (%d total):", table_length(plugins))
-  for name, plugin in pairs(plugins) do
-    local spoon_path = get_spoon_path(plugin.name)
-    local status = dir_exists(spoon_path) and "✓ installed" or "✗ not installed"
-    local type_str = plugin.spoon and "spoon" or "plugin"
-    local enabled_str = plugin.enabled and "" or " (disabled)"
-    log("info", "  %s (%s): %s%s", name, type_str, status, enabled_str)
-  end
-end
-
-function M.status()
-  local installed = 0
-  local total = table_length(plugins)
-
-  for name, plugin in pairs(plugins) do
-    if dir_exists(get_spoon_path(plugin.name)) then
-      installed = installed + 1
-    end
-  end
-
-  log("info", "Status: %d/%d plugins installed", installed, total)
-  return { installed = installed, total = total }
+  return cleanedCount
 end
 
 return M

@@ -1,3 +1,4 @@
+---@type Hs.Pack.PluginSpec
 return {
   name = "Vimnav",
   dir = os.getenv("HOME") .. "/.hammerspoon/custom-plugins/Vimnav",

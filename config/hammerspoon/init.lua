@@ -13,10 +13,4 @@ globalPref:init()
 -- Pack
 -- ------------------------------------------------------------------
 
-pack:init({
-  dir = os.getenv("HOME") .. "/.hammerspoon/pack",
-  config = {
-    auto_install = true,
-    auto_cleanup = true,
-  },
-})
+pack:init()
