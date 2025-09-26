@@ -1608,7 +1608,6 @@ local function handleVimInput(char, modifiers)
     end
 
     State.linkCapture = State.linkCapture .. char:upper()
-    Marks.draw()
 
     -- Check for exact match
     for i, _ in ipairs(State.marks) do
@@ -1640,8 +1639,9 @@ local function handleVimInput(char, modifiers)
 
     if not hasPartialMatches then
       State.linkCapture = ""
-      Marks.draw()
     end
+
+    Marks.draw()
     return
   end
 
