@@ -670,7 +670,6 @@ end
 function Lockfile.save()
   local lockfileData = {
     version = "1.0.0",
-    generatedAt = os.date("%Y-%m-%dT%H:%M:%SZ"),
     plugins = {},
   }
 
@@ -701,7 +700,6 @@ function Lockfile.save()
   if file then
     file:write("-- Pack lockfile - tracks exact versions of installed plugins\n")
     file:write("-- This file should be committed to version control\n")
-    file:write("-- Generated at: " .. os.date() .. "\n")
     file:write("return " .. Utils.serializeTable(lockfileData) .. "\n")
     file:close()
     log.i(string.format("Saved lockfile to %s (%d plugins)", lockfilePath, Utils.tableLength(lockfileData.plugins)))
