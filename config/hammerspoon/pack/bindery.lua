@@ -1,3 +1,4 @@
+---@type Hs.Pack.PluginSpec
 return {
   name = "Bindery",
   dir = os.getenv("HOME") .. "/.hammerspoon/custom-plugins/Bindery",
