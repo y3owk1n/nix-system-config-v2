@@ -1,10 +1,8 @@
 ---@type Hs.Pack.PluginSpec
 return {
   name = "Vimnav",
-  dir = os.getenv("HOME") .. "/.hammerspoon/custom-plugins/Vimnav",
+  url = "https://github.com/y3owk1n/vimnav.spoon.git",
   config = function()
-    ---@type Hs.Vimnav.Config
-    ---@diagnostic disable-next-line: missing-fields
     local vimnavConfig = {
       excludedApps = {
         "Terminal",

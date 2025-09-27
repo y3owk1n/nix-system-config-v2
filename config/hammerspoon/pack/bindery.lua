@@ -1,15 +1,13 @@
 ---@type Hs.Pack.PluginSpec
 return {
   name = "Bindery",
-  dir = os.getenv("HOME") .. "/.hammerspoon/custom-plugins/Bindery",
+  url = "https://github.com/y3owk1n/bindery.spoon.git",
   config = function()
-    local keys = require("utils").keys
     local bindery = spoon.Bindery
 
-    ---@type Hs.Bindery.Config
     local binderyConfig = {
       apps = {
-        modifier = keys.hyper,
+        modifier = bindery.specialModifiers.hyper,
         bindings = {
           ["Safari"] = "b",
           ["Ghostty"] = "t",
@@ -23,14 +21,14 @@ return {
       },
       customBindings = {
         spotlightRemap = {
-          modifier = keys.hyper,
+          modifier = bindery.specialModifiers.hyper,
           key = "return",
           action = function()
             bindery.keyStroke("cmd", "space")
           end,
         },
         toggleCurrPrevApp = {
-          modifier = keys.hyper,
+          modifier = bindery.specialModifiers.hyper,
           key = "l",
           action = function()
             bindery.keyStroke({ "cmd" }, "tab")
@@ -91,14 +89,14 @@ return {
         hideAllWindowExceptFront = {
           enabled = true,
           bindings = {
-            modifier = keys.hyper,
+            modifier = bindery.specialModifiers.hyper,
             key = "1",
           },
         },
         autoMaximizeWindow = {
           enabled = true,
           bindings = {
-            modifier = keys.hyper,
+            modifier = bindery.specialModifiers.hyper,
             key = "2",
           },
         },
