@@ -6,8 +6,6 @@ M.__index = M
 
 M.name = "pack"
 
-local _utils = require("utils")
-
 local Utils = {}
 local Git = {}
 local Spoons = {}
@@ -90,9 +88,90 @@ local defaultConfig = {
 -- Helpers
 -- ------------------------------------------------------------------
 
----imports from utils
----can be implemented in this file if publishing as a module
-Utils.tblDeepExtend = _utils.tblDeepExtend
+---Helper function to check if something is a "list-like" table
+---@param t table
+---@return boolean
+function Utils.isList(t)
+  if type(t) ~= "table" then
+    return false
+  end
+  local count = 0
+  for k, _ in pairs(t) do
+    count = count + 1
+    if type(k) ~= "number" or k <= 0 or k > count then
+      return false
+    end
+  end
+  return true
+end
+
+---Helper function to deep copy a value
+---@param obj table
+---@return table
+function Utils.deepCopy(obj)
+  if type(obj) ~= "table" then
+    return obj
+  end
+
+  local copy = {}
+  for k, v in pairs(obj) do
+    copy[k] = Utils.deepCopy(v)
+  end
+  return copy
+end
+
+---@param behavior "error"|"keep"|"force"
+---@param ... table
+---@return table
+function Utils.tblDeepExtend(behavior, ...)
+  if select("#", ...) < 2 then
+    error("tblDeepExtend expects at least 2 tables")
+  end
+
+  local ret = {}
+
+  -- Handle the behavior parameter
+  local validBehaviors = {
+    error = true,
+    keep = true,
+    force = true,
+  }
+
+  if not validBehaviors[behavior] then
+    error("invalid behavior: " .. tostring(behavior))
+  end
+
+  -- Process each table argument
+  for i = 1, select("#", ...) do
+    local t = select(i, ...)
+
+    if type(t) ~= "table" then
+      error("expected table, got " .. type(t))
+    end
+
+    for k, v in pairs(t) do
+      if ret[k] == nil then
+        -- Key doesn't exist, just copy it
+        ret[k] = Utils.deepCopy(v)
+      elseif type(ret[k]) == "table" and type(v) == "table" and not Utils.isList(ret[k]) and not Utils.isList(v) then
+        -- Both are non-list tables, merge recursively
+        ret[k] = Utils.tblDeepExtend(behavior, ret[k], v)
+      else
+        -- Handle conflicts based on behavior
+        if behavior == "error" then
+          error("key '" .. tostring(k) .. "' is already present")
+        elseif behavior == "keep" then
+        -- Keep existing value, do nothing
+        elseif behavior == "force" then
+          -- Overwrite with new value
+          ret[k] = Utils.deepCopy(v)
+        end
+      end
+    end
+  end
+
+  return ret
+end
 
 ---Normalizes a path by expanding `~` and removing trailing slashes
 ---@param path string
@@ -880,6 +959,22 @@ function Plugins.install(plugin)
     return true
   end
 
+  local spoonPath = Spoons.getSpoonPath(plugin.name)
+  local hasMethodChanged, currentMethod, newMethod = Plugins.detectMethodChange(plugin, spoonPath)
+
+  -- If method changed, remove the old installation first
+  if hasMethodChanged then
+    log.i(
+      string.format(
+        "Installation method changed for %s: %s -> %s, removing old installation",
+        plugin.name,
+        currentMethod or "none",
+        newMethod
+      )
+    )
+    Utils.safeRemove(spoonPath)
+  end
+
   if plugin.spoon then
     if not Spoons.ensureSpoonsRepo() then
       return false
@@ -887,7 +982,6 @@ function Plugins.install(plugin)
 
     local spoonsTemp = M.config.repoDir .. "/spoons-repo"
     local spoonSource = spoonsTemp .. "/Source/" .. plugin.name
-    local spoonPath = Spoons.getSpoonPath(plugin.name)
 
     if not Utils.dirExists(spoonSource .. ".spoon") then
       log.ef("Spoon %s not found in repository", plugin.name)
@@ -957,6 +1051,25 @@ function Plugins.update(plugin, useLockfile)
 
   if not Utils.dirExists(spoonPath) then
     log.wf("Plugin %s not installed, installing...", plugin.name)
+    return Plugins.install(plugin)
+  end
+
+  local hasMethodChanged, currentMethod, newMethod = Plugins.detectMethodChange(plugin, spoonPath)
+
+  -- If method changed or plugin doesn't exist, reinstall
+  if hasMethodChanged or not Utils.dirExists(spoonPath) then
+    if hasMethodChanged then
+      log.i(
+        string.format(
+          "Installation method changed for %s: %s -> %s, reinstalling",
+          plugin.name,
+          currentMethod or "none",
+          newMethod
+        )
+      )
+    else
+      log.wf("Plugin %s not installed, installing...", plugin.name)
+    end
     return Plugins.install(plugin)
   end
 
@@ -1058,19 +1171,39 @@ function Plugins.load(plugin, loadingStack)
   end
 
   local spoonPath = Spoons.getSpoonPath(plugin.name)
+  local pluginExists = Utils.dirExists(spoonPath)
 
-  if not Utils.dirExists(spoonPath) then
-    if M.config.autoInstall then
-      log.i(string.format("Plugin %s not found, installing...", plugin.name))
+  -- Check for installation method changes
+  if pluginExists then
+    local hasMethodChanged, currentMethod, newMethod = Plugins.detectMethodChange(plugin, spoonPath)
+    if hasMethodChanged then
+      log.i(
+        string.format(
+          "Installation method changed for %s: %s -> %s, reinstalling",
+          plugin.name,
+          currentMethod,
+          newMethod
+        )
+      )
+
+      -- Remove old installation and reinstall
+      Utils.safeRemove(spoonPath)
       if not Plugins.install(plugin) then
         loadingStack[plugin.name] = nil
         return false
       end
-    else
-      log.ef("Plugin %s not installed and autoInstall is disabled", plugin.name)
+    end
+  elseif M.config.autoInstall then
+    -- Plugin doesn't exist, install it
+    log.i(string.format("Plugin %s not found, installing...", plugin.name))
+    if not Plugins.install(plugin) then
       loadingStack[plugin.name] = nil
       return false
     end
+  else
+    log.ef("Plugin %s not installed and autoInstall is disabled", plugin.name)
+    loadingStack[plugin.name] = nil
+    return false
   end
 
   -- Load the spoon
@@ -1094,6 +1227,35 @@ function Plugins.load(plugin, loadingStack)
   loadingStack[plugin.name] = nil
   log.i(string.format("Successfully loaded %s", plugin.name))
   return true
+end
+
+-- Add this helper function to detect installation method changes
+---Detects if the installation method has changed for a plugin
+---@param plugin Hs.Pack.PluginSpec
+---@param spoonPath string
+---@return boolean hasChanged
+---@return string? currentMethod
+---@return string newMethod
+function Plugins.detectMethodChange(plugin, spoonPath)
+  if not Utils.dirExists(spoonPath) then
+    return false, nil, plugin.dir and "dir" or (plugin.url and "url" or "spoon")
+  end
+
+  local isSymlink = os.execute(string.format('[ -L "%s" ]', spoonPath)) == true
+  local isGitRepo = Utils.dirExists(spoonPath .. "/.git")
+
+  local currentMethod
+  if isSymlink then
+    currentMethod = "dir"
+  elseif isGitRepo then
+    currentMethod = "url"
+  else
+    currentMethod = "spoon"
+  end
+
+  local newMethod = plugin.dir and "dir" or (plugin.url and "url" or "spoon")
+
+  return currentMethod ~= newMethod, currentMethod, newMethod
 end
 
 -- ------------------------------------------------------------------
