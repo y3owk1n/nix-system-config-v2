@@ -10,7 +10,7 @@ return {
     },
     Vimnav = {
       name = "Vimnav",
-      resolvedCommit = "aa3ef58ee5d6f492f047a49da7d45059c3f8e6f1",
+      resolvedCommit = "718c78556a9e166ecaaf79881b62c0afd13fdf07",
       spoon = false,
       url = "https://github.com/y3owk1n/vimnav.spoon.git",
     },
