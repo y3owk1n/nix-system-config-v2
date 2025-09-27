@@ -4,13 +4,20 @@ return {
   plugins = {
     Bindery = {
       name = "Bindery",
-      resolvedCommit = "9dd885e45de7342e7fd2a20ac67c7761a9f8bf27",
+      resolvedCommit = "e445b485164815ab9f97b37c378292ca81259d0d",
       spoon = false,
       url = "https://github.com/y3owk1n/bindery.spoon.git",
     },
+    Pack = {
+      branch = "stable",
+      name = "Pack",
+      resolvedCommit = "bcc4d998f007cb56bbd0409dbf2edab8c6efb688",
+      spoon = false,
+      url = "https://github.com/y3owk1n/Pack.spoon.git",
+    },
     Vimnav = {
       name = "Vimnav",
-      resolvedCommit = "718c78556a9e166ecaaf79881b62c0afd13fdf07",
+      resolvedCommit = "708f7690763ed38f1c4b1a7fbec50cfff47dbf1a",
       spoon = false,
       url = "https://github.com/y3owk1n/vimnav.spoon.git",
     },
