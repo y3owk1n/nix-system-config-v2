@@ -11,7 +11,7 @@ return {
     Pack = {
       branch = "stable",
       name = "Pack",
-      resolvedCommit = "bcc4d998f007cb56bbd0409dbf2edab8c6efb688",
+      resolvedCommit = "0441c7440b1421e0acc0843414b57a7cd71a6dd9",
       spoon = false,
       url = "https://github.com/y3owk1n/Pack.spoon.git",
     },
