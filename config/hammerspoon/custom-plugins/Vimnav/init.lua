@@ -40,35 +40,39 @@ local log
 --------------------------------------------------------------------------------
 
 ---@class Hs.Vimnav.Config
----@field logLevel string
----@field doublePressDelay number
----@field mapping table<string, string|table>
----@field scrollStep number
----@field scrollStepHalfPage number
----@field scrollStepFullPage number
----@field smoothScroll boolean
----@field smoothScrollFramerate number
----@field depth number
----@field maxElements number
----@field axEditableRoles string[]
----@field axJumpableRoles string[]
----@field excludedApps string[]
----@field browsers string[]
----@field launchers string[]
+---@field logLevel? string Log level to show in the console
+---@field linkHintChars? string Link hint characters
+---@field doublePressDelay? number Double press delay in seconds (e.g. 0.3 for 300ms)
+---@field focusCheckInterval? number Focus check interval in seconds (e.g. 0.5 for 500ms)
+---@field mapping? table<string, string|table> Mappings to use
+---@field scrollStep? number Scroll step in pixels
+---@field scrollStepHalfPage? number Scroll step in pixels for half page
+---@field scrollStepFullPage? number Scroll step in pixels for full page
+---@field smoothScroll? boolean Enable/disable smooth scrolling
+---@field smoothScrollFramerate? number Smooth scroll framerate in frames per second
+---@field depth? number Maximum depth to search for elements
+---@field axEditableRoles? string[] Roles for detect editable inputs
+---@field axJumpableRoles? string[] Roles for detect jumpable inputs (links and more)
+---@field excludedApps? string[] Apps to exclude from Vimnav (e.g. Terminal)
+---@field browsers? string[] Browsers to to detect for browser specific actions (e.g. Safari)
+---@field launchers? string[] Launchers to to detect for launcher specific actions (e.g. Spotlight)
 
 ---@class Hs.Vimnav.State
----@field mode number
----@field multi string|nil
----@field elements table<string, table>
----@field marks table<number, table<string, table|nil>>
----@field linkCapture string
----@field lastEscape number
----@field mappingPrefixes table<string, boolean>
----@field allCombinations string[]
----@field eventLoop table|nil
----@field canvas table|nil
----@field onClickCallback fun(any)|nil
----@field cleanupTimer table|nil
+---@field mode number Vimnav mode
+---@field multi string|nil Multi character input
+---@field marks table<number, table<string, table|nil>> Marks
+---@field linkCapture string Link capture state
+---@field lastEscape number Last escape key press time
+---@field mappingPrefixes table<string, boolean> Mapping prefixes
+---@field allCombinations string[] All combinations
+---@field eventLoop table|nil Event loop
+---@field canvas table|nil Canvas
+---@field onClickCallback fun(any)|nil On click callback for marks
+---@field cleanupTimer table|nil Cleanup timer
+---@field focusLastCheck number Focus last check time
+---@field focusCachedResult boolean Focus cached result
+---@field focusLastElement table|string|nil Focus last element
+---@field maxElements number Maximum elements to search for (derived from config)
 
 ---@alias Hs.Vimnav.Element table|string
 
@@ -115,7 +119,9 @@ local DEFAULT_MAPPING = {
 ---@type Hs.Vimnav.Config
 local DEFAULT_CONFIG = {
   logLevel = "warning",
+  linkHintChars = "abcdefghijklmnopqrstuvwxyz",
   doublePressDelay = 0.3,
+  focusCheckInterval = 0.5,
   mapping = DEFAULT_MAPPING,
   scrollStep = 50,
   scrollStepHalfPage = 500,
@@ -123,7 +129,6 @@ local DEFAULT_CONFIG = {
   smoothScroll = true,
   smoothScrollFramerate = 120,
   depth = 20,
-  maxElements = 676, -- 26*26 combinations
   axEditableRoles = { "AXTextField", "AXComboBox", "AXTextArea", "AXSearchField" },
   axJumpableRoles = {
     "AXLink",
@@ -165,7 +170,6 @@ local DEFAULT_CONFIG = {
 State = {
   mode = MODES.DISABLED,
   multi = nil,
-  elements = {},
   marks = {},
   linkCapture = "",
   lastEscape = hs.timer.absoluteTime(),
@@ -175,6 +179,10 @@ State = {
   canvas = nil,
   onClickCallback = nil,
   cleanupTimer = nil,
+  focusLastCheck = 0,
+  focusCachedResult = false,
+  focusLastElement = nil,
+  maxElements = 0,
 }
 
 -- Element cache with weak references for garbage collection
@@ -523,11 +531,19 @@ function Utils.generateCombinations()
     return
   end -- Already generated
 
-  local chars = "abcdefghijklmnopqrstuvwxyz"
+  local chars = M.config.linkHintChars
+
+  if not chars then
+    log.ef("No link hint characters configured")
+    return
+  end
+
+  State.maxElements = #chars * #chars
+
   for i = 1, #chars do
     for j = 1, #chars do
       table.insert(State.allCombinations, chars:sub(i, i) .. chars:sub(j, j))
-      if #State.allCombinations >= M.config.maxElements then
+      if #State.allCombinations >= State.maxElements then
         return
       end
     end
@@ -550,8 +566,8 @@ end
 ---Checks if the current application is excluded
 ---@return boolean
 function Utils.isExcludedApp()
-  local app = hs.application.frontmostApplication()
-  return app and Utils.tblContains(M.config.excludedApps, app:name())
+  local app = Elements.getApp()
+  return app and Utils.tblContains(M.config.excludedApps, app:name()) or false
 end
 
 ---Checks if the launcher is active
@@ -576,8 +592,8 @@ end
 ---Checks if the application is in the browser list
 ---@return boolean
 function Utils.isInBrowser()
-  local app = hs.application.frontmostApplication()
-  return app and Utils.tblContains(M.config.browsers, app:name())
+  local app = Elements.getApp()
+  return app and Utils.tblContains(M.config.browsers, app:name()) or false
 end
 
 --------------------------------------------------------------------------------
@@ -702,13 +718,43 @@ end
 ---Checks if an editable control is in focus
 ---@return boolean
 function Elements.isEditableControlInFocus()
-  local focusedElement = Elements.getAxFocusedElement()
-  if not focusedElement then
-    return false
+  local now = hs.timer.absoluteTime() / 1e9
+
+  -- Only check every Xms unless we detect a focus change
+  if now - State.focusLastCheck < M.config.focusCheckInterval then
+    State.focusLastCheck = now
+    log.df("Skipping focus check, last check was " .. (now - State.focusLastCheck) .. "ms ago")
+    return State.focusCachedResult
   end
 
-  local role = Utils.getAttribute(focusedElement, "AXRole")
-  return (role and Utils.tblContains(M.config.axEditableRoles, role)) or false
+  State.focusLastCheck = now
+
+  Utils.clearCache()
+
+  log.df("Checking if element is in focus")
+
+  local focusedElement = Elements.getAxFocusedElement()
+
+  -- If same element as last time, return cached result
+  if focusedElement == State.focusLastElement then
+    log.df("Skipping focus check, element is the same")
+    return State.focusCachedResult
+  end
+
+  if focusedElement then
+    local role = Utils.getAttribute(focusedElement, "AXRole")
+    State.focusCachedResult = role and RoleMaps.isEditable(role) or false
+
+    if State.focusCachedResult then
+      log.df("Focused element is editable")
+      -- Update cache
+      State.focusLastElement = focusedElement
+    end
+  else
+    State.focusCachedResult = false
+  end
+
+  return State.focusCachedResult
 end
 
 --------------------------------------------------------------------------------
@@ -859,14 +905,15 @@ end
 ---Force unfocus
 ---@return nil
 function Actions.forceUnfocus()
-  local focusedElement = Elements.getAxFocusedElement()
-  if not focusedElement then
-    return
+  if State.focusLastElement then
+    State.focusLastElement:setAttributeValue("AXFocused", false)
+    hs.alert.show("Force unfocused!")
+
+    -- Reset focus state
+    State.focusLastCheck = 0
+    State.focusCachedResult = false
+    State.focusLastElement = nil
   end
-
-  focusedElement:setAttributeValue("AXFocused", false)
-
-  hs.alert.show("Force unfocused!")
 end
 
 ---Tries to click on a frame
@@ -926,7 +973,7 @@ function ElementFinder.findClickableElements(axApp, withUrls, callback)
     end
 
     return true
-  end, callback, M.config.maxElements)
+  end, callback, State.maxElements)
 end
 
 ---Finds input elements
@@ -1033,7 +1080,7 @@ end
 ---@param element table
 ---@return nil
 function Marks.add(element)
-  if #State.marks >= M.config.maxElements then
+  if #State.marks >= State.maxElements then
     return
   end
 
@@ -1067,7 +1114,7 @@ function Marks.show(withUrls, elementType)
   if elementType == "link" then
     ElementFinder.findClickableElements(axApp, withUrls, function(elements)
       -- Convert to marks
-      for i = 1, math.min(#elements, M.config.maxElements) do
+      for i = 1, math.min(#elements, State.maxElements) do
         Marks.add(elements[i])
       end
 
@@ -1593,10 +1640,13 @@ end
 
 ---Handles Vim input
 ---@param char string
----@param modifiers table
+---@param modifiers? table
 ---@return nil
 local function handleVimInput(char, modifiers)
+  print("handleVimInput: " .. char .. " modifiers: " .. hs.inspect(modifiers))
   log.df("handleVimInput: " .. char .. " modifiers: " .. hs.inspect(modifiers))
+
+  Utils.clearCache()
 
   if State.mode == MODES.LINKS then
     if char == "backspace" then
@@ -1680,17 +1730,44 @@ end
 ---@param event table
 ---@return boolean
 local function eventHandler(event)
-  Utils.clearCache()
-
-  if Utils.isExcludedApp() or Utils.isLauncherActive() then
+  -- Skip if in insert mode
+  if State.mode == MODES.INSERT then
+    log.df("Skipping event handler in insert mode")
     return false
   end
 
-  local flags = event:getFlags()
   local keyCode = event:getKeyCode()
-  local modifiers = { ctrl = flags.ctrl }
 
-  -- Handle escape key
+  -- Skip if in NORMAL mode and backspace
+  -- input focus never triggers a mode change
+  -- so it should still be in NORMAL mode during editable control focus
+  -- and backspace should be ignored to ensure the repeat delay
+  if State.mode == MODES.NORMAL and keyCode == hs.keycodes.map["delete"] then
+    log.df("Skipping event handler on backspace in normal mode")
+    return false
+  end
+
+  -- Skip if on places that it shouldn't run
+  -- - At configured exclusions
+  -- - During launchers
+  if Utils.isExcludedApp() or Utils.isLauncherActive() then
+    log.df("Skipping event handler on excluded app or launcher")
+    return false
+  end
+
+  -- Skip if is during editable control focus
+  -- But we dont want to block escape key
+  -- Or else we wont be able to do double escape
+  --
+  -- NOTE: This is heavily cached, see the implementation for details
+  -- Why not do `hs.axuielemen.observer`? It doesn't work reliably in my test
+  -- Especially at Safari, it never notifies when an element is unfocused back to `AXWebArea`
+  if Elements.isEditableControlInFocus() and keyCode ~= hs.keycodes.map["escape"] then
+    log.df("Skipping event handler on editable control focus")
+    return false
+  end
+
+  -- Handle single and double escape key
   if keyCode == hs.keycodes.map["escape"] then
     local delaySinceLastEscape = (hs.timer.absoluteTime() - State.lastEscape) / 1e9
     State.lastEscape = hs.timer.absoluteTime()
@@ -1709,26 +1786,21 @@ local function eventHandler(event)
     return false
   end
 
-  -- Skip if in insert mode or editable control has focus
-  if State.mode == MODES.INSERT or Elements.isEditableControlInFocus() then
-    return false
-  end
+  local flags = event:getFlags()
 
   -- Handle backspace in LINKS mode
   if State.mode == MODES.LINKS and keyCode == hs.keycodes.map["delete"] then
-    hs.timer.doAfter(0, function()
-      handleVimInput("backspace", { ctrl = flags.ctrl })
-    end)
+    handleVimInput("backspace")
     return true
   end
-
-  local char = hs.keycodes.map[keyCode]
 
   for key, modifier in pairs(flags) do
     if modifier and key ~= "shift" and key ~= "ctrl" then
       return false
     end
   end
+
+  local char = hs.keycodes.map[keyCode]
 
   if flags.shift then
     char = event:getCharacters()
@@ -1739,7 +1811,7 @@ local function eventHandler(event)
     return false
   end
 
-  if modifiers and modifiers.ctrl then
+  if flags.ctrl then
     local filteredMappings = {}
 
     for _key, _ in pairs(M.config.mapping) do
@@ -1753,9 +1825,7 @@ local function eventHandler(event)
     end
   end
 
-  hs.timer.doAfter(0, function()
-    handleVimInput(char, modifiers)
-  end)
+  handleVimInput(char, flags)
 
   return true
 end
@@ -1775,6 +1845,11 @@ local function cleanupOnAppSwitch()
 
   -- Reset link capture state
   State.linkCapture = ""
+
+  -- Reset focus state
+  State.focusLastCheck = 0
+  State.focusCachedResult = false
+  State.focusLastElement = nil
 
   -- Force garbage collection to free up memory
   collectgarbage("collect")
