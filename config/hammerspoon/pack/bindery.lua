@@ -1,4 +1,3 @@
----@type Hs.Pack.PluginSpec
 return {
   name = "Bindery",
   url = "https://github.com/y3owk1n/bindery.spoon.git",

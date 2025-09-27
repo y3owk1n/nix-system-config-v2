@@ -1,4 +1,3 @@
----@type Hs.Pack.PluginSpec
 return {
   name = "Vimnav",
   url = "https://github.com/y3owk1n/vimnav.spoon.git",
