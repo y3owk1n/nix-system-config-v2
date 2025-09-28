@@ -3,5 +3,7 @@ result
 
 config/keyboardcowboy/backups/
 
+config/hammerspoon/Spoons/
+
 # home/node-packages/*
 # !home/node-packages/node-packages.json
