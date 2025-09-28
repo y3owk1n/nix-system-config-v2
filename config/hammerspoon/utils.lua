@@ -7,6 +7,75 @@ M.keys = {}
 M.keys.hyper = { "cmd", "alt", "ctrl", "shift" }
 M.keys.meh = { "alt", "ctrl", "shift" }
 
+---Installs a spoon asynchronously
+---@param name string -- Spoon name
+---@param repo string -- Git repository URL
+---@param force boolean -- Force install even if spoon is already installed
+---@param callback function -- Callback function to be called after spoon is loaded
+function M.installSpoon(name, repo, force, callback)
+  local packRoot = _G.k92.packRoot
+  local spoonPath = string.format("%s/%s.spoon", packRoot, name)
+  local spoonStat = hs.fs.attributes(spoonPath)
+
+  -- Helper function to run shell commands async
+  local function runCommand(cmd, args, onComplete)
+    local task = hs.task.new(cmd, function(exitCode, stdOut, stdErr)
+      onComplete(exitCode == 0, exitCode, stdOut, stdErr)
+    end, args)
+    task:start()
+    return task
+  end
+
+  local function loadAndCallback()
+    hs.loadSpoon(name)
+    print(string.format("Loaded %s", name))
+    if callback then
+      callback(spoon[name])
+    end
+  end
+
+  local function cloneSpoon()
+    print(string.format("Cloning %s...", name))
+    runCommand("/usr/bin/git", { "clone", repo, spoonPath }, function(success, exitCode, stdOut, stdErr)
+      if success then
+        print(string.format("Cloned %s", name))
+        loadAndCallback()
+      else
+        print(string.format("Failed to clone %s (exit %s): %s", repo, exitCode, stdErr))
+      end
+    end)
+  end
+
+  local function removeAndClone()
+    print(string.format("Removing %s", name))
+    runCommand("/bin/rm", { "-rf", spoonPath }, function(success, exitCode, stdOut, stdErr)
+      if success then
+        print(string.format("Removed %s", name))
+        cloneSpoon()
+      else
+        print(string.format("Failed to remove %s (exit %s): %s", name, exitCode, stdErr))
+      end
+    end)
+  end
+
+  if not spoonStat or force then
+    if not spoonStat then
+      print(string.format("Not found: %s", name))
+      cloneSpoon()
+    elseif force then
+      print(string.format("Force installing %s", name))
+      if spoonStat then
+        removeAndClone()
+      else
+        cloneSpoon()
+      end
+    end
+  else
+    print(string.format("Found: %s", name))
+    loadAndCallback()
+  end
+end
+
 ---Helper function to check if something is a "list-like" table
 ---@param t table
 ---@return boolean
