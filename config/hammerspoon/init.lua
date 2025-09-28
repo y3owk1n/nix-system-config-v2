@@ -1,7 +1,7 @@
 ---@diagnostic disable: undefined-global
 
 local globalPref = require("global-pref")
-local installSpoon = require("utils").installSpoon
+local spoonUtils = require("spoon-utils")
 
 -- ------------------------------------------------------------------
 -- Global Preferences
@@ -10,22 +10,15 @@ local installSpoon = require("utils").installSpoon
 globalPref:init()
 
 -- ------------------------------------------------------------------
--- Pack
--- ------------------------------------------------------------------
-
-_G.k92 = {}
-_G.k92.packRoot = os.getenv("HOME") .. "/.local/share/hammerspoon/site/Spoons"
-_G.k92.packagePath = _G.k92.packRoot .. "/?.spoon/init.lua"
-
-if not package.path:find(_G.k92.packagePath, 1, true) then
-  package.path = package.path .. ";" .. _G.k92.packagePath
-end
-
--- ------------------------------------------------------------------
 -- Vimnav
 -- ------------------------------------------------------------------
 
-installSpoon("Vimnav", "https://github.com/y3owk1n/vimnav.spoon.git", false, function(mod)
+spoonUtils.install({
+  name = "Vimnav",
+  github = "https://github.com/y3owk1n/vimnav.spoon.git",
+  local_path = os.getenv("HOME") .. "/Dev/vimnav.spoon",
+  -- dev = true,
+}, function(mod)
   local vimnavConfig = {
     excludedApps = {
       "Terminal",
@@ -42,7 +35,12 @@ end)
 -- Bindery
 -- ------------------------------------------------------------------
 
-installSpoon("Bindery", "https://github.com/y3owk1n/bindery.spoon.git", false, function(mod)
+spoonUtils.install({
+  name = "Bindery",
+  github = "https://github.com/y3owk1n/bindery.spoon.git",
+  local_path = os.getenv("HOME") .. "/Dev/bindery.spoon",
+  -- dev = true,
+}, function(mod)
   local binderyConfig = {
     apps = {
       modifier = mod.specialModifiers.hyper,
