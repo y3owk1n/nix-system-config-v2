@@ -55,8 +55,7 @@ spoonUtils.install({
     end,
     forceUnfocusCallback = function()
       if vim then
-        vim:setInsertMode()
-        vim:updateStateIndicator()
+        vim:exit()
       end
     end,
   }
