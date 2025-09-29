@@ -45,17 +45,18 @@ spoonUtils.install({
     },
     enterEditableCallback = function()
       if vim then
-        vim:enableEnterBind()
+        vim:enable()
       end
     end,
     exitEditableCallback = function()
       if vim then
-        vim:disableEnterBind()
+        vim:disable()
       end
     end,
     forceUnfocusCallback = function()
       if vim then
         vim:exit()
+        vim:disable()
       end
     end,
   }
