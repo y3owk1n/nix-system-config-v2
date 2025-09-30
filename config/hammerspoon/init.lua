@@ -61,7 +61,7 @@ spoonUtils.install({
     end,
   }
 
-  mod:start(vimnavConfig)
+  mod:configure(vimnavConfig):start()
 end)
 
 -- ------------------------------------------------------------------
