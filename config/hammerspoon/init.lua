@@ -10,23 +10,6 @@ local spoonUtils = require("spoon-utils")
 globalPref:init()
 
 -- ------------------------------------------------------------------
--- VimMode
--- ------------------------------------------------------------------
-
-local vim = nil
-
-spoonUtils.install({
-  name = "VimMode",
-  github = "https://github.com/dbalatero/VimMode.spoon",
-}, function(mod)
-  vim = mod:new()
-
-  vim:bindHotKeys({ enter = { { "ctrl" }, ";" } })
-  vim:disableForApp("Ghostty")
-  vim:disableForApp("Terminal")
-end)
-
--- ------------------------------------------------------------------
 -- Vimnav
 -- ------------------------------------------------------------------
 
@@ -43,22 +26,16 @@ spoonUtils.install({
       "Screen Sharing",
       "RustDesk",
     },
-    enterEditableCallback = function()
-      if vim then
-        vim:enable()
-      end
-    end,
-    exitEditableCallback = function()
-      if vim then
-        vim:disable()
-      end
-    end,
-    forceUnfocusCallback = function()
-      if vim then
-        vim:exit()
-        vim:disable()
-      end
-    end,
+    mapping = {
+      insertNormal = {
+        ["H"] = { "cmd", "left" },
+        ["L"] = { "cmd", "right" },
+      },
+      insertVisual = {
+        ["H"] = { { "shift", "cmd" }, "left" },
+        ["L"] = { { "shift", "cmd" }, "right" },
+      },
+    },
   }
 
   mod:configure(vimnavConfig):start()
