@@ -20,11 +20,13 @@ spoonUtils.install({
   -- dev = true,
 }, function(mod)
   local vimnavConfig = {
-    excludedApps = {
-      "Terminal",
-      "Ghostty",
-      "Screen Sharing",
-      "RustDesk",
+    applicationGroups = {
+      exclusions = {
+        "Terminal",
+        "Ghostty",
+        "Screen Sharing",
+        "RustDesk",
+      },
     },
     mapping = {
       insertNormal = {
@@ -35,6 +37,12 @@ spoonUtils.install({
         ["H"] = { { "shift", "cmd" }, "left" },
         ["L"] = { { "shift", "cmd" }, "right" },
       },
+    },
+    menubar = {
+      enabled = false,
+    },
+    overlay = {
+      enabled = true,
     },
   }
 
