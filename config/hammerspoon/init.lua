@@ -30,12 +30,12 @@ spoonUtils.install({
     },
     mapping = {
       insertNormal = {
-        ["H"] = { "cmd", "left" },
-        ["L"] = { "cmd", "right" },
+        ["H"] = { {}, "0" },
+        ["L"] = { { "shift" }, "4" },
       },
       insertVisual = {
-        ["H"] = { { "shift", "cmd" }, "left" },
-        ["L"] = { { "shift", "cmd" }, "right" },
+        ["H"] = { {}, "0" },
+        ["L"] = { { "shift" }, "4" },
       },
     },
     menubar = {
