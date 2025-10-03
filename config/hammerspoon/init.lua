@@ -17,9 +17,13 @@ spoonUtils.install({
   name = "Vimnav",
   github = "https://github.com/y3owk1n/vimnav.spoon.git",
   local_path = os.getenv("HOME") .. "/Dev/vimnav.spoon",
+  -- force = true,
   -- dev = true,
 }, function(mod)
   local vimnavConfig = {
+    hints = {
+      textFont = "JetBrainsMonoNLNFP-ExtraBold",
+    },
     applicationGroups = {
       exclusions = {
         "Terminal",
@@ -43,6 +47,7 @@ spoonUtils.install({
     },
     overlay = {
       enabled = true,
+      textFont = "JetBrainsMonoNLNFP-ExtraBold",
     },
   }
 
