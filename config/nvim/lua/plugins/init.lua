@@ -252,29 +252,7 @@ end
 ---Hacky way to update vim.pack all at once
 ---@return nil
 function Utils.update_all_packages()
-  -- filter out local dev plugins from updates
-  local remote_registry = {}
-  for _, reg in ipairs(registry_map) do
-    local is_local, _ = Utils.is_local_dev_plugin(reg)
-    if not is_local then
-      table.insert(remote_registry, reg)
-    end
-  end
-
-  if #remote_registry > 0 then
-    vim.pack.add(remote_registry)
-    local plugins = vim.pack.get()
-    local names = {}
-    for _, p in ipairs(plugins) do
-      local is_local, _ = Utils.is_local_dev_plugin(p.spec.src)
-      if not is_local then
-        table.insert(names, p.spec.name)
-      end
-    end
-    if #names > 0 then
-      vim.pack.update(names)
-    end
-  end
+  vim.pack.update()
 end
 
 ---Remove all packages from vim.pack
