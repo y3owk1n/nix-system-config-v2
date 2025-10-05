@@ -1,0 +1,142 @@
+{
+  "plugins": {
+    "base16-pro-max": {
+      "rev": "6585489",
+      "src": "https://github.com/y3owk1n/base16-pro-max.nvim"
+    },
+    "blink.cmp": {
+      "rev": "327fff9",
+      "src": "https://github.com/saghen/blink.cmp",
+      "version": ">=0.0.0"
+    },
+    "cloak": {
+      "rev": "648aca6",
+      "src": "https://github.com/laytan/cloak.nvim"
+    },
+    "conform": {
+      "rev": "9d859cb",
+      "src": "https://github.com/stevearc/conform.nvim"
+    },
+    "dotmd": {
+      "rev": "aedd8ee",
+      "src": "https://github.com/y3owk1n/dotmd.nvim"
+    },
+    "friendly-snippets": {
+      "rev": "572f566",
+      "src": "https://github.com/rafamadriz/friendly-snippets"
+    },
+    "grug-far": {
+      "rev": "48f9afb",
+      "src": "https://github.com/MagicDuck/grug-far.nvim"
+    },
+    "inc_rename": {
+      "rev": "7c79416",
+      "src": "https://github.com/smjonas/inc-rename.nvim"
+    },
+    "lazydev": {
+      "rev": "258d2a5",
+      "src": "https://github.com/folke/lazydev.nvim"
+    },
+    "lint": {
+      "rev": "335a604",
+      "src": "https://github.com/mfussenegger/nvim-lint"
+    },
+    "lspconfig": {
+      "rev": "e688b48",
+      "src": "https://github.com/neovim/nvim-lspconfig"
+    },
+    "mini.ai": {
+      "rev": "11c5718",
+      "src": "https://github.com/nvim-mini/mini.ai"
+    },
+    "mini.diff": {
+      "rev": "a2df2a9",
+      "src": "https://github.com/nvim-mini/mini.diff"
+    },
+    "mini.extra": {
+      "rev": "7efa774",
+      "src": "https://github.com/nvim-mini/mini.extra"
+    },
+    "mini.files": {
+      "rev": "51db5de",
+      "src": "https://github.com/nvim-mini/mini.files"
+    },
+    "mini.hipatterns": {
+      "rev": "5629d5f",
+      "src": "https://github.com/nvim-mini/mini.hipatterns"
+    },
+    "mini.icons": {
+      "rev": "2847986",
+      "src": "https://github.com/nvim-mini/mini.icons"
+    },
+    "mini.indentscope": {
+      "rev": "e9fa071",
+      "src": "https://github.com/nvim-mini/mini.indentscope"
+    },
+    "mini.pairs": {
+      "rev": "b9aada8",
+      "src": "https://github.com/nvim-mini/mini.pairs"
+    },
+    "mini.pick": {
+      "rev": "96ee37d",
+      "src": "https://github.com/nvim-mini/mini.pick"
+    },
+    "mini.statusline": {
+      "rev": "faa3977",
+      "src": "https://github.com/nvim-mini/mini.statusline"
+    },
+    "mini.surround": {
+      "rev": "61db6ba",
+      "src": "https://github.com/nvim-mini/mini.surround"
+    },
+    "notifier": {
+      "rev": "031ea17",
+      "src": "https://github.com/y3owk1n/notifier.nvim"
+    },
+    "nvim-tmux-navigation": {
+      "rev": "4898c98",
+      "src": "https://github.com/alexghergh/nvim-tmux-navigation"
+    },
+    "nvim-treesitter": {
+      "rev": "01ced749",
+      "src": "https://github.com/nvim-treesitter/nvim-treesitter",
+      "version": "'main'"
+    },
+    "nvim-ts-autotag": {
+      "rev": "c4ca798",
+      "src": "https://github.com/windwp/nvim-ts-autotag"
+    },
+    "render-markdown": {
+      "rev": "7e6af36",
+      "src": "https://github.com/MeanderingProgrammer/render-markdown.nvim"
+    },
+    "supermaven-nvim": {
+      "rev": "07d20fc",
+      "src": "https://github.com/supermaven-inc/supermaven-nvim"
+    },
+    "tailwind-autosort": {
+      "rev": "99dde94",
+      "src": "https://github.com/y3owk1n/tailwind-autosort.nvim"
+    },
+    "time-machine": {
+      "rev": "6657a7d",
+      "src": "https://github.com/y3owk1n/time-machine.nvim"
+    },
+    "ts-error-translator": {
+      "rev": "47e5ba8",
+      "src": "https://github.com/dmmulroy/ts-error-translator.nvim"
+    },
+    "undo-glow": {
+      "rev": "8fb1689",
+      "src": "https://github.com/y3owk1n/undo-glow.nvim"
+    },
+    "warp": {
+      "rev": "a875922",
+      "src": "https://github.com/y3owk1n/warp.nvim"
+    },
+    "which-key": {
+      "rev": "904308e",
+      "src": "https://github.com/folke/which-key.nvim"
+    }
+  }
+}
