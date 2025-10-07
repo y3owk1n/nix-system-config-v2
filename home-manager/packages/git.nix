@@ -26,8 +26,8 @@
 
     difftastic = {
       enable = true;
-      background = "dark";
-      color = "always";
+      options.background = "dark";
+      options.color = "always";
       enableAsDifftool = true;
     };
 
