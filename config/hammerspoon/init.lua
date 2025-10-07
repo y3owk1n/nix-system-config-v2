@@ -34,18 +34,34 @@ spoonUtils.install({
     },
     mapping = {
       insertNormal = {
-        ["H"] = { {}, "0" },
-        ["L"] = { { "shift" }, "4" },
+        ["H"] = {
+          description = "Move to beginning of line",
+          action = { "cmd", "left" },
+        },
+        ["L"] = {
+          description = "Move to end of line",
+          action = { "cmd", "right" },
+        },
       },
       insertVisual = {
-        ["H"] = { {}, "0" },
-        ["L"] = { { "shift" }, "4" },
+        ["H"] = {
+          description = "Move to beginning of line",
+          action = { { "shift", "cmd" }, "left" },
+        },
+        ["L"] = {
+          description = "Move to end of line",
+          action = { { "shift", "cmd" }, "right" },
+        },
       },
     },
     menubar = {
       enabled = false,
     },
     overlay = {
+      enabled = true,
+      textFont = "JetBrainsMonoNLNFP-ExtraBold",
+    },
+    whichkey = {
       enabled = true,
       textFont = "JetBrainsMonoNLNFP-ExtraBold",
     },
