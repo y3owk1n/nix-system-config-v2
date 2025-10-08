@@ -8,6 +8,7 @@
   homebrew-core,
   homebrew-cask,
   homebrew-bundle,
+  determinate,
   ...
 }:
 
@@ -51,6 +52,7 @@ in
         ./shared/overlays.nix
         stylix.darwinModules.stylix
         home-manager.darwinModules.home-manager
+        determinate.darwinModules.default
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
@@ -130,6 +132,7 @@ in
         ./shared/overlays.nix
         stylix.darwinModules.stylix
         home-manager.darwinModules.home-manager
+        determinate.darwinModules.default
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
