@@ -2,8 +2,6 @@
 {
   home.packages = with pkgs; [
     # kanata
-    # NOTE: Do not delete this, just comment it out
-    # This is the right way to override a rust package after all the researches
     (kanata.overrideAttrs (
       finalAttrs: prevAttrs: {
         cargoHash = "sha256-U6qBHWp4Hh2XRH9XR32CYeGbuKTIaEk2NDCQU5obMGc=";
