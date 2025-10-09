@@ -8,17 +8,20 @@ This is a project to help me to manage my Nix system configuration, mainly with 
 
 - Shell: [fish](https://fishshell.com/)
 - Terminal: [ghostty](https://ghostty.org/)
-- Editor: [neovim](https://neovim.io/)
+- Editor: [neovim](https://neovim.io/) with custom lazy-loader plus vim.pack
 - Multiplexer: [tmux](https://github.com/tmux/tmux/wiki)
 - Prompt: [starship](https://starship.rs/)
 - Browser: Safari
 - Docker: [orbstack](https://orbstack.dev/)
 - Network: [tailscale](https://tailscale.com/)
-- Launcher: Spotlight
+- Launcher: Spotlight (with [Bindery.spoon](https://github.com/y3owk1n/Bindery.spoon))
+- Automation: [Hammerspoon](https://www.hammerspoon.org/)
+- Tiling: Apple builtin (with [Bindery.spoon](https://github.com/y3owk1n/Bindery.spoon))
+- System-wide vim: [Vimnav.spoon](https://github.com/y3owk1n/Vimnav.spoon) - Combination of homerow and kindavim in a simple way
 
 ## Safari Extensions
 
-- [uBOL](https://github.com/uBlockOrigin/uBOL-home) - ublock origin lite
+- [wBlock](https://github.com/0xCUB3/wBlock) - content blocker for Safari (ublock alternative)
 - [Refined Github](https://github.com/refined-github/refined-github) - better github experience
 
 ## Notes for future me
@@ -232,3 +235,23 @@ pass --edit-key <pubkey-machine-b>
 > - do the init again with the new keys
 > - then ensure we can access the passwords
 > - then delete the old private key and public key
+
+### Override attrs for a rust build package
+
+[Overriding version on rust based package](https://discourse.nixos.org/t/overriding-version-on-rust-based-package/57445/2)
+
+```nix
+(pkgs.FOO.overrideAttrs (finalAttrs: prevAttrs:
+        {
+          cargoHash = ""; # build and replace this
+          src = pkgs.fetchBAR { ... }; # change fetcher
+          version = "..."; # change this
+          cargoDeps = pkgs.rustPlatform.fetchCargoTarball {
+            inherit (finalAttrs) pname src version;
+            hash = finalAttrs.cargoHash;
+          };
+        }
+      ))
+
+# replace FOO, BAR, and version, cargoHash should stay empty until you build and get the hash.
+```
