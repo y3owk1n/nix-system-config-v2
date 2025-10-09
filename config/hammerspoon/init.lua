@@ -178,5 +178,5 @@ spoonUtils.install({
     },
   }
 
-  mod:start(binderyConfig)
+  mod:configure(binderyConfig):start()
 end)
