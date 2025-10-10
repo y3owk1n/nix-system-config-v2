@@ -65,6 +65,10 @@ spoonUtils.install({
       enabled = true,
       textFont = "JetBrainsMonoNLNFP-ExtraBold",
     },
+    enhancedAccessibility = {
+      enableForChromium = false,
+      enableForElectron = false,
+    },
   }
 
   mod:configure(vimnavConfig):start()
