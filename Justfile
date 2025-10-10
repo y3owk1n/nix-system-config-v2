@@ -25,7 +25,6 @@ rebuild host="":
 
 [macos]
 update:
-    ulimit -n 5000
     sudo determinate-nixd upgrade
     nix flake update
 
