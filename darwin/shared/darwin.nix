@@ -32,9 +32,9 @@
       # mkdir -p "$app_target"
       # ${pkgs.rsync}/bin/rsync --archive --checksum --chmod=-w --copy-unsafe-links --delete "$apps_source/" "$app_target"
     '';
+    startup.chime = false; # MUTE STARTUP CHIME!
     defaults = {
       # universalaccess.reduceMotion = true;
-
       menuExtraClock = {
         Show24Hour = false;
         ShowAMPM = true;

@@ -51,5 +51,9 @@ in
 {
   home.packages = [
     nvs
+    # build tools
+    pkgs.ninja
+    pkgs.cmake
+    pkgs.gettext
   ];
 }
