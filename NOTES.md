@@ -205,3 +205,64 @@ pass --edit-key <pubkey-machine-b>
 
 # replace FOO, BAR, and version, cargoHash should stay empty until you build and get the hash.
 ```
+
+## Allow spotlight to index nix store
+
+> [!NOTE]
+> Nix darwin by default will link apps to `/Applications` directly, if its permittable, just install it under nix-darwin
+> instead of home manager and doing all the hacks below...
+
+Source is [here](https://gist.github.com/Jabb0/1b7ad92e8ab3065ac999c21edc23311f) ~
+
+Can consider <https://github.com/hraban/mac-app-util>, but it didn't work well for my ghostty app :(
+
+Reconsider this later when I have time for it. The issue is that it creates a shortcut to the app and forcing to ask to run for the shortcut instead of just opening the app.. annoying
+
+```nix
+home = {
+  activation.copyNixApps = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    # Create directory for the applications
+    mkdir -p "$HOME/Applications/Nix-Apps"
+    # Remove old entries
+    rm -rf "$HOME/Applications/Nix-Apps"/*
+    # Get the target of the symlink
+    NIXAPPS=$(readlink -f "$HOME/Applications/Home Manager Apps")
+    # For each application
+    for app_source in "$NIXAPPS"/*; do
+      if [ -d "$app_source" ] || [ -L "$app_source" ]; then
+          appname=$(basename "$app_source")
+          target="$HOME/Applications/Nix-Apps/$appname"
+
+          # Create the basic structure
+          mkdir -p "$target"
+          mkdir -p "$target/Contents"
+
+          # Copy the Info.plist file
+          if [ -f "$app_source/Contents/Info.plist" ]; then
+            mkdir -p "$target/Contents"
+            cp -f "$app_source/Contents/Info.plist" "$target/Contents/"
+          fi
+
+          # Copy icon files
+          if [ -d "$app_source/Contents/Resources" ]; then
+            mkdir -p "$target/Contents/Resources"
+            find "$app_source/Contents/Resources" -name "*.icns" -exec cp -f {} "$target/Contents/Resources/" \;
+          fi
+
+          # Symlink the MacOS directory (contains the actual binary)
+          if [ -d "$app_source/Contents/MacOS" ]; then
+            ln -sfn "$app_source/Contents/MacOS" "$target/Contents/MacOS"
+          fi
+
+          # Symlink other directories
+          for dir in "$app_source/Contents"/*; do
+            dirname=$(basename "$dir")
+            if [ "$dirname" != "Info.plist" ] && [ "$dirname" != "Resources" ] && [ "$dirname" != "MacOS" ]; then
+              ln -sfn "$dir" "$target/Contents/$dirname"
+            fi
+          done
+        fi
+        done
+  '';
+};
+```
