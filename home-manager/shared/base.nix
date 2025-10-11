@@ -16,6 +16,9 @@
     #
     # Source -> https://gist.github.com/Jabb0/1b7ad92e8ab3065ac999c21edc23311f
     #
+    # Can consider https://github.com/hraban/mac-app-util, but it didn't work well for my ghostty app :(
+    # Reconsider this later when I have time for it. The issue is that it creates a shortcut to the app
+    # And forcing to ask to run for the shortcut instead of just opening the app.. annoying
     activation.copyNixApps = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
       # Create directory for the applications
       mkdir -p "$HOME/Applications/Nix-Apps"

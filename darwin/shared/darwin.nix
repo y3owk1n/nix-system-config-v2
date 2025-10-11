@@ -8,7 +8,7 @@
 {
 
   system = {
-    primaryUser = username;
+    primaryUser = "${username}";
     stateVersion = 5;
     activationScripts.extraActivation.enable = true;
     activationScripts.extraActivation.text = ''
