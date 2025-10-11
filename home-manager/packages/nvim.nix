@@ -25,7 +25,7 @@
     just-lsp
     lua-language-server
     stylua
-    # marksman # TODO: using manual downloads for now until dotnet vmr fixes
+    marksman
     markdownlint-cli2
     nixd
     prisma-language-server # from `nixos-npm-ls` flake
