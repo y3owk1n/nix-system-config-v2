@@ -34,6 +34,7 @@
 
   environment.systemPackages = with pkgs; [
     coreutils
+    ghostty-bin # this is the darwin version, `ghostty` is for linux only
   ];
 
   # Add ability to used TouchID for sudo authentication
