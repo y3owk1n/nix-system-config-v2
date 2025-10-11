@@ -1,27 +1,16 @@
+# Nix settings
 {
   username,
-  hostname,
-  pkgs,
   ...
 }:
 {
-  system.defaults.smb.NetBIOSName = hostname;
-
-  networking = {
-    hostName = hostname;
-    computerName = hostname;
-    applicationFirewall = {
-      enable = true;
-      blockAllIncoming = false;
-      enableStealthMode = true;
-      allowSignedApp = true;
-      allowSigned = true;
-    };
-  };
-
   # Custom settings written to /etc/nix/nix.custom.conf
   determinate-nix.customSettings = {
-    trusted-users = [ username ];
+    trusted-users = [
+      "@admin"
+      "root"
+      username
+    ];
     # Enables parallel evaluation (remove this setting or set the value to 1 to disable)
     eval-cores = 0;
     extra-experimental-features = [
@@ -63,20 +52,4 @@
   #   auto-optimise-store = false;
   # };
 
-  # Create /etc/zshrc that loads the nix-darwin environment.
-  # this is required if you want to use darwin's default shell - zsh
-  programs.fish.enable = true;
-  # environment.shells = [ pkgs.fish ];
-
-  environment.systemPackages = with pkgs; [
-    coreutils
-  ];
-
-  # Add ability to used TouchID for sudo authentication
-  security.pam.services.sudo_local = {
-    enable = true;
-    reattach = true;
-    touchIdAuth = true;
-    watchIdAuth = true;
-  };
 }

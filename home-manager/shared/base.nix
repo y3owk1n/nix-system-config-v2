@@ -5,39 +5,6 @@
 }:
 
 {
-  # import sub modules
-  imports = [
-    ./apps-darwin.nix
-    ./packages/atuin.nix
-    ./packages/bat.nix
-    ./packages/direnv.nix
-    ./packages/editorconfig.nix
-    ./packages/eza.nix
-    ./packages/fish.nix
-    ./packages/fzf.nix
-    ./packages/gh.nix
-    ./packages/ghostty.nix
-    ./packages/git.nix
-    ./packages/go.nix
-    ./packages/gpg.nix
-    ./packages/hammerspoon.nix
-    ./packages/kanata.nix
-    ./packages/keyboardcowboy.nix
-    ./packages/lazygit.nix
-    ./packages/nvim.nix
-    ./packages/pass.nix
-    ./packages/ripgrep.nix
-    ./packages/sesh.nix
-    ./packages/skhd.nix
-    ./packages/ssh.nix
-    ./packages/starship.nix
-    ./packages/tmux.nix
-    ./custom/cpenv.nix
-    ./custom/nvs.nix
-    ./custom/cmd.nix
-    ./custom/passx.nix
-  ];
-
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
   home = {

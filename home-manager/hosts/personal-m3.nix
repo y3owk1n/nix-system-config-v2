@@ -1,0 +1,49 @@
+{
+  ...
+}:
+
+{
+  # import sub modules
+  imports = [
+    ../packages/ast-grep.nix
+    ../packages/atuin.nix
+    ../packages/bat.nix
+    ../packages/btop.nix
+    ../packages/direnv.nix
+    ../packages/editorconfig.nix
+    ../packages/eza.nix
+    ../packages/fd.nix
+    ../packages/fish.nix
+    ../packages/fzf.nix
+    ../packages/gh.nix
+    ../packages/ghostty.nix
+    ../packages/git.nix
+    ../packages/go.nix
+    ../packages/gpg.nix
+    ../packages/hammerspoon.nix
+    ../packages/jq.nix
+    ../packages/just.nix
+    ../packages/kanata.nix
+    ../packages/lazygit.nix
+    ../packages/less.nix
+    ../packages/mkcert.nix
+    ../packages/nixfmt.nix
+    ../packages/nodejs.nix
+    ../packages/nvim.nix
+    ../packages/pass.nix
+    ../packages/rip2.nix
+    ../packages/ripgrep.nix
+    ../packages/sesh.nix
+    ../packages/skhd.nix
+    ../packages/ssh.nix
+    ../packages/starship.nix
+    ../packages/stripe.nix
+    ../packages/tmux.nix
+    ../packages/zoxide.nix
+
+    ../custom/cpenv.nix
+    ../custom/nvs.nix
+    ../custom/cmd.nix
+    ../custom/passx.nix
+  ];
+}

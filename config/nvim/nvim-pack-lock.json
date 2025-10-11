@@ -14,7 +14,7 @@
       "src": "https://github.com/laytan/cloak.nvim"
     },
     "conform": {
-      "rev": "9d859cb",
+      "rev": "fbcb4fa",
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "dotmd": {
@@ -26,7 +26,7 @@
       "src": "https://github.com/rafamadriz/friendly-snippets"
     },
     "grug-far": {
-      "rev": "48f9afb",
+      "rev": "2e99108",
       "src": "https://github.com/MagicDuck/grug-far.nvim"
     },
     "inc_rename": {
@@ -34,7 +34,7 @@
       "src": "https://github.com/smjonas/inc-rename.nvim"
     },
     "lazydev": {
-      "rev": "258d2a5",
+      "rev": "e28ce52",
       "src": "https://github.com/folke/lazydev.nvim"
     },
     "lint": {
@@ -42,7 +42,7 @@
       "src": "https://github.com/mfussenegger/nvim-lint"
     },
     "lspconfig": {
-      "rev": "e688b48",
+      "rev": "623bcf0",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "mini.ai": {
@@ -86,7 +86,7 @@
       "src": "https://github.com/nvim-mini/mini.statusline"
     },
     "mini.surround": {
-      "rev": "61db6ba",
+      "rev": "444e155",
       "src": "https://github.com/nvim-mini/mini.surround"
     },
     "notifier": {
@@ -98,7 +98,7 @@
       "src": "https://github.com/alexghergh/nvim-tmux-navigation"
     },
     "nvim-treesitter": {
-      "rev": "3ab4f2d2",
+      "rev": "de003000",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
     },
@@ -107,7 +107,7 @@
       "src": "https://github.com/windwp/nvim-ts-autotag"
     },
     "render-markdown": {
-      "rev": "ea3678d",
+      "rev": "d538564",
       "src": "https://github.com/MeanderingProgrammer/render-markdown.nvim"
     },
     "supermaven-nvim": {
@@ -135,7 +135,7 @@
       "src": "https://github.com/y3owk1n/warp.nvim"
     },
     "which-key": {
-      "rev": "904308e",
+      "rev": "b4177e3",
       "src": "https://github.com/folke/which-key.nvim"
     }
   }
