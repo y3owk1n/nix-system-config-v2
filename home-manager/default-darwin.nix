@@ -36,7 +36,6 @@
     ./custom/nvs.nix
     ./custom/cmd.nix
     ./custom/passx.nix
-    ./custom/marksman.nix
   ];
 
   # Home Manager needs a bit of information about you and the
