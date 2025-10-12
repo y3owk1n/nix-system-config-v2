@@ -92,20 +92,22 @@ spoonUtils.install({
         ["Ghostty"] = "t",
         ["Notes"] = "n",
         ["Mail"] = "m",
+        ["Calendar"] = "c",
         ["WhatsApp"] = "w",
         ["Finder"] = "f",
         ["System Settings"] = "s",
         ["Passwords"] = "p",
+        ["Activity Monitor"] = "a",
       },
     },
     customBindings = {
-      spotlightRemap = {
-        modifier = mod.specialModifiers.hyper,
-        key = "return",
-        action = function()
-          mod.keyStroke("cmd", "space")
-        end,
-      },
+      -- spotlightRemap = {
+      --   modifier = mod.specialModifiers.hyper,
+      --   key = "return",
+      --   action = function()
+      --     mod.keyStroke("cmd", "space")
+      --   end,
+      -- },
       toggleCurrPrevApp = {
         modifier = mod.specialModifiers.hyper,
         key = "l",

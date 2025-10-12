@@ -44,6 +44,8 @@ gc:
 
     sudo nix-collect-garbage -d
 
+    sudo nix store optimise
+
 fmt:
     # format the nix files in this repo
     nix fmt
