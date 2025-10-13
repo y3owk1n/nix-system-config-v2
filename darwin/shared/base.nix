@@ -70,7 +70,6 @@
       "onyx"
       "imageoptim"
       "whatsapp"
-      "hammerspoon"
       "appcleaner"
     ];
 

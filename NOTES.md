@@ -266,3 +266,15 @@ home = {
   '';
 };
 ```
+
+## Kill a removed launchagent services that was managed by darwin
+
+```nix
+# get the launch agent
+launchctl list | grep -i [service-name]
+# example result
+# 15293 0     org.nix-community.home.atuin-daemon
+
+# kill it
+launchctl bootout gui/$(id -u)/[service-launch-agent-name]
+```
