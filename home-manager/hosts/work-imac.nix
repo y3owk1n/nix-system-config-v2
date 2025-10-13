@@ -41,6 +41,7 @@
     ../packages/tmux.nix
     ../packages/zoxide.nix
 
+    ../custom/asr.nix
     ../custom/cpenv.nix
     ../custom/nvs.nix
     ../custom/cmd.nix
