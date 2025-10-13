@@ -142,6 +142,8 @@ relaunch-skhd:
 
 [macos]
 relaunch-atauin-daemon:
+    pkill -9 atuin
+    rip ~/.local/share/atuin/daemon.sock
     launchctl bootout gui/$(id -u)/org.nix-community.home.atuin-daemon
     launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/org.nix-community.home.atuin-daemon.plist
 

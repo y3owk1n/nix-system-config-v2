@@ -30,6 +30,8 @@ spoonUtils.install({
         "Ghostty",
         "Screen Sharing",
         "RustDesk",
+        "Adobe Photoshop 2025",
+        "Adobe Illustrator 2025",
       },
     },
     mapping = {
@@ -82,6 +84,7 @@ spoonUtils.install({
   name = "Bindery",
   github = "https://github.com/y3owk1n/bindery.spoon.git",
   local_path = os.getenv("HOME") .. "/Dev/bindery.spoon",
+  -- force = true,
   -- dev = true,
 }, function(mod)
   local binderyConfig = {
@@ -120,38 +123,66 @@ spoonUtils.install({
         end,
       },
       maximizeWindow = {
-        modifier = { "ctrl", "shift" },
+        modifier = { "alt", "shift" },
         key = "m",
         action = function()
           mod.keyStroke({ "fn", "ctrl" }, "f")
         end,
       },
       moveWindow = {
-        modifier = { "ctrl", "shift" },
+        modifier = { "alt", "shift" },
         key = "h",
         action = function()
           mod.safeSelectMenuItem({ "Window", "Move & Resize", "Left" })
         end,
       },
       moveWindowRight = {
-        modifier = { "ctrl", "shift" },
+        modifier = { "alt", "shift" },
         key = "l",
         action = function()
           mod.safeSelectMenuItem({ "Window", "Move & Resize", "Right" })
         end,
       },
       moveWindowBottom = {
-        modifier = { "ctrl", "shift" },
+        modifier = { "alt", "shift" },
         key = "j",
         action = function()
           mod.safeSelectMenuItem({ "Window", "Move & Resize", "Bottom" })
         end,
       },
       moveWindowTop = {
-        modifier = { "ctrl", "shift" },
+        modifier = { "alt", "shift" },
         key = "k",
         action = function()
           mod.safeSelectMenuItem({ "Window", "Move & Resize", "Top" })
+        end,
+      },
+      focusRight = {
+        modifier = { "alt" },
+        key = "l",
+        action = function()
+          hs.window.frontmostWindow():focusWindowEast(hs.window.visibleWindows(), true, true)
+        end,
+      },
+      focusLeft = {
+        modifier = { "alt" },
+        key = "h",
+        action = function()
+          hs.window.frontmostWindow():focusWindowWest(hs.window.visibleWindows(), true, true)
+        end,
+      },
+      focusBottom = {
+        modifier = { "alt" },
+        key = "j",
+        action = function()
+          hs.window.frontmostWindow():focusWindowSouth(hs.window.visibleWindows(), true, true)
+        end,
+      },
+      focusTop = {
+        modifier = { "alt" },
+        key = "k",
+        action = function()
+          hs.window.frontmostWindow():focusWindowNorth(hs.window.visibleWindows(), true, true)
         end,
       },
     },
