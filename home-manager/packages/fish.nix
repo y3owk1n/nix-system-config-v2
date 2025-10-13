@@ -27,7 +27,6 @@
       cat = "bat";
       tx = "tmux kill-server";
       vim = "nvim";
-      asr = "atuin scripts list | grep '^- ' | awk '{print $2}' | fzf | xargs -r -I{} sh -c 'echo 🚀 Running: {}; atuin scripts run {}'";
     };
     functions = {
       __load-em = {
