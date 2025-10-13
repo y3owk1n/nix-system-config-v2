@@ -267,6 +267,20 @@ home = {
 };
 ```
 
+## Atuin daemon is not started issue
+
+```nix
+# kill the atuin daemon
+pkill -9 atuin
+
+# remove the daemon socket file
+rip ~/.local/share/atuin/daemon.sock
+
+# restart the atuin service
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/org.nix-community.home.atuin-daemon
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/org.nix-community.home.atuin-daemon.plist
+```
+
 ## Kill a removed launchagent services that was managed by darwin
 
 ```nix
@@ -276,5 +290,23 @@ launchctl list | grep -i [service-name]
 # 15293 0     org.nix-community.home.atuin-daemon
 
 # kill it
-launchctl bootout gui/$(id -u)/[service-launch-agent-name]
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/[service-launch-agent-name].plist
+
+# check and remove the launch agent
+rip ~/Library/LaunchAgents/[service-launch-agent-name].plist
+```
+
+## Relaunching a service
+
+```nix
+# get the launch agent
+launchctl list | grep -i [service-name]
+# example result
+# 15293 0     org.nix-community.home.atuin-daemon
+
+# kill it
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/[service-launch-agent-name].plist
+
+# start it
+launchctl bootstrap gui/$(id-u) ~/Library/LaunchAgents/[service-launch-agent-name].plist
 ```

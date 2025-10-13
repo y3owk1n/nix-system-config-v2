@@ -134,20 +134,3 @@ restore-gpg gpg_key:
     shred -u {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc
     # Import public key (optional)
     gpg --import {{ gpg_backup_path }}/{{ gpg_key }}_pub.asc
-
-[macos]
-relaunch-skhd:
-    launchctl bootout gui/$(id -u)/org.nix-community.home.skhd
-    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/org.nix-community.home.skhd.plist
-
-[macos]
-relaunch-atauin-daemon:
-    pkill -9 atuin
-    rip ~/.local/share/atuin/daemon.sock
-    launchctl bootout gui/$(id -u)/org.nix-community.home.atuin-daemon
-    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/org.nix-community.home.atuin-daemon.plist
-
-[macos]
-relaunch-gpg-agent:
-    gpgconf --kill gpg-agent
-    gpgconf --launch gpg-agent
