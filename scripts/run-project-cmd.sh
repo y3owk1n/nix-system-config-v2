@@ -9,14 +9,14 @@ commands=()
 if [[ -f "package.json" ]]; then
   mapfile -t npm_scripts < <(jq -r '.scripts | keys[]' package.json 2>/dev/null)
   for script in "${npm_scripts[@]}"; do
-    commands+=("npm run $script")
+    commands+=("node: $script")
   done
 fi
 
 # Detect and parse commands from Justfile (Just task runner)
 if [[ -f "Justfile" || -f "justfile" ]]; then
   for cmd in $(just --summary 2>/dev/null); do
-    commands+=("just $cmd")
+    commands+=("just: $cmd")
   done
 fi
 
@@ -24,7 +24,7 @@ fi
 if [[ -f "Makefile" ]]; then
   mapfile -t make_targets < <(awk -F: '/^[a-zA-Z0-9][^$#\/\t=]*:/ {print $1}' Makefile | sort -u)
   for target in "${make_targets[@]}"; do
-    commands+=("make $target")
+    commands+=("make: $target")
   done
 fi
 
