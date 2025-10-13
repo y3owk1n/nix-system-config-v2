@@ -35,15 +35,6 @@ in
   # This is a custom module at ./modules/aerospace.nix
   aerospace = {
     enable = false;
-    package = (
-      pkgs.aerospace.overrideAttrs (o: rec {
-        version = "0.19.2-Beta";
-        src = pkgs.fetchzip {
-          url = "https://github.com/nikitabobko/AeroSpace/releases/download/v${version}/AeroSpace-v${version}.zip";
-          sha256 = "sha256-6RyGw84GhGwULzN0ObjsB3nzRu1HYQS/qoCvzVWOYWQ=";
-        };
-      })
-    );
   };
 
   # add more brew packages here
