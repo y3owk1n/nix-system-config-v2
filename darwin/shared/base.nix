@@ -36,11 +36,6 @@
     coreutils
     # install GUI apps via nix darwin so that we can get spotlight indexing
     ghostty-bin # this is the darwin version, `ghostty` is for linux only
-    appcleaner
-    whatsapp-for-mac
-    imageoptim-for-mac
-    onyx-for-mac
-    # orbstack
   ];
 
   # Add ability to used TouchID for sudo authentication
@@ -73,6 +68,10 @@
       "brave-browser"
       "zen"
       "orbstack"
+      "appcleaner"
+      "whatsapp"
+      "imageoptim"
+      "onyx"
     ];
 
     masApps = { };
