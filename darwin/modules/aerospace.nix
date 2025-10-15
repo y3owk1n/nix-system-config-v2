@@ -193,7 +193,7 @@ in
           "${cfg.package}/Applications/AeroSpace.app/Contents/MacOS/AeroSpace"
           + (lib.optionalString (cfg.config != "") " --config-path ${configFile}");
         serviceConfig = {
-          KeepAlive = true;
+          KeepAlive = false;
           RunAtLoad = true;
         };
       };
