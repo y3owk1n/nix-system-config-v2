@@ -25,7 +25,7 @@ in
       launchd.user.agents.hammerspoon = {
         command = "${cfg.package}/Applications/Hammerspoon.app/Contents/MacOS/Hammerspoon";
         serviceConfig = {
-          KeepAlive = true;
+          KeepAlive = false;
           RunAtLoad = true;
         };
       };
