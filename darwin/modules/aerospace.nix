@@ -96,7 +96,7 @@ in
           run = 'move-node-to-workspace b'
 
           [[on-window-detected]]
-          if.app-id = 'com.brave.Browser'
+          if.app-id = 'net.imput.helium'
           run = 'move-node-to-workspace b'
 
           [[on-window-detected]]

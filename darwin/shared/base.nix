@@ -65,7 +65,7 @@
     casks = [
       "tailscale-app"
       "rustdesk"
-      "brave-browser"
+      "helium-browser"
       "zen"
       "orbstack"
       "appcleaner"
