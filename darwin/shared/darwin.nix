@@ -222,7 +222,7 @@
           DSDontWriteNetworkStores = true;
           DSDontWriteUSBStores = true;
         };
-        "com.brave.Browser" = {
+        "net.imput.helium" = {
           NSUserKeyEquivalents = {
             "Pin Tab" = "@d";
             "Select Next Tab" = "^l";
