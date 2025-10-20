@@ -21,17 +21,9 @@
     enable = true;
     lfs.enable = true;
 
-    userName = githubname;
-    userEmail = useremail;
-
-    difftastic = {
-      enable = true;
-      options.background = "dark";
-      options.color = "always";
-      enableAsDifftool = true;
-    };
-
-    extraConfig = {
+    settings = {
+      user.email = useremail;
+      user.name = githubname;
       advise.addEmptyPathSpec = false;
       advise.pushNonFastForward = false;
       advise.statusHints = false;
@@ -85,6 +77,18 @@
     signing = {
       key = gpgkeyid;
       signByDefault = true;
+    };
+  };
+
+  programs.difftastic = {
+    enable = true;
+    git = {
+      enable = true;
+      diffToolMode = true;
+    };
+    options = {
+      background = "dark";
+      color = "always";
     };
   };
 }
