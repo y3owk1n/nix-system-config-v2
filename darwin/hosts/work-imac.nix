@@ -29,12 +29,12 @@ in
 
   # This is a custom module at ./modules/hammerspoon.nix
   hammerspoon = {
-    enable = true;
+    enable = false;
   };
 
   # This is a custom module at ./modules/aerospace.nix
   aerospace = {
-    enable = false;
+    enable = true;
   };
 
   # add more brew packages here

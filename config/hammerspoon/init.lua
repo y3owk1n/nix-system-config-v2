@@ -68,7 +68,7 @@ spoonUtils.install({
       textFont = "JetBrainsMonoNLNFP-ExtraBold",
     },
     enhancedAccessibility = {
-      enableForChromium = false,
+      enableForChromium = true,
       enableForElectron = false,
     },
   }
