@@ -1,11 +1,11 @@
 {
   "name": "Vimium C",
-  "@time": "7/9/2025, 11:56:38 AM",
-  "time": 1752033398882,
+  "@time": "21/10/2025, 14:42:59",
+  "time": 1761028979702,
   "environment": {
     "extension": "2.12.2",
     "platform": "mac",
-    "chromium": 138
+    "chromium": 141
   },
   "allBrowserUrls": true,
   "exclusionRules": [
@@ -41,10 +41,10 @@
     "map / enterFindMode",
     "map n performFind",
     "map N performBackwardsFind",
-    "map H goBack",
-    "map L goForward",
-    "map K moveTabLeft",
-    "map J moveTabRight",
+    "map ;h goBack",
+    "map ;l goForward",
+    "map H moveTabLeft",
+    "map L moveTabRight",
     "map ? showHelp",
     "map yy copyCurrentUrl",
     "map yi LinkHints.activateCopyImage",
