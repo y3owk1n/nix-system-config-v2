@@ -46,6 +46,7 @@ in
           [mode.main.binding]
           cmd-h = []     # Disable "hide application"
           cmd-alt-h = [] # Disable "hide others"
+          cmd-m = [] # Disable "minimize"
 
           alt-h = 'focus left'
           alt-j = 'focus down'
