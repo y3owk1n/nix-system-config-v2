@@ -95,4 +95,37 @@
     # base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";
     base16Scheme = ../../config/pastel-twilight/base16.yml;
   };
+
+  launchd = {
+    daemons = {
+      "limits.maxfile" = {
+        serviceConfig = {
+          Label = "limits.maxfile";
+          ProgramArguments = [
+            "/bin/launchctl"
+            "limit"
+            "maxfiles"
+            "524288"
+            "524288"
+          ];
+          RunAtLoad = true;
+          ServiceIPC = false;
+        };
+      };
+      "limits.maxproc" = {
+        serviceConfig = {
+          Label = "limits.maxproc";
+          ProgramArguments = [
+            "/bin/launchctl"
+            "limit"
+            "maxproc"
+            "2048"
+            "2048"
+          ];
+          RunAtLoad = true;
+          ServiceIPC = false;
+        };
+      };
+    };
+  };
 }
