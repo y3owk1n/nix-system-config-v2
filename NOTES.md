@@ -310,3 +310,13 @@ launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/[service-launch-agent-name
 # start it
 launchctl bootstrap gui/$(id-u) ~/Library/LaunchAgents/[service-launch-agent-name].plist
 ```
+
+## Root fish shell
+
+```bash
+# check the shell
+dscl . -read /Users/root UserShell
+
+# change the shell
+sudo chsh -s /etc/profiles/per-user/kylewong/bin/fish root
+```

@@ -22,15 +22,18 @@
   };
 
   users.users."${username}" = {
+    uid = 501;
     home = "/Users/${username}";
     description = username;
     shell = pkgs.fish;
   };
 
+  users.knownUsers = [ "${username}" ];
+
   # Create /etc/zshrc that loads the nix-darwin environment.
   # this is required if you want to use darwin's default shell - zsh
   programs.fish.enable = true;
-  # environment.shells = [ pkgs.fish ];
+  environment.shells = [ pkgs.fish ];
 
   environment.systemPackages = with pkgs; [
     coreutils

@@ -11,7 +11,7 @@ init host:
 
 [macos]
 rebuild host="":
-    sudo darwin-rebuild switch --impure --flake .{{ if host != "" { "#" + host } else { "" } }}
+    sudo -i darwin-rebuild switch --impure --flake ~/nix-system-config-v2/.{{ if host != "" { "#" + host } else { "" } }}
 
 [linux]
 rebuild host="":
@@ -25,7 +25,7 @@ rebuild host="":
 
 [macos]
 update:
-    sudo determinate-nixd upgrade
+    sudo -i determinate-nixd upgrade
     nix flake update
 
 [linux]
@@ -37,14 +37,14 @@ history:
 
 gc:
     # remove all generations older than 7 days
-    sudo nix profile wipe-history --profile /nix/var/nix/profiles/system  --older-than 7d
+    sudo -i nix profile wipe-history --profile /nix/var/nix/profiles/system  --older-than 7d
 
     # garbage collect all unused nix store entries
-    sudo nix store gc --debug
+    sudo -i nix store gc --debug
 
-    sudo nix-collect-garbage -d
+    sudo -i nix-collect-garbage -d
 
-    sudo nix store optimise
+    sudo -i nix store optimise
 
 fmt:
     # format the nix files in this repo
