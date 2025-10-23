@@ -1,6 +1,4 @@
 {
-  config,
-  pkgs,
   safariKeys,
   username,
   ...
@@ -21,7 +19,8 @@
     activationScripts.postActivation.text = ''
       # activateSettings -u will reload the settings from the database and apply them to the current session,
       # so we do not need to logout and login again to make the changes take effect.
-      /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+      sudo -u ${username} /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+      echo "Reloading settings and applying to current session..."
     '';
     startup.chime = false; # MUTE STARTUP CHIME!
     defaults = {
@@ -39,8 +38,8 @@
         # remove delay for showing dock
         autohide-delay = 0.0;
         # how fast is the dock showing animation
-        autohide-time-modifier = 0.2;
-        expose-animation-duration = 0.2;
+        autohide-time-modifier = 0.0;
+        expose-animation-duration = 0.1;
         tilesize = 48;
         launchanim = false;
         static-only = false;
@@ -54,6 +53,7 @@
 
       # customize finder
       finder = {
+        CreateDesktop = false; # Whether to show icons on the desktop or not. The default is true.
         AppleShowAllExtensions = true;
         AppleShowAllFiles = true;
         # When performing a search, search the current folder by default
@@ -61,7 +61,7 @@
         FXEnableExtensionChangeWarning = false;
         # Use list view in all Finder windows by default
         FXPreferredViewStyle = "Nlsv";
-        QuitMenuItem = false;
+        QuitMenuItem = true;
         ShowPathbar = true;
         ShowStatusBar = true;
         _FXShowPosixPathInTitle = true;
@@ -70,6 +70,7 @@
         ShowMountedServersOnDesktop = false;
         ShowRemovableMediaOnDesktop = false;
         _FXSortFoldersFirst = true;
+        NewWindowTarget = "Home";
       };
 
       # customize trackpad
@@ -131,6 +132,10 @@
         BatteryShowPercentage = true;
       };
 
+      ".GlobalPreferences" = {
+        "com.apple.mouse.scaling" = 9.0;
+      };
+
       # customize settings that not supported by nix-darwin directly
       # Incomplete list of macOS `defaults` commands :
       #   https://github.com/yannbertrand/macos-defaults
@@ -160,7 +165,7 @@
         # no popup menus when holding down letters
         ApplePressAndHoldEnabled = false;
         # delay before repeating keystrokes
-        InitialKeyRepeat = 14;
+        InitialKeyRepeat = 10;
         # delay between repeated keystrokes upon holding a key
         KeyRepeat = 1;
         AppleShowScrollBars = "Automatic";
@@ -175,7 +180,7 @@
         NSNavPanelExpandedStateForSaveMode2 = true;
         NSDocumentSaveNewDocumentsToCloud = false;
         # speed up animation on open/save boxes (default:0.2)
-        NSWindowResizeTime = 1.0e-3;
+        NSWindowResizeTime = 0.001;
         PMPrintingExpandedStateForPrint = true;
         PMPrintingExpandedStateForPrint2 = true;
       };
@@ -188,9 +193,6 @@
       # or `defaults read xxx` to read a specific domain.
       CustomUserPreferences = {
         ".GlobalPreferences" = {
-          # automatically switch to a new space when switching to the application
-          # AppleSpacesSwitchOnActivate = true;
-          "com.apple.mouse.scaling" = 9;
           AppleLanguages = [
             "en-SG"
             "ms-MY"
@@ -210,6 +212,8 @@
           AppleMiniaturizeOnDoubleClick = false;
           NSAutomaticTextCompletionEnabled = true;
           "com.apple.sound.beep.flash" = false;
+          NSTextMovementDefaultKeyTimeout = 0.03;
+          NSToolbarTitleViewRolloverDelay = 0;
         };
         "com.apple.dock" = {
           # mouse in top left corner will (13) start lock screen
@@ -217,6 +221,9 @@
           wvous-tl-corner = 13; # lock screen
           wvous-tl-modifier = 131072; # shift key
           wvous-br-corner = 1;
+          springboard-show-duration = 0;
+          springboard-hide-duration = 0;
+          springboard-page-duration = 0;
         };
         "com.apple.desktopservices" = {
           # Avoid creating .DS_Store files on network or USB volumes
@@ -402,19 +409,19 @@
         #     };
         #   };
         # };
-        "com.apple.Siri" = {
-          CustomizedKeyboardShortcutSAE = {
-            enabled = 1;
-            value = {
-              parameters = [
-                115
-                1
-                1966080
-              ];
-              type = "SAE1.0";
-            };
-          };
-        };
+        # "com.apple.Siri" = {
+        #   CustomizedKeyboardShortcutSAE = {
+        #     enabled = 1;
+        #     value = {
+        #       parameters = [
+        #         115
+        #         1
+        #         1966080
+        #       ];
+        #       type = "SAE1.0";
+        #     };
+        #   };
+        # };
       };
     };
   };
