@@ -49,6 +49,7 @@
         show-process-indicators = true;
         orientation = "left";
         mru-spaces = false;
+        expose-group-apps = true;
       };
 
       # customize finder
@@ -99,7 +100,7 @@
         DisableConsoleAccess = true;
       };
 
-      spaces.spans-displays = false; # separate spaces on each display
+      spaces.spans-displays = true; # separate spaces on each display
 
       screencapture = {
         disable-shadow = true;
