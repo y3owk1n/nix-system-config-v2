@@ -16,14 +16,7 @@ in
     shell = fish;
     plugins = with pkgs; [
       {
-        plugin = tmuxPlugins.vim-tmux-navigator.overrideAttrs (_: {
-          src = pkgs.fetchFromGitHub {
-            owner = "christoomey";
-            repo = "vim-tmux-navigator";
-            rev = "c45243dc1f32ac6bcf6068e5300f3b2b237e576a";
-            hash = "sha256-IEPnr/GdsAnHzdTjFnXCuMyoNLm3/Jz4cBAM0AJBrj8=";
-          };
-        });
+        plugin = tmuxPlugins.vim-tmux-navigator;
       }
     ];
     extraConfig = ''
