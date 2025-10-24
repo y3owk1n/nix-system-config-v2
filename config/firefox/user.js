@@ -270,6 +270,9 @@ user_pref("security.cert_pinning.enforcement_level", 2);
 // PREF: enable container tabs
 user_pref("privacy.userContext.enabled", true);
 
+// PREF: enable PIP on tab switch
+user_pref("media.videocontrols.picture-in-picture.enable-when-switching-tabs.enabled", true);
+
 /****************************************************************************
  * SECTION: SMOOTHFOX                                                       *
  ****************************************************************************/
