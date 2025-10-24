@@ -1,102 +1,59 @@
-// Compatibility Prefix
-const {
-  Clipboard,
-  Front,
-  Hints,
-  Normal,
-  RUNTIME,
-  Visual,
-  aceVimMap,
-  addSearchAlias,
-  cmap,
-  getClickableElements,
-  imap,
-  imapkey,
-  iunmap,
-  map,
-  mapkey,
-  readText,
-  removeSearchAlias,
-  tabOpenLink,
-  unmap,
-  unmapAllExcept,
-  vmapkey,
-  vunmap,
-} = api;
+const { Hints, map, unmap } = api;
 
 // ---- Settings ----
 Hints.setCharacters("aoeuidhtns");
 
-settings.hintAlign = "left";
 settings.omnibarPosition = "bottom";
 settings.focusFirstCandidate = false;
 settings.focusAfterClosed = "last";
-settings.stealFocusOnLoad = false;
 settings.scrollStepSize = 200;
 settings.tabsThreshold = 0;
 settings.modeAfterYank = "Normal";
 
-// ---- Unmap -----
-// Proxy Stuff
-unmap("spa");
-unmap("spb");
-unmap("spc");
-unmap("spd");
-unmap("sps");
-unmap("cp");
-unmap(";cp");
-unmap(";ap");
+// ---- Styles ----
+const hintsCss =
+  "font-size: 10pt; font-family: JetBrains Mono NL, Cascadia Code, SauceCodePro Nerd Font, Consolas, Menlo, monospace;";
 
-unmap("H"); // just in case
-unmap("L"); // just in case
-unmap("J"); // just in case
-unmap("K"); // just in case
-unmap("d"); // just in case
+api.Hints.style(hintsCss);
+api.Hints.style(hintsCss, "text");
 
-unmap("i");
-unmap("t");
-unmap("x");
-unmap(":");
-unmap("gf");
-unmap("af");
-unmap("C");
-unmap("I");
-unmap("u");
-unmap("F"); // Go one tab history forward
-unmap("d"); // Scroll half page down
-unmap("e"); // Scroll half page up
-unmap("U"); // Scroll full page up
-unmap("P"); // Scroll full page down
+// ---- Mappings ----
 
-// Emoji
-iunmap(":");
-
-unmap("<Ctrl-j>")
-
-// ---- Map ----
-map("H", "S");
-map("L", "D");
-// map("J", "R"); <-- Using arc default keymap to switch tabs
-// map("K", "E"); <-- Using arc default keymap to switch tabs
-map("F", "gf");
-mapkey("<Ctrl-d>", "Scroll down", () => {
-  Normal.scroll("pageDown");
-});
-mapkey("<Ctrl-u>", "Scroll up", () => {
-  Normal.scroll("pageUp");
-});
-
-// ---- Post Unmap ----
-unmap("S");
-unmap("D");
-unmap("R");
+// Go one tab left
+map("<Ctrl-h>", "E");
 unmap("E");
 
-// ---- Search Engines -----
-removeSearchAlias("b", "s");
-removeSearchAlias("d", "s");
-removeSearchAlias("g", "s");
-removeSearchAlias("h", "s");
-removeSearchAlias("w", "s");
-removeSearchAlias("y", "s");
-removeSearchAlias("s", "s");
+// Go one tab right
+map("<Ctrl-l>", "R");
+unmap("R");
+
+// Go back in history
+map("H", "S");
+unmap("S");
+
+// Go forward in history
+map("L", "D");
+unmap("D");
+
+// Go one tab history back
+map("<Ctrl-o>", "B");
+unmap("B");
+
+// Go one tab history forward
+map("<Ctrl-i>", "F");
+unmap("F");
+
+// Scroll half page up
+map("<Ctrl-u>", "e");
+unmap("e");
+
+// Scroll half page down
+map("<Ctrl-d>", "d");
+unmap("d");
+unmap("u");
+
+// Scroll full page up
+unmap("U");
+
+// Scroll full page down
+unmap("P");
