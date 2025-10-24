@@ -63,7 +63,7 @@ in
           alt-m = 'fullscreen'
 
           cmd-alt-shift-ctrl-f = 'exec-and-forget open -a finder'
-          cmd-alt-shift-ctrl-b = 'exec-and-forget open -a "Helium"'
+          cmd-alt-shift-ctrl-b = 'exec-and-forget open -a firefox'
           cmd-alt-shift-ctrl-t = 'exec-and-forget open -a "Ghostty"'
           cmd-alt-shift-ctrl-n = 'exec-and-forget open -a "Notes"'
           cmd-alt-shift-ctrl-m = 'exec-and-forget open -a "Mail"'
@@ -106,6 +106,10 @@ in
 
           [[on-window-detected]]
           if.app-id = 'net.imput.helium'
+          run = 'move-node-to-workspace 1'
+
+          [[on-window-detected]]
+          if.app-id = 'org.mozilla.firefox'
           run = 'move-node-to-workspace 1'
 
           [[on-window-detected]]
