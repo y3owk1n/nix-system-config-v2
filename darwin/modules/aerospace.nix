@@ -33,6 +33,12 @@ in
           on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
           on-focus-changed = ["move-mouse window-force-center"]
 
+          exec-on-workspace-change = [
+            '/bin/bash',
+            '-lc',
+            'mptw $AEROSPACE_FOCUSED_WORKSPACE'
+          ]
+
           automatically-unhide-macos-hidden-apps = false
 
           [gaps]
