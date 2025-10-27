@@ -101,7 +101,7 @@
         DisableConsoleAccess = true;
       };
 
-      spaces.spans-displays = true; # separate spaces on each display
+      spaces.spans-displays = false; # separate spaces on each display
 
       screencapture = {
         disable-shadow = true;
