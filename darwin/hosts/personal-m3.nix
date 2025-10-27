@@ -19,6 +19,8 @@ in
     ../modules/karabiner.nix
     ../modules/aerospace.nix
     ../modules/hammerspoon.nix
+    ../modules/hyprspace.nix
+    ../modules/paneru.nix
     (import ../shared/darwin.nix {
       inherit
         safariKeys
@@ -37,6 +39,16 @@ in
   # This is a custom module at ./modules/aerospace.nix
   aerospace = {
     enable = true;
+  };
+
+  # This is a custom module at ./modules/hyprspace.nix
+  hyprspace = {
+    enable = false;
+  };
+
+  # This is a custom module at ./modules/paneru.nix
+  paneru = {
+    enable = false;
   };
 
   # add more brew packages here

@@ -8,6 +8,8 @@
     (final: prev: {
       # custom derivations
       hammerspoon = final.callPackage ../overlays/hammerspoon.nix { };
+      hyprspace = final.callPackage ../overlays/hyprspace.nix { };
+      paneru = final.callPackage ../overlays/paneru.nix { };
 
       # pagkage overrides
       aerospace = prev.aerospace.overrideAttrs (o: rec {
