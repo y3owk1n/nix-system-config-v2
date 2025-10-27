@@ -70,6 +70,7 @@
       "rustdesk"
       "helium-browser"
       "firefox"
+      "jordanbaird-ice"
       # "zen"
       "orbstack"
       "appcleaner"
