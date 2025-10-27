@@ -1,0 +1,50 @@
+# syntax=toml
+#
+# Example configuration for Paneru.
+#
+[options]
+# Enables focus follows mouse. Set to false or remove the line to disable.
+focus_follows_mouse = true
+
+# How many fingers to use for moving windows left and right.
+# Make sure that it doesn't clash with OS setting for workspace switching.
+# Values lower than 3 will be ignored.
+# Remove the line to disable the gesture feature.
+# Apple touchpads support gestures with more than five fingers (!),
+# but it is probably not that useful to use two hands :)
+swipe_gesture_fingers = 4
+
+[bindings]
+# Moves the focus between windows.
+window_focus_west = "alt - h"
+window_focus_east = "alt - l"
+window_focus_north = "alt - k"
+window_focus_south = "alt - j"
+
+# Swaps windows in chosen direction.
+window_swap_west = "alt + shift - h"
+window_swap_east = "alt + shift - l"
+
+# Jump to the left-most or right-most windows.
+# window_focus_first = "cmd + shift - h"
+# window_focus_last = "cmd + shift - l"
+
+# Move the current window into the left-most or right-most positions.
+# window_swap_first = "alt + shift - h"
+# window_swap_last = "alt + shift - l"
+
+# Centers the current window on screen.
+window_center = "alt - c"
+
+# Shuffles between predefined window sizes: 25%, 33%, 50%, 66% and 75%.
+window_resize = "alt - r"
+
+# Toggles the window for management. If unmanaged, the window will be "floating".
+window_manage = "alt - t"
+
+# Stacks and unstacks a window into the left column. Each window gets a 1/N of the height.
+window_stack = "alt - ]"
+window_unstack = "alt + shift - ]"
+
+# Quits the window manager.
+quit = "ctrl + alt - q"
