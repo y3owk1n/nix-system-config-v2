@@ -1,9 +1,50 @@
 /*******************************************************************************
+ Helpers
+ ******************************************************************************/
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function when_editing(
+  editing_action: glide.ExcmdString | glide.KeymapCallback | null,
+  non_editing_action: glide.ExcmdString | glide.KeymapCallback | null,
+): glide.KeymapCallback {
+  return async (props) => {
+    const action = (await glide.ctx.is_editing()) ? editing_action : non_editing_action;
+
+    if (!action) return;
+
+    if (typeof action === "string") {
+      await glide.excmds.execute(action);
+    } else {
+      action(props);
+    }
+  };
+}
+
+async function focus_page() {
+  // HACK: defocus the editable element by focusing the address bar and then refocusing the page
+  await glide.keys.send("<F6>", { skip_mappings: true });
+  await sleep(100);
+  // check insert mode for address bar
+  if (glide.ctx.mode === "insert") {
+    await glide.keys.send("<F6>", { skip_mappings: true });
+  }
+}
+
+/*******************************************************************************
  Options
  ******************************************************************************/
 
 glide.o.hint_chars = "aoeuidhtns";
 glide.o.hint_size = "14px";
+
+/*******************************************************************************
+ Autocmds
+ ******************************************************************************/
+
+glide.autocmds.create("ModeChanged", "command:*", focus_page);
 
 /*******************************************************************************
  Keymaps
@@ -14,6 +55,11 @@ const modes: Record<"ni", GlideMode[]> = {
 };
 
 // map
+glide.keymaps.set("normal", "<esc>", async () => {
+  await glide.keys.send("<Esc>", { skip_mappings: true });
+  await focus_page();
+});
+glide.keymaps.set("normal", "/", "keys <D-f>");
 glide.keymaps.set("normal", "H", "back");
 glide.keymaps.set("normal", "L", "forward");
 glide.keymaps.set(modes.ni, "<C-h>", "tab_prev");
@@ -25,7 +71,7 @@ glide.keymaps.set(
     const tab = await glide.tabs.active();
     assert(tab && tab.id);
 
-    const tabs = await browser.tabs.query({ currentWindow: true });
+    const tabs = await glide.tabs.query({ currentWindow: true });
     const tabsCount = tabs.length;
 
     if (tab.index + 1 < tabsCount) {
@@ -47,6 +93,32 @@ glide.keymaps.set(
   },
   { description: "Move current tab to the left" },
 );
+glide.keymaps.set(
+  "normal",
+  "yt",
+  when_editing(null, async ({ tab_id }) => await browser.tabs.duplicate(tab_id)),
+);
+glide.keymaps.set("visual", "e", "motion e");
+glide.keymaps.set("visual", "b", "motion b");
+glide.keymaps.set("normal", "gu", async () => {
+  const url = new URL(glide.ctx.url);
+  const parts = url.pathname.split("/").filter(Boolean);
+  assert(parts.length > 0, "Cannot go up: already at root of URL hierarchy");
+  parts.pop();
+  await browser.tabs.update({
+    url: [url.origin, ...parts].filter(Boolean).join("/"),
+  });
+});
+glide.keymaps.set("normal", "gr", async () => {
+  const url = new URL(glide.ctx.url);
+  await browser.tabs.update({ url: url.origin });
+});
+glide.keymaps.set("normal", "gi", async () => {
+  await glide.excmds.execute("focusinput last");
+  if (!(await glide.ctx.is_editing())) {
+    await glide.keys.send("gI");
+  }
+});
 
 /*******************************************************************************
  Prefs
