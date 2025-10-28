@@ -22,6 +22,7 @@ in
     ../modules/hyprspace.nix
     ../modules/paneru.nix
     ../modules/rift.nix
+    ../modules/gori.nix
     (import ../shared/darwin.nix {
       inherit
         safariKeys
@@ -54,6 +55,11 @@ in
 
   # This is a custom module at ./modules/rift.nix
   rift = {
+    enable = false;
+  };
+
+  # This is a custom module at ./modules/gori.nix
+  gori = {
     enable = false;
   };
 
