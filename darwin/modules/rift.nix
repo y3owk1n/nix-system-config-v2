@@ -98,9 +98,6 @@ in
 
           default_workspace = 0
 
-          # Workspace names (indexed order). If fewer than default_workspace_count are provided,
-          # remaining workspaces are named "Workspace X".
-          # Do not provide more names than default_workspace_count.
           workspace_names = [
           	"browser",
             "terminal",
@@ -113,68 +110,6 @@ in
             "dumpster"
           ]
 
-          # App rules (automatic assignment)
-          # Define rules that match new windows and set properties (workspace, floating, etc).
-          #
-          # Matchable fields:
-          #   - app_id         : application bundle identifier (exact)
-          #   - app_name       : substring match against application name
-          #   - title_regex    : regular expression matched against the window title
-          #   - title_substring: literal substring (case-sensitive) matched against the title
-          #   - ax_role / ax_subrole: exact match against macOS Accessibility (AX) role/subrole
-          #
-          # Rule options:
-          #   - workspace (integer, 0-based): target workspace index. If omitted or invalid, uses the active workspace.
-          #     Alternatively, `workspace` may be a workspace name string to target by name.
-          #   - floating (boolean): whether matched windows should float by default.
-          #
-          # Matching behavior (summary):
-          #   1. All rules that match a window are evaluated.
-          #   2. If multiple matching rules share the same non-empty `app_id`, the rule
-          #      with the most specified conditions (the most non-empty fields) wins.
-          #      If there's a tie, the earlier rule in the file wins.
-          #   3. If matching rules do NOT share the same `app_id`, the rule with the
-          #      highest specificity (most non-empty fields) is selected; ties are broken by order.
-          #   4. Within a single rule, all specified fields are combined conjunctively:
-          #      the rule matches only if every non-empty field matches the window.
-          #
-          # Tips:
-          #   - To make exceptions for a specific app, place a more specific rule before
-          #     a general `app_id` rule. Example:
-          #       app_rules = [
-          #         { app_id = "com.example.X", title_regex = "Dialog", floating = true },
-          #         { app_id = "com.example.X", floating = false },
-          #       ]
-          #
-          #   - Use `title_substring` for simple, literal (case-sensitive) substring matches.
-          #     Use `title_regex` for advanced patterns.
-          #
-          # Accessibility (AX) matching:
-          #   - `ax_role` and `ax_subrole` match the exact AX values reported by macOS
-          #     (e.g., "AXWindow", "AXDialog", "AXSystemDialog", "AXToolbar").
-          #   - Useful for distinguishing dialogs, sheets, toolbars, etc., when bundle/name/title aren't enough.
-          #
-          # Validation:
-          #   - `title_regex` must be a valid regular expression. Invalid regexes cause the rule
-          #     to be ignored and a warning to be logged.
-          #
-          # Examples:
-          #   - Float any window with "Preferences" in the title:
-          #       app_rules = [
-          #         { title_substring = "Preferences", floating = true },
-          #       ]
-          #
-          #   - Match by app name substring and workspace:
-          #       app_rules = [
-          #         { app_name = "Calendar", workspace = 2, floating = true },
-          #       ]
-          #
-          #   - Accessibility example: float dialog windows for a specific app:
-          #       app_rules = [
-          #         { app_id = "com.example.X", ax_subrole = "AXDialog", floating = true },
-          #       ]
-          #
-          # By default there are no app rules; add or uncomment rules below as needed.
           app_rules = [
             { app_id = "com.apple.Safari", workspace = "browser" },
             { app_id = "com.apple.SafariTechnologyPreview", workspace = "browser" },
