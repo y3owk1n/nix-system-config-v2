@@ -17,6 +17,10 @@ in
     ../modules/karabiner.nix
     ../modules/aerospace.nix
     ../modules/hammerspoon.nix
+    ../modules/hyprspace.nix
+    ../modules/paneru.nix
+    ../modules/rift.nix
+    ../modules/gori.nix
     (import ../shared/darwin.nix {
       inherit
         safariKeys
@@ -34,7 +38,27 @@ in
 
   # This is a custom module at ./modules/aerospace.nix
   aerospace = {
+    enable = false;
+  };
+
+  # This is a custom module at ./modules/hyprspace.nix
+  hyprspace = {
+    enable = false;
+  };
+
+  # This is a custom module at ./modules/paneru.nix
+  paneru = {
     enable = true;
+  };
+
+  # This is a custom module at ./modules/rift.nix
+  rift = {
+    enable = false;
+  };
+
+  # This is a custom module at ./modules/gori.nix
+  gori = {
+    enable = false;
   };
 
   # add more brew packages here

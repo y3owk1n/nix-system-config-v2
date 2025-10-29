@@ -40,7 +40,7 @@ in
 
   # This is a custom module at ./modules/aerospace.nix
   aerospace = {
-    enable = true;
+    enable = false;
   };
 
   # This is a custom module at ./modules/hyprspace.nix
@@ -50,7 +50,7 @@ in
 
   # This is a custom module at ./modules/paneru.nix
   paneru = {
-    enable = false;
+    enable = true;
   };
 
   # This is a custom module at ./modules/rift.nix

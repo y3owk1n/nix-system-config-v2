@@ -1,50 +1,62 @@
 # syntax=toml
-#
-# Example configuration for Paneru.
-#
+
 [options]
 # Enables focus follows mouse. Set to false or remove the line to disable.
 focus_follows_mouse = true
 
 # How many fingers to use for moving windows left and right.
-# Make sure that it doesn't clash with OS setting for workspace switching.
 # Values lower than 3 will be ignored.
-# Remove the line to disable the gesture feature.
-# Apple touchpads support gestures with more than five fingers (!),
-# but it is probably not that useful to use two hands :)
 swipe_gesture_fingers = 4
 
 [bindings]
+# Bindings run arbitrary shell via /bin/bash -lc.
+# Use 'paneru cmd ...' to send Paneru commands to the daemon.
+
 # Moves the focus between windows.
-window_focus_west = "alt - h"
-window_focus_east = "alt - l"
-window_focus_north = "alt - k"
-window_focus_south = "alt - j"
+"alt - h" = "paneru cmd window focus west"
+"alt - l" = "paneru cmd window focus east"
+"alt - k" = "paneru cmd window focus north"
+"alt - j" = "paneru cmd window focus south"
 
 # Swaps windows in chosen direction.
-window_swap_west = "alt + shift - h"
-window_swap_east = "alt + shift - l"
+"alt + shift - h" = "paneru cmd window swap west"
+"alt + shift - l" = "paneru cmd window swap east"
 
 # Jump to the left-most or right-most windows.
-# window_focus_first = "cmd + shift - h"
-# window_focus_last = "cmd + shift - l"
+# "cmd + shift - h" = "paneru cmd window focus first"
+# "cmd + shift - l" = "paneru cmd window focus last"
 
 # Move the current window into the left-most or right-most positions.
-# window_swap_first = "alt + shift - h"
-# window_swap_last = "alt + shift - l"
+# "alt + shift - h" = "paneru cmd window swap first"
+# "alt + shift - l" = "paneru cmd window swap last"
 
 # Centers the current window on screen.
-window_center = "alt - c"
+"alt - c" = "paneru cmd window center"
 
-# Shuffles between predefined window sizes: 25%, 33%, 50%, 66% and 75%.
-window_resize = "alt - r"
+# Shuffle window widths: 25%, 33%, 50%, 66%, 75%.
+"alt - r" = "paneru cmd window resize"
 
-# Toggles the window for management. If unmanaged, the window will be "floating".
-window_manage = "alt - t"
+# Toggle manage (floating vs managed).
+"alt - f" = "paneru cmd window manage"
 
-# Stacks and unstacks a window into the left column. Each window gets a 1/N of the height.
-window_stack = "alt - ]"
-window_unstack = "alt + shift - ]"
+# Stack/Unstack window into the left column.
+# "alt - ]" = "paneru cmd window stack"
+# "alt + shift - ]" = "paneru cmd window unstack"
 
-# Quits the window manager.
-quit = "ctrl + alt - q"
+# Quit paneru.
+# "ctrl + alt - q" = "paneru cmd quit"
+
+# Example: run arbitrary shell
+# "alt+h" = "echo 'hello from exec (alt+h)'"
+# "cmd + shift - r" = "osascript -e 'display dialog \"paneru exec\"'"
+
+"cmd + alt + shift + ctrl + f" = "open -a finder"
+"cmd + alt + shift + ctrl + b" = "open -a firefox"
+"cmd + alt + shift + ctrl + t" = "open -a \"Ghostty\""
+"cmd + alt + shift + ctrl + n" = "open -a \"Notes\""
+"cmd + alt + shift + ctrl + m" = "open -a \"Mail\""
+"cmd + alt + shift + ctrl + c" = "open -a \"Calendar\""
+"cmd + alt + shift + ctrl + w" = "open -a \"WhatsApp\""
+"cmd + alt + shift + ctrl + s" = "open -a \"System Preferences\""
+"cmd + alt + shift + ctrl + p" = "open -a \"Passwords\""
+"cmd + alt + shift + ctrl + a" = "open -a \"Activity Monitor\""
