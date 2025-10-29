@@ -5,21 +5,20 @@
   darwinMinVersionHook,
   rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   writeShellScriptBin,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "paneru";
-  version = "0.1.0";
+  version = "unstable-2025-10-29";
 
   src = fetchFromGitHub {
-    owner = "karinushka";
+    owner = "y3owk1n";
     repo = "paneru";
-    rev = "v${finalAttrs.version}";
-    sha256 = "sha256-cVNqqTVzRWAK+uGYFRZo0aWroysOZsa1z6GKwM6J4Xo=";
+    rev = "0ac348a993c340df0948fa1afada3e60bf0bd45f";
+    sha256 = "sha256-QgMPHS9MaNNF3WmnF5Qmrsjg6v2xeiI+/1+0NImoO0M=";
   };
 
-  cargoHash = "sha256-LKQ0pjODOmcMlxlmEUMu9NlS2GCDF4shlOLie+9Hdv4=";
+  cargoHash = "sha256-Bgb1gLls0PJUBY6PCoqnAjXkUntXphKOi/LW6PpA/4k=";
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     apple-sdk_13
