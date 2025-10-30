@@ -9,9 +9,7 @@
       # custom derivations
       hammerspoon = final.callPackage ../overlays/hammerspoon.nix { };
       hyprspace = final.callPackage ../overlays/hyprspace.nix { };
-      paneru = final.callPackage ../overlays/paneru.nix { };
       rift = final.callPackage ../overlays/rift.nix { };
-      gori = final.callPackage ../overlays/gori.nix { };
 
       # pagkage overrides
       aerospace = prev.aerospace.overrideAttrs (o: rec {

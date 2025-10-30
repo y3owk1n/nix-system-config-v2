@@ -24,11 +24,18 @@ in
           start-at-login = false
           after-login-command = []
 
+          after-startup-command = [
+              'workspace 1',
+              'layout scroll'
+          ]
+
           default-root-container-layout = 'scroll'
-          default-root-container-orientation = 'auto'
+          default-root-container-orientation = 'horizontal'
 
           enable-normalization-flatten-containers = true
           enable-normalization-opposite-orientation-for-nested-containers = true
+
+          accordion-padding = 30
 
           on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
           on-focus-changed = ["move-mouse window-force-center"]
@@ -77,9 +84,9 @@ in
           cmd-alt-shift-ctrl-a = 'exec-and-forget open -a "Activity Monitor"'
 
           cmd-alt-shift-ctrl-1 = 'workspace 1' # Browser
-          cmd-alt-shift-ctrl-0 = 'flatten-workspace-tree'
+          cmd-alt-shift-ctrl-0 = 'balance-sizes'
         '';
-        description = "Config to use for {file} `aerospace.toml`.";
+        description = "Config to use for {file} `hyprspace.toml`.";
       };
     };
   };
@@ -90,7 +97,7 @@ in
 
       launchd.user.agents.hyprspace = {
         command =
-          "${cfg.package}/Applications/AeroSpace.app/Contents/MacOS/AeroSpace"
+          "${cfg.package}/Applications/HyprSpace.app/Contents/MacOS/HyprSpace"
           + (lib.optionalString (cfg.config != "") " --config-path ${configFile}");
         serviceConfig = {
           KeepAlive = false;

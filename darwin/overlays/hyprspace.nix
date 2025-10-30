@@ -7,8 +7,8 @@
 }:
 
 let
-  appName = "AeroSpace.app";
-  version = "0.1.2";
+  appName = "HyprSpace.app";
+  version = "0.2.0";
 in
 stdenv.mkDerivation {
   pname = "hyprspace";
@@ -16,8 +16,8 @@ stdenv.mkDerivation {
   inherit version;
 
   src = fetchzip {
-    url = "https://github.com/BarutSRB/HyprSpace/releases/download/v${version}/AeroSpace-v${version}.zip";
-    sha256 = "sha256-HEPkvq4UhIuj86h7xX31ErTELLlKxdvE+HTLZeOS208=";
+    url = "https://github.com/BarutSRB/HyprSpace/releases/download/v${version}/HyprSpace-v${version}.zip";
+    sha256 = "sha256-kiUEk1yovV5V6riaQOjlQXSXI04/HuFzQZeRA+A4HHM=";
   };
 
   nativeBuildInputs = [ installShellFiles ];
@@ -49,6 +49,6 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    mainProgram = "aerospace";
+    mainProgram = "hyprspace";
   };
 }
