@@ -22,7 +22,6 @@ in
         type = types.lines;
         default = ''
           start-at-login = false
-          after-login-command = []
 
           default-root-container-layout = 'tiles'
           default-root-container-orientation = 'auto'
@@ -171,32 +170,16 @@ in
           if.app-id = 'com.carriez.rustdesk'
           run = 'move-node-to-workspace 8'
 
+          [[on-window-detected]]
+          if.app-id = 'com.apple.systempreferences'
+          run = ['layout floating']
+
           # ensure PIP doesn't get tiled
 
           [[on-window-detected]]
           if.app-id = 'app.zen-browser.zen'
           if.window-title-regex-substring = 'Picture-in-Picture'
           run = ['layout floating']
-
-          # prevent apps to go to dumpster
-
-          [[on-window-detected]]
-          if.app-id = 'com.apple.finder'
-          check-further-callbacks = false
-          run = ['layout tiling']
-
-          [[on-window-detected]]
-          if.app-id = 'com.apple.systempreferences'
-          check-further-callbacks = false
-          run = ['layout floating']
-
-          # move everything else to the workspace 9 (dumpster)
-          # this should run last
-          # for anything above, always ensure that check-further-callbacks is false
-
-          [[on-window-detected]]
-          check-further-callbacks = true
-          run = 'move-node-to-workspace 9'
         '';
         description = "Config to use for {file} `aerospace.toml`.";
       };
