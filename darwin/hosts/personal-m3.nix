@@ -21,6 +21,7 @@ in
     ../modules/hammerspoon.nix
     ../modules/hyprspace.nix
     ../modules/rift.nix
+    ../modules/paneru.nix
     (import ../shared/darwin.nix {
       inherit
         safariKeys
@@ -48,6 +49,11 @@ in
 
   # This is a custom module at ./modules/rift.nix
   rift = {
+    enable = false;
+  };
+
+  # This is a custom module at ./modules/paneru.nix
+  paneru = {
     enable = false;
   };
 

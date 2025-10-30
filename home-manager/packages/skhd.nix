@@ -2,11 +2,11 @@
 let
   skhd = pkgs.stdenv.mkDerivation rec {
     pname = "skhd-zig";
-    version = "0.0.13";
+    version = "0.0.15";
 
     src = pkgs.fetchzip {
       url = "https://github.com/jackielii/skhd.zig/releases/download/v${version}/skhd-arm64-macos.tar.gz";
-      sha256 = "sha256-ZT8upVH8XDcBGniwuM/Wrj+zlFlwXdsi3bcRPWqTmok=";
+      sha256 = "sha256-6ffSUWdEhtSnZOxb8lYxtHAoJaPIbojl/C1C19J4BIU=";
       stripRoot = false;
     };
 
@@ -32,31 +32,19 @@ in
     config = ''
       .shell "/bin/dash"
 
-      .define open_hide : open -a "{{1}}" && until pgrep -f "{{1}}" > /dev/null; do sleep 0.1; done && /etc/profiles/per-user/kylewong/bin/skhd --key "cmd + alt - h"
+      .define open : open -a "{{1}}"
 
       # launchers
-      hyper - b : @open_hide("safari")
-      hyper - 1 : @open_hide("safari")
-
-      hyper - t : @open_hide("ghostty")
-      hyper - 2 : @open_hide("ghostty")
-
-      hyper - n : @open_hide("notes")
-      hyper - m : @open_hide("mail")
-      hyper - w : @open_hide("WhatsApp")
-      hyper - f : @open_hide("Finder")
-      hyper - s : @open_hide("System Settings")
-      hyper - p : @open_hide("Passwords")
-
-      # spotlight
-      hyper - return : /etc/profiles/per-user/kylewong/bin/skhd --key "cmd - space"
-
-      # window management
-      ctrl + shift - m : /etc/profiles/per-user/kylewong/bin/skhd --key "fn + ctrl - f"
-      ctrl + shift - h : osascript -e 'tell application "System Events" to tell (first application process whose frontmost is true) to click menu item "Left" of menu 1 of menu item "Move & Resize" of menu "Window" of menu bar 1'
-      ctrl + shift - l : osascript -e 'tell application "System Events" to tell (first application process whose frontmost is true) to click menu item "Right" of menu 1 of menu item "Move & Resize" of menu "Window" of menu bar 1'
-      ctrl + shift - j : osascript -e 'tell application "System Events" to tell (first application process whose frontmost is true) to click menu item "Bottom" of menu 1 of menu item "Move & Resize" of menu "Window" of menu bar 1'
-      ctrl + shift - k : osascript -e 'tell application "System Events" to tell (first application process whose frontmost is true) to click menu item "Top" of menu 1 of menu item "Move & Resize" of menu "Window" of menu bar 1'
+      hyper - f : @open("finder")
+      hyper - b : @open("firefox")
+      hyper - t : @open("ghostty")
+      hyper - n : @open("notes")
+      hyper - m : @open("mail")
+      hyper - c : @open("calendar")
+      hyper - w : @open("WhatsApp")
+      hyper - s : @open("System Settings")
+      hyper - p : @open("Passwords")
+      hyper - a : @open("Activity Monitor")
     '';
   };
 }

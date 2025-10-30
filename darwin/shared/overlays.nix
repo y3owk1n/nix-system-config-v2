@@ -10,6 +10,7 @@
       hammerspoon = final.callPackage ../overlays/hammerspoon.nix { };
       hyprspace = final.callPackage ../overlays/hyprspace.nix { };
       rift = final.callPackage ../overlays/rift.nix { };
+      paneru = final.callPackage ../overlays/paneru.nix { };
 
       # pagkage overrides
       aerospace = prev.aerospace.overrideAttrs (o: rec {
