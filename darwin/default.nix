@@ -8,6 +8,7 @@
   homebrew-core,
   homebrew-cask,
   homebrew-bundle,
+  homebrew-y3owk1n,
   determinate,
   ...
 }:
@@ -86,6 +87,7 @@ in
             homebrew-core
             homebrew-cask
             homebrew-bundle
+            homebrew-y3owk1n
             ;
         })
       ];
@@ -155,6 +157,7 @@ in
             homebrew-core
             homebrew-cask
             homebrew-bundle
+            homebrew-y3owk1n
             ;
         })
       ];
