@@ -78,7 +78,7 @@
       "whatsapp"
       "imageoptim"
       "onyx"
-      "homerow"
+      # "homerow"
     ];
 
     masApps = { };

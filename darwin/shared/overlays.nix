@@ -11,6 +11,7 @@
       hyprspace = final.callPackage ../overlays/hyprspace.nix { };
       rift = final.callPackage ../overlays/rift.nix { };
       paneru = final.callPackage ../overlays/paneru.nix { };
+      govim = final.callPackage ../overlays/govim.nix { };
 
       # pagkage overrides
       aerospace = prev.aerospace.overrideAttrs (o: rec {

@@ -40,6 +40,10 @@
       url = "github:Homebrew/homebrew-bundle";
       flake = false;
     };
+    homebrew-y3owk1n = {
+      url = "github:y3owk1n/homebrew-tap";
+      flake = false;
+    };
 
     stylix = {
       # url = "github:nix-community/stylix";
@@ -66,6 +70,7 @@
       homebrew-core,
       homebrew-cask,
       homebrew-bundle,
+      homebrew-y3owk1n,
       nixos-npm-ls,
       determinate,
       ...
@@ -93,6 +98,7 @@
             homebrew-core
             homebrew-cask
             homebrew-bundle
+            homebrew-y3owk1n
             nixos-npm-ls
             determinate
             ;
