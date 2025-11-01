@@ -59,9 +59,7 @@ in
 
           [accessibility.electron_support]
           enable = true
-          additional_bundles = [
-              "com.exafunction.windsurf",
-          ]
+          additional_bundles = []
 
           [hotkeys]
           activate_hint_mode = "Ctrl+F"

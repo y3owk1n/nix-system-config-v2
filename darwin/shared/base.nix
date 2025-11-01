@@ -69,6 +69,7 @@
       "tailscale-app"
       "rustdesk"
       "helium-browser"
+      # "brave-browser"
       # "glide-browser"
       "firefox"
       "jordanbaird-ice"
