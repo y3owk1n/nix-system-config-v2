@@ -22,12 +22,14 @@ in
         type = types.lines;
         default = ''
           [general]
-          hint_characters = "aoeuidhtns"
           excluded_apps = [
               "com.mitchellh.ghostty",
           ]
+          include_menubar_hints = false
+          include_dock_hints = false
 
           [accessibility]
+          accessibility_check_on_start = true
           clickable_roles = [
               "AXButton",
               "AXCheckBox",
@@ -41,7 +43,6 @@ in
               "AXTextField",
               "AXTextArea",
           ]
-
           scrollable_roles = [
               "AXScrollArea",
           ]
@@ -64,6 +65,7 @@ in
           activate_scroll_mode = "Ctrl+S"
 
           [hints]
+          hint_characters = "aoeuidhtns"
           font_size = 12
           font_family = "JetBrainsMonoNLNFP-ExtraBold"
           background_color = "#FFD700"
