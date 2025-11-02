@@ -83,9 +83,6 @@ in
           action_border_color = "#000000"
           action_opacity = 0.95
 
-          menubar = false
-          dock = false
-
           [scroll]
           scroll_speed = 50
           highlight_scroll_area = true
