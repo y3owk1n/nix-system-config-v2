@@ -20,6 +20,7 @@ in
     ../modules/hyprspace.nix
     ../modules/rift.nix
     ../modules/paneru.nix
+    ../modules/govim.nix
     (import ../shared/darwin.nix {
       inherit
         safariKeys
@@ -53,6 +54,11 @@ in
   # This is a custom module at ./modules/paneru.nix
   paneru = {
     enable = false;
+  };
+
+  # This is a custom module at ./modules/govim.nix
+  govim = {
+    enable = true;
   };
 
   # add more brew packages here

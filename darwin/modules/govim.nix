@@ -32,28 +32,28 @@ in
           accessibility_check_on_start = true
           clickable_roles = [
               "AXButton",
+              "AXComboBox",
               "AXCheckBox",
               "AXRadioButton",
-              "AXPopUpButton",
-              "AXMenuItem",
-              "AXMenuBarItem",
-              "AXDockItem",
-              "AXApplicationDockItem",
               "AXLink",
+              "AXPopUpButton",
               "AXTextField",
+              "AXSlider",
+              "AXTabGroup",
+              "AXTabButton",
+              "AXSwitch",
+              "AXToolbar",
+              "AXDisclosureTriangle",
               "AXTextArea",
+              "AXMenuButton",
+              "AXMenuItem",
+              "AXGroup",
+              "AXImage",
+              "AXCell",
           ]
           scrollable_roles = [
               "AXScrollArea",
           ]
-
-          [[accessibility.app_configs]]
-          bundle_id = "com.apple.mail"
-          additional_clickable_roles = ["AXStaticText"]
-
-          [[accessibility.app_configs]]
-          bundle_id = "com.apple.Notes"
-          additional_clickable_roles = ["AXStaticText"]
 
           [accessibility.electron_support]
           enable = true
