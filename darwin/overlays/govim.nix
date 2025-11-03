@@ -9,13 +9,13 @@
 }:
 buildGoModule (finalAttrs: {
   pname = "govim";
-  version = "1.1.1";
+  version = "1.2.0";
 
   src = fetchFromGitHub {
     owner = "y3owk1n";
     repo = "govim";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-xuNC+T7qNr+0AM2NzPCfvgPVPmuPxGDURqjE4fr2P7E=";
+    hash = "sha256-dzcpdVbl2eVU4L9x/qnXC5DOWbMCgt9/wEKroOedXoY=";
   };
 
   vendorHash = "sha256-x5NB18fP8ERIB5qeMAMyMnSoDEF2+g+NoJKrC+kIj+k=";
