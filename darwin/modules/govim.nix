@@ -27,6 +27,10 @@ in
           ]
           include_menubar_hints = false
           include_dock_hints = false
+          restore_pos_after_left_click = true
+          restore_pos_after_right_click = true
+          restore_pos_after_middle_click = true
+          restore_pos_after_double_click = true
 
           [accessibility]
           accessibility_check_on_start = true
