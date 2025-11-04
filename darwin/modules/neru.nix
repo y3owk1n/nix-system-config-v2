@@ -6,17 +6,17 @@
 }:
 
 let
-  cfg = config.govim;
+  cfg = config.neru;
 
-  configFile = pkgs.writeScript "govim.toml" cfg.config;
+  configFile = pkgs.writeScript "neru.toml" cfg.config;
 in
 
 {
   options = {
-    govim = with lib.types; {
-      enable = lib.mkEnableOption "Govim keyboard navigation";
+    neru = with lib.types; {
+      enable = lib.mkEnableOption "Neru keyboard navigation";
 
-      package = lib.mkPackageOption pkgs "govim" { };
+      package = lib.mkPackageOption pkgs "neru" { };
 
       config = lib.mkOption {
         type = types.lines;
@@ -110,7 +110,7 @@ in
           log_file = ""
           structured_logging = true
         '';
-        description = "Config to use for {file} `govim.toml`.";
+        description = "Config to use for {file} `neru.toml`.";
       };
     };
   };
@@ -119,9 +119,9 @@ in
     lib.mkIf (cfg.enable) {
       environment.systemPackages = [ cfg.package ];
 
-      launchd.user.agents.govim = {
+      launchd.user.agents.neru = {
         command =
-          "${cfg.package}/bin/govim launch"
+          "${cfg.package}/bin/neru launch"
           + (lib.optionalString (cfg.config != "") " --config ${configFile}");
         serviceConfig = {
           KeepAlive = false;
