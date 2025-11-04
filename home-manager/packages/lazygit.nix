@@ -11,9 +11,11 @@
         showRandomTip = false;
       };
       git = {
-        paging = {
-          externalDiffCommand = "difft --color=always";
-        };
+        pagers = [
+          {
+            externalDiffCommand = "difft --color=always";
+          }
+        ];
       };
     };
   };
