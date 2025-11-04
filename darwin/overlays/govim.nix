@@ -9,16 +9,25 @@
 }:
 buildGoModule (finalAttrs: {
   pname = "govim";
-  version = "1.3.0";
+  # version = "1.3.0";
+  version = "unstable-latest-f8767af40078a0a4e08705f15e2a51589c681c6b";
+  commitHash = "f8767af40078a0a4e08705f15e2a51589c681c6b";
 
   src = fetchFromGitHub {
     owner = "y3owk1n";
     repo = "govim";
-    tag = "v${finalAttrs.version}";
-    hash = "sha256-IwH5V9Dyr8KGXQpHGiKFEkusUf0cKfwL3F94Atd+3q8=";
+    # tag = "v${finalAttrs.version}";
+    rev = "${finalAttrs.commitHash}";
+    hash = "sha256-o9qjsvQXHRNcWX8BTPtUnWhlnc4R/SVgaYFj645KgzA=";
   };
 
   vendorHash = "sha256-x5NB18fP8ERIB5qeMAMyMnSoDEF2+g+NoJKrC+kIj+k=";
+
+  # ldflags = [
+  #   "-s"
+  #   "-w"
+  #   "-X github.com/y3owk1n/govim/internal/cli.Version=${finalAttrs.version}"
+  # ];
 
   ldflags = [
     "-s"

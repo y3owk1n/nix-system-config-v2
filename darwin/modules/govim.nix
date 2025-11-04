@@ -27,6 +27,7 @@ in
           ]
           include_menubar_hints = false
           include_dock_hints = false
+          include_nc_hints = true
           restore_pos_after_left_click = true
           restore_pos_after_right_click = true
           restore_pos_after_middle_click = true
