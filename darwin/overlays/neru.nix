@@ -8,31 +8,25 @@
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
-  pname = "govim";
+  pname = "neru";
   # version = "1.3.0";
-  version = "unstable-latest-f8767af40078a0a4e08705f15e2a51589c681c6b";
-  commitHash = "f8767af40078a0a4e08705f15e2a51589c681c6b";
+  version = "unstable-latest-936e96db319cf873eef595d7ac25ea523d2242a4";
+  commitHash = "936e96db319cf873eef595d7ac25ea523d2242a4";
 
   src = fetchFromGitHub {
     owner = "y3owk1n";
-    repo = "govim";
+    repo = "neru";
     # tag = "v${finalAttrs.version}";
     rev = "${finalAttrs.commitHash}";
-    hash = "sha256-o9qjsvQXHRNcWX8BTPtUnWhlnc4R/SVgaYFj645KgzA=";
+    hash = "sha256-/e0vmKw4AtEwI3MK8BZkd1QVOXqjUuBg9z2Ob+Hlj4c=";
   };
 
   vendorHash = "sha256-x5NB18fP8ERIB5qeMAMyMnSoDEF2+g+NoJKrC+kIj+k=";
 
-  # ldflags = [
-  #   "-s"
-  #   "-w"
-  #   "-X github.com/y3owk1n/govim/internal/cli.Version=${finalAttrs.version}"
-  # ];
-
   ldflags = [
     "-s"
     "-w"
-    "-X github.com/y3owk1n/govim/internal/cli.Version=${finalAttrs.version}"
+    "-X github.com/y3owk1n/neru/internal/cli.Version=${finalAttrs.version}"
   ];
 
   # Completions
@@ -41,10 +35,10 @@ buildGoModule (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd govim \
-      --bash <($out/bin/govim completion bash) \
-      --fish <($out/bin/govim completion fish) \
-      --zsh <($out/bin/govim completion zsh)
+    installShellCompletion --cmd neru \
+      --bash <($out/bin/neru completion bash) \
+      --fish <($out/bin/neru completion fish) \
+      --zsh <($out/bin/neru completion zsh)
   '';
 
   passthru = {

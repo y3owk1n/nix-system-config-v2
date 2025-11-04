@@ -22,7 +22,7 @@ in
     ../modules/hyprspace.nix
     ../modules/rift.nix
     ../modules/paneru.nix
-    ../modules/govim.nix
+    ../modules/neru.nix
     (import ../shared/darwin.nix {
       inherit
         safariKeys
@@ -58,8 +58,8 @@ in
     enable = false;
   };
 
-  # This is a custom module at ./modules/govim.nix
-  govim = {
+  # This is a custom module at ./modules/neru.nix
+  neru = {
     enable = true;
   };
 
