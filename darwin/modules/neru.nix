@@ -71,7 +71,7 @@ in
 
           [hints]
           hint_characters = "aoeuidhtns"
-          font_size = 12
+          font_size = 11
           font_family = "JetBrainsMonoNLNFP-ExtraBold"
           background_color = "#FFD700"
           text_color = "#000000"
@@ -121,7 +121,7 @@ in
 
       launchd.user.agents.neru = {
         command =
-          "${cfg.package}/bin/neru launch"
+          "${cfg.package}/Applications/Neru.app/Contents/MacOS/neru launch"
           + (lib.optionalString (cfg.config != "") " --config ${configFile}");
         serviceConfig = {
           KeepAlive = false;
