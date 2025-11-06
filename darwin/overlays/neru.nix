@@ -1,3 +1,62 @@
+# {
+#   fetchzip,
+#   gitUpdater,
+#   installShellFiles,
+#   stdenv,
+#   versionCheckHook,
+#   lib,
+# }:
+#
+# let
+#   appName = "Neru.app";
+#   version = "1.5.1";
+# in
+# stdenv.mkDerivation {
+#   pname = "neru";
+#
+#   inherit version;
+#
+#   src = fetchzip {
+#     url = "https://github.com/y3owk1n/neru/releases/download/v${version}/neru-darwin-arm64.zip";
+#     sha256 = "sha256-IwiyM0NboSrBGDiIsM5uzNxuT6+yer/86gKNKBZ4RAI=";
+#     stripRoot = false;
+#   };
+#
+#   nativeBuildInputs = [ installShellFiles ];
+#
+#   installPhase = ''
+#     runHook preInstall
+#     mkdir -p $out/Applications
+#     mv ${appName} $out/Applications
+#     cp -R bin $out
+#     mkdir -p $out/share
+#     runHook postInstall
+#   '';
+#
+#   postInstall = ''
+#     if ${lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) "true"}; then
+#       installShellCompletion --cmd neru \
+#         --bash <($out/bin/neru completion bash) \
+#         --fish <($out/bin/neru completion fish) \
+#         --zsh <($out/bin/neru completion zsh)
+#     fi
+#   '';
+#
+#   doInstallCheck = true;
+#   nativeInstallCheckInputs = [
+#     versionCheckHook
+#   ];
+#
+#   passthru.updateScript = gitUpdater {
+#     url = "https://github.com/y3owk1n/neru.git";
+#     rev-prefix = "v";
+#   };
+#
+#   meta = {
+#     mainProgram = "neru";
+#   };
+# }
+
 {
   stdenv,
   buildGoModule,
@@ -9,16 +68,14 @@
 }:
 buildGoModule (finalAttrs: {
   pname = "neru";
-  # version = "1.3.0";
-  version = "unstable-latest-ce753d99a7bac47e4cc35465939b2ed8c70a6877";
-  commitHash = "ce753d99a7bac47e4cc35465939b2ed8c70a6877";
+  version = "unstable-latest-53e0557552052b804427f859dca430e2608bcec2";
+  commitHash = "53e0557552052b804427f859dca430e2608bcec2";
 
   src = fetchFromGitHub {
     owner = "y3owk1n";
     repo = "neru";
-    # tag = "v${finalAttrs.version}";
     rev = "${finalAttrs.commitHash}";
-    hash = "sha256-++FDeY2AF/qq4j/U8KOR6XzBIr0jQcA95kl7Y90cv/U=";
+    hash = "sha256-5YqaDCkTEj+2C356aS1t2nilMYs6ByrASTG0Ck/zDa8=";
   };
 
   vendorHash = "sha256-x5NB18fP8ERIB5qeMAMyMnSoDEF2+g+NoJKrC+kIj+k=";
@@ -48,7 +105,7 @@ buildGoModule (finalAttrs: {
     mkdir -p $out/Applications/Neru.app/Contents/MacOS
     mkdir -p $out/Applications/Neru.app/Contents/Resources
 
-    cp $out/bin/neru $out/Applications/Neru.app/Contents/MacOS/neru
+    cp $out/bin/neru $out/Applications/Neru.app/Contents/MacOS/Neru
 
     cat > $out/Applications/Neru.app/Contents/Info.plist <<EOF
     <?xml version="1.0" encoding="UTF-8"?>
@@ -61,7 +118,7 @@ buildGoModule (finalAttrs: {
       <key>CFBundleIdentifier</key><string>com.y3owk1n.neru</string>
       <key>CFBundleVersion</key><string>${finalAttrs.version}</string>
       <key>CFBundlePackageType</key><string>APPL</string>
-      <key>LSUIElement</key><true/> <!-- hides dock icon, good for menubar apps -->
+      <key>LSUIElement</key><true/>
       <key>NSAppleEventsUsageDescription</key><string>Used for automation</string>
       <key>NSMicrophoneUsageDescription</key><string>Used for accessibility control</string>
       <key>NSAccessibilityUsageDescription</key><string>Requires accessibility access</string>

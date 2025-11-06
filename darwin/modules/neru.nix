@@ -26,8 +26,14 @@ in
               "com.mitchellh.ghostty",
           ]
           include_menubar_hints = false
+          additional_menubar_hints_targets = [
+            "com.apple.TextInputMenuAgent",
+            "com.apple.controlcenter",
+            "com.apple.systemuiserver",
+          ]
           include_dock_hints = false
           include_nc_hints = true
+
           restore_pos_after_left_click = true
           restore_pos_after_right_click = true
           restore_pos_after_middle_click = true
@@ -44,17 +50,14 @@ in
               "AXPopUpButton",
               "AXTextField",
               "AXSlider",
-              "AXTabGroup",
               "AXTabButton",
               "AXSwitch",
-              "AXToolbar",
               "AXDisclosureTriangle",
               "AXTextArea",
               "AXMenuButton",
               "AXMenuItem",
-              "AXGroup",
-              "AXImage",
               "AXCell",
+              "AXRow",
           ]
           scrollable_roles = [
               "AXScrollArea",
@@ -99,12 +102,6 @@ in
           scroll_to_edge_iterations = 20
           scroll_to_edge_delta = 5000
 
-          [performance]
-          max_hints_displayed = 500
-          debounce_ms = 50
-          cache_duration_ms = 100
-          max_concurrent_queries = 10
-
           [logging]
           log_level = "info"
           log_file = ""
@@ -121,7 +118,7 @@ in
 
       launchd.user.agents.neru = {
         command =
-          "${cfg.package}/Applications/Neru.app/Contents/MacOS/neru launch"
+          "${cfg.package}/Applications/Neru.app/Contents/MacOS/Neru launch"
           + (lib.optionalString (cfg.config != "") " --config ${configFile}");
         serviceConfig = {
           KeepAlive = false;
