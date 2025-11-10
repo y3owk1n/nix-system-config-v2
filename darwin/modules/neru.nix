@@ -25,56 +25,35 @@ in
           excluded_apps = [
               "com.mitchellh.ghostty",
           ]
-          include_nc_hints = true
-
-          [accessibility]
-          clickable_roles = [
-              "AXButton",
-              "AXComboBox",
-              "AXCheckBox",
-              "AXRadioButton",
-              "AXLink",
-              "AXPopUpButton",
-              "AXTextField",
-              "AXSlider",
-              "AXTabButton",
-              "AXSwitch",
-              "AXDisclosureTriangle",
-              "AXTextArea",
-              "AXMenuButton",
-              "AXMenuItem",
-              "AXCell",
-              "AXRow",
-          ]
-
-          [accessibility.additional_ax_support]
-          enable = true
 
           [hotkeys]
-          "Ctrl+F" = "hints left_click"
-          "Ctrl+R" = "hints right_click"
-          "Ctrl+G" = "hints context_menu"
-          "Ctrl+S" = "hints scroll"
+          "Ctrl+F" = "grid left_click"
+          "Ctrl+R" = "grid right_click"
+          "Ctrl+G" = "grid context_menu"
+          "Ctrl+S" = "grid scroll"
 
           [hints]
-          hint_characters = "aoeuidhtns"
+          enabled = false
+
+          [grid]
+          characters = "aoeuidhtns"
           font_size = 11
           font_family = "JetBrainsMonoNLNFP-ExtraBold"
-          padding = 2
+          sublayer_keys = "aoeuidhtns"
 
-          [hints.left_click_hints]
+          [grid.left_click]
           restore_cursor = true
 
-          [hints.right_click_hints]
+          [grid.right_click]
           restore_cursor = true
 
-          [hints.double_click_hints]
+          [grid.double_click]
           restore_cursor = true
 
-          [hints.triple_click_hints]
+          [grid.triple_click]
           restore_cursor = true
 
-          [hints.middle_click_hints]
+          [grid.middle_click]
           restore_cursor = true
         '';
         description = "Config to use for {file} `neru.toml`.";
