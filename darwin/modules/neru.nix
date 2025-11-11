@@ -36,10 +36,8 @@ in
           enabled = false
 
           [grid]
-          characters = "aoeuidhtns"
-          font_size = 11
           font_family = "JetBrainsMonoNLNFP-ExtraBold"
-          sublayer_keys = "aoeuidhtns"
+          opacity = 0.5
 
           [grid.left_click]
           restore_cursor = true
