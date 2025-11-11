@@ -21,11 +21,6 @@ in
       config = lib.mkOption {
         type = types.lines;
         default = ''
-          [general]
-          excluded_apps = [
-              "com.mitchellh.ghostty",
-          ]
-
           [hotkeys]
           "Ctrl+F" = "grid left_click"
           "Ctrl+R" = "grid right_click"
@@ -37,7 +32,9 @@ in
 
           [grid]
           font_family = "JetBrainsMonoNLNFP-ExtraBold"
-          opacity = 0.5
+
+          characters = "ahotenusigcrplyfmqwjvkzx"
+          sublayer_keys = "gcrhtnmwv"
 
           [grid.left_click]
           restore_cursor = true
