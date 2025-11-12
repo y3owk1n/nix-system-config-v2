@@ -23,7 +23,6 @@ in
         default = ''
           [hotkeys]
           "Ctrl+F" = "grid left_click"
-          "Ctrl+R" = "grid right_click"
           "Ctrl+G" = "grid context_menu"
           "Ctrl+S" = "grid scroll"
 
