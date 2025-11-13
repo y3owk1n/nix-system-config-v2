@@ -32,7 +32,7 @@ in
           [grid]
           font_family = "JetBrainsMonoNLNFP-ExtraBold"
 
-          characters = "ahotenusigcrplyfmqwjvkzx"
+          # characters = "ahotenusigcrplyfmqwjvkzx"
           sublayer_keys = "gcrhtnmwv"
 
           [grid.left_click]

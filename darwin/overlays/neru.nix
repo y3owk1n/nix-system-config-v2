@@ -68,14 +68,14 @@
 }:
 buildGoModule (finalAttrs: {
   pname = "neru";
-  version = "unstable-a6ab8d7e";
-  commitHash = "a6ab8d7ea6437d795c57fa7bc2e8ec72e9696238";
+  version = "unstable-84bd3519";
+  commitHash = "84bd3519fac4883eb1b562d605693c1bdc96252d";
 
   src = fetchFromGitHub {
     owner = "y3owk1n";
     repo = "neru";
     rev = "${finalAttrs.commitHash}";
-    hash = "sha256-p4HZEz0/cbmWtt1P0d43TeaAscKSmXFSRTuVCnEtI1A=";
+    hash = "sha256-50Djl7wp1+4yuxoRF352erEt7Ta8tWzCWjhj0JsZJmE=";
   };
 
   vendorHash = "sha256-n2/wYkt7oukrBIG6UcbJw2fHlngz1AHgytS2RK7Epiw=";
