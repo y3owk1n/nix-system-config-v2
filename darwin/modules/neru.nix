@@ -22,9 +22,8 @@ in
         type = types.lines;
         default = ''
           [hotkeys]
-          "Ctrl+F" = "grid left_click"
-          "Ctrl+G" = "grid context_menu"
-          "Ctrl+S" = "grid scroll"
+          "Ctrl+F" = "grid"
+          "Ctrl+S" = "action scroll"
 
           [hints]
           enabled = false
@@ -32,23 +31,21 @@ in
           [grid]
           font_family = "JetBrainsMonoNLNFP-ExtraBold"
 
-          # characters = "ahotenusigcrplyfmqwjvkzx"
           sublayer_keys = "gcrhtnmwv"
 
-          [grid.left_click]
-          restore_cursor = true
+          [action]
+          # Action key mappings
+          left_click_key = "h"
+          middle_click_key = "t"
+          right_click_key = "n"
+          mouse_down_key = "c"
+          mouse_up_key = "r"
 
-          [grid.right_click]
-          restore_cursor = true
-
-          [grid.double_click]
-          restore_cursor = true
-
-          [grid.triple_click]
-          restore_cursor = true
-
-          [grid.middle_click]
-          restore_cursor = true
+          [logging]
+          # Log level: "debug", "info", "warn", "error"
+          # Use "debug" for troubleshooting; default is "info".
+          log_level = "info"
+          disable_file_logging = true
         '';
         description = "Config to use for {file} `neru.toml`.";
       };

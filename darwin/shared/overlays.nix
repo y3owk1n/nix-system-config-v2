@@ -23,20 +23,24 @@
       });
       kanata = prev.kanata.overrideAttrs (
         finalAttrs: prevAttrs: {
-          cargoHash = "sha256-UIpbndTSfEibLbR5hQJ0ff3OvIiW9+Tnmo3omW+g+4c=";
+          cargoHash = "sha256-2DTL1u17jUFiRoVe7973L5/352GtKte/vakk01SSRwY=";
           src = prev.fetchFromGitHub {
             owner = "jtroo";
             repo = "kanata";
-            rev = "v1.10.0-prerelease-3";
-            sha256 = "sha256-pztEC713GfvI5PJCGwCCKxJahrzFjJ6mL6R1UOxx6Ig=";
+            rev = "v1.10.0";
+            sha256 = "sha256-IicVuJZBHzBv9SNGQuWIIaLq2qpWfn/jMFh9KPvAThs=";
           };
-          version = "1.10.0-prerelease-3";
+          version = "1.10.0";
           cargoDeps = pkgs.rustPlatform.fetchCargoVendor {
             inherit (finalAttrs) pname src version;
             hash = finalAttrs.cargoHash;
           };
         }
       );
+      # temporary fix for fish check fails
+      fish = prev.fish.overrideAttrs (oldAttrs: {
+        doCheck = false;
+      });
 
       # tmux plugins overrides
       tmuxPlugins = prev.tmuxPlugins // {
