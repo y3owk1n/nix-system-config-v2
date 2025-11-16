@@ -34,6 +34,7 @@
     yaml-language-server
     biome
     prettierd
+    clang-tools
   ];
 
   xdg.configFile.nvim = {
