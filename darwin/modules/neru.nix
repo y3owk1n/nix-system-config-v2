@@ -21,6 +21,9 @@ in
       config = lib.mkOption {
         type = types.lines;
         default = ''
+          [general]
+          restore_cursor_position = true
+
           [hotkeys]
           "Ctrl+F" = "grid"
           "Ctrl+S" = "action scroll"
