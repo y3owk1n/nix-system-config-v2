@@ -9,7 +9,7 @@
 
 let
   appName = "Neru.app";
-  version = "1.8.0";
+  version = "1.9.0";
 in
 stdenv.mkDerivation {
   pname = "neru";
@@ -18,7 +18,7 @@ stdenv.mkDerivation {
 
   src = fetchzip {
     url = "https://github.com/y3owk1n/neru/releases/download/v${version}/neru-darwin-arm64.zip";
-    sha256 = "sha256-ebaSQMP6ek/Ujr9Rl4Wfevl7lM9t4ln8Kritx5HoUmM=";
+    sha256 = "sha256-AQdbQkjmCFI8uGB3K39n0E5qKcH1pMZO0M3hpoMPwbM=";
     stripRoot = false;
   };
 
