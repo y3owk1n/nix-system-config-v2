@@ -20,14 +20,6 @@
       __load-em
       __autols_hook
     '';
-    shellAliases = {
-      gg = "lazygit";
-      c = "clear";
-      x = "exit";
-      cat = "bat";
-      tx = "tmux kill-server";
-      vim = "nvim";
-    };
     functions = {
       __load-em = {
         description = "Loads Fish shell function descriptions.";

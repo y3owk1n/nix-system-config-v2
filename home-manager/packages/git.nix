@@ -21,9 +21,19 @@
     enable = true;
     lfs.enable = true;
 
-    settings = {
-      user.email = useremail;
-      user.name = githubname;
+    userName = githubname;
+    userEmail = useremail;
+
+    difftastic = {
+      enable = true;
+      background = "dark";
+      color = "always";
+      enableAsDifftool = true;
+    };
+
+    extraConfig = {
+      # user.email = useremail;
+      # user.name = githubname;
       advise.addEmptyPathSpec = false;
       advise.pushNonFastForward = false;
       advise.statusHints = false;
@@ -80,15 +90,15 @@
     };
   };
 
-  programs.difftastic = {
-    enable = true;
-    git = {
-      enable = true;
-      diffToolMode = true;
-    };
-    options = {
-      background = "dark";
-      color = "always";
-    };
-  };
+  # programs.difftastic = {
+  #   enable = true;
+  #   git = {
+  #     enable = true;
+  #     diffToolMode = true;
+  #   };
+  #   options = {
+  #     background = "dark";
+  #     color = "always";
+  #   };
+  # };
 }

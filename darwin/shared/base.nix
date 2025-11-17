@@ -12,13 +12,13 @@
   networking = {
     hostName = hostname;
     computerName = hostname;
-    applicationFirewall = {
-      enable = true;
-      blockAllIncoming = false;
-      enableStealthMode = true;
-      allowSignedApp = true;
-      allowSigned = true;
-    };
+    # applicationFirewall = {
+    #   enable = true;
+    #   blockAllIncoming = false;
+    #   enableStealthMode = true;
+    #   allowSignedApp = true;
+    #   allowSigned = true;
+    # };
   };
 
   users.users."${username}" = {
@@ -38,7 +38,7 @@
   environment.systemPackages = with pkgs; [
     coreutils
     # install GUI apps via nix darwin so that we can get spotlight indexing
-    ghostty-bin # this is the darwin version, `ghostty` is for linux only
+    # ghostty-bin # this is the darwin version, `ghostty` is for linux only
   ];
 
   # Add ability to used TouchID for sudo authentication
@@ -79,6 +79,7 @@
       "whatsapp"
       "imageoptim"
       "onyx"
+      "ghostty"
       # "homerow"
     ];
 

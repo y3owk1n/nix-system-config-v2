@@ -4,14 +4,15 @@
   # This is the standard format for flake.nix. `inputs` are the dependencies of the flake,
   # Each item in `inputs` will be passed as a parameter to the `outputs` function after being pulled and built.
   inputs = {
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1"; # 0.1 for unstable, * for stable
+    # nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1"; # 0.1 for unstable, * for stable
     # nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-25.05-darwin";
 
     # home-manager, used for managing user configuration
     home-manager = {
-      # url = "github:nix-community/home-manager/release-24.05";
+      url = "github:nix-community/home-manager/release-25.05";
       # url = "github:nix-community/home-manager";
-      url = "https://flakehub.com/f/nix-community/home-manager/0.1";
+      # url = "https://flakehub.com/f/nix-community/home-manager/0.1";
       # The `follows` keyword in inputs is used for inheritance.
       # Here, `inputs.nixpkgs` of home-manager is kept consistent with the `inputs.nixpkgs` of the current flake,
       # to avoid problems caused by different versions of nixpkgs dependencies.
@@ -19,8 +20,8 @@
     };
 
     darwin = {
-      url = "https://flakehub.com/f/nix-darwin/nix-darwin/0.1";
-      # url = "github:lnl7/nix-darwin/master";
+      # url = "https://flakehub.com/f/nix-darwin/nix-darwin/0.1";
+      url = "github:lnl7/nix-darwin/nix-darwin-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -47,8 +48,8 @@
 
     stylix = {
       # url = "github:nix-community/stylix";
-      # url = "github:nix-community/stylix/release-25.05";
-      url = "https://flakehub.com/f/nix-community/stylix/0.1";
+      url = "github:nix-community/stylix/release-25.05";
+      # url = "https://flakehub.com/f/nix-community/stylix/0.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
