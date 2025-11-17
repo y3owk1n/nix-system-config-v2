@@ -21,6 +21,16 @@
     stateVersion = "24.05";
 
     shell.enableFishIntegration = true;
+    shell.enableShellIntegration = true;
+
+    shellAliases = {
+      gg = "lazygit";
+      c = "clear";
+      x = "exit";
+      cat = "bat";
+      tx = "tmux kill-server";
+      vim = "nvim";
+    };
   };
 
   # Let Home Manager install and manage itself.
