@@ -65,7 +65,9 @@ in
 
   # add more brew packages here
   homebrew = {
-    brews = [ ];
+    brews = [
+      "opencode"
+    ];
 
     casks = [
       "blender"
