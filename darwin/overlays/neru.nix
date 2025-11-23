@@ -9,7 +9,7 @@
 
 let
   appName = "Neru.app";
-  version = "1.9.0";
+  version = "1.10.0";
 in
 stdenv.mkDerivation {
   pname = "neru";
@@ -18,7 +18,7 @@ stdenv.mkDerivation {
 
   src = fetchzip {
     url = "https://github.com/y3owk1n/neru/releases/download/v${version}/neru-darwin-arm64.zip";
-    sha256 = "sha256-AQdbQkjmCFI8uGB3K39n0E5qKcH1pMZO0M3hpoMPwbM=";
+    sha256 = "sha256-wzGs6EcoPSoT053FmGyPfzhwHgQgimRB4IO1hLpLB74=";
     stripRoot = false;
   };
 
@@ -68,17 +68,17 @@ stdenv.mkDerivation {
 # }:
 # buildGoModule (finalAttrs: {
 #   pname = "neru";
-#   version = "unstable-60910774";
-#   commitHash = "609107742cfe8f7ff40e959542161dd87c9d1e37";
+#   version = "unstable-bf29d4eb";
+#   commitHash = "bf29d4eb368be696d3b9116766e3b5cd49257fb3";
 #
 #   src = fetchFromGitHub {
 #     owner = "y3owk1n";
 #     repo = "neru";
 #     rev = "${finalAttrs.commitHash}";
-#     hash = "sha256-/u53lEzanEmRPGwRZhQt8HsjM2LZQUZJ/yRULZ1NVf4=";
+#     hash = "sha256-X6NL4LC7EEQqB4bsN9DD8CNm3OQjTukMtf73fSOyG90=";
 #   };
 #
-#   vendorHash = "sha256-5P2+SJYjodrfyWacXVM+j0DF1Y5HuJh1p5fIizKH4K8=";
+#   vendorHash = "sha256-2mashYJYLA+gVJROHa8vS1Rz6mDLG2KB2FZrw8wDJVc=";
 #
 #   ldflags = [
 #     "-s"
@@ -97,7 +97,7 @@ stdenv.mkDerivation {
 #   # Fix go version requirement
 #   postPatch = ''
 #     substituteInPlace go.mod \
-#       --replace-fail "go 1.25.2" "go 1.25.1"
+#       --replace-fail "go 1.25.2" "go 1.24.9"
 #
 #     # Verify it worked
 #     echo "=== go.mod after patch ==="

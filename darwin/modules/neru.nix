@@ -25,7 +25,8 @@ in
           restore_cursor_position = true
 
           [hotkeys]
-          "Ctrl+F" = "grid"
+          "Ctrl+F" = "grid -a left_click"
+          "Ctrl+G" = "grid"
           "Ctrl+S" = "action scroll"
 
           [hints]
@@ -37,16 +38,18 @@ in
           sublayer_keys = "gcrhtnmwv"
 
           [action]
-          # Action key mappings
           left_click_key = "h"
           middle_click_key = "t"
           right_click_key = "n"
           mouse_down_key = "c"
           mouse_up_key = "r"
 
+          [smooth_cursor]
+          move_mouse_enabled = true
+          steps = 10
+          delay = 1
+
           [logging]
-          # Log level: "debug", "info", "warn", "error"
-          # Use "debug" for troubleshooting; default is "info".
           log_level = "info"
           disable_file_logging = true
         '';
