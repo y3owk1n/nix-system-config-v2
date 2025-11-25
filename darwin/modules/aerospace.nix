@@ -21,6 +21,8 @@ in
       config = lib.mkOption {
         type = types.lines;
         default = ''
+          config-version = 2
+
           start-at-login = false
 
           default-root-container-layout = 'tiles'
@@ -32,11 +34,13 @@ in
           on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
           on-focus-changed = ["move-mouse window-force-center"]
 
-          exec-on-workspace-change = [
-            '/bin/bash',
-            '-lc',
-            'mptw $AEROSPACE_FOCUSED_WORKSPACE'
-          ]
+          persistent-workspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+          # exec-on-workspace-change = [
+          #   '/bin/bash',
+          #   '-lc',
+          #   'mptw $AEROSPACE_FOCUSED_WORKSPACE'
+          # ]
 
           automatically-unhide-macos-hidden-apps = false
 
