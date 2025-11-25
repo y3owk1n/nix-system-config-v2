@@ -1,6 +1,5 @@
 {
   nixos-npm-ls,
-  pkgs,
   ...
 }:
 {
@@ -15,10 +14,10 @@
 
       # pagkage overrides
       aerospace = prev.aerospace.overrideAttrs (o: rec {
-        version = "0.19.2-Beta";
+        version = "0.20.0-Beta";
         src = prev.fetchzip {
           url = "https://github.com/nikitabobko/AeroSpace/releases/download/v${version}/AeroSpace-v${version}.zip";
-          sha256 = "sha256-6RyGw84GhGwULzN0ObjsB3nzRu1HYQS/qoCvzVWOYWQ=";
+          sha256 = "sha256-bPcVgTPvskit0/LeqmWoOOnlwwyzPoa48P8Vooaqlig=";
         };
       });
       # kanata = prev.kanata.overrideAttrs (
