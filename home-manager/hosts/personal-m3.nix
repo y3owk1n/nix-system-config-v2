@@ -47,6 +47,5 @@
     ../custom/nvs.nix
     ../custom/cmd.nix
     ../custom/passx.nix
-    ../custom/mptw.nix
   ];
 }
