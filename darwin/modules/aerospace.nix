@@ -36,12 +36,6 @@ in
 
           persistent-workspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
-          # exec-on-workspace-change = [
-          #   '/bin/bash',
-          #   '-lc',
-          #   'mptw $AEROSPACE_FOCUSED_WORKSPACE'
-          # ]
-
           automatically-unhide-macos-hidden-apps = false
 
           [gaps]
