@@ -10,6 +10,7 @@
   homebrew-bundle,
   homebrew-y3owk1n,
   determinate,
+  neru,
   ...
 }:
 
@@ -54,6 +55,9 @@ in
         # stylix
         stylix.darwinModules.stylix
 
+        # neru
+        # neru.darwinModules.default
+
         # home-manager
         home-manager.darwinModules.home-manager
         (import ../home-manager/shared/config.nix {
@@ -72,6 +76,8 @@ in
             imports = [
               ../home-manager/shared/base.nix
               ../home-manager/hosts/personal-m3.nix
+              # neru
+              neru.homeManagerModules.default
             ];
           };
         }
@@ -142,6 +148,8 @@ in
             imports = [
               ../home-manager/shared/base.nix
               ../home-manager/hosts/work-imac.nix
+              # neru
+              neru.homeManagerModules.default
             ];
           };
         }

@@ -1,9 +1,12 @@
 {
   nixos-npm-ls,
+  neru,
   ...
 }:
 {
   nixpkgs.overlays = [
+    neru.overlays.default
+
     (final: prev: {
       # custom derivations
       hammerspoon = final.callPackage ../overlays/hammerspoon.nix { };

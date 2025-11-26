@@ -27,6 +27,7 @@
     ../packages/lazygit.nix
     ../packages/less.nix
     ../packages/mkcert.nix
+    ../packages/neru.nix
     ../packages/nixfmt.nix
     ../packages/nodejs.nix
     ../packages/nvim.nix
