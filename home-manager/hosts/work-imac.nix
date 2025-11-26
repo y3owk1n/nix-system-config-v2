@@ -31,7 +31,6 @@
     ../packages/nodejs.nix
     ../packages/nvim.nix
     ../packages/pass.nix
-    ../packages/paneru.nix
     ../packages/rip2.nix
     ../packages/ripgrep.nix
     ../packages/sesh.nix

@@ -17,10 +17,6 @@ in
     ../modules/karabiner.nix
     ../modules/aerospace.nix
     ../modules/hammerspoon.nix
-    ../modules/hyprspace.nix
-    ../modules/rift.nix
-    ../modules/paneru.nix
-    ../modules/neru.nix
     (import ../shared/darwin.nix {
       inherit
         safariKeys
@@ -41,29 +37,11 @@ in
     enable = true;
   };
 
-  # This is a custom module at ./modules/hyprspace.nix
-  hyprspace = {
-    enable = false;
-  };
-
-  # This is a custom module at ./modules/rift.nix
-  rift = {
-    enable = false;
-  };
-
-  # This is a custom module at ./modules/paneru.nix
-  paneru = {
-    enable = false;
-  };
-
-  # This is a custom module at ./modules/neru.nix
-  neru = {
-    enable = true;
-  };
-
   # add more brew packages here
   homebrew = {
-    brews = [ ];
+    brews = [
+      "opencode"
+    ];
 
     casks = [
       "adobe-creative-cloud"
