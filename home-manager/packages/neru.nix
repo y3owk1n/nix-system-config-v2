@@ -1,6 +1,6 @@
 { pkgs, ... }:
 {
-  programs.neru = {
+  services.neru = {
     enable = true;
     # package = pkgs.neru-source.overrideAttrs (_: {
     #   postPatch = ''
