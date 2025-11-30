@@ -19,7 +19,7 @@
       [hotkeys]
       "Ctrl+F" = "grid -a left_click"
       "Ctrl+G" = "grid"
-      "Ctrl+S" = "action scroll"
+      "Ctrl+S" = "scroll"
 
       [hints]
       enabled = false
