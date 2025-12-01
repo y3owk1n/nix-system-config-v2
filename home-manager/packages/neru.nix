@@ -2,16 +2,7 @@
 {
   services.neru = {
     enable = true;
-    # package = pkgs.neru-source.overrideAttrs (_: {
-    #   postPatch = ''
-    #     substituteInPlace go.mod \
-    #       --replace-fail "go 1.25.2" "go 1.24.9"
-    #
-    #     # Verify it worked
-    #     echo "=== go.mod after patch ==="
-    #     grep "^go " go.mod || true
-    #   '';
-    # });
+    package = pkgs.neru-source;
     config = ''
       [general]
       restore_cursor_position = true
