@@ -17,7 +17,6 @@ in
     ../shared/base.nix
     ../shared/nix-settings.nix
     ../modules/karabiner.nix
-    ../modules/aerospace.nix
     ../modules/hammerspoon.nix
     (import ../shared/darwin.nix {
       inherit
@@ -32,11 +31,6 @@ in
   # This is a custom module at ./modules/hammerspoon.nix
   hammerspoon = {
     enable = false;
-  };
-
-  # This is a custom module at ./modules/aerospace.nix
-  aerospace = {
-    enable = true;
   };
 
   # add more brew packages here

@@ -5,6 +5,7 @@
 {
   # import sub modules
   imports = [
+    ../packages/aerospace.nix
     ../packages/ast-grep.nix
     ../packages/atuin.nix
     ../packages/bat.nix
