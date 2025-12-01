@@ -42,7 +42,7 @@
       "src": "https://github.com/mfussenegger/nvim-lint"
     },
     "lspconfig": {
-      "rev": "f1237a8b3c243608a7116fa1ad216c441d7c2264",
+      "rev": "effe4bf2e1afb881ea67291c648b68dd3dfc927a",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "mini.ai": {
@@ -74,7 +74,7 @@
       "src": "https://github.com/nvim-mini/mini.indentscope"
     },
     "mini.pairs": {
-      "rev": "b316e68",
+      "rev": "472ec50092a3314ec285d2db2baa48602d71fe93",
       "src": "https://github.com/nvim-mini/mini.pairs"
     },
     "mini.pick": {
@@ -98,7 +98,7 @@
       "src": "https://github.com/alexghergh/nvim-tmux-navigation"
     },
     "nvim-treesitter": {
-      "rev": "c5871d9d870c866fea9f271f1a3b3f29049a4793",
+      "rev": "17885756e63df73ed90db62e4630f744ceda6514",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
     },
@@ -123,7 +123,7 @@
       "src": "https://github.com/y3owk1n/time-machine.nvim"
     },
     "ts-error-translator": {
-      "rev": "2dca715053bb78c1aae9af46d3f8060d001ec58f",
+      "rev": "c1e6a5529009e855eb102a668549679548757a05",
       "src": "https://github.com/dmmulroy/ts-error-translator.nvim"
     },
     "undo-glow": {

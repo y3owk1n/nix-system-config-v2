@@ -12,13 +12,13 @@
   networking = {
     hostName = hostname;
     computerName = hostname;
-    # applicationFirewall = {
-    #   enable = true;
-    #   blockAllIncoming = false;
-    #   enableStealthMode = true;
-    #   allowSignedApp = true;
-    #   allowSigned = true;
-    # };
+    applicationFirewall = {
+      enable = true;
+      blockAllIncoming = false;
+      enableStealthMode = true;
+      allowSignedApp = true;
+      allowSigned = true;
+    };
   };
 
   users.users."${username}" = {

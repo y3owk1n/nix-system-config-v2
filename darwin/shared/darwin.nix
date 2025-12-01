@@ -101,14 +101,6 @@
         DisableConsoleAccess = true;
       };
 
-      alf = {
-        allowdownloadsignedenabled = 1;
-        allowsignedenabled = 1;
-        stealthenabled = 1;
-        globalstate = 1;
-        loggingenabled = 0;
-      };
-
       spaces.spans-displays = false; # separate spaces on each display
 
       screencapture = {
