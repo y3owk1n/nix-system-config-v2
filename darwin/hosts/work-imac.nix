@@ -33,9 +33,7 @@ in
 
   # add more brew packages here
   homebrew = {
-    brews = [
-      "opencode"
-    ];
+    brews = [ ];
 
     casks = [
       "adobe-creative-cloud"
