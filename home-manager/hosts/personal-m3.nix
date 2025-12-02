@@ -13,6 +13,7 @@
     ../packages/direnv.nix
     ../packages/editorconfig.nix
     ../packages/eza.nix
+    ../packages/devbox.nix
     ../packages/fd.nix
     ../packages/fish.nix
     ../packages/fzf.nix
@@ -32,6 +33,7 @@
     ../packages/nixfmt.nix
     ../packages/nodejs.nix
     ../packages/nvim.nix
+    ../packages/opencode.nix
     ../packages/pass.nix
     ../packages/rip2.nix
     ../packages/ripgrep.nix

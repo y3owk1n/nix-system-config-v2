@@ -2,7 +2,7 @@
 {
   services.neru = {
     enable = true;
-    package = pkgs.neru-source;
+    # package = pkgs.neru-source;
     config = ''
       [general]
       restore_cursor_position = true
