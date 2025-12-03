@@ -56,6 +56,8 @@
     nixos-npm-ls.url = "github:y3owk1n/nixos-npm-ls";
 
     neru.url = "github:y3owk1n/neru";
+
+    nvs.url = "github:y3owk1n/nvs";
   };
 
   # The `outputs` function will return all the build results of the flake.
@@ -77,6 +79,7 @@
       nixos-npm-ls,
       determinate,
       neru,
+      nvs,
       ...
     }:
     let
@@ -106,6 +109,7 @@
             nixos-npm-ls
             determinate
             neru
+            nvs
             ;
         }
       );
