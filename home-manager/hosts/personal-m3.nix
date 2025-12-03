@@ -33,6 +33,7 @@
     ../packages/nixfmt.nix
     ../packages/nodejs.nix
     ../packages/nvim.nix
+    ../packages/nvs.nix
     ../packages/opencode.nix
     ../packages/pass.nix
     ../packages/rip2.nix
@@ -47,7 +48,6 @@
 
     ../custom/asr.nix
     ../custom/cpenv.nix
-    ../custom/nvs.nix
     ../custom/cmd.nix
     ../custom/passx.nix
   ];

@@ -79,7 +79,7 @@
       "whatsapp"
       "imageoptim"
       "onyx"
-      "ghostty"
+      # "ghostty"
       # "homerow"
     ];
 

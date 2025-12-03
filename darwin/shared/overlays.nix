@@ -2,11 +2,13 @@
   pkgs,
   nixos-npm-ls,
   neru,
+  nvs,
   ...
 }:
 {
   nixpkgs.overlays = [
     neru.overlays.default
+    nvs.overlays.default
 
     (final: prev: {
       # custom derivations
