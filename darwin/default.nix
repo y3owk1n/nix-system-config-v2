@@ -11,6 +11,7 @@
   homebrew-y3owk1n,
   determinate,
   neru,
+  nvs,
   ...
 }:
 
@@ -78,6 +79,8 @@ in
               ../home-manager/hosts/personal-m3.nix
               # neru
               neru.homeManagerModules.default
+              # nvs
+              nvs.homeManagerModules.default
             ];
           };
         }
@@ -150,6 +153,8 @@ in
               ../home-manager/hosts/work-imac.nix
               # neru
               neru.homeManagerModules.default
+              # nvs
+              nvs.homeManagerModules.default
             ];
           };
         }

@@ -1,6 +1,7 @@
 { pkgs, ... }:
 {
-  home.packages = with pkgs; [
-    nvs-source
-  ];
+  programs.nvs = {
+    enable = true;
+    package = pkgs.nvs-source;
+  };
 }

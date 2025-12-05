@@ -8,10 +8,6 @@
       # Disable Fish's native history by using a dummy session
       set -x fish_history ""
 
-      if type -q nvs
-        nvs env --source | source
-      end
-
       if test -n "$GHOSTTY_RESOURCES_DIR"
         source "$GHOSTTY_RESOURCES_DIR/shell-integration/fish/vendor_conf.d/ghostty-shell-integration.fish"
       end
@@ -53,10 +49,6 @@
       };
     };
   };
-
-  home.sessionPath = [
-    "$HOME/.local/bin"
-  ];
 
   home.sessionVariables = {
     SHELL = "${pkgs.fish}/bin/fish";
