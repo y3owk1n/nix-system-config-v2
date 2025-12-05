@@ -38,11 +38,11 @@
       "src": "https://github.com/folke/lazydev.nvim"
     },
     "lint": {
-      "rev": "d1118791070d090777398792a73032a0ca5c79ff",
+      "rev": "5122c0c00a65cf6ce434b16b6a7587b62b6af00d",
       "src": "https://github.com/mfussenegger/nvim-lint"
     },
     "lspconfig": {
-      "rev": "effe4bf2e1afb881ea67291c648b68dd3dfc927a",
+      "rev": "f7c6e585fd80d5a2c075ab27ac312ac55bcf1550",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "mini.ai": {
@@ -98,7 +98,7 @@
       "src": "https://github.com/alexghergh/nvim-tmux-navigation"
     },
     "nvim-treesitter": {
-      "rev": "c5623d3486c1cda5f73e28a3a4abb454f708c48c",
+      "rev": "75797cdd8ac125c7ace065b17788b439dcf89a71",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
     },
