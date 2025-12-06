@@ -4,15 +4,14 @@
   # This is the standard format for flake.nix. `inputs` are the dependencies of the flake,
   # Each item in `inputs` will be passed as a parameter to the `outputs` function after being pulled and built.
   inputs = {
-    # nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1"; # 0.1 for unstable, * for stable
+    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2511";
     # nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-25.11-darwin";
+    # nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-25.11-darwin";
 
     # home-manager, used for managing user configuration
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.11";
-      # url = "github:nix-community/home-manager";
-      # url = "https://flakehub.com/f/nix-community/home-manager/0.1";
+      # url = "github:nix-community/home-manager/release-25.11";
+      url = "https://flakehub.com/f/nix-community/home-manager/0.2511";
       # The `follows` keyword in inputs is used for inheritance.
       # Here, `inputs.nixpkgs` of home-manager is kept consistent with the `inputs.nixpkgs` of the current flake,
       # to avoid problems caused by different versions of nixpkgs dependencies.
@@ -20,8 +19,8 @@
     };
 
     darwin = {
-      # url = "https://flakehub.com/f/nix-darwin/nix-darwin/0.1";
-      url = "github:lnl7/nix-darwin/nix-darwin-25.11";
+      url = "https://flakehub.com/f/nix-darwin/nix-darwin/0.2511";
+      # url = "github:lnl7/nix-darwin/nix-darwin-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -47,17 +46,17 @@
     };
 
     stylix = {
-      # url = "github:nix-community/stylix";
       url = "github:nix-community/stylix/release-25.11";
-      # url = "https://flakehub.com/f/nix-community/stylix/0.1";
+      # NOTE: can't use flakehub for it, as we need to use the same version as nix darwin and nixpkgs
+      # url = "https://flakehub.com/f/nix-community/stylix/*";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixos-npm-ls.url = "github:y3owk1n/nixos-npm-ls";
+    nixos-npm-ls.url = "https://flakehub.com/f/y3owk1n/nixos-npm-ls/0.1";
 
-    neru.url = "github:y3owk1n/neru";
+    neru.url = "https://flakehub.com/f/y3owk1n/neru/0.1";
 
-    nvs.url = "github:y3owk1n/nvs";
+    nvs.url = "https://flakehub.com/f/y3owk1n/nvs/0.1";
   };
 
   # The `outputs` function will return all the build results of the flake.
