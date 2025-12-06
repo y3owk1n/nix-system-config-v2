@@ -9,6 +9,7 @@
   nixpkgs.overlays = [
     neru.overlays.default
     nvs.overlays.default
+    nixos-npm-ls.overlays.default
 
     (final: prev: {
       # custom derivations
@@ -52,6 +53,5 @@
         });
       };
     })
-  ]
-  ++ nixos-npm-ls.overlays;
+  ];
 }
