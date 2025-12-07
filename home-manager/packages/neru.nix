@@ -18,7 +18,11 @@
       [grid]
       font_family = "JetBrainsMonoNLNFP-ExtraBold"
 
+      characters = "aoeu;qjk"
       sublayer_keys = "gcrhtnmwv"
+
+      row_labels = "aoeuidhtnspyfgkxbm"
+      col_labels = "aoeuidhtnspyfgkxbm"
 
       [action]
       left_click_key = "h"
