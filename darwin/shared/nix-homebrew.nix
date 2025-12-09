@@ -15,7 +15,7 @@
       "homebrew/homebrew-core" = homebrew-core;
       "homebrew/homebrew-cask" = homebrew-cask;
       "homebrew/homebrew-bundle" = homebrew-bundle;
-      "y3owk1n/tap" = homebrew-y3owk1n;
+      "y3owk1n/homebrew-tap" = homebrew-y3owk1n;
     };
     mutableTaps = false;
   };
