@@ -36,6 +36,7 @@
     ../packages/nvs.nix
     ../packages/opencode.nix
     ../packages/pass.nix
+    ../packages/rift.nix
     ../packages/rip2.nix
     ../packages/ripgrep.nix
     ../packages/sesh.nix

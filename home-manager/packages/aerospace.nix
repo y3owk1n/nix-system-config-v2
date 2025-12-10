@@ -1,7 +1,7 @@
 { ... }:
 {
   programs.aerospace = {
-    enable = true;
+    enable = false;
     extraConfig = ''
       config-version = 2
 
