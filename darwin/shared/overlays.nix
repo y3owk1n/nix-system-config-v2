@@ -14,6 +14,7 @@
     (final: prev: {
       # custom derivations
       hammerspoon = final.callPackage ../overlays/hammerspoon.nix { };
+      rift = final.callPackage ../overlays/rift.nix { };
 
       # pagkage overrides
       aerospace = prev.aerospace.overrideAttrs (o: rec {

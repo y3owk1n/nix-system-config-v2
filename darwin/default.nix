@@ -81,6 +81,8 @@ in
               neru.homeManagerModules.default
               # nvs
               nvs.homeManagerModules.default
+              # rift custom
+              ../home-manager/custom/rift.nix
             ];
           };
         }
@@ -155,6 +157,8 @@ in
               neru.homeManagerModules.default
               # nvs
               nvs.homeManagerModules.default
+              # rift custom
+              ../home-manager/custom/rift.nix
             ];
           };
         }

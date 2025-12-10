@@ -1,7 +1,7 @@
 {
   "plugins": {
     "base16-pro-max": {
-      "rev": "6585489",
+      "rev": "3f12d089df47069a92e6c0d16dfdd2ad2603d945",
       "src": "https://github.com/y3owk1n/base16-pro-max.nvim"
     },
     "blink.cmp": {
@@ -18,7 +18,7 @@
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "dotmd": {
-      "rev": "aedd8ee",
+      "rev": "5cf223bc8be4659469a20afc20fd913745a511c8",
       "src": "https://github.com/y3owk1n/dotmd.nvim"
     },
     "friendly-snippets": {
@@ -38,11 +38,11 @@
       "src": "https://github.com/folke/lazydev.nvim"
     },
     "lint": {
-      "rev": "5122c0c00a65cf6ce434b16b6a7587b62b6af00d",
+      "rev": "ebe535956106c60405b02220246e135910f6853d",
       "src": "https://github.com/mfussenegger/nvim-lint"
     },
     "lspconfig": {
-      "rev": "f7c6e585fd80d5a2c075ab27ac312ac55bcf1550",
+      "rev": "a2bd1cf7b0446a7414aaf373cea5e4ca804c9c69",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "mini.ai": {
@@ -90,7 +90,7 @@
       "src": "https://github.com/nvim-mini/mini.surround"
     },
     "notifier": {
-      "rev": "031ea17",
+      "rev": "674986a02d2a2be1b91efd106862ebba70ee1dc1",
       "src": "https://github.com/y3owk1n/notifier.nvim"
     },
     "nvim-tmux-navigation": {
@@ -98,7 +98,7 @@
       "src": "https://github.com/alexghergh/nvim-tmux-navigation"
     },
     "nvim-treesitter": {
-      "rev": "75797cdd8ac125c7ace065b17788b439dcf89a71",
+      "rev": "b6271b678e035a5cbf62d637364f3eeca0890171",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
     },
@@ -115,11 +115,11 @@
       "src": "https://github.com/supermaven-inc/supermaven-nvim"
     },
     "tailwind-autosort": {
-      "rev": "99dde94",
+      "rev": "6ccc72b6905e2c3d81697eac7a7092a894a1e494",
       "src": "https://github.com/y3owk1n/tailwind-autosort.nvim"
     },
     "time-machine": {
-      "rev": "6657a7d",
+      "rev": "3d6cbf3643fc61bf720c4ce82a09c0f5e1d2cfe0",
       "src": "https://github.com/y3owk1n/time-machine.nvim"
     },
     "ts-error-translator": {
@@ -127,11 +127,11 @@
       "src": "https://github.com/dmmulroy/ts-error-translator.nvim"
     },
     "undo-glow": {
-      "rev": "8fb1689",
+      "rev": "782569bd04b5e2bae4cb684d6716eec0e20bbb65",
       "src": "https://github.com/y3owk1n/undo-glow.nvim"
     },
     "warp": {
-      "rev": "a875922",
+      "rev": "4305e1c6e02f4715b4d92ffc8f2e55fc506a3912",
       "src": "https://github.com/y3owk1n/warp.nvim"
     },
     "which-key": {
