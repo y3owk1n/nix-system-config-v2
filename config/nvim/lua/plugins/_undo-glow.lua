@@ -31,6 +31,20 @@ function M.setup()
 
   plugin.setup(plugin_opts)
 
+  local api = require("undo-glow.api")
+
+  api.register_hook("pre_animation", function(data)
+    local search = { "search_next", "search_prev", "search_star", "search_hash" }
+
+    if vim.tbl_contains(search, data.operation) then
+      data.animation_type = "strobe"
+    elseif data.operation == "cursor_moved" then
+      data.animation_type = "slide"
+    elseif data.operation == "search_cmd" then
+      data.animation_type = "fade"
+    end
+  end, 75)
+
   local function preserve_cursor()
     local pos = vim.fn.getpos(".")
 
@@ -57,35 +71,19 @@ function M.setup()
   end, { desc = "Paste above with highlight", noremap = true })
 
   vim.keymap.set("n", "n", function()
-    plugin.search_next({
-      animation = {
-        animation_type = "strobe",
-      },
-    })
+    plugin.search_next()
   end, { desc = "Search next with highlight", noremap = true })
 
   vim.keymap.set("n", "N", function()
-    plugin.search_prev({
-      animation = {
-        animation_type = "strobe",
-      },
-    })
+    plugin.search_prev()
   end, { desc = "Search prev with highlight", noremap = true })
 
   vim.keymap.set("n", "*", function()
-    plugin.search_star({
-      animation = {
-        animation_type = "strobe",
-      },
-    })
+    plugin.search_star()
   end, { desc = "Search star with highlight", noremap = true })
 
   vim.keymap.set("n", "#", function()
-    plugin.search_hash({
-      animation = {
-        animation_type = "strobe",
-      },
-    })
+    plugin.search_hash()
   end, { desc = "Search hash with highlight", noremap = true })
 
   vim.keymap.set({ "n", "x" }, "gc", function()
@@ -116,11 +114,7 @@ function M.setup()
     group = augroup,
     desc = "Highlight when cursor moved significantly",
     callback = function()
-      plugin.cursor_moved({
-        animation = {
-          animation_type = "slide",
-        },
-      })
+      plugin.cursor_moved()
     end,
   })
 
@@ -149,16 +143,11 @@ function M.setup()
     end,
   })
 
-  vim.api.nvim_create_autocmd("CmdLineLeave", {
+  vim.api.nvim_create_autocmd("CmdlineLeave", {
     group = augroup,
-    pattern = { "/", "?" },
     desc = "Highlight when search cmdline leave",
     callback = function()
-      plugin.search_cmd({
-        animation = {
-          animation_type = "fade",
-        },
-      })
+      plugin.search_cmd()
     end,
   })
 end

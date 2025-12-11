@@ -38,7 +38,7 @@
       "src": "https://github.com/folke/lazydev.nvim"
     },
     "lint": {
-      "rev": "ebe535956106c60405b02220246e135910f6853d",
+      "rev": "897f7771c1ca4b11659dfe372d9376acd9fe3097",
       "src": "https://github.com/mfussenegger/nvim-lint"
     },
     "lspconfig": {
@@ -127,7 +127,7 @@
       "src": "https://github.com/dmmulroy/ts-error-translator.nvim"
     },
     "undo-glow": {
-      "rev": "782569bd04b5e2bae4cb684d6716eec0e20bbb65",
+      "rev": "e8df76b99b0e6215773ce2001c1924ef5e13f183",
       "src": "https://github.com/y3owk1n/undo-glow.nvim"
     },
     "warp": {
