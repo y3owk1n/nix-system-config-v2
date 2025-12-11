@@ -72,7 +72,7 @@ in
       enable = cfg.launchd.enable;
       config = {
         ProgramArguments = [
-          "${cfg.package}/bin/rift"
+          "${cfg.package}/Applications/Rift.app/Contents/MacOS/Rift"
           "--config"
           "${config.xdg.configHome}/rift/config.toml"
         ];

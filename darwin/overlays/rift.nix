@@ -4,9 +4,10 @@
   rustPlatform,
   fetchFromGitHub,
   writeShellScriptBin,
+  nix-update-script,
 }:
 let
-  rev = "eae4229d2a82fdd2529f0b7ff7daa097845f07b0";
+  rev = "cb5ddb303c75769b2bd9e6e0cb54ef65f3a47f8b";
   shortHash = lib.substring 0 7 rev;
   pversion = "main-${shortHash}";
 in
@@ -19,7 +20,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "rift";
     rev = rev;
     # rev = "v${finalAttrs.version}";
-    sha256 = "sha256-OFGh7b8aH7F8sdMpidgEKmnueuxtnnNB/5wKZE6XzsM=";
+    sha256 = "sha256-z1RDTCbAmUIU2osLHv4xPO4w05KFP/JSjUgC3S1iTO8=";
   };
 
   cargoHash = "sha256-A0huWauj3Ltnw39jFft6pyYUVcNK+lu89ZlVQl/aRZg=";
@@ -31,4 +32,61 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   doInstallCheck = false;
+  doCheck = false;
+
+  postInstall = ''
+    	# Create a simple .app bundle on the fly
+    	mkdir -p $out/Applications
+    	mkdir -p $out/Applications/Rift.app/Contents/MacOS
+    	mkdir -p $out/Applications/Rift.app/Contents/Resources
+
+    	cp $out/bin/rift $out/Applications/Rift.app/Contents/MacOS/Rift
+
+    	cat > $out/Applications/Rift.app/Contents/Info.plist <<EOF
+    	<?xml version="1.0" encoding="UTF-8"?>
+    	<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    		"http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    	<plist version="1.0">
+    	<dict>
+    		<key>CFBundleName</key>
+    		<string>Rift</string>
+
+    		<key>CFBundleExecutable</key>
+    		<string>rift</string>
+
+    		<key>CFBundleIdentifier</key>
+    		<string>git.acsandmann.rift</string>
+
+    		<key>CFBundleVersion</key>
+    		<string>${finalAttrs.version}</string>
+
+    		<key>CFBundlePackageType</key>
+    		<string>APPL</string>
+
+    		<key>LSUIElement</key>
+    		<true/>
+
+    		<key>NSAppleEventsUsageDescription</key>
+    		<string>Used for automation</string>
+
+    		<key>NSMicrophoneUsageDescription</key>
+    		<string>Used for accessibility control</string>
+
+    		<key>NSAccessibilityUsageDescription</key>
+    		<string>Requires accessibility access</string>
+    	</dict>
+    	</plist>
+    	EOF
+
+    	echo "✅ Rift.app bundle created at $out/Applications/Rift.app"
+  '';
+
+  passthru = {
+    updateScript = nix-update-script { };
+  };
+
+  meta = with lib; {
+    platforms = platforms.darwin;
+    mainProgram = "rift";
+  };
 })
