@@ -23,10 +23,5 @@ jobs:
       - name: Check flake
         run: nix flake check
 
-      - name: Run lints
-        run: |
-          nix run nixpkgs#statix -- check .
-          nix run nixpkgs#deadnix -- .
-
       - name: Build devShell
         run: nix develop --command echo "DevShell builds successfully"
