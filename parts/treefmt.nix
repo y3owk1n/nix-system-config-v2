@@ -13,6 +13,11 @@
         deadnix.enable = true;
         prettier.enable = true;
         shfmt.enable = true;
+        actionlint.enable = true;
+        just.enable = true;
+        taplo.enable = true;
+        yamlfmt.enable = true;
+        stylua.enable = true;
       };
       settings = {
         excludes = [
