@@ -6,24 +6,30 @@
 {
   imports = [ inputs.treefmt-nix.flakeModule ];
 
-  perSystem =
-    { system, ... }:
-    {
-      treefmt = {
-        projectRootFile = "flake.nix";
-        programs = {
-          nixfmt = {
-            enable = true;
-            package = inputs.nixpkgs.legacyPackages.${system}.nixfmt-rfc-style;
+  perSystem = _: {
+    treefmt = {
+      programs = {
+        nixfmt.enable = true;
+        deadnix.enable = true;
+        prettier.enable = true;
+        shfmt.enable = true;
+      };
+      settings = {
+        excludes = [
+          ".envrc"
+          ".env"
+        ];
+        on-unmatched = "info";
+        formatter = {
+          deadnix = {
+            no-lambda-arg = true;
+            no-lambda-pattern-names = true;
           };
-          prettier = {
-            enable = true;
-            excludes = [
-              "config/nvim/nvim-pack-lock.json"
-            ];
-          };
-          shfmt.enable = true;
+          prettier.excludes = [
+            "config/nvim/nvim-pack-lock.json"
+          ];
         };
       };
     };
+  };
 }
