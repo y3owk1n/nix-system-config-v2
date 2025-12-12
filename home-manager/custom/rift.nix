@@ -69,7 +69,7 @@ in
 
     # Launch agent for macOS
     launchd.agents.rift = lib.mkIf pkgs.stdenv.isDarwin {
-      enable = cfg.launchd.enable;
+      inherit (cfg.launchd) enable;
       config = {
         ProgramArguments = [
           "${cfg.package}/Applications/Rift.app/Contents/MacOS/Rift"

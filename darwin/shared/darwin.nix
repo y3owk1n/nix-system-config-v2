@@ -8,20 +8,26 @@
   system = {
     primaryUser = "${username}";
     stateVersion = 5;
-    activationScripts.extraActivation.enable = true;
-    activationScripts.extraActivation.text = ''
-      echo "Activating extra preferences..."
-      # Close any open System Preferences panes, to prevent them from overriding
-      # settings we’re about to change
-      osascript -e 'tell application "System Settings" to quit'
-    '';
-    # activationScripts are executed every time you boot the system or run `nixos-rebuild` / `darwin-rebuild`.
-    activationScripts.postActivation.text = ''
-      # activateSettings -u will reload the settings from the database and apply them to the current session,
-      # so we do not need to logout and login again to make the changes take effect.
-      sudo -i /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
-      echo "Reloading settings and applying to current session..."
-    '';
+    activationScripts = {
+      extraActivation = {
+        enable = true;
+        text = ''
+          echo "Activating extra preferences..."
+          # Close any open System Preferences panes, to prevent them from overriding
+          # settings we’re about to change
+          osascript -e 'tell application "System Settings" to quit'
+        '';
+      };
+      # activationScripts are executed every time you boot the system or run `nixos-rebuild` / `darwin-rebuild`.
+      postActivation = {
+        text = ''
+          # activateSettings -u will reload the settings from the database and apply them to the current session,
+          # so we do not need to logout and login again to make the changes take effect.
+          sudo -i /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+          echo "Reloading settings and applying to current session..."
+        '';
+      };
+    };
     startup.chime = false; # MUTE STARTUP CHIME!
     defaults = {
       # universalaccess.reduceMotion = true;

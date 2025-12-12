@@ -4,7 +4,7 @@
 }:
 
 let
-  system = pkgs.system;
+  inherit (pkgs) system;
 
   version = "1.15.6";
 
@@ -34,8 +34,7 @@ let
   cpenv = pkgs.stdenv.mkDerivation {
     name = "cpenv";
     src = pkgs.fetchurl {
-      url = cpenvMeta.url;
-      sha256 = cpenvMeta.sha256;
+      inherit (cpenvMeta) url sha256;
     };
     phases = [ "installPhase" ];
     installPhase = ''

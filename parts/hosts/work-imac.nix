@@ -5,14 +5,13 @@
 
 let
   systemConfig = system: {
-    system = system;
+    inherit system;
     pkgs = import inputs.nixpkgs {
       inherit system;
       config.allowUnfree = true;
     };
   };
-in
-let
+
   hostname = "Kyles-iMac";
   username = "kylewong";
   useremail = "140996996+mtraworld@users.noreply.github.com";
@@ -77,10 +76,12 @@ inputs.darwin.lib.darwinSystem {
     inputs.nix-homebrew.darwinModules.nix-homebrew
     (import ../../darwin/shared/nix-homebrew.nix {
       inherit username;
-      homebrew-core = inputs.homebrew-core;
-      homebrew-cask = inputs.homebrew-cask;
-      homebrew-bundle = inputs.homebrew-bundle;
-      homebrew-y3owk1n = inputs.homebrew-y3owk1n;
+      inherit (inputs)
+        homebrew-core
+        homebrew-cask
+        homebrew-bundle
+        homebrew-y3owk1n
+        ;
     })
   ];
 }

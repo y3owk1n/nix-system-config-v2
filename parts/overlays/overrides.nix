@@ -1,10 +1,7 @@
-{
-  inputs,
-  ...
-}:
+_:
 
 {
-  flake.overlays.overrides = final: prev: {
+  flake.overlays.overrides = _: prev: {
     # Package overrides
     aerospace = prev.aerospace.overrideAttrs (_: rec {
       version = "0.20.0-Beta";

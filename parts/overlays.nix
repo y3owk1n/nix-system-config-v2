@@ -4,7 +4,7 @@
 }:
 
 let
-  lib = inputs.nixpkgs.lib;
+  inherit (inputs.nixpkgs) lib;
 in
 {
   flake.overlays.default = lib.composeManyExtensions [

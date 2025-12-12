@@ -15,9 +15,11 @@
       ...
     }:
     {
-      home-manager.useGlobalPkgs = true;
-      home-manager.useUserPackages = true;
-      home-manager.backupFileExtension = "bak";
+      home-manager = {
+        useGlobalPkgs = true;
+        useUserPackages = true;
+        backupFileExtension = "bak";
+      };
       home-manager.extraSpecialArgs = (builtins.removeAttrs inputs [ "self" ]) // {
         inherit
           username

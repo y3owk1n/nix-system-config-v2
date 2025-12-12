@@ -12,9 +12,8 @@
       settings = {
         hooks = {
           treefmt.enable = true;
-          # statix and deadnix are checked in the lint derivation which allows warnings
-          # statix.enable = true;
-          # deadnix.enable = true;
+          statix.enable = true;
+          deadnix.enable = true;
         };
       };
     };

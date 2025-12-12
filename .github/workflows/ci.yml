@@ -23,9 +23,6 @@ jobs:
       - name: Check flake
         run: nix flake check
 
-      - name: Check formatting
-        run: nix fmt --dry-run
-
       - name: Run lints
         run: |
           nix run nixpkgs#statix -- check .

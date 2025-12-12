@@ -18,17 +18,15 @@ in
     };
   };
 
-  config = (
-    lib.mkIf (cfg.enable) {
-      environment.systemPackages = [ cfg.package ];
+  config = {
+    environment.systemPackages = lib.mkIf cfg.enable [ cfg.package ];
 
-      launchd.user.agents.hammerspoon = {
-        command = "${cfg.package}/Applications/Hammerspoon.app/Contents/MacOS/Hammerspoon";
-        serviceConfig = {
-          KeepAlive = false;
-          RunAtLoad = true;
-        };
+    launchd.user.agents.hammerspoon = lib.mkIf cfg.enable {
+      command = "${cfg.package}/Applications/Hammerspoon.app/Contents/MacOS/Hammerspoon";
+      serviceConfig = {
+        KeepAlive = false;
+        RunAtLoad = true;
       };
-    }
-  );
+    };
+  };
 }
