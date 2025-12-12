@@ -1,5 +1,4 @@
-{ ... }:
-{
+_: {
   programs.aerospace = {
     enable = false;
     extraConfig = ''

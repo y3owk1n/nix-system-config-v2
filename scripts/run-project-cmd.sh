@@ -40,7 +40,7 @@ fi
 selected_command=$(printf '%s\n' "${commands[@]}" | fzf --preview= --prompt="Run command: ")
 
 # If a command was selected, run it
-if [[ -n "$selected_command" ]]; then
+if [[ -n $selected_command ]]; then
   echo "Running: $selected_command"
   eval "$selected_command"
 else

@@ -3,53 +3,15 @@
 }:
 
 {
-  # import sub modules
+  # import shared modules
   imports = [
-    ../packages/aerospace.nix
-    ../packages/ast-grep.nix
-    ../packages/atuin.nix
-    ../packages/bat.nix
-    ../packages/btop.nix
-    ../packages/direnv.nix
-    ../packages/editorconfig.nix
-    ../packages/eza.nix
-    ../packages/devbox.nix
-    ../packages/fd.nix
-    ../packages/fish.nix
-    ../packages/fzf.nix
-    ../packages/gh.nix
-    ../packages/ghostty.nix
-    ../packages/git.nix
-    ../packages/go.nix
-    ../packages/gpg.nix
-    ../packages/hammerspoon.nix
-    ../packages/jq.nix
-    ../packages/just.nix
-    ../packages/kanata.nix
-    ../packages/lazygit.nix
-    ../packages/less.nix
-    ../packages/mkcert.nix
-    ../packages/neru.nix
-    ../packages/nixfmt.nix
-    ../packages/nodejs.nix
-    ../packages/nvim.nix
-    ../packages/nvs.nix
-    ../packages/opencode.nix
-    ../packages/pass.nix
-    ../packages/rift.nix
-    ../packages/rip2.nix
-    ../packages/ripgrep.nix
-    ../packages/sesh.nix
-    ../packages/skhd.nix
-    ../packages/ssh.nix
-    ../packages/starship.nix
-    ../packages/stripe.nix
-    ../packages/tmux.nix
-    ../packages/zoxide.nix
+    ../modules/development.nix
+    ../modules/system.nix
+    ../modules/security.nix
+    ../modules/shell.nix
+    ../modules/macos.nix
 
-    ../custom/asr.nix
-    ../custom/cpenv.nix
-    ../custom/cmd.nix
-    ../custom/passx.nix
+    # Editor
+    ../packages/nvim.nix
   ];
 }

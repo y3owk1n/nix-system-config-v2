@@ -24,27 +24,35 @@
     settings = {
       user.email = useremail;
       user.name = githubname;
-      advise.addEmptyPathSpec = false;
-      advise.pushNonFastForward = false;
-      advise.statusHints = false;
+      advise = {
+        addEmptyPathSpec = false;
+        pushNonFastForward = false;
+        statusHints = false;
+      };
       branch.sort = "-committerdate";
       checkout.defaultRemote = "origin";
-      color.branch = "auto";
-      color.diff = "auto";
-      color.status = "auto";
-      color.ui = true;
+      color = {
+        branch = "auto";
+        diff = "auto";
+        status = "auto";
+        ui = true;
+      };
       column.ui = "auto";
       commit.gpgSign = true;
       commit.verbose = true;
-      core.autocrlf = "input";
-      core.commitgraph = true;
-      core.compression = 9;
-      core.preloadindex = true;
-      core.whitespace = "error";
-      diff.context = 3;
-      diff.innerHunkContext = 10;
-      diff.mnemonicprefix = true;
-      diff.renames = "copies";
+      core = {
+        autocrlf = "input";
+        commitgraph = true;
+        compression = 9;
+        preloadindex = true;
+        whitespace = "error";
+      };
+      diff = {
+        context = 3;
+        innerHunkContext = 10;
+        mnemonicprefix = true;
+        renames = "copies";
+      };
       fetch.writeCommitGraph = true;
       gc.writeCommitGraph = true;
       github.user = githubuser;
@@ -55,15 +63,21 @@
       merge.conflictstyle = "diff3";
       protocol.version = "2";
       pull.rebase = true;
-      push.autoSetupRemote = true;
-      push.default = "current";
-      push.followTags = true;
-      rebase.autoStash = true;
-      rebase.missingCommitsCheck = "warn";
-      rebase.stat = true;
-      status.branch = true;
-      status.showStash = true;
-      status.showUntrackedFiles = "all";
+      push = {
+        autoSetupRemote = true;
+        default = "current";
+        followTags = true;
+      };
+      rebase = {
+        autoStash = true;
+        missingCommitsCheck = "warn";
+        stat = true;
+      };
+      status = {
+        branch = true;
+        showStash = true;
+        showUntrackedFiles = "all";
+      };
       url."git@github.com:".insteadOf = "https://github.com/"; # Rewrite any HTTPS GitHub URL into SSH automatically
     }
     // pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {

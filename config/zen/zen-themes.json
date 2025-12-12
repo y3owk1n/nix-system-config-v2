@@ -10,9 +10,7 @@
     "author": "philmard",
     "version": "1.0.4",
     "preferences": "https://raw.githubusercontent.com/zen-browser/theme-store/main/themes/22c9ec3b-7c62-46ae-991f-c8fff5046829/preferences.json",
-    "tags": [
-      "tabs"
-    ],
+    "tags": ["tabs"],
     "createdAt": "2024-11-09",
     "updatedAt": "2025-01-26",
     "enabled": true

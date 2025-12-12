@@ -47,8 +47,16 @@ gc:
     sudo -i nix store optimise
 
 fmt:
-    # format the nix files in this repo
+    # format the files in this repo
     nix fmt
+
+check:
+    # run flake checks
+    nix flake check
+
+dev:
+    # enter development environment
+    nix develop
 
 clean:
     rm -rf result

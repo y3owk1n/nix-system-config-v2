@@ -3,14 +3,13 @@
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false; # Explicitly enable default config to suppress warning
-    includes = (
+    includes =
       if pkgs.stdenv.isDarwin then
         [
           "~/.orbstack/ssh/config" # Orbstack in host macos
         ]
       else
-        [ ]
-    );
+        [ ];
 
     matchBlocks = {
       # Global defaults (replacing the deprecated top-level addKeysToAgent)

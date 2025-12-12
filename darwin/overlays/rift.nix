@@ -18,7 +18,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   src = fetchFromGitHub {
     owner = "acsandmann";
     repo = "rift";
-    rev = rev;
+    inherit rev;
     # rev = "v${finalAttrs.version}";
     sha256 = "sha256-z1RDTCbAmUIU2osLHv4xPO4w05KFP/JSjUgC3S1iTO8=";
   };
