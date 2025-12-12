@@ -8,7 +8,7 @@ set -euo pipefail
 scripts=$(atuin scripts list | grep '^- ' | awk '{print $2}')
 
 # If there are no scripts, exit gracefully
-if [[ -z "$scripts" ]]; then
+if [[ -z $scripts ]]; then
   echo "⚠️  No Atuin scripts found."
   exit 0
 fi
@@ -17,7 +17,7 @@ fi
 selected=$(echo "$scripts" | fzf --prompt="Select a script: " --height=15 --reverse)
 
 # Exit if nothing selected
-if [[ -z "$selected" ]]; then
+if [[ -z $selected ]]; then
   echo "❌ No script selected."
   exit 0
 fi

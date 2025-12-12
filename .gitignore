@@ -1,9 +1,32 @@
+# Nix
 result
+result-*
+
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
 
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Application specific
 config/keyboardcowboy/backups/
-
 config/hammerspoon/Spoons/
 
+# Node packages (commented out as in original)
 # home/node-packages/*
 # !home/node-packages/node-packages.json
+
+# Direnv
+.direnv/

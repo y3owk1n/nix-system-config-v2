@@ -1,0 +1,14 @@
+[formatter.nix]
+command = "nixfmt"
+options = ["--"]
+includes = ["*.nix"]
+
+[formatter.prettier]
+command = "prettier"
+options = ["--write"]
+includes = ["*.js", "*.ts", "*.json", "*.md"]
+
+[formatter.shfmt]
+command = "shfmt"
+options = ["-w", "-i", "2"]
+includes = ["*.sh"]

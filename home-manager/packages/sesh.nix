@@ -1,5 +1,4 @@
-{ ... }:
-{
+_: {
   programs.sesh = {
     enable = true;
     enableAlias = true;

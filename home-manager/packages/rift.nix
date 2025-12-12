@@ -1,5 +1,4 @@
-{ ... }:
-{
+_: {
   services.rift = {
     enable = true;
     config = ''

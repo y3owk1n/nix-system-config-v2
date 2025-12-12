@@ -14,19 +14,19 @@ LOG_LEVEL="${LOG_LEVEL:-INFO}" # DEBUG, INFO, WARN, ERROR
 # -------------------------------------------------------
 
 log_debug() {
-  if [[ "${LOG_LEVEL:-}" == "DEBUG" ]]; then
+  if [[ ${LOG_LEVEL:-} == "DEBUG" ]]; then
     echo "[DEBUG] $*" >&2
   fi
 }
 
 log_info() {
-  if [[ "${LOG_LEVEL:-}" =~ ^(DEBUG|INFO)$ ]]; then
+  if [[ ${LOG_LEVEL:-} =~ ^(DEBUG|INFO)$ ]]; then
     echo "[INFO] $*" >&2
   fi
 }
 
 log_warn() {
-  if [[ "${LOG_LEVEL:-}" =~ ^(DEBUG|INFO|WARN)$ ]]; then
+  if [[ ${LOG_LEVEL:-} =~ ^(DEBUG|INFO|WARN)$ ]]; then
     echo "[WARN] $*" >&2
   fi
 }
@@ -64,11 +64,11 @@ check_dependencies() {
 
 # Validate password store is initialized
 check_pass_store() {
-  if [[ -z "${PASSWORD_STORE_DIR:-}" ]]; then
+  if [[ -z ${PASSWORD_STORE_DIR:-} ]]; then
     export PASSWORD_STORE_DIR="$HOME/.password-store"
   fi
 
-  if [[ ! -d "$PASSWORD_STORE_DIR" ]]; then
+  if [[ ! -d $PASSWORD_STORE_DIR ]]; then
     log_error "Password store not found at $PASSWORD_STORE_DIR"
     log_error "Initialize with: pass init <gpg-key-id>"
     exit 1
@@ -83,7 +83,7 @@ validate_key() {
   local key="$1"
   # Convert to uppercase for validation and storage
   key="${key^^}"
-  if [[ ! "$key" =~ ^[A-Z_][A-Z0-9_]*$ ]]; then
+  if [[ ! $key =~ ^[A-Z_][A-Z0-9_]*$ ]]; then
     log_error "Invalid key '$1'. Keys must start with letter/underscore and contain only letters, numbers, and underscores."
     exit 1
   fi
@@ -93,15 +93,15 @@ validate_key() {
 
 validate_env() {
   local env="$1"
-  if [[ ! "$env" =~ ^[A-Za-z0-9_/-]+$ ]]; then
+  if [[ ! $env =~ ^[A-Za-z0-9_/-]+$ ]]; then
     log_error "Invalid environment name '$env'. Use only letters, numbers, underscores, hyphens, and forward slashes."
     exit 1
   fi
 
   # Prevent path traversal attacks
-  if [[ "$env" == *".."* ]] || [[ "$env" == "/"* ]] || [[ "$env" == *"/"* ]]; then
+  if [[ $env == *".."* ]] || [[ $env == "/"* ]] || [[ $env == *"/"* ]]; then
     # Allow forward slashes but not at the beginning, and no double dots
-    if [[ "$env" == "/"* ]] || [[ "$env" == *".."* ]]; then
+    if [[ $env == "/"* ]] || [[ $env == *".."* ]]; then
       log_error "Invalid environment path '$env'. No leading slashes or '..' sequences allowed."
       exit 1
     fi
@@ -112,7 +112,7 @@ confirm_action() {
   local message="$1"
   local default="${2:-N}" # Y or N
 
-  if [[ "${PASSX_AUTO_CONFIRM:-}" == "true" ]]; then
+  if [[ ${PASSX_AUTO_CONFIRM:-} == "true" ]]; then
     log_debug "Auto-confirming: $message"
     return 0
   fi
@@ -129,7 +129,7 @@ confirm_action() {
   case "$response" in
   [yY] | [yY][eE][sS]) return 0 ;;
   [nN] | [nN][oO]) return 1 ;;
-  "") [[ "$default" =~ ^[Yy]$ ]] && return 0 || return 1 ;;
+  "") [[ $default =~ ^[Yy]$ ]] && return 0 || return 1 ;;
   *) return 1 ;;
   esac
 }
@@ -137,7 +137,7 @@ confirm_action() {
 # Safe file operations
 backup_file() {
   local file="$1"
-  if [[ -f "$file" ]]; then
+  if [[ -f $file ]]; then
     cp "$file" "$file.backup.$(date +%Y%m%d_%H%M%S)"
     log_info "Created backup: $file.backup.$(date +%Y%m%d_%H%M%S)"
   fi
@@ -158,7 +158,7 @@ safe_pass_insert() {
 
   # Insert using temp file
   local pass_args=("-m")
-  [[ "$force" == "true" ]] && pass_args+=("--force")
+  [[ $force == "true" ]] && pass_args+=("--force")
 
   if pass insert "${pass_args[@]}" "$path" <"$temp_file"; then
     log_debug "Successfully inserted/updated secret: $path"
@@ -189,7 +189,7 @@ cmd_add() {
     exit 1
   fi
 
-  if [[ -n "$value" ]]; then
+  if [[ -n $value ]]; then
     printf "%s" "$value" | safe_pass_insert "$path"
   else
     safe_pass_insert "$path" </dev/tty
@@ -213,7 +213,7 @@ cmd_update() {
     exit 1
   fi
 
-  if [[ -n "$value" ]]; then
+  if [[ -n $value ]]; then
     printf "%s" "$value" | safe_pass_insert "$path" true
   else
     safe_pass_insert "$path" true </dev/tty
@@ -249,7 +249,7 @@ cmd_run() {
     case "$1" in
     --merge-strategy)
       shift
-      if [[ -z "${1:-}" ]]; then
+      if [[ -z ${1:-} ]]; then
         log_error "--merge-strategy requires a value: error, first-wins, or last-wins"
         exit 1
       fi
@@ -283,7 +283,7 @@ cmd_run() {
       ;;
     *)
       # Check if this looks like a command (executable file or common commands)
-      if command -v "$1" >/dev/null 2>&1 || [[ "$1" =~ ^(\./) ]] || [[ -x "$1" ]]; then
+      if command -v "$1" >/dev/null 2>&1 || [[ $1 =~ ^(\./) ]] || [[ -x $1 ]]; then
         # This and everything after is the command
         commands=("$@")
         break
@@ -317,7 +317,7 @@ cmd_run() {
     validate_env "$env"
 
     local env_dir="$PASSWORD_STORE_DIR/$project/$env"
-    if [[ ! -d "$env_dir" ]]; then
+    if [[ ! -d $env_dir ]]; then
       log_warn "No secrets found for environment '$env'"
       continue
     fi
@@ -342,7 +342,7 @@ cmd_run() {
 
       if v=$(pass show "$k" 2>/dev/null); then
         # Check for duplicates (only between different environments)
-        if [[ -n "${all_secrets[$name]:-}" ]] && [[ "${secret_sources[$name]:-}" != "$env" ]]; then
+        if [[ -n ${all_secrets[$name]:-} ]] && [[ ${secret_sources[$name]:-} != "$env" ]]; then
           duplicates["$name"]="${secret_sources[$name]:-unknown} -> $env"
 
           case "$merge_strategy" in
@@ -383,9 +383,9 @@ cmd_run() {
   fi
 
   # Report on duplicates if any were found
-  if [[ ${#duplicates[@]} -gt 0 ]] && [[ "$merge_strategy" != "error" ]]; then
+  if [[ ${#duplicates[@]} -gt 0 ]] && [[ $merge_strategy != "error" ]]; then
     log_info "Resolved ${#duplicates[@]} duplicate keys using strategy: $merge_strategy"
-    if [[ "${LOG_LEVEL:-}" == "DEBUG" ]]; then
+    if [[ ${LOG_LEVEL:-} == "DEBUG" ]]; then
       for dup_key in "${!duplicates[@]}"; do
         log_debug "Duplicate '$dup_key': ${duplicates[$dup_key]} -> final: ${secret_sources[$dup_key]}"
       done
@@ -419,7 +419,7 @@ cmd_export() {
   project=$(require_git_root)
 
   # Check if output file exists and ask for confirmation
-  if [[ -f "$output_file" ]]; then
+  if [[ -f $output_file ]]; then
     backup_file "$output_file"
     if ! confirm_action "File '$output_file' exists. Overwrite?"; then
       log_info "Export cancelled"
@@ -428,7 +428,7 @@ cmd_export() {
   fi
 
   local env_dir="$PASSWORD_STORE_DIR/$project/$env"
-  if [[ ! -d "$env_dir" ]]; then
+  if [[ ! -d $env_dir ]]; then
     log_error "No secrets found for environment '$env'"
     exit 1
   fi
@@ -486,7 +486,7 @@ cmd_import() {
   validate_env "$env"
   project=$(require_git_root)
 
-  if [[ ! -f "$file" ]]; then
+  if [[ ! -f $file ]]; then
     log_error "Import file not found: $file"
     exit 1
   fi
@@ -504,13 +504,13 @@ cmd_import() {
   # Read valid KEY=VALUE lines, ignore comments/empty lines
   while IFS= read -r line; do
     # Skip empty lines and full-line comments
-    [[ -z "$line" || "$line" =~ ^# ]] && continue
+    [[ -z $line || $line =~ ^# ]] && continue
 
     # Remove inline comments
     line="${line%%#*}"
 
     # Only process lines that look like KEY=VALUE after removing comments
-    if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+    if [[ $line =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
       key="${BASH_REMATCH[1]}"
       value="${BASH_REMATCH[2]}"
 
@@ -618,7 +618,7 @@ cmd_ls() {
     validate_env "$env"
 
     local env_dir="$PASSWORD_STORE_DIR/$project/$env"
-    if [[ ! -d "$env_dir" ]]; then
+    if [[ ! -d $env_dir ]]; then
       log_warn "No secrets found for environment '$env'"
       continue
     fi
@@ -681,7 +681,7 @@ cmd_ls() {
   fi
 
   # Display results
-  if [[ "$format" == "table" ]]; then
+  if [[ $format == "table" ]]; then
     local key_header="KEY"
     if [[ ${#envs[@]} -gt 1 ]]; then
       key_header="ENVIRONMENT/KEY"
@@ -784,7 +784,7 @@ cmd_copy() {
   validate_env "$to_env"
   project=$(require_git_root)
 
-  if [[ -n "$key" ]]; then
+  if [[ -n $key ]]; then
     # Copy single key
     key=$(validate_key "$key") # Get the uppercase version
     local from_path="$project/$from_env/$key"
@@ -829,7 +829,7 @@ cmd_copy() {
   else
     # Copy all keys from one environment to another
     local from_dir="$PASSWORD_STORE_DIR/$project/$from_env"
-    if [[ ! -d "$from_dir" ]]; then
+    if [[ ! -d $from_dir ]]; then
       log_error "No secrets found for environment '$from_env'"
       exit 1
     fi
@@ -889,7 +889,7 @@ cmd_envs() {
   project=$(require_git_root)
   local project_dir="$PASSWORD_STORE_DIR/$project"
 
-  if [[ ! -d "$project_dir" ]]; then
+  if [[ ! -d $project_dir ]]; then
     log_info "No environments found for project '$project'"
     exit 0
   fi
@@ -903,7 +903,7 @@ cmd_envs() {
     local count
     count=$(find "$env_path" -maxdepth 1 -name '*.gpg' 2>/dev/null | wc -l)
 
-    if [[ "$count" -gt 0 ]]; then
+    if [[ $count -gt 0 ]]; then
       env_found=true
       # Get the relative path from project_dir
       local env_name
@@ -923,12 +923,12 @@ cmd_validate() {
   local project
   project=$(require_git_root)
 
-  if [[ -n "$env" ]]; then
+  if [[ -n $env ]]; then
     validate_env "$env"
     echo "Validating environment: $env"
     local env_dir="$PASSWORD_STORE_DIR/$project/$env"
 
-    if [[ ! -d "$env_dir" ]]; then
+    if [[ ! -d $env_dir ]]; then
       log_error "Environment '$env' not found"
       exit 1
     fi
@@ -1018,7 +1018,7 @@ main() {
   check_dependencies
   check_pass_store
 
-  if [[ "$#" -eq 0 ]]; then
+  if [[ $# -eq 0 ]]; then
     usage
   fi
 
@@ -1029,7 +1029,7 @@ main() {
     exit 0
     ;;
   copy)
-    if [[ "$#" -lt 3 ]]; then
+    if [[ $# -lt 3 ]]; then
       log_error "copy requires at least FROM_ENV and TO_ENV"
       usage
     fi
@@ -1056,7 +1056,7 @@ main() {
   local i=0
   for arg in "$@"; do
     i=$((i + 1))
-    if [[ "$arg" == "ls" ]] || [[ "$arg" == "run" ]]; then
+    if [[ $arg == "ls" ]] || [[ $arg == "run" ]]; then
       cmd_pos=$i
       cmd_found="$arg"
       break
@@ -1087,7 +1087,7 @@ main() {
   fi
 
   # For all other commands, use the original single-environment logic
-  if [[ "$#" -lt 2 ]]; then
+  if [[ $# -lt 2 ]]; then
     usage
   fi
 
