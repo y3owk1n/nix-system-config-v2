@@ -1,17 +1,6 @@
 {
   description = "Kyle Nix Darwin System";
 
-  nixConfig = {
-    extra-substituters = [
-      "https://cache.flakehub.com"
-      "https://install.determinate.systems"
-    ];
-    extra-trusted-public-keys = [
-      "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
-      "cache.determinate.systems:aHRYSxYP2rxdNsFfU5Wd0Q8d8Qqjrx4H8YB0uHK7P68="
-    ];
-  };
-
   # This is the standard format for flake.nix. `inputs` are the dependencies of the flake,
   # Each item in `inputs` will be passed as a parameter to the `outputs` function after being pulled and built.
   inputs = {
