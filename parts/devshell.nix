@@ -5,19 +5,16 @@
 
 {
   perSystem =
-    { system, ... }:
+    { config, system, ... }:
     {
       devShells.default = inputs.nixpkgs.legacyPackages.${system}.mkShell {
-        packages = with inputs.nixpkgs.legacyPackages.${system}; [
-          nixfmt-rfc-style
-          just
-          git
-          treefmt
-          prettier
-          shfmt
-          statix
-          deadnix
-        ];
+        packages =
+          (builtins.attrValues {
+            inherit (inputs.nixpkgs.legacyPackages.${system}) just git;
+          })
+          ++ config.pre-commit.settings.enabledPackages
+          ++ (builtins.attrValues config.treefmt.build.programs);
+        shellHook = config.pre-commit.installationScript;
       };
     };
 }

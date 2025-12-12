@@ -30,3 +30,6 @@ config/hammerspoon/Spoons/
 
 # Direnv
 .direnv/
+
+# Pre-commit
+.pre-commit-config.yaml
