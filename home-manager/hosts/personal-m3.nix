@@ -13,5 +13,11 @@
 
     # Editor
     ../packages/nvim.nix
+
+    # Custom modules
+    ../custom/asr.nix
+    ../custom/cpenv.nix
+    ../custom/cmd.nix
+    ../custom/passx.nix
   ];
 }
