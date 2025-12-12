@@ -93,7 +93,6 @@
       systems = import ./parts/systems.nix;
 
       imports = [
-        inputs.flake-parts.flakeModules.easyOverlay
         ./parts/darwin.nix
         ./parts/overlays.nix
         ./parts/overlays/custom.nix
@@ -112,7 +111,7 @@
         {
           formatter = config.treefmt.build.wrapper;
 
-          overlayAttrs = {
+          packages = {
             determinate-nixd = inputs.determinate.packages.${system}.default;
             nix = inputs.determinate.inputs.nix.packages.${system}.default;
           };
