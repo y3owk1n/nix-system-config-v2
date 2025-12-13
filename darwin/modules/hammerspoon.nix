@@ -19,7 +19,7 @@ in
     hammerspoon = {
       enable = lib.mkEnableOption "Hammerspoon";
 
-      package = lib.mkPackageOption pkgs "hammerspoon" { };
+      package = lib.mkPackageOption pkgs.custom "hammerspoon" { };
     };
   };
 
