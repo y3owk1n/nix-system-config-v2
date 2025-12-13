@@ -1,5 +1,9 @@
 {
-  # macOS Specific Tools
+  # ============================================================================
+  # macOS Specific Tools and Applications
+  # ============================================================================
+  # Tools and applications that are specific to macOS or work better on macOS
+
   imports = [
     ../packages/aerospace.nix
     ../packages/hammerspoon.nix

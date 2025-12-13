@@ -1,3 +1,7 @@
+# ============================================================================
+# CI Workflow
+# ============================================================================
+# Continuous Integration pipeline for Nix flake validation
 name: CI
 on:
   push:
@@ -8,14 +12,15 @@ jobs:
   check:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout repository
+        uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Full history for proper flake evaluation
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-      - name: Check flake
+      - name: Check flake validity
         run: nix flake check
-      - name: Build devShell
+      - name: Build development shell
         run: nix develop --command echo "DevShell builds successfully"

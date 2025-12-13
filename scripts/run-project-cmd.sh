@@ -1,8 +1,20 @@
 #!/usr/bin/env bash
 
+# ============================================================================
+# Project Command Runner
+# ============================================================================
+# Interactive command runner that detects available project commands from:
+# - package.json scripts (npm/yarn)
+# - Justfile recipes
+# - Makefile targets
+#
+# Uses fzf for interactive selection.
+
 set -euo pipefail
 
-# Collect available commands
+# ============================================================================
+# Command Collection
+# ============================================================================
 commands=()
 
 # Detect and parse commands from package.json (Node project)
@@ -30,16 +42,20 @@ fi
 
 # Add more project types here (e.g., poetry, rake, etc.)
 
+# ============================================================================
+# Command Execution
+# ============================================================================
+
 # If no commands were found, exit
 if [[ ${#commands[@]} -eq 0 ]]; then
   echo "No recognizable project commands found in this directory."
   exit 1
 fi
 
-# Use fzf to select a command
+# Use fzf to select a command interactively
 selected_command=$(printf '%s\n' "${commands[@]}" | fzf --preview= --prompt="Run command: ")
 
-# If a command was selected, run it
+# Execute the selected command
 if [[ -n $selected_command ]]; then
   echo "Running: $selected_command"
   eval "$selected_command"

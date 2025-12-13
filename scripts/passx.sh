@@ -1,4 +1,21 @@
 #!/usr/bin/env bash
+
+# ============================================================================
+# PassX - Password Store Environment Manager
+# ============================================================================
+# A comprehensive tool for managing project secrets across multiple environments
+# using pass (password-store) with project-based organization.
+#
+# Features:
+# - Project-scoped secret management
+# - Environment-based organization (dev, staging, prod, etc.)
+# - Multi-environment secret loading with merge strategies
+# - Interactive commands with fzf integration
+# - Secure backup and restore functionality
+# - Environment variable export/import
+#
+# Dependencies: pass, git, gpg, fzf (optional for interactive features)
+
 set -euo pipefail
 
 # -------------------------------------------------------

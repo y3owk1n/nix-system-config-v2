@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# ============================================================================
+# Nix Darwin Initial Setup Script
+# ============================================================================
+# This script initializes a new Nix Darwin system for a given user.
+# It automatically finds the nix-system-config directory and runs nix-darwin.
+
 # Find the directory containing 'nix-system-config-v2' (or similar) in its name
 echo "Finding *nix-system-config* directory..."
 config_dir=$(find ~ -maxdepth 1 -type d -name "*nix-system-config*" -print -quit)

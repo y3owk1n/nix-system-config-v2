@@ -4,6 +4,10 @@
   ...
 }:
 {
+  # ============================================================================
+  # Nix Configuration
+  # ============================================================================
+
   # Custom settings written to /etc/nix/nix.custom.conf
   determinate-nix.customSettings = {
     trusted-users = [

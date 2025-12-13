@@ -6,8 +6,14 @@
   writeShellScriptBin,
   nix-update-script,
 }:
+
+# ============================================================================
+# Rift Window Manager Overlay
+# ============================================================================
+# Custom build of Rift tiling window manager from git main branch
+
 let
-  rev = "cb5ddb303c75769b2bd9e6e0cb54ef65f3a47f8b";
+  rev = "8431d9926df615a04a7d6eecb31ecdedbd0585d2";
   shortHash = lib.substring 0 7 rev;
   pversion = "main-${shortHash}";
 in
@@ -20,7 +26,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "rift";
     inherit rev;
     # rev = "v${finalAttrs.version}";
-    sha256 = "sha256-z1RDTCbAmUIU2osLHv4xPO4w05KFP/JSjUgC3S1iTO8=";
+    sha256 = "sha256-HPYAnL0RYaLVh0nTdJlR2KjlmAY+JOcaZEetpmA4238=";
   };
 
   cargoHash = "sha256-A0huWauj3Ltnw39jFft6pyYUVcNK+lu89ZlVQl/aRZg=";

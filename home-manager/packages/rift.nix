@@ -1,15 +1,25 @@
 _: {
+  # ============================================================================
+  # Rift Window Manager Configuration
+  # ============================================================================
+  # Custom tiling window manager for macOS with vim-like keybindings
+
   services.rift = {
     enable = true;
     config = ''
+      # ============================================================================
+      # General Settings
+      # ============================================================================
       [settings]
       default_disable = false
-
       hot_reload = false
 
+      # ============================================================================
+      # Layout Configuration
+      # ============================================================================
       [settings.layout]
       mode = "traditional"
-      # mode = "bsp"
+      # mode = "bsp"  # Alternative: binary space partitioning
 
       [settings.layout.gaps]
 
@@ -23,28 +33,38 @@ _: {
       horizontal = 8
       vertical = 8
 
+      # ============================================================================
+      # UI Configuration
+      # ============================================================================
       [settings.ui.menu_bar]
       enabled = true
       show_empty = false
       display_style = "label"
       mode = "active"
 
+      # ============================================================================
+      # Virtual Workspaces
+      # ============================================================================
       [virtual_workspaces]
       default_workspace_count = 9
       default_workspace = 0
 
       workspace_names = [
       	"browser",
-        "terminal",
-        "notes",
-        "email",
-        "calendar",
-        "messaging",
-        "design",
-        "screen sharing",
-        "dumpster"
-      ]
+         "terminal",
+         "notes",
+         "email",
+         "calendar",
+         "messaging",
+         "design",
+         "screen sharing",
+         "dumpster"
+       ]
 
+      # ============================================================================
+      # Application Rules
+      # ============================================================================
+      # Automatically assign applications to specific workspaces
       app_rules = [
         { app_id = "com.apple.Safari", workspace = "browser" },
         { app_id = "com.apple.SafariTechnologyPreview", workspace = "browser" },
@@ -66,11 +86,15 @@ _: {
         { app_id = "com.apple.systempreferences", floating = true }
       ]
 
+      # ============================================================================
+      # Keybindings
+      # ============================================================================
       [modifier_combinations]
       comb1 = "Alt + Shift"
       hyper = "Alt + Ctrl + Shift + Meta"
 
       [keys]
+      # App launchers (hyper key)
       "hyper + F" = { exec = ["open", "-a", "finder"] }
       "hyper + B" = { exec = ["open", "-a", "safari"] }
       "hyper + T" = { exec = ["open", "-a", "Ghostty"] }
@@ -82,16 +106,19 @@ _: {
       "hyper + P" = { exec = ["open", "-a", "Passwords"] }
       "hyper + A" = { exec = ["open", "-a", "Activity Monitor"] }
 
+      # Vim-style focus navigation (hjkl)
       "Alt + H" = { move_focus = "left" }
       "Alt + J" = { move_focus = "down" }
       "Alt + K" = { move_focus = "up" }
       "Alt + L" = { move_focus = "right" }
 
+      # Vim-style window movement
       "comb1 + H" = { move_node = "left" }
       "comb1 + J" = { move_node = "down" }
       "comb1 + K" = { move_node = "up" }
       "comb1 + L" = { move_node = "right" }
 
+      # Workspace switching (hyper + number)
       "hyper + 1" = { switch_to_workspace = "browser" }
       "hyper + 2" = { switch_to_workspace = "terminal" }
       "hyper + 3" = { switch_to_workspace = "notes" }
@@ -102,6 +129,7 @@ _: {
       "hyper + 8" = { switch_to_workspace = "screen sharing" }
       "hyper + 9" = { switch_to_workspace = "dumpster" }
 
+      # Move windows to workspaces (alt-shift + number)
       "comb1 + 1" = { move_window_to_workspace = "browser" }
       "comb1 + 2" = { move_window_to_workspace = "terminal" }
       "comb1 + 3" = { move_window_to_workspace = "notes" }
@@ -112,9 +140,11 @@ _: {
       "comb1 + 8" = { move_window_to_workspace = "screen sharing" }
       "comb1 + 9" = { move_window_to_workspace = "dumpster" }
 
+      # Window management
       "Alt + F" = "toggle_window_floating"
       "Alt + M" = "toggle_fullscreen_within_gaps"
 
+      # Window resizing
       "Alt + Equal" = "resize_window_grow"
       "Alt + Minus" = "resize_window_shrink"
     '';
