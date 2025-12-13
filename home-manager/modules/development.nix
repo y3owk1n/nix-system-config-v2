@@ -20,7 +20,8 @@
     ../packages/less.nix
     ../packages/nixfmt.nix
     ../packages/nodejs.nix
-    ../packages/nvs.nix
     ../packages/ripgrep.nix
+    ../packages/cpenv.nix
+    ../packages/cmd.nix
   ];
 }

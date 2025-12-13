@@ -1,4 +1,9 @@
-_: {
+{ pkgs, ... }:
+{
+  home.packages = with pkgs; [
+    asr
+  ];
+
   programs.atuin = {
     enable = true;
     daemon = {
