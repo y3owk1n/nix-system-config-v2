@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
-    asr
+    custom.asr
   ];
 
   programs.atuin = {
