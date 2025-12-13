@@ -5,6 +5,11 @@
   ...
 }:
 
+# ============================================================================
+# Hammerspoon Module
+# ============================================================================
+# macOS automation tool powered by Lua and Objective-C bridge
+
 let
   cfg = config.hammerspoon;
 in

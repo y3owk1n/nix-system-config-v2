@@ -3,6 +3,12 @@
   ...
 }:
 
+# ============================================================================
+# Atuin Run Script (ASR)
+# ============================================================================
+# Custom package that wraps the atuin-run-script.sh script for running
+# Atuin commands from the command line.
+
 let
   asr = pkgs.stdenv.mkDerivation {
     name = "asr";

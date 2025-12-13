@@ -1,6 +1,9 @@
 {
   description = "Kyle Nix Darwin System";
 
+  # ============================================================================
+  # Flake Inputs
+  # ============================================================================
   # This is the standard format for flake.nix. `inputs` are the dependencies of the flake,
   # Each item in `inputs` will be passed as a parameter to the `outputs` function after being pulled and built.
   inputs = {
@@ -71,6 +74,9 @@
     pre-commit-hooks.url = "https://flakehub.com/f/cachix/git-hooks.nix/0.1";
   };
 
+  # ============================================================================
+  # Flake Outputs
+  # ============================================================================
   # The `outputs` function will return all the build results of the flake.
   # A flake can have many use cases and different types of outputs,
   # parameters in `outputs` are defined in `inputs` and can be referenced by their names.

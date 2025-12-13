@@ -1,22 +1,38 @@
 _: {
+  # ============================================================================
+  # Aerospace Window Manager Configuration
+  # ============================================================================
+  # Tiling window manager for macOS with vim-like keybindings
+  # Currently disabled in favor of Rift
+
   programs.aerospace = {
     enable = false;
     extraConfig = ''
+      # ============================================================================
+      # Basic Configuration
+      # ============================================================================
       config-version = 2
 
+      # Default layout settings
       default-root-container-layout = 'tiles'
       default-root-container-orientation = 'auto'
 
+      # Container normalization settings
       enable-normalization-flatten-containers = true
       enable-normalization-opposite-orientation-for-nested-containers = true
 
+      # Mouse behavior
       on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
       on-focus-changed = ["move-mouse window-force-center"]
 
+      # Persistent workspaces (1-9)
       persistent-workspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
       automatically-unhide-macos-hidden-apps = false
 
+      # ============================================================================
+      # Window Gaps
+      # ============================================================================
       [gaps]
       inner.horizontal = 8
       inner.vertical = 8
@@ -25,25 +41,34 @@ _: {
       outer.top = 8
       outer.right = 8
 
+      # ============================================================================
+      # Keybindings
+      # ============================================================================
       [mode.main.binding]
+      # Disable default macOS shortcuts that conflict
       cmd-h = []     # Disable "hide application"
       cmd-alt-h = [] # Disable "hide others"
       cmd-m = [] # Disable "minimize"
 
+      # Vim-style focus navigation (hjkl)
       alt-h = 'focus left'
       alt-j = 'focus down'
       alt-k = 'focus up'
       alt-l = 'focus right'
 
+      # Vim-style window movement
       alt-shift-h = 'move left'
       alt-shift-j = 'move down'
       alt-shift-k = 'move up'
       alt-shift-l = 'move right'
 
+      # Toggle floating/tiling layout
       alt-f = 'layout floating tiling'
 
+      # Toggle fullscreen
       alt-m = 'fullscreen'
 
+      # App launchers (hyper key combinations)
       cmd-alt-shift-ctrl-f = 'exec-and-forget open -a finder'
       cmd-alt-shift-ctrl-b = 'exec-and-forget open -a safari'
       cmd-alt-shift-ctrl-t = 'exec-and-forget open -a "Ghostty"'
@@ -55,6 +80,7 @@ _: {
       cmd-alt-shift-ctrl-p = 'exec-and-forget open -a "Passwords"'
       cmd-alt-shift-ctrl-a = 'exec-and-forget open -a "Activity Monitor"'
 
+      # Workspace switching (hyper + number)
       cmd-alt-shift-ctrl-1 = 'workspace 1' # Browser
       cmd-alt-shift-ctrl-2 = 'workspace 2' # Terminal
       cmd-alt-shift-ctrl-3 = 'workspace 3' # Notes
@@ -66,6 +92,7 @@ _: {
       cmd-alt-shift-ctrl-9 = 'workspace 9' # Whatever else goes here
       cmd-alt-shift-ctrl-0 = 'flatten-workspace-tree'
 
+      # Move windows to workspaces (alt-shift + number)
       alt-shift-1 = ['move-node-to-workspace 1', 'workspace 1']
       alt-shift-2 = ['move-node-to-workspace 2', 'workspace 2']
       alt-shift-3 = ['move-node-to-workspace 3', 'workspace 3']
@@ -76,7 +103,10 @@ _: {
       alt-shift-8 = ['move-node-to-workspace 8', 'workspace 8']
       alt-shift-9 = ['move-node-to-workspace 9', 'workspace 9']
 
-      # ensure apps that i care are moved to the right workspaces
+      # ============================================================================
+      # Application Rules
+      # ============================================================================
+      # Automatically assign applications to specific workspaces
 
       [[on-window-detected]]
       if.app-id = 'com.apple.Safari'

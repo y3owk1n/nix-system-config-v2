@@ -4,11 +4,20 @@
   ...
 }:
 {
+  # ============================================================================
+  # Neovim Dependencies
+  # ============================================================================
+
   home.packages = with pkgs; [
+    # Core Lua dependencies
     lua51Packages.lua
     luajitPackages.luarocks
     panvimdoc
-    # --- neovim language servers ---
+
+    # ============================================================================
+    # Language Servers & Development Tools
+    # ============================================================================
+
     tree-sitter
     shfmt
     shellcheck
@@ -35,6 +44,10 @@
     biome
     prettierd
     clang-tools
+
+    # ============================================================================
+    # Neovim Configuration
+    # ============================================================================
   ];
 
   xdg.configFile.nvim = {

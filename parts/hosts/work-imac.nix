@@ -3,6 +3,12 @@
   ...
 }:
 
+# ============================================================================
+# Work iMac Configuration
+# ============================================================================
+# This is the configuration for my work iMac.
+# Used for work-related development and projects.
+
 let
   systemConfig = system: {
     inherit system;

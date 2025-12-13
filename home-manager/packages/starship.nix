@@ -1,4 +1,10 @@
 _: {
+  # ============================================================================
+  # Starship Prompt Configuration
+  # ============================================================================
+  # Minimal prompt configuration with only essential modules enabled.
+  # Most modules are disabled to keep the prompt clean and fast.
+
   programs.starship = {
     enable = true;
     enableTransience = true;
@@ -30,7 +36,10 @@ _: {
       # enable
       direnv.disabled = false;
 
-      # disable
+      # ============================================================================
+      # Disabled Modules
+      # ============================================================================
+      # Disable most modules to keep prompt minimal and focused on development
       aws.disabled = true;
       azure.disabled = true;
       battery.disabled = true;
@@ -109,9 +118,15 @@ _: {
       zig.disabled = true;
     };
   };
+
+  # ============================================================================
+  # Fish Integration
+  # ============================================================================
+
   programs.fish.functions.starship_transient_prompt_func = {
     description = "Starship transient prompt";
     body = ''
+      # Show only the character module in transient (continuation) prompts
       starship module character
     '';
   };

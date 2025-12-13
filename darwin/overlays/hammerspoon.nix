@@ -3,6 +3,11 @@
   stdenv,
 }:
 
+# ============================================================================
+# Hammerspoon Overlay
+# ============================================================================
+# Custom build of Hammerspoon with additional automation modules
+
 let
   appName = "Hammerspoon.app";
   version = "1.0.0";

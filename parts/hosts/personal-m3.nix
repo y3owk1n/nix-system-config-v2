@@ -3,6 +3,12 @@
   ...
 }:
 
+# ============================================================================
+# Personal MacBook Air M3 Configuration
+# ============================================================================
+# This is the configuration for my personal MacBook Air M3 laptop.
+# Used for development, personal projects, and daily computing.
+
 let
   systemConfig = system: {
     inherit system;

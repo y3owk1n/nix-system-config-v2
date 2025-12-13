@@ -4,6 +4,9 @@
   ...
 }:
 {
+  # ============================================================================
+  # System
+  # ============================================================================
 
   system = {
     primaryUser = "${username}";
@@ -37,6 +40,10 @@
         ShowDate = 0;
       };
 
+      # ============================================================================
+      # Dock
+      # ============================================================================
+
       # customize dock
       dock = {
         # auto show and hide dock
@@ -56,6 +63,10 @@
         mru-spaces = false;
         expose-group-apps = true;
       };
+
+      # ============================================================================
+      # Finder
+      # ============================================================================
 
       # customize finder
       finder = {
@@ -79,6 +90,10 @@
         NewWindowTarget = "Home";
       };
 
+      # ============================================================================
+      # Trackpad
+      # ============================================================================
+
       # customize trackpad
       trackpad = {
         # silent clicking = 0, default = 1
@@ -90,12 +105,20 @@
         TrackpadThreeFingerDrag = true;
       };
 
+      # ============================================================================
+      # Launch Services
+      # ============================================================================
+
       # `man configuration.nix` on mac is useful in seeing available options
       # `defaults read -g` on mac is useful to see current settings
       LaunchServices = {
         # quarantine downloads until approved
         LSQuarantine = true;
       };
+
+      # ============================================================================
+      # Login Window
+      # ============================================================================
 
       # login window settings
       loginwindow = {
@@ -107,7 +130,15 @@
         DisableConsoleAccess = true;
       };
 
+      # ============================================================================
+      # Spaces
+      # ============================================================================
+
       spaces.spans-displays = false; # separate spaces on each display
+
+      # ============================================================================
+      # Screen Capture
+      # ============================================================================
 
       screencapture = {
         disable-shadow = true;
@@ -116,10 +147,18 @@
         type = "jpg";
       };
 
+      # ============================================================================
+      # Screen Saver
+      # ============================================================================
+
       screensaver = {
         askForPassword = true;
         askForPasswordDelay = 0;
       };
+
+      # ============================================================================
+      # Window Manager
+      # ============================================================================
 
       WindowManager = {
         EnableStandardClickToShowDesktop = false; # Click wallpaper to reveal desktop
@@ -134,6 +173,10 @@
         EnableTopTilingByEdgeDrag = false;
       };
 
+      # ============================================================================
+      # Control Center
+      # ============================================================================
+
       controlcenter = {
         BatteryShowPercentage = true;
       };
@@ -141,6 +184,10 @@
       ".GlobalPreferences" = {
         "com.apple.mouse.scaling" = 9.0;
       };
+
+      # ============================================================================
+      # Global Domain
+      # ============================================================================
 
       # customize settings that not supported by nix-darwin directly
       # Incomplete list of macOS `defaults` commands :
@@ -190,6 +237,10 @@
         PMPrintingExpandedStateForPrint = true;
         PMPrintingExpandedStateForPrint2 = true;
       };
+
+      # ============================================================================
+      # Custom User Preferences
+      # ============================================================================
 
       # Customize settings that not supported by nix-darwin directly
       # see the source code of this project to get more undocumented options:

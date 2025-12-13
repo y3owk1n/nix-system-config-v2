@@ -2,7 +2,11 @@ _:
 
 {
   flake.overlays.overrides = _: prev: {
-    # Package overrides
+    # ============================================================================
+    # Package Overrides
+    # ============================================================================
+
+    # Override aerospace to use beta version with latest features
     aerospace = prev.aerospace.overrideAttrs (_: rec {
       version = "0.20.0-Beta";
       src = prev.fetchzip {
@@ -10,6 +14,8 @@ _:
         sha256 = "sha256-bPcVgTPvskit0/LeqmWoOOnlwwyzPoa48P8Vooaqlig=";
       };
     });
+
+    # Override kanata to use specific version with custom features
     kanata = prev.kanata.overrideAttrs (
       finalAttrs: _: {
         cargoHash = "sha256-2DTL1u17jUFiRoVe7973L5/352GtKte/vakk01SSRwY=";
@@ -28,7 +34,10 @@ _:
       }
     );
 
-    # tmux plugins overrides
+    # ============================================================================
+    # Tmux Plugin Overrides
+    # ============================================================================
+
     tmuxPlugins = prev.tmuxPlugins // {
       vim-tmux-navigator = prev.tmuxPlugins.vim-tmux-navigator.overrideAttrs (_: {
         src = prev.fetchFromGitHub {

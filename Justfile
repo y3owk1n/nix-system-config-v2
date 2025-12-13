@@ -1,14 +1,19 @@
-# just is a command runner, Justfile is very similar to Makefile, but simpler.
-############################################################################
-#
-#  Darwin related commands
-#
-############################################################################
+# ============================================================================
+# Justfile - Command Runner for Nix System Management
+# ============================================================================
+# This file contains commands for managing the Nix Darwin system configuration.
+# Use `just <command>` to run any of these recipes.
+# ============================================================================
+# Darwin System Commands
+# ============================================================================
 
 [macos]
 init host:
     bash ./scripts/init.sh {{ host }}
 
+# Rebuild and switch to the specified host configuration
+
+# If no host is specified, rebuilds the current system
 [macos]
 rebuild host="":
     sudo -i darwin-rebuild switch --impure --flake ~/nix-system-config-v2/.{{ if host != "" { "#" + host } else { "" } }}
@@ -88,6 +93,7 @@ user := `uname -n`
 icloud_drive_path := "/Users/kylewong/Library/Mobile\\ Documents/com~apple~CloudDocs"
 ssh_backup_path := icloud_drive_path + "/ssh/" + user
 
+# Backup SSH keys to iCloud Drive (encrypted with GPG)
 [macos]
 backup-ssh:
     mkdir -p {{ ssh_backup_path }}
@@ -104,6 +110,7 @@ backup-ssh:
       fi; \
     done
 
+# Restore SSH keys from iCloud Drive backup
 [macos]
 restore-ssh:
     #!/usr/bin/env bash
@@ -122,16 +129,22 @@ restore-ssh:
 
 gpg_backup_path := icloud_drive_path + "/gpg/" + user
 
+# Backup GPG key pair to iCloud Drive (encrypted)
 [macos]
 backup-gpg gpg_key:
     mkdir -p {{ gpg_backup_path }}
+    # Export secret key in ASCII armor format
     gpg --armor --export-secret-keys "{{ gpg_key }}" > {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc
+    # Encrypt the secret key file
     gpg --symmetric --cipher-algo AES256 \
         --output {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc.gpg \
         {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc
+    # Securely delete the unencrypted secret key
     shred -u {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc
+    # Export public key
     gpg --armor --export "{{ gpg_key }}" > {{ gpg_backup_path }}/{{ gpg_key }}_pub.asc
 
+# Restore GPG key pair from iCloud Drive backup
 [macos]
 restore-gpg gpg_key:
     # Decrypt the private key

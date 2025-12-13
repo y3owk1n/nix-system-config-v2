@@ -3,6 +3,12 @@
   ...
 }:
 
+# ============================================================================
+# Copy ENVs (cpenv)
+# ============================================================================
+# command-line tool that simplifies the process of copying environment files
+# for different projects.
+
 let
   inherit (pkgs) system;
 

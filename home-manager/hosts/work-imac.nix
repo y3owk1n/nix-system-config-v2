@@ -14,7 +14,9 @@
     # Editor
     ../packages/nvim.nix
 
-    # Custom modules
+    # ============================================================================
+    # Custom Modules
+    # ============================================================================
     ../custom/asr.nix
     ../custom/cpenv.nix
     ../custom/cmd.nix
