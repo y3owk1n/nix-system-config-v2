@@ -70,7 +70,7 @@ inputs.darwin.lib.darwinSystem {
           # nvs
           inputs.nvs.homeManagerModules.default
           # rift custom
-          ../../home-manager/custom/rift.nix
+          ../../home-manager/custom-modules/rift.nix
         ];
       };
     }

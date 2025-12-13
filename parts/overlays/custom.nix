@@ -12,5 +12,17 @@ _:
 
     # Custom Rift twm build
     rift = final.callPackage ../../darwin/overlays/rift.nix { };
+
+    # Custom Atuin Run Script (ASR)
+    asr = final.callPackage ../../darwin/overlays/asr.nix { };
+
+    # Cpenv
+    cpenv = final.callPackage ../../darwin/overlays/cpenv.nix { };
+
+    # Cmd
+    cmd = final.callPackage ../../darwin/overlays/cmd.nix { };
+
+    # Passx
+    passx = final.callPackage ../../darwin/overlays/passx.nix { };
   };
 }
