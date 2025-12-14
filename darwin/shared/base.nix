@@ -49,8 +49,6 @@
 
   environment.systemPackages = with pkgs; [
     coreutils
-    # install GUI apps via nix darwin so that we can get spotlight indexing
-    # ghostty-bin # this is the darwin version, `ghostty` is for linux only
   ];
 
   # ============================================================================
