@@ -1,6 +1,8 @@
 ---@type LspModule
 local M = {}
 
+M.enabled = vim.fn.executable("tailwindcss-language-server") == 1
+
 function M.setup()
   local util = require("lspconfig.util")
   local utils_lsp = require("utils.lsp")

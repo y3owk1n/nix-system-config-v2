@@ -9,41 +9,52 @@
   # ============================================================================
 
   home.packages = with pkgs; [
-    # Core Lua dependencies
-    lua51Packages.lua
-    luajitPackages.luarocks
-    panvimdoc
-
     # ============================================================================
     # Language Servers & Development Tools
     # ============================================================================
 
+    # so that neovim works properly
+    lua51Packages.lua
+    luajitPackages.luarocks
+
+    # so that we can build treesitter in neovim
     tree-sitter
+
     shfmt
     shellcheck
     bash-language-server
-    docker-compose-language-service
-    docker-language-server
-    hadolint
+    vscode-langservers-extracted # includes html, css, json, eslint, json lsp is part of it and noramlly a config file
+    marksman # markdown is not project specific
+    markdownlint-cli2 # markdown is not project specific
+    yaml-language-server # yaml normally used as a config language
+    prettierd # general formatter
     gh-actions-language-server # from `nixos-npm-ls` flake
-    gopls
-    gotools # includes godoc, goimports, callgraph, digraph, stringer or toolstash
-    gofumpt
-    golangci-lint
-    vscode-langservers-extracted # includes html, css, json, eslint
-    just-lsp
-    lua-language-server
-    stylua
-    marksman
-    markdownlint-cli2
-    nixd
-    prisma-language-server # from `nixos-npm-ls` flake
-    tailwindcss-language-server
-    vtsls
-    yaml-language-server
-    biome
-    prettierd
-    clang-tools
+
+    # These are project specific lsp or tools
+    # They should be installed in the project via devbox or direnv flake
+
+    # lua-language-server
+    # stylua
+
+    # biome
+    # vtsls
+    # tailwindcss-language-server
+    # prisma-language-server # from `nixos-npm-ls` flake
+
+    # clang-tools
+
+    # nixd
+
+    # just-lsp
+
+    # gopls
+    # gotools # includes godoc, goimports, callgraph, digraph, stringer or toolstash
+    # gofumpt
+    # golangci-lint
+
+    # docker-compose-language-service
+    # docker-language-server
+    # hadolint
 
     # ============================================================================
     # Neovim Configuration
