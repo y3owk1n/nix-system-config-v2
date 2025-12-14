@@ -10,7 +10,7 @@
 /****************************************************************************
  * Betterfox                                                                *
  * "Ad meliora"                                                             *
- * version: 144                                                             *
+ * version: 146                                                             *
  * url: https://github.com/yokoffing/Betterfox                              *
  ****************************************************************************/
 
@@ -21,6 +21,7 @@
 user_pref("gfx.content.skia-font-cache-size", 32);
 
 /** GFX ***/
+user_pref("gfx.webrender.layer-compositor", true);
 user_pref("gfx.canvas.accelerated.cache-items", 32768);
 user_pref("gfx.canvas.accelerated.cache-size", 4096);
 user_pref("webgl.max-size", 16384);
@@ -61,21 +62,19 @@ user_pref("network.dns.disablePrefetchFromHTTPS", true);
 user_pref("browser.urlbar.speculativeConnect.enabled", false);
 user_pref("browser.places.speculativeConnect.enabled", false);
 user_pref("network.prefetch-next", false);
-user_pref("network.predictor.enabled", false);
 
 /****************************************************************************
  * SECTION: SECUREFOX                                                       *
  ****************************************************************************/
 /** TRACKING PROTECTION ***/
 user_pref("browser.contentblocking.category", "strict");
-user_pref("privacy.trackingprotection.allow_list.baseline.enabled", true);
 user_pref("browser.download.start_downloads_in_tmp_dir", true);
-user_pref("browser.helperApps.deleteTempFileOnExit", true);
 user_pref("browser.uitour.enabled", false);
 user_pref("privacy.globalprivacycontrol.enabled", true);
 
 /** OCSP & CERTS / HPKP ***/
 user_pref("security.OCSP.enabled", 0);
+user_pref("privacy.antitracking.isolateContentScriptResources", true);
 user_pref("security.csp.reporting.enabled", false);
 
 /** SSL / TLS ***/
@@ -101,15 +100,15 @@ user_pref("browser.urlbar.groupLabels.enabled", false);
 user_pref("browser.formfill.enable", false);
 user_pref("network.IDN_show_punycode", true);
 
+/** HTTPS-ONLY MODE ***/
+user_pref("dom.security.https_only_mode", true);
+user_pref("dom.security.https_only_mode_error_page_user_suggestions", true);
+
 /** PASSWORDS ***/
 user_pref("signon.formlessCapture.enabled", false);
 user_pref("signon.privateBrowsingCapture.enabled", false);
 user_pref("network.auth.subresource-http-auth-allow", 1);
 user_pref("editor.truncate_user_pastes", false);
-
-/** MIXED CONTENT + CROSS-SITE ***/
-user_pref("security.mixed_content.block_display_content", true);
-user_pref("pdfjs.enableScripting", false);
 
 /** EXTENSIONS ***/
 user_pref("extensions.enabledScopes", 5);
@@ -119,6 +118,9 @@ user_pref("network.http.referer.XOriginTrimmingPolicy", 2);
 
 /** CONTAINERS ***/
 user_pref("privacy.userContext.ui.enabled", true);
+
+/** VARIOUS ***/
+user_pref("pdfjs.enableScripting", false);
 
 /** SAFE BROWSING ***/
 user_pref("browser.safebrowsing.downloads.remote.enabled", false);
@@ -163,7 +165,6 @@ user_pref("browser.tabs.crashReporting.sendReport", false);
  * SECTION: PESKYFOX                                                        *
  ****************************************************************************/
 /** MOZILLA UI ***/
-user_pref("browser.privatebrowsing.vpnpromourl", "");
 user_pref("extensions.getAddons.showPane", false);
 user_pref("extensions.htmlaboutaddons.recommendations.enabled", false);
 user_pref("browser.discovery.enabled", false);
@@ -172,6 +173,7 @@ user_pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons", fa
 user_pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features", false);
 user_pref("browser.preferences.moreFromMozilla", false);
 user_pref("browser.aboutConfig.showWarning", false);
+user_pref("browser.startup.homepage_override.mstone", "ignore");
 user_pref("browser.aboutwelcome.enabled", false);
 user_pref("browser.profiles.enabled", true);
 
@@ -227,21 +229,12 @@ user_pref("gfx.font_rendering.cleartype_params.cleartype_level", 100);
 user_pref("gfx.font_rendering.directwrite.use_gdi_table_loading", false);
 user_pref("gfx.font_rendering.cleartype_params.enhanced_contrast", 50); // 50-100 [OPTIONAL]
 
-// PREF: allow websites to ask you for your location
-user_pref("permissions.default.geo", 0);
-
 // PREF: disable login manager
 user_pref("signon.rememberSignons", false);
 
 // PREF: disable address and credit card manager
 user_pref("extensions.formautofill.addresses.enabled", false);
 user_pref("extensions.formautofill.creditCards.enabled", false);
-
-// PREF: enable HTTPS-Only Mode
-// Warn me before loading sites that don't support HTTPS
-// in both Normal and Private Browsing windows.
-user_pref("dom.security.https_only_mode", true);
-user_pref("dom.security.https_only_mode_error_page_user_suggestions", true);
 
 // PREF: disable captive portal detection
 // [WARNING] Do NOT use for mobile devices!
@@ -266,9 +259,6 @@ user_pref("extensions.postDownloadThirdPartyPrompt", false);
 // 1 = allow user MiTM (such as your antivirus) (default)
 // 2 = strict
 user_pref("security.cert_pinning.enforcement_level", 2);
-
-// PREF: enable container tabs
-user_pref("privacy.userContext.enabled", true);
 
 // PREF: enable PIP on tab switch
 user_pref("media.videocontrols.picture-in-picture.enable-when-switching-tabs.enabled", true);
