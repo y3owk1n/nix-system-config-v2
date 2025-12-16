@@ -96,7 +96,7 @@ _: {
       [keys]
       # App launchers (hyper key)
       "hyper + F" = { exec = ["open", "-a", "finder"] }
-      "hyper + B" = { exec = ["open", "-a", "helium"] }
+      "hyper + B" = { exec = ["open", "-a", "safari"] }
       "hyper + T" = { exec = ["open", "-a", "Ghostty"] }
       "hyper + N" = { exec = ["open", "-a", "Notes"] }
       "hyper + M" = { exec = ["open", "-a", "Mail"] }
