@@ -13,13 +13,13 @@
     ../packages/fzf.nix
     ../packages/gh.nix
     ../packages/git.nix
-    ../packages/go.nix
+    # ../packages/go.nix
     ../packages/jq.nix
-    ../packages/just.nix
+    # ../packages/just.nix
     ../packages/lazygit.nix
     ../packages/less.nix
-    ../packages/nixfmt.nix
-    ../packages/nodejs.nix
+    # ../packages/nixfmt.nix
+    # ../packages/nodejs.nix
     ../packages/ripgrep.nix
     ../packages/cpenv.nix
     ../packages/cmd.nix
