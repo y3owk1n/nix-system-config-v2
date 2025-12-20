@@ -1,9 +1,4 @@
-{ pkgs, ... }:
-{
-  home.packages = with pkgs; [
-    git-town
-  ];
-
+_: {
   programs.gh = {
     enable = true;
     gitCredentialHelper.enable = true;
