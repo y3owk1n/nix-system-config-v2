@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
-    graphite-cli
+    git-town
   ];
 
   programs.gh = {
