@@ -1,4 +1,9 @@
-_: {
+{ pkgs, ... }:
+{
+  home.packages = with pkgs; [
+    graphite-cli
+  ];
+
   programs.gh = {
     enable = true;
     gitCredentialHelper.enable = true;
