@@ -76,6 +76,7 @@
         autoStash = true;
         missingCommitsCheck = "warn";
         stat = true;
+        updateRefs = true;
       };
       status = {
         branch = true;
