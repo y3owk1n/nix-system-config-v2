@@ -1,9 +1,4 @@
-{ pkgs, ... }:
-{
-  home.packages = with pkgs; [
-    cobra-cli
-  ];
-
+_: {
   programs.go = {
     enable = true;
     telemetry.mode = "off";
