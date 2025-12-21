@@ -6,7 +6,7 @@ _: {
   # Currently disabled in favor of Rift
 
   programs.aerospace = {
-    enable = false;
+    enable = true;
     extraConfig = ''
       # ============================================================================
       # Basic Configuration
@@ -69,8 +69,8 @@ _: {
       alt-m = 'fullscreen'
 
       # App launchers (hyper key combinations)
-      cmd-alt-shift-ctrl-f = 'exec-and-forget open -a finder'
-      cmd-alt-shift-ctrl-b = 'exec-and-forget open -a safari'
+      cmd-alt-shift-ctrl-f = 'exec-and-forget open -a "Finder"'
+      cmd-alt-shift-ctrl-b = 'exec-and-forget open -a "Helium"'
       cmd-alt-shift-ctrl-t = 'exec-and-forget open -a "Ghostty"'
       cmd-alt-shift-ctrl-n = 'exec-and-forget open -a "Notes"'
       cmd-alt-shift-ctrl-m = 'exec-and-forget open -a "Mail"'
@@ -127,7 +127,6 @@ _: {
       [[on-window-detected]]
       if.app-id = 'app.zen-browser.zen'
       run = 'move-node-to-workspace 1'
-      check-further-callbacks = true
 
       [[on-window-detected]]
       if.app-id = 'com.mitchellh.ghostty'
@@ -179,13 +178,6 @@ _: {
 
       [[on-window-detected]]
       if.app-id = 'com.apple.systempreferences'
-      run = ['layout floating']
-
-      # ensure PIP doesn't get tiled
-
-      [[on-window-detected]]
-      if.app-id = 'app.zen-browser.zen'
-      if.window-title-regex-substring = 'Picture-in-Picture'
       run = ['layout floating']
     '';
     launchd = {
