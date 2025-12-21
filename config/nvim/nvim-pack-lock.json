@@ -14,7 +14,7 @@
       "src": "https://github.com/laytan/cloak.nvim"
     },
     "conform": {
-      "rev": "328c2f1dda56f933d3337a1316e1020ba30ba6aa",
+      "rev": "5f5152fae39a57e3a04cbce09fb21e10c49c9d95",
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "dotmd": {
@@ -42,7 +42,7 @@
       "src": "https://github.com/mfussenegger/nvim-lint"
     },
     "lspconfig": {
-      "rev": "c4f67bf85b01a57e3c130352c0a0e453ab8cd5b9",
+      "rev": "d20d83b3f24f5884da73a9fc92fdc47e778b8d0d",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "mini.ai": {
@@ -98,7 +98,7 @@
       "src": "https://github.com/alexghergh/nvim-tmux-navigation"
     },
     "nvim-treesitter": {
-      "rev": "e08ad49dbd62d68789930ca87068da89e71cb71a",
+      "rev": "8cdffc6d334731ce3703b6d870a5a34fd878208a",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
     },
