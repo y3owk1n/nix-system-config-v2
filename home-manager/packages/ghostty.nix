@@ -4,6 +4,14 @@
   # Ghostty Terminal Configuration
   # ============================================================================
 
+  stylix.targets.ghostty = {
+    fonts.override = {
+      monospace = {
+        name = "JetBrainsMono Nerd Font Propo";
+      };
+    };
+  };
+
   programs.ghostty = {
     enable = true;
     # Use the binary release instead of building from source for better performance

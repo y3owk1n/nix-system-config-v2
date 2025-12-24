@@ -33,7 +33,7 @@
       # Grid Navigation
       # ============================================================================
       [grid]
-      font_family = "DejaVuSansMono-Bold"
+      font_family = "JetBrainsMonoNLNFP-Bold"
       characters = "aoeuidhtnspyfgcrlqjkxbmwvz"  # Dvorak-optimized character set
       sublayer_keys = "gcrhtnmwv"
 
