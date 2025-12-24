@@ -47,9 +47,18 @@ in
 
     casks = [
       "blender"
+      "affinity"
+      "helium-browser"
+      "firefox"
     ];
 
     masApps = { };
   };
 
+  # ============================================================================
+  # Nix system packages
+  # ============================================================================
+
+  # add more system packages here
+  environment.systemPackages = [ ];
 }

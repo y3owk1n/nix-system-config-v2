@@ -70,7 +70,6 @@ _: {
         { app_id = "com.apple.SafariTechnologyPreview", workspace = "browser" },
         { app_id = "net.imput.helium", workspace = "browser" },
         { app_id = "org.mozilla.firefox", workspace = "browser" },
-        { app_id = "app.zen-browser.zen", workspace = "browser" },
         { app_id = "com.mitchellh.ghostty", workspace = "terminal" },
         { app_id = "com.apple.Terminal", workspace = "terminal" },
         { app_id = "com.apple.Notes", workspace = "notes" },

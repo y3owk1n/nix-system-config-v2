@@ -86,19 +86,12 @@
     casks = [
       "tailscale-app"
       "rustdesk"
-      "helium-browser"
-      # "brave-browser"
-      # "glide-browser"
-      "firefox"
-      "jordanbaird-ice"
-      # "zen"
+      "jordanbaird-ice@beta"
       "orbstack"
       "appcleaner"
       "whatsapp"
       "imageoptim"
       "onyx"
-      # "ghostty"
-      # "homerow"
     ];
 
     masApps = { };
