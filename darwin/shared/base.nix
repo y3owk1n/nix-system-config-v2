@@ -123,6 +123,24 @@
     enable = true;
     # base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";
     base16Scheme = ../../config/pastel-twilight/base16.yml;
+    fonts = {
+      serif = {
+        package = pkgs.nerd-fonts.jetbrains-mono;
+        name = "JetBrainsMono Nerd Font Propo";
+      };
+      sansSerif = {
+        package = pkgs.nerd-fonts.jetbrains-mono;
+        name = "JetBrainsMono Nerd Font Propo";
+      };
+      monospace = {
+        package = pkgs.nerd-fonts.jetbrains-mono;
+        name = "JetBrainsMono Nerd Font Propo";
+      };
+      emoji = {
+        package = pkgs.nerd-fonts.jetbrains-mono;
+        name = "JetBrainsMono Nerd Font Propo";
+      };
+    };
   };
 
   # ============================================================================
