@@ -111,7 +111,6 @@
     packages = with pkgs; [
       poppins
       nerd-fonts.symbols-only
-      nerd-fonts.jetbrains-mono
     ];
   };
 
