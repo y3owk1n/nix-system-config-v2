@@ -12,9 +12,6 @@
     installBatSyntax = true;
     installVimSyntax = true;
     settings = {
-      # Use JetBrains Mono with Nerd Font glyphs
-      font-family = "JetBrainsMonoNL Nerd Font";
-
       # Disable ligatures and contextual alternates for better code readability
       font-feature = [
         "-calt"
