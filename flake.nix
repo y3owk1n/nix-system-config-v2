@@ -64,6 +64,7 @@
     nixos-npm-ls.url = "https://flakehub.com/f/y3owk1n/nixos-npm-ls/0.1";
     neru.url = "https://flakehub.com/f/y3owk1n/neru/0.1";
     nvs.url = "https://flakehub.com/f/y3owk1n/nvs/0.1";
+    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
 
     # ============================================================================
     # Development Tools & Infrastructure
@@ -88,6 +89,7 @@
       systems = import ./parts/systems.nix;
 
       imports = [
+        ./parts/nixos.nix
         ./parts/darwin.nix
         ./parts/overlays.nix
         ./parts/overlays/custom.nix
