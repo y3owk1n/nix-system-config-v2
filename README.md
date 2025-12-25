@@ -1,6 +1,6 @@
 # My Personal Nix System Configuration
 
-This is a project to help me to manage my Nix system configuration, mainly with Darwin and Home Manager.
+This is a project to help me to manage my Nix system configuration, mainly with Darwin, Nixos (via orbstack) and Home Manager.
 
 ## Project Structure
 
@@ -19,21 +19,24 @@ This is a project to help me to manage my Nix system configuration, mainly with 
 
 ### General
 
-- Nix: [Determinate](https://determinate.systems)
 - Shell: [fish](https://fishshell.com/)
-- Terminal: [ghostty](https://ghostty.org/)
 - Editor: [neovim](https://neovim.io/) with custom lazy-loader plus vim.pack
-- Neovim Version Manager: [nvs](https://github.com/y3owk1n/nvs)
 - Multiplexer: [tmux](https://github.com/tmux/tmux/wiki)
 - Prompt: [starship](https://starship.rs/)
-- Browser: Safari
-- Docker: [orbstack](https://orbstack.dev/)
 - Network: [tailscale](https://tailscale.com/)
-- Launcher: Spotlight
-- Tiling Window Manager: [rift](https://github.com/acsandmann/rift)
-- Systemwide vimium: [neru](https://github.com/y3owk1n/neru)
 - Version Control: git
+
+### MacOS
+
+- Nix: [Determinate](https://determinate.systems)
+- Neovim Version Manager: [nvs](https://github.com/y3owk1n/nvs)
 - Keyboard Remapping: [kanata](https://github.com/jtroo/kanata) - only used to remap on mac default keyboard
+- Tiling Window Manager: [aerospace](https://github.com/nikitabobko/AeroSpace)
+- Systemwide vimium: [neru](https://github.com/y3owk1n/neru)
+- Launcher: Spotlight
+- Docker: [orbstack](https://orbstack.dev/)
+- Browser: [helium](https://helium.computer/)
+- Terminal: [ghostty](https://ghostty.org/)
 
 ## Getting Started
 
