@@ -41,6 +41,10 @@ if builtins.pathExists /etc/nixos/configuration.nix then
       (
         { pkgs, ... }:
         {
+          nix.settings.experimental-features = [
+            "nix-command"
+            "flakes"
+          ];
           nixpkgs.overlays = [ inputs.self.overlays.default ];
           programs.fish.enable = true;
           environment.shells = [ pkgs.fish ];
