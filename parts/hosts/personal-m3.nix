@@ -69,9 +69,9 @@ inputs.darwin.lib.darwinSystem {
           ../../home-manager/shared/base.nix
           ../../home-manager/hosts/personal-m3.nix
           # neru
-          inputs.neru.homeModules.default
+          inputs.neru.homeManagerModules.default
           # nvs
-          inputs.nvs.homeModules.default
+          inputs.nvs.homeManagerModules.default
           # rift custom
           ../../home-manager/custom-modules/rift.nix
         ];
