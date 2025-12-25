@@ -7,7 +7,6 @@ let
   githubuser = "y3owk1n";
   githubname = "Kyle Wong";
   gpgkeyid = "F3EBDBB90E035E02";
-
 in
 if builtins.pathExists /etc/nixos/configuration.nix then
   let
@@ -36,21 +35,35 @@ if builtins.pathExists /etc/nixos/configuration.nix then
         ;
     };
     modules = [
+      # default configurations from orbstack, we don't touch anything to ensure nothing breaks
       /etc/nixos/configuration.nix
 
       (
         { pkgs, ... }:
         {
+          # nix settings
           nix.settings.experimental-features = [
             "nix-command"
             "flakes"
           ];
-          nixpkgs.overlays = [ inputs.self.overlays.default ];
-          programs.fish.enable = true;
-          environment.shells = [ pkgs.fish ];
-          users.users."${username}".shell = pkgs.fish;
-          environment.systemPackages = [ pkgs.coreutils ];
 
+          # overlays
+          nixpkgs.overlays = [ inputs.self.overlays.default ];
+
+          # set shell
+          programs.fish.enable = true;
+          users.users."${username}".shell = pkgs.fish;
+
+          environment = {
+            shells = [ pkgs.fish ];
+            # https://github.com/nix-community/home-manager/pull/2408
+            pathsToLink = [ "/share/fish" ];
+          };
+
+          # add some system packages
+          environment.systemPackages = with pkgs; [ coreutils ];
+
+          # configure stylix
           stylix = {
             enable = true;
             # base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";
