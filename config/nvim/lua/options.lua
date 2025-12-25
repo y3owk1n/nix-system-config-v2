@@ -88,7 +88,26 @@ local function setup_options()
   -- Clipboard Configuration
   ------------------------------------------------------------
   vim.schedule(function()
-    vim.opt.clipboard = "unnamedplus" -- Sync system clipboard with Neovim.
+    -- vim.opt.clipboard = "unnamedplus" -- Sync system clipboard with Neovim.
+    local hostname = vim.uv.os_gethostname()
+
+    if hostname == "nixos-orb" then
+      -- Running inside OrbStack NixOS VM
+      vim.g.clipboard = {
+        name = "macOS-clipboard",
+        copy = {
+          ["+"] = "mac pbcopy",
+          ["*"] = "mac pbcopy",
+        },
+        paste = {
+          ["+"] = "mac pbpaste",
+          ["*"] = "mac pbpaste",
+        },
+        cache_enabled = 0,
+      }
+    end
+
+    vim.opt.clipboard = "unnamedplus"
   end)
 
   ------------------------------------------------------------
