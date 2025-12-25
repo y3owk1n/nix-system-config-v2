@@ -13,6 +13,8 @@
 
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2511";
 
+    nixpkgs-unstable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
+
     home-manager = {
       url = "https://flakehub.com/f/nix-community/home-manager/0.2511";
       inputs.nixpkgs.follows = "nixpkgs";
