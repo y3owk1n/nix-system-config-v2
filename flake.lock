@@ -424,11 +424,11 @@
     "homebrew-cask": {
       "flake": false,
       "locked": {
-        "lastModified": 1766658563,
-        "narHash": "sha256-Q/PNPo22+CTJ+UglRYRSOvSjeNTlgCQKkzi8st/WYwI=",
+        "lastModified": 1766669466,
+        "narHash": "sha256-iaIfslA4iwB57TfVBf0lighhjKmExDo1nH+IYizWsvs=",
         "owner": "homebrew",
         "repo": "homebrew-cask",
-        "rev": "9a296045c4c16d7c812d25ab8e7e5c977b5990ab",
+        "rev": "4933f0997cda9ba361f1adf594f0e76c4e18b967",
         "type": "github"
       },
       "original": {
@@ -440,11 +440,11 @@
     "homebrew-core": {
       "flake": false,
       "locked": {
-        "lastModified": 1766660685,
-        "narHash": "sha256-ioRVhM2/MrEXGPSQpHsf/mgSyiRyINV+a1S4/T2T3w8=",
+        "lastModified": 1766669081,
+        "narHash": "sha256-Hh9kXgivjpR/9ovIIHzdZuNQJx5fgW33Ii1mTIfAWTw=",
         "owner": "homebrew",
         "repo": "homebrew-core",
-        "rev": "f5658509187a767c0a50c724913243e702ea7bb1",
+        "rev": "bcdd4aa9e436be6162ac9ca097c81bd5f7332a55",
         "type": "github"
       },
       "original": {
@@ -606,6 +606,20 @@
         "repo": "nixpkgs",
         "rev": "215d4d0fd80ca5163643b03a33fde804a29cc1e2",
         "type": "github"
+      }
+    },
+    "nixpkgs-unstable": {
+      "locked": {
+        "lastModified": 1766309749,
+        "narHash": "sha256-3xY8CZ4rSnQ0NqGhMKAy5vgC+2IVK0NoVEzDoOh4DA4=",
+        "rev": "a6531044f6d0bef691ea18d4d4ce44d0daa6e816",
+        "revCount": 914755,
+        "type": "tarball",
+        "url": "https://api.flakehub.com/f/pinned/NixOS/nixpkgs/0.1.914755%2Brev-a6531044f6d0bef691ea18d4d4ce44d0daa6e816/019b4613-7276-7c80-8e57-953e4698fb6e/source.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://flakehub.com/f/NixOS/nixpkgs/0.1"
       }
     },
     "nixpkgs_2": {
@@ -834,6 +848,7 @@
         "nix-homebrew": "nix-homebrew",
         "nixos-npm-ls": "nixos-npm-ls",
         "nixpkgs": "nixpkgs_5",
+        "nixpkgs-unstable": "nixpkgs-unstable",
         "nvs": "nvs",
         "pre-commit-hooks": "pre-commit-hooks",
         "stylix": "stylix",
