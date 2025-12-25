@@ -13,6 +13,7 @@
     ../packages/fzf.nix
     ../packages/gh.nix
     ../packages/git.nix
+    ../packages/difftastic.nix
     ../packages/jq.nix
     ../packages/lazygit.nix
     ../packages/less.nix

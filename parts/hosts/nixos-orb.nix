@@ -46,6 +46,12 @@ if builtins.pathExists /etc/nixos/configuration.nix then
           environment.shells = [ pkgs.fish ];
           users.users."${username}".shell = pkgs.fish;
           environment.systemPackages = [ pkgs.coreutils ];
+
+          stylix = {
+            enable = true;
+            # base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";
+            base16Scheme = ../../config/pastel-twilight/base16.yml;
+          };
         }
       )
 

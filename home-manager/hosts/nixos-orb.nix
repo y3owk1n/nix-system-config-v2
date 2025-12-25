@@ -15,6 +15,7 @@
     ../packages/fzf.nix
     ../packages/jq.nix
     ../packages/lazygit.nix
+    ../packages/difftastic.nix
     ../packages/less.nix
     ../packages/ripgrep.nix
     ../packages/cmd.nix
@@ -29,5 +30,9 @@
     ../packages/opencode.nix
     ../packages/rip2.nix
     ../packages/stripe.nix
+    ../packages/sesh.nix
+    ../packages/git.nix
+    ../packages/gpg.nix
+    ../packages/gh.nix
   ];
 }
