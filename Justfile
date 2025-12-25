@@ -155,3 +155,16 @@ restore-gpg gpg_key:
     shred -u {{ gpg_backup_path }}/{{ gpg_key }}_sec.asc
     # Import public key (optional)
     gpg --import {{ gpg_backup_path }}/{{ gpg_key }}_pub.asc
+
+gpg_backup_path_from_vm := "/mnt/mac/" + icloud_drive_path + "/gpg/"
+
+[linux]
+restore-gpg user gpg_key:
+    # Decrypt the private key
+    gpg --decrypt {{ gpg_backup_path_from_vm }}/{{ user }}/{{ gpg_key }}_sec.asc.gpg > {{ gpg_backup_path_from_vm }}/{{ user }}/{{ gpg_key }}_sec.asc
+    # Import back to GPG
+    gpg --import {{ gpg_backup_path_from_vm }}/{{ user }}/{{ gpg_key }}_sec.asc
+    # Remove the decrypted file
+    shred -u {{ gpg_backup_path_from_vm }}/{{ user }}/{{ gpg_key }}_sec.asc
+    # Import public key (optional)
+    gpg --import {{ gpg_backup_path_from_vm }}/{{ user }}/{{ gpg_key }}_pub.asc

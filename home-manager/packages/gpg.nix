@@ -1,4 +1,4 @@
-_:
+{ pkgs, ... }:
 
 {
   programs.gpg = {
@@ -12,5 +12,6 @@ _:
     defaultCacheTtl = 1800; # seconds (30min)
     maxCacheTtl = 7200; # 2h
     enableSshSupport = true; # can also use GPG agent as SSH agent
+    pinentry.package = if pkgs.stdenv.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-curses;
   };
 }
