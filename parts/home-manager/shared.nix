@@ -4,7 +4,7 @@
 }:
 
 {
-  flake.homeManagerModules.shared =
+  flake.homeModules.shared =
     {
       username,
       useremail,

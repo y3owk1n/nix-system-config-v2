@@ -64,7 +64,7 @@ if builtins.pathExists /etc/nixos/configuration.nix then
 
       # home-manager
       inputs.home-manager.nixosModules.home-manager
-      (inputs.self.homeManagerModules.shared {
+      (inputs.self.homeModules.shared {
         inherit
           username
           useremail
@@ -93,6 +93,7 @@ else
         fileSystems."/".device = "/dev/sda1";
         boot.loader.grub.enable = true;
         boot.loader.grub.devices = [ "/dev/sda" ];
+        system.stateVersion = "25.11";
       }
     ];
   }
