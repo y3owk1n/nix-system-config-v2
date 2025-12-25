@@ -30,6 +30,7 @@
       markdownlint-cli2 # markdown is not project specific
       yaml-language-server # yaml normally used as a config language
       prettierd # general formatter
+      gh-actions-language-server # from custom flake
 
       # These are project specific lsp or tools
       # They should be installed in the project via devbox or direnv flake
@@ -63,9 +64,6 @@
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       pkgs.neovim
-    ]
-    ++ lib.optionals pkgs.stdenv.isDarwin [
-      gh-actions-language-server # from `nixos-npm-ls` flake
     ];
 
   xdg.configFile.nvim = {
