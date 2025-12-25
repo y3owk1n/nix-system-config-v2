@@ -34,5 +34,6 @@
     ../packages/git.nix
     ../packages/gpg.nix
     ../packages/gh.nix
+    ../packages/pass.nix
   ];
 }
