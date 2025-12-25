@@ -74,8 +74,8 @@ if builtins.pathExists /etc/nixos/configuration.nix then
 
           # So that nvs can be usable...
           programs.nix-ld = {
-            nix-ld.enable = true;
-            nix-ld.libraries = [
+            enable = true;
+            libraries = [
               # Add any missing dynamic libraries for unpackaged programs
               # here, NOT in environment.systemPackages
             ];
