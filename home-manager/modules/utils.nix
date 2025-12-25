@@ -1,6 +1,6 @@
 {
   # ============================================================================
-  # Development Tools
+  # Utilities
   # ============================================================================
   imports = [
     ../packages/ast-grep.nix
@@ -11,14 +11,14 @@
     ../packages/eza.nix
     ../packages/fd.nix
     ../packages/fzf.nix
-    ../packages/gh.nix
-    ../packages/git.nix
-    ../packages/difftastic.nix
     ../packages/jq.nix
-    ../packages/lazygit.nix
     ../packages/less.nix
     ../packages/ripgrep.nix
-    ../packages/cpenv.nix
+    # ../packages/cpenv.nix # TODO: probably can remove it
     ../packages/cmd.nix
+    ../packages/rip2.nix
+    ../packages/stripe.nix
+    ../packages/devbox.nix
+    ../packages/mkcert.nix
   ];
 }

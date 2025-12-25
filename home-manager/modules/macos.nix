@@ -10,7 +10,6 @@
     ../packages/kanata.nix
     ../packages/neru.nix
     ../packages/rift.nix
-    ../packages/sesh.nix
     ../packages/skhd.nix
   ];
 }

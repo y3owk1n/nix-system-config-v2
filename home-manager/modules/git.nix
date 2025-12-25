@@ -1,12 +1,11 @@
 {
   # ============================================================================
-  # Security Tools and Configuration
+  # Git tools
   # ============================================================================
-  # GPG, password management, and security-related tools
-
   imports = [
-    ../packages/gpg.nix
-    ../packages/pass.nix
-    ../packages/ssh.nix
+    ../packages/gh.nix
+    ../packages/git.nix
+    ../packages/difftastic.nix
+    ../packages/lazygit.nix
   ];
 }

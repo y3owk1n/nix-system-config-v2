@@ -1,12 +1,8 @@
 {
   # ============================================================================
-  # Security Tools and Configuration
+  # Terminal Tools
   # ============================================================================
-  # GPG, password management, and security-related tools
-
   imports = [
-    ../packages/gpg.nix
-    ../packages/pass.nix
-    ../packages/ssh.nix
+    ../packages/ghostty.nix
   ];
 }

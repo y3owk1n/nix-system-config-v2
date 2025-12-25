@@ -50,7 +50,7 @@ inputs.darwin.lib.darwinSystem {
 
     # home-manager
     inputs.home-manager.darwinModules.home-manager
-    (inputs.self.homeManagerModules.shared {
+    (inputs.self.homeModules.shared {
       inherit
         username
         useremail
@@ -66,9 +66,9 @@ inputs.darwin.lib.darwinSystem {
           ../../home-manager/shared/base.nix
           ../../home-manager/hosts/work-imac.nix
           # neru
-          inputs.neru.homeManagerModules.default
+          inputs.neru.homeModules.default
           # nvs
-          inputs.nvs.homeManagerModules.default
+          inputs.nvs.homeModules.default
           # rift custom
           ../../home-manager/custom-modules/rift.nix
         ];
