@@ -58,6 +58,8 @@ if builtins.pathExists /etc/nixos/configuration.nix then
             shells = [ pkgs.fish ];
             # https://github.com/nix-community/home-manager/pull/2408
             pathsToLink = [ "/share/fish" ];
+            # Add ~/.local/bin to PATH
+            localBinInPath = true;
           };
 
           # add some system packages
@@ -69,6 +71,16 @@ if builtins.pathExists /etc/nixos/configuration.nix then
             curl
             vim # just in case neovim breaks or dead, we can still vim instead of nano-ing :(
           ];
+
+          # So that nvs can be usable...
+          programs.nix-ld = {
+            nix-ld.enable = true;
+            nix-ld.libraries = [
+              # Add any missing dynamic libraries for unpackaged programs
+              # here, NOT in environment.systemPackages
+            ];
+
+          };
 
           # configure stylix
           stylix = {
@@ -99,6 +111,8 @@ if builtins.pathExists /etc/nixos/configuration.nix then
           imports = [
             ../../home-manager/shared/base.nix
             ../../home-manager/hosts/nixos-orb.nix
+            # nvs
+            inputs.nvs.homeManagerModules.default
           ];
         };
       }

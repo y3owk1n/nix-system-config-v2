@@ -9,8 +9,8 @@
     ../modules/git.nix
     ../modules/shell.nix
     ../modules/utils.nix
+    ../modules/nvim.nix
 
-    ../packages/nvim.nix
     ../packages/gpg.nix
     ../packages/pass.nix
   ];
