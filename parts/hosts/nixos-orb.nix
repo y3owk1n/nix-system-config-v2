@@ -61,7 +61,14 @@ if builtins.pathExists /etc/nixos/configuration.nix then
           };
 
           # add some system packages
-          environment.systemPackages = with pkgs; [ coreutils ];
+          environment.systemPackages = with pkgs; [
+            coreutils
+            unzip
+            zip
+            wget
+            curl
+            vim # just in case neovim breaks or dead, we can still vim instead of nano-ing :(
+          ];
 
           # configure stylix
           stylix = {
