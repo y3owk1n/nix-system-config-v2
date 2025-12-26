@@ -4,27 +4,28 @@
 }:
 
 # ============================================================================
-# Passx
+# Atuin Run Script (ASR)
 # ============================================================================
-# Custom package that wraps pass commands with project based management.
+# Custom package that wraps the atuin-run-script.sh script for running
+# Atuin commands from the command line.
 
 let
   version = "1.0.0";
 in
 stdenv.mkDerivation {
-  pname = "passx";
+  pname = "asr";
 
   inherit version;
 
-  src = lib.cleanSource ../../scripts/passx.sh;
+  src = lib.cleanSource ../../../scripts/atuin-run-script.sh;
 
   dontUnpack = true;
   dontBuild = true;
 
   installPhase = ''
     mkdir -p $out/bin
-    cp $src $out/bin/passx
-    chmod +x $out/bin/passx
+    cp $src $out/bin/asr
+    chmod +x $out/bin/asr
   '';
 
 }

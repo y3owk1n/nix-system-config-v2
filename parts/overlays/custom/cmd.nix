@@ -17,7 +17,7 @@ stdenv.mkDerivation {
 
   inherit version;
 
-  src = lib.cleanSource ../../scripts/run-project-cmd.sh;
+  src = lib.cleanSource ../../../scripts/run-project-cmd.sh;
 
   dontUnpack = true;
   dontBuild = true;
