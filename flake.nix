@@ -49,6 +49,10 @@
       url = "github:y3owk1n/homebrew-tap";
       flake = false;
     };
+    homebrew-tw93 = {
+      url = "github:tw93/homebrew-tap";
+      flake = false;
+    };
 
     # ============================================================================
     # Theming & UI

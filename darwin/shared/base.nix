@@ -81,17 +81,18 @@
     # https://github.com/zhaofengli/nix-homebrew/issues/5#issuecomment-1878798641
     taps = builtins.attrNames config.nix-homebrew.taps;
 
-    brews = [ ];
+    brews = [
+      # replacement for `onyx`, `cleanmymac` and `appcleaner`
+      "tw93/homebrew-tap/mole"
+    ];
 
     casks = [
       "tailscale-app"
       "rustdesk"
       "jordanbaird-ice@beta"
       "orbstack"
-      "appcleaner"
       "whatsapp"
       "imageoptim"
-      "onyx"
     ];
 
     masApps = { };
