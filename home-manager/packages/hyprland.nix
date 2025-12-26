@@ -48,8 +48,8 @@
       "$menu" = "rofi -show drun";
       "$browser" = "firefox";
 
-      # Monitor configuration for VMware - auto-detect
-      monitor = ",preferred,auto,1";
+      # Monitor configuration for VMware - set resolution
+      monitor = ",1920x1080@60,auto,1.0";
 
       # Basic environment setup
       env = [
