@@ -27,6 +27,10 @@
     pamixer
     playerctl
     libnotify # For desktop notifications
+    xfce.thunar # XFCE file manager, works well with Hyprland
+    xfce.thunar-volman # For automounting drives
+    xfce.thunar-archive-plugin # Archive management
+    file-roller # Archive manager
   ];
 
   programs.rofi = {
@@ -126,6 +130,7 @@
         "$mod SHIFT CTRL ALT, T, exec, $terminal --gtk-single-instance=true"
         "$mod, Space, exec, $menu"
         "$mod SHIFT CTRL ALT, B, exec, $browser"
+        "$mod SHIFT CTRL ALT, F, exec, thunar"
 
         # Window management
         "$mod, Q, killactive"
