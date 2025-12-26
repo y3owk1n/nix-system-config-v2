@@ -4,6 +4,7 @@
   homebrew-cask,
   homebrew-bundle,
   homebrew-y3owk1n,
+  homebrew-tw93,
   ...
 }:
 {
@@ -16,6 +17,7 @@
       "homebrew/homebrew-cask" = homebrew-cask;
       "homebrew/homebrew-bundle" = homebrew-bundle;
       "y3owk1n/homebrew-tap" = homebrew-y3owk1n;
+      "tw93/homebrew-tap" = homebrew-tw93;
     };
     mutableTaps = false;
   };
