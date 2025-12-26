@@ -1,5 +1,7 @@
 { pkgs, ... }:
 {
+  services.ssh-agent.enable = pkgs.stdenv.isLinux;
+
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false; # Explicitly enable default config to suppress warning
@@ -30,9 +32,13 @@
       "github.com" = {
         addKeysToAgent = "yes";
         identityFile = "~/.ssh/id_ed25519";
-        extraOptions = {
-          useKeychain = if pkgs.stdenv.isDarwin then "yes" else "no";
-        };
+        extraOptions =
+          if pkgs.stdenv.isDarwin then
+            {
+              useKeychain = if pkgs.stdenv.isDarwin then "yes" else "no";
+            }
+          else
+            { };
       };
     };
   };
