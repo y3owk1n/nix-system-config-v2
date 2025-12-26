@@ -9,22 +9,22 @@ _:
   flake.overlays.custom = final: _: {
     custom = {
       # Custom Hammerspoon build with additional modules
-      hammerspoon = final.callPackage ../../darwin/overlays/hammerspoon.nix { };
+      hammerspoon = final.callPackage ./custom/hammerspoon.nix { };
 
       # Custom Rift twm build
-      rift = final.callPackage ../../darwin/overlays/rift.nix { };
+      rift = final.callPackage ./custom/rift.nix { };
 
       # Custom Atuin Run Script (ASR)
-      asr = final.callPackage ../../darwin/overlays/asr.nix { };
+      asr = final.callPackage ./custom/asr.nix { };
 
       # Cpenv
-      cpenv = final.callPackage ../../darwin/overlays/cpenv.nix { };
+      cpenv = final.callPackage ./custom/cpenv.nix { };
 
       # Cmd
-      cmd = final.callPackage ../../darwin/overlays/cmd.nix { };
+      cmd = final.callPackage ./custom/cmd.nix { };
 
       # Passx
-      passx = final.callPackage ../../darwin/overlays/passx.nix { };
+      passx = final.callPackage ./custom/passx.nix { };
     };
   };
 }
