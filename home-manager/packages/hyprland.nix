@@ -221,71 +221,230 @@
       mainBar = {
         layer = "top";
         position = "top";
-        height = 30;
+        height = 42;
+        spacing = 4;
+        margin-top = 6;
+        margin-left = 10;
+        margin-right = 10;
         output = [ "*" ];
         modules-left = [ "hyprland/workspaces" ];
         modules-center = [ "clock" ];
         modules-right = [
+          "pulseaudio"
+          "network"
           "cpu"
           "memory"
+          "custom/power"
           "tray"
         ];
 
         "hyprland/workspaces" = {
           format = "{name}";
+          format-icons = {
+            active = "";
+            default = "";
+          };
           on-scroll-up = "hyprctl dispatch workspace e+1";
           on-scroll-down = "hyprctl dispatch workspace e-1";
+          persistent-workspaces = {
+            "1" = [ ];
+            "2" = [ ];
+            "3" = [ ];
+            "4" = [ ];
+            "5" = [ ];
+          };
         };
 
         clock = {
           format = "{:%H:%M}";
-          tooltip-format = "{:%Y-%m-%d | %H:%M}";
+          format-alt = "{:%A, %B %d, %Y}";
+          tooltip-format = "<tt><small>{calendar}</small></tt>";
+          calendar = {
+            mode = "year";
+            mode-mon-col = 3;
+            weeks-pos = "right";
+            format = {
+              months = "<span color='#eadffd'><b>{}</b></span>";
+              days = "<span color='#ffffff'>{}</span>";
+              weeks = "<span color='#99ffdd'>W{}</span>";
+              weekdays = "<span color='#ff9b64'>{}</span>";
+              today = "<span color='#ff66c4'><b><u>{}</u></b></span>";
+            };
+          };
+          actions = {
+            on-click-right = "mode";
+            on-click-forward = "tz_up";
+            on-click-backward = "tz_down";
+          };
         };
 
         cpu = {
-          format = "CPU {usage}%";
+          format = " {usage}%";
           interval = 2;
+          tooltip = true;
         };
 
         memory = {
-          format = "MEM {}%";
+          format = " {}%";
           interval = 2;
+          tooltip-format = "{used:0.1f}GB / {total:0.1f}GB";
+        };
+
+        pulseaudio = {
+          format = " {volume}%";
+          format-muted = " Muted";
+          on-click = "pamixer -t";
+          on-scroll-up = "pamixer -i 5";
+          on-scroll-down = "pamixer -d 5";
+          scroll-step = 5;
+        };
+
+        network = {
+          format-wifi = " {signalStrength}%";
+          format-ethernet = " Connected";
+          format-disconnected = " Disconnected";
+          format-linked = " {ifname} (No IP)";
+          tooltip-format = "{essid} ({signalStrength}%)";
+          on-click-right = "nm-connection-editor";
         };
 
         tray = {
-          spacing = 10;
+          icon-size = 16;
+          spacing = 8;
+        };
+
+        "custom/power" = {
+          format = " Power";
+          on-click = "wlogout";
+          tooltip = false;
         };
       };
     };
 
     style = ''
       * {
-        font-family: "JetBrains Mono", monospace;
+        font-family: "JetBrains Mono Nerd Font", "JetBrains Mono", monospace;
         font-size: 13px;
+        font-weight: 500;
+        min-height: 0;
+        margin: 0px;
+        padding: 0px;
       }
 
       window#waybar {
-        background-color: rgba(43, 48, 59, 0.95);
-        border-bottom: 3px solid rgba(100, 114, 125, 0.5);
-        color: #ffffff;
+        background: rgba(30, 32, 48, 0.85);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #cdd6f4;
         transition-property: background-color;
-        transition-duration: .5s;
+        transition-duration: 0.5s;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      #workspaces {
+        margin-left: 8px;
+        border-radius: 8px;
       }
 
       #workspaces button {
-        padding: 0 5px;
-        background-color: transparent;
-        color: #ffffff;
-        border-radius: 0;
+        padding: 0 10px;
+        margin: 4px 2px;
+        background: transparent;
+        color: #6c7086;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+
+      #workspaces button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #cdd6f4;
       }
 
       #workspaces button.active {
-        background-color: #64727D;
-        box-shadow: inset 0 -3px #ffffff;
+        background: rgba(137, 180, 250, 0.25);
+        color: #89b4fa;
+        font-weight: 700;
       }
 
-      #clock, #cpu, #memory {
-        padding: 0 10px;
+      #workspaces button.urgent {
+        background: rgba(243, 139, 168, 0.2);
+        color: #f38ba8;
+      }
+
+      #clock {
+        font-weight: 700;
+        color: #f9e2af;
+        padding: 0 12px;
+        margin: 4px 0;
+        border-radius: 8px;
+      }
+
+      #clock:hover {
+        background: rgba(249, 226, 175, 0.1);
+      }
+
+      #cpu, #memory, #pulseaudio, #network, #custom-power {
+        padding: 0 12px;
+        margin: 4px 0;
+        border-radius: 8px;
+        color: #a6adc8;
+        transition: all 0.3s ease;
+      }
+
+      #cpu:hover, #memory:hover, #pulseaudio:hover, #network:hover, #custom-power:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #cdd6f4;
+      }
+
+      #custom-power {
+        color: #f38ba8;
+      }
+
+      #custom-power:hover {
+        background: rgba(243, 139, 168, 0.2);
+        color: #f38ba8;
+      }
+
+      #cpu.warning, #memory.warning {
+        color: #f9e2af;
+      }
+
+      #cpu.critical, #memory.critical {
+        color: #f38ba8;
+      }
+
+      #network.disconnected {
+        color: #6c7086;
+        opacity: 0.7;
+      }
+
+      #pulseaudio.muted {
+        color: #6c7086;
+      }
+
+      #tray {
+        margin-right: 8px;
+      }
+
+      #tray > .passive {
+        -gtk-icon-effect: dim;
+      }
+
+      #tray > .needs-attention {
+        -gtk-icon-effect: highlight;
+      }
+
+      tooltip {
+        background: rgba(24, 25, 38, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #cdd6f4;
+        padding: 8px 12px;
+      }
+
+      tooltip label {
+        color: #cdd6f4;
+        padding: 4px;
       }
     '';
   };
