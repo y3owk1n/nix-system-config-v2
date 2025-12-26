@@ -127,6 +127,24 @@ restore-ssh:
       fi
     done
 
+ssh_backup_path_vmware := "/mnt/hfgs/ssh"
+
+[linux]
+restore-ssh-vmware user:
+    #!/usr/bin/env bash
+    mkdir -p ~/.ssh
+    chmod 700 ~/.ssh
+    for keyfile in {{ ssh_backup_path_vmware }}/{{ user }}/*.gpg; do
+      base=$(basename "$keyfile")
+      name="${base%.gpg}"
+      echo "Restoring $name..."
+      gpg --decrypt "$keyfile" > ~/.ssh/"$name"
+      chmod 600 ~/.ssh/"$name"
+      if [ -f {{ ssh_backup_path_vmware }}/{{ user }}/"$name.pub" ]; then
+        cp {{ ssh_backup_path_vmware }}/{{ user }}/"$name.pub" ~/.ssh/"$name.pub"
+      fi
+    done
+
 gpg_backup_path := icloud_drive_path + "/gpg/" + user
 
 # Backup GPG key pair to iCloud Drive (encrypted)
@@ -168,3 +186,16 @@ restore-gpg user gpg_key:
     shred -u {{ gpg_backup_path_from_vm }}/{{ user }}/{{ gpg_key }}_sec.asc
     # Import public key (optional)
     gpg --import {{ gpg_backup_path_from_vm }}/{{ user }}/{{ gpg_key }}_pub.asc
+
+gpg_backup_path_vmware := "/mnt/hgfs/gpg/"
+
+[linux]
+restore-gpg-vmware user gpg_key:
+    # Decrypt the private key
+    gpg --decrypt {{ gpg_backup_path_vmware }}/{{ user }}/{{ gpg_key }}_sec.asc.gpg > {{ gpg_backup_path_vmware }}/{{ user }}/{{ gpg_key }}_sec.asc
+    # Import back to GPG
+    gpg --import {{ gpg_backup_path_vmware }}/{{ user }}/{{ gpg_key }}_sec.asc
+    # Remove the decrypted file
+    shred -u {{ gpg_backup_path_vmware }}/{{ user }}/{{ gpg_key }}_sec.asc
+    # Import public key (optional)
+    gpg --import {{ gpg_backup_path_vmware }}/{{ user }}/{{ gpg_key }}_pub.asc

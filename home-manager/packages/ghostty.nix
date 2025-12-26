@@ -1,4 +1,7 @@
 { pkgs, ... }:
+let
+  ghostty-package = if pkgs.stdenv.isDarwin then pkgs.ghostty-bin else pkgs.ghostty;
+in
 {
   # ============================================================================
   # Ghostty Terminal Configuration
@@ -7,7 +10,7 @@
   programs.ghostty = {
     enable = true;
     # Use the binary release instead of building from source for better performance
-    package = pkgs.ghostty-bin;
+    package = ghostty-package;
     clearDefaultKeybinds = true;
     installBatSyntax = true;
     installVimSyntax = true;
