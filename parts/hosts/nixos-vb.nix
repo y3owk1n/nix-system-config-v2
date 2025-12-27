@@ -1,7 +1,7 @@
 { inputs, ... }:
 
 let
-  hostname = "nixos-vmware-fusion";
+  hostname = "nixos-vb";
   username = "kylewong";
   useremail = "62775956+y3owk1n@users.noreply.github.com";
   githubuser = "y3owk1n";
@@ -105,23 +105,6 @@ if builtins.pathExists /etc/nixos/configuration.nix then
 
           # VMware Tools and shared folders
           virtualisation.vmware.guest.enable = true;
-
-          # systemd service to mount VMware shared folders
-          systemd.services.vmware-shared-folders = {
-            description = "Mount VMware shared folders";
-            wantedBy = [ "multi-user.target" ];
-            after = [ "network.target" ];
-            serviceConfig = {
-              Type = "oneshot";
-              RemainAfterExit = true;
-              ExecStart = "${pkgs.open-vm-tools}/bin/vmhgfs-fuse .host:/ /mnt/hgfs -o allow_other";
-              ExecStop = "${pkgs.fuse}/bin/fusermount -u /mnt/hgfs";
-            };
-            path = [
-              pkgs.open-vm-tools
-              pkgs.fuse
-            ];
-          };
 
           # Hyprland and Wayland support
           hardware.graphics.enable = true;

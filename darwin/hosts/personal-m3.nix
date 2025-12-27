@@ -50,6 +50,7 @@ in
       "affinity"
       "helium-browser"
       "firefox"
+      "virtualbox"
     ];
 
     masApps = { };
