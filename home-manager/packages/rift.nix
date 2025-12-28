@@ -13,6 +13,7 @@ _: {
       [settings]
       default_disable = false
       hot_reload = false
+      focus_follows_mouse = false
 
       # ============================================================================
       # Layout Configuration
