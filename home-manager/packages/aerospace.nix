@@ -52,7 +52,7 @@ _: {
         alt-f = "layout floating tiling";
         alt-m = "fullscreen";
         cmd-alt-shift-ctrl-f = "exec-and-forget open -a \"Finder\"";
-        cmd-alt-shift-ctrl-b = "exec-and-forget open -a \"Helium\"";
+        cmd-alt-shift-ctrl-b = "exec-and-forget open -a \"Safari\"";
         cmd-alt-shift-ctrl-t = "exec-and-forget open -a \"Ghostty\"";
         cmd-alt-shift-ctrl-n = "exec-and-forget open -a \"Notes\"";
         cmd-alt-shift-ctrl-m = "exec-and-forget open -a \"Mail\"";
