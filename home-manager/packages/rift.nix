@@ -5,7 +5,7 @@ _: {
   # Custom tiling window manager for macOS with vim-like keybindings
 
   services.rift = {
-    enable = true;
+    enable = false;
     config = ''
       # ============================================================================
       # General Settings
@@ -19,7 +19,7 @@ _: {
       # Layout Configuration
       # ============================================================================
       [settings.layout]
-      mode = "dwindle"
+      mode = "traditional"
       # mode = "bsp"  # Alternative: binary space partitioning
 
       [settings.layout.gaps]
