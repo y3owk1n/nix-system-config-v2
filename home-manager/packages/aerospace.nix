@@ -4,7 +4,7 @@ _: {
   # ============================================================================
   # Tiling window manager for macOS with vim-like keybindings
   programs.aerospace = {
-    enable = false;
+    enable = true;
     userSettings = {
       config-version = 2;
       default-root-container-layout = "tiles";
