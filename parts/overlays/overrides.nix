@@ -21,10 +21,10 @@
 
       # Override aerospace to use beta version with latest features
       aerospace = prev.aerospace.overrideAttrs (_: rec {
-        version = "0.20.0-Beta";
+        version = "0.20.1-Beta";
         src = prev.fetchzip {
           url = "https://github.com/nikitabobko/AeroSpace/releases/download/v${version}/AeroSpace-v${version}.zip";
-          sha256 = "sha256-bPcVgTPvskit0/LeqmWoOOnlwwyzPoa48P8Vooaqlig=";
+          sha256 = "sha256-avuoflZf4qf7LT5ecF7YKfZgx7uQM4tlLWbPgfujRcY=";
         };
       });
 
