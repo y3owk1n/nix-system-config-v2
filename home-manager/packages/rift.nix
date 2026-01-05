@@ -5,7 +5,7 @@ _: {
   # Custom tiling window manager for macOS with vim-like keybindings
 
   services.rift = {
-    enable = false;
+    enable = true;
     config = ''
       # ============================================================================
       # General Settings
@@ -14,6 +14,10 @@ _: {
       default_disable = false
       hot_reload = false
       focus_follows_mouse = false
+      animate = true
+      animation_duration = 0.1
+      animation_fps = 120.0
+      animation_easing = "ease_in_out"
 
       # ============================================================================
       # Layout Configuration
@@ -96,7 +100,7 @@ _: {
       [keys]
       # App launchers (hyper key)
       "hyper + F" = { exec = ["open", "-a", "finder"] }
-      "hyper + B" = { exec = ["open", "-a", "helium"] }
+      "hyper + B" = { exec = ["open", "-a", "Safari"] }
       "hyper + T" = { exec = ["open", "-a", "Ghostty"] }
       "hyper + N" = { exec = ["open", "-a", "Notes"] }
       "hyper + M" = { exec = ["open", "-a", "Mail"] }

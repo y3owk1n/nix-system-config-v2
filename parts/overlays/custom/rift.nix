@@ -13,7 +13,7 @@
 # Custom build of Rift tiling window manager from git main branch
 
 let
-  rev = "8431d9926df615a04a7d6eecb31ecdedbd0585d2";
+  rev = "9cde315fc1576da77e57f47761aa473fbfc01618";
   shortHash = lib.substring 0 7 rev;
   pversion = "main-${shortHash}";
 in
@@ -22,14 +22,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = pversion;
 
   src = fetchFromGitHub {
-    owner = "acsandmann";
+    owner = "y3owk1n"; # custom fork
+    # owner = "acsandmann";
     repo = "rift";
     inherit rev;
     # rev = "v${finalAttrs.version}";
-    sha256 = "sha256-HPYAnL0RYaLVh0nTdJlR2KjlmAY+JOcaZEetpmA4238=";
+    sha256 = "sha256-hScRSULoQUTXvtCPM8KTnrUPjOkDZRQpJfiBQeonUsg=";
   };
 
-  cargoHash = "sha256-A0huWauj3Ltnw39jFft6pyYUVcNK+lu89ZlVQl/aRZg=";
+  cargoHash = "sha256-BHsWaffHbGXWPcI69MklM+g7qtCZw1N/P5fpDSg8GNM=";
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     (writeShellScriptBin "sw_vers" ''
