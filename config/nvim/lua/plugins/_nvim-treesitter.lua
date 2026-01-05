@@ -47,7 +47,6 @@ function M.setup()
     "gowork",
     "gosum",
     "json",
-    "jsonc",
     "json5",
     "just",
     "luadoc",
