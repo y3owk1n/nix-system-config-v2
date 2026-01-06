@@ -1,4 +1,5 @@
-_: {
+{ config, ... }:
+{
   # ============================================================================
   # Rift Window Manager Configuration
   # ============================================================================
@@ -14,6 +15,8 @@ _: {
       default_disable = false
       hot_reload = false
       focus_follows_mouse = false
+      mouse_follows_focus = true
+      mouse_hides_on_focus = false
       animate = true
       animation_duration = 0.1
       animation_fps = 120.0
@@ -39,6 +42,13 @@ _: {
       vertical = 8
 
       # ============================================================================
+      # Gestures
+      # ============================================================================
+      [settings.gestures]
+      enabled = true
+      fingers = 4
+
+      # ============================================================================
       # UI Configuration
       # ============================================================================
       [settings.ui.menu_bar]
@@ -46,6 +56,12 @@ _: {
       show_empty = false
       display_style = "label"
       mode = "active"
+
+      [settings.ui.window_border]
+      enabled = true
+      width = 3.0
+      color = "${config.lib.stylix.colors.base04}"
+      roundness = 8.0
 
       # ============================================================================
       # Virtual Workspaces
@@ -55,16 +71,16 @@ _: {
       default_workspace = 0
 
       workspace_names = [
-      	"browser",
-         "terminal",
-         "notes",
-         "email",
-         "calendar",
-         "messaging",
-         "design",
-         "screen sharing",
-         "dumpster"
-       ]
+          "browser",
+          "terminal",
+          "notes",
+          "email",
+          "calendar",
+          "messaging",
+          "design",
+          "screen sharing",
+          "dumpster"
+        ]
 
       # ============================================================================
       # Application Rules
@@ -100,7 +116,7 @@ _: {
       [keys]
       # App launchers (hyper key)
       "hyper + F" = { exec = ["open", "-a", "finder"] }
-      "hyper + B" = { exec = ["open", "-a", "Safari"] }
+      "hyper + B" = { exec = ["open", "-a", "safari"] }
       "hyper + T" = { exec = ["open", "-a", "Ghostty"] }
       "hyper + N" = { exec = ["open", "-a", "Notes"] }
       "hyper + M" = { exec = ["open", "-a", "Mail"] }

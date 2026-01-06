@@ -13,7 +13,7 @@
 # Custom build of Rift tiling window manager from git main branch
 
 let
-  rev = "9cde315fc1576da77e57f47761aa473fbfc01618";
+  rev = "b0d3cff03a5cc38940981aec7c8bf76c4ece1772";
   shortHash = lib.substring 0 7 rev;
   pversion = "main-${shortHash}";
 in
@@ -27,7 +27,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "rift";
     inherit rev;
     # rev = "v${finalAttrs.version}";
-    sha256 = "sha256-hScRSULoQUTXvtCPM8KTnrUPjOkDZRQpJfiBQeonUsg=";
+    sha256 = "sha256-Hfk28ayYL+g73rtACj6MdME4b/vTPWbCcmqVM72neoc=";
   };
 
   cargoHash = "sha256-BHsWaffHbGXWPcI69MklM+g7qtCZw1N/P5fpDSg8GNM=";
