@@ -19,8 +19,7 @@
       # Hotkeys
       # ============================================================================
       [hotkeys]
-      "Ctrl+F" = "grid -a left_click"  # Grid navigation with auto-click
-      "Ctrl+G" = "grid"               # Grid navigation
+      "Ctrl+F" = "grid"               # Grid navigation
       "Ctrl+S" = "scroll"             # Scroll mode
 
       # ============================================================================
@@ -38,11 +37,12 @@
       sublayer_keys = "gcrhtnmwv"
 
       [action]
-      left_click_key = "h"
-      middle_click_key = "t"
-      right_click_key = "n"
-      mouse_down_key = "c"
-      mouse_up_key = "r"
+      [action.key_bindings]
+      left_click = "Shift+H"
+      middle_click = "Shift+T"
+      right_click = "Shift+N"
+      mouse_down = "Shift+R"
+      mouse_up = "Shift+C"
 
       # ============================================================================
       # Smooth Cursor Movement
