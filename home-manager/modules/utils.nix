@@ -20,5 +20,6 @@
     ../packages/stripe.nix
     ../packages/devbox.nix
     ../packages/mkcert.nix
+    ../packages/diagnose.nix
   ];
 }

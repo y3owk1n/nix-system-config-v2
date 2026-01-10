@@ -17,6 +17,9 @@ _:
       # Custom Atuin Run Script (ASR)
       asr = final.callPackage ./custom/asr.nix { };
 
+      # Custom Diagnose Script
+      diagnose = final.callPackage ./custom/diagnose.nix { };
+
       # Cpenv
       cpenv = final.callPackage ./custom/cpenv.nix { };
 
