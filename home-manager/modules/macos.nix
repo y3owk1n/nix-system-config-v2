@@ -11,5 +11,7 @@
     ../packages/neru.nix
     ../packages/rift.nix
     ../packages/skhd.nix
+    ../packages/move-to-space.nix
+    ../packages/jankyborders.nix
   ];
 }

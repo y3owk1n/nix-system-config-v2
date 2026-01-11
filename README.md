@@ -31,7 +31,7 @@ This is a project to help me to manage my Nix system configuration, mainly with 
 - Nix: [Determinate](https://determinate.systems)
 - Neovim Version Manager: [nvs](https://github.com/y3owk1n/nvs)
 - Keyboard Remapping: [kanata](https://github.com/jtroo/kanata) - only used to remap on mac default keyboard
-- Tiling Window Manager: [aerospace](https://github.com/nikitabobko/AeroSpace)
+- Tiling Window Manager: ~[aerospace](https://github.com/nikitabobko/AeroSpace)~ [yabai (without SIP disabled)](https://github.com/asmvik/yabai)
 - Systemwide vimium: [neru](https://github.com/y3owk1n/neru)
 - Launcher: Spotlight
 - Docker: [orbstack](https://orbstack.dev/)

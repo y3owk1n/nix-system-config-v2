@@ -6,7 +6,7 @@
   # Custom tiling window manager for macOS with vim-like keybindings
 
   services.rift = {
-    enable = true;
+    enable = false;
     config = ''
       # ============================================================================
       # General Settings
@@ -17,7 +17,7 @@
       focus_follows_mouse = false
       mouse_follows_focus = true
       mouse_hides_on_focus = false
-      animate = true
+      animate = false
       animation_duration = 0.1
       animation_fps = 120.0
       animation_easing = "ease_in_out"
@@ -26,8 +26,7 @@
       # Layout Configuration
       # ============================================================================
       [settings.layout]
-      mode = "traditional"
-      # mode = "bsp"  # Alternative: binary space partitioning
+      mode = "dwindle"
 
       [settings.layout.gaps]
 
