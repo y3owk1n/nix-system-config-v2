@@ -20,6 +20,9 @@ _:
       # Custom Diagnose Script
       diagnose = final.callPackage ./custom/diagnose.nix { };
 
+      # Move to space script
+      move-to-space = final.callPackage ./custom/move-to-space.nix { };
+
       # Cpenv
       cpenv = final.callPackage ./custom/cpenv.nix { };
 

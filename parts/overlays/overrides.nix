@@ -21,10 +21,19 @@
 
       # Override aerospace to use beta version with latest features
       aerospace = prev.aerospace.overrideAttrs (_: rec {
-        version = "0.20.1-Beta";
+        version = "0.20.2-Beta";
         src = prev.fetchzip {
           url = "https://github.com/nikitabobko/AeroSpace/releases/download/v${version}/AeroSpace-v${version}.zip";
-          sha256 = "sha256-avuoflZf4qf7LT5ecF7YKfZgx7uQM4tlLWbPgfujRcY=";
+          sha256 = "sha256-PyWHtM38XPNkkEZ0kACPia0doR46FRpmSoNdsOhU4uw=";
+        };
+      });
+
+      # Override yabai to use the specific version
+      yabai = prev.yabai.overrideAttrs (_: rec {
+        version = "7.1.16";
+        src = builtins.fetchTarball {
+          url = "https://github.com/koekeishiya/yabai/releases/download/v${version}/yabai-v${version}.tar.gz";
+          sha256 = "sha256:133b49xff3fmf2zj16h48ygpdxr26sfs9wmavs2igsmdqslvwhxc";
         };
       });
 
