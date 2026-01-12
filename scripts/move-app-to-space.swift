@@ -37,9 +37,7 @@ func getFrontmostWindow() -> (pid: pid_t, position: CGPoint, appName: String)? {
                 dragPoint = CGPoint(x: centerX, y: edgeY)
             } else {
                 // For normal windows with title bar, grab near the window controls
-                // The close button is typically at x+10-20, so grab to the right of it
-                // Title bar is usually 22-28px tall on modern macOS
-                let titleBarY = y + 2  // Middle of the title bar (around 11px from top)
+                let titleBarY = y + 2
                 let titleBarX = x + 100  // To the right of close/minimize/maximize buttons
                 dragPoint = CGPoint(x: titleBarX, y: titleBarY)
             }
@@ -56,16 +54,14 @@ func getFrontmostWindow() -> (pid: pid_t, position: CGPoint, appName: String)? {
 func simulateDragAndMove(titleBarPos: CGPoint, targetSpace: Int, appName: String) {
     print("Simulating drag at position: (\(titleBarPos.x), \(titleBarPos.y))")
 
-    // Check if this is a borderless app
     let borderlessApps = ["Alacritty", "alacritty", "Ghostty", "ghostty", "kitty", "Kitty"]
     let isBorderless = borderlessApps.contains { appName.lowercased().contains($0.lowercased()) }
 
     // Step 1: Move mouse to drag position
     CGWarpMouseCursorPosition(titleBarPos)
-    usleep(150_000) // 0.15 second - give it a bit more time to position
+    usleep(30_000)
 
     // Step 2: Press and hold mouse button (start dragging)
-    // No modifier keys needed - just grab the top edge directly
     let mouseDown = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown,
                            mouseCursorPosition: titleBarPos, mouseButton: .left)
     mouseDown?.post(tap: .cghidEventTap)
@@ -76,19 +72,18 @@ func simulateDragAndMove(titleBarPos: CGPoint, targetSpace: Int, appName: String
         print("Started dragging window from title bar...")
     }
 
-    usleep(250_000) // 0.25 second - longer wait to ensure drag starts
+    usleep(60_000) // wait for drag to register
 
     // Step 3: Move mouse slightly to initiate and confirm drag
     let dragPos = CGPoint(x: titleBarPos.x + 10, y: titleBarPos.y + 5)
     let mouseDrag = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDragged,
                            mouseCursorPosition: dragPos, mouseButton: .left)
     mouseDrag?.post(tap: .cghidEventTap)
-    usleep(150_000) // 0.15 second
+    usleep(30_000) // 0.03s - minimal delay
 
     // Step 4: While still holding mouse, trigger space switch
     print("Switching to space \(targetSpace) while dragging...")
 
-    // Use Command+Shift+Control+Option + Number to switch spaces
     let keyCodes: [Int: CGKeyCode] = [1: 18, 2: 19, 3: 20, 4: 21, 5: 22, 6: 23, 7: 24, 8: 25, 9: 26]
 
     if let keyCode = keyCodes[targetSpace] {
@@ -96,11 +91,11 @@ func simulateDragAndMove(titleBarPos: CGPoint, targetSpace: Int, appName: String
         let keyDown = CGEvent(keyboardEventSource: nil, virtualKey: keyCode, keyDown: true)
         keyDown?.flags = [.maskCommand, .maskShift, .maskControl, .maskAlternate]
         keyDown?.post(tap: .cghidEventTap)
-        usleep(50_000)
+        usleep(10_000) // minimal delay between key down/up
 
         let keyUp = CGEvent(keyboardEventSource: nil, virtualKey: keyCode, keyDown: false)
         keyUp?.post(tap: .cghidEventTap)
-        usleep(400_000) // Longer wait for space switch animation
+        usleep(200_000) // wait for space switch animation
     } else {
         print("Error: Only spaces 1-9 are supported with this method")
         let mouseUp = CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp,
@@ -115,7 +110,7 @@ func simulateDragAndMove(titleBarPos: CGPoint, targetSpace: Int, appName: String
     mouseUp?.post(tap: .cghidEventTap)
     print("Released window")
 
-    usleep(300_000) // 0.3 second for drop animation
+    usleep(50_000) // wait for drop to complete
 
     print("✓ Window should now be on Space \(targetSpace)")
 }
@@ -154,9 +149,6 @@ guard let (_, titleBarPos, appName) = getFrontmostWindow() else {
     print("Error: Could not find frontmost window")
     exit(1)
 }
-
-print("\nIMPORTANT: Do not move your mouse for the next 2 seconds!")
-usleep(500_000) // Give user time to read the message
 
 simulateDragAndMove(titleBarPos: titleBarPos, targetSpace: targetSpace, appName: appName)
 
