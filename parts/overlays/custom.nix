@@ -14,6 +14,9 @@ _:
       # Custom Rift twm build
       rift = final.callPackage ./custom/rift.nix { };
 
+      # Custom Glide build
+      glide = final.callPackage ./custom/glide-wm.nix { };
+
       # Custom Atuin Run Script (ASR)
       asr = final.callPackage ./custom/asr.nix { };
 

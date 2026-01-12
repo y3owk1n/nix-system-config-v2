@@ -1,11 +1,11 @@
 _: {
-  homebrew = {
-    casks = [ "spaceid" ];
-  };
+  # homebrew = {
+  #   casks = [ "spaceid" ];
+  # };
 
   services = {
     yabai = {
-      enable = true;
+      enable = false;
       config = {
         mouse_follows_focus = "on";
         focus_follows_mouse = "off";
