@@ -10,6 +10,7 @@
     ../packages/kanata.nix
     ../packages/neru.nix
     ../packages/rift.nix
+    ../packages/glide-wm.nix
     ../packages/skhd.nix
     ../packages/move-to-space.nix
     ../packages/jankyborders.nix

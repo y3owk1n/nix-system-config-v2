@@ -71,6 +71,8 @@ inputs.darwin.lib.darwinSystem {
           inputs.nvs.homeManagerModules.default
           # rift custom
           ../../home-manager/custom-modules/rift.nix
+          # glide custom
+          ../../home-manager/custom-modules/glide-wm.nix
         ];
       };
     }
