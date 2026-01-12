@@ -72,7 +72,7 @@ in
       inherit (cfg.launchd) enable;
       config = {
         ProgramArguments = [
-          "${cfg.package}/Applications/Glide.app/Contents/MacOS/GlideServer"
+          "${cfg.package}/Applications/Glide.app/Contents/MacOS/glide_server"
         ];
         RunAtLoad = true;
         KeepAlive = cfg.launchd.keepAlive;
