@@ -64,7 +64,7 @@ in
     home.packages = [ cfg.package ];
 
     # Generate config file - either from text or source file
-    home.file.".glide.toml" =
+    xdg.configFile."glide/config.toml" =
       if cfg.configFile != null then { source = cfg.configFile; } else { text = cfg.config; };
 
     # Launch agent for macOS
@@ -73,6 +73,8 @@ in
       config = {
         ProgramArguments = [
           "${cfg.package}/Applications/Glide.app/Contents/MacOS/glide_server"
+          "--config"
+          "${config.xdg.configHome}/glide/config.toml"
         ];
         RunAtLoad = true;
         KeepAlive = cfg.launchd.keepAlive;
