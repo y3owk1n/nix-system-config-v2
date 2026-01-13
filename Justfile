@@ -127,6 +127,24 @@ restore-ssh:
       fi
     done
 
+ssh_backup_path_orb := "/mnt/mac" + icloud_drive_path + "/ssh/"
+
+[linux]
+restore-ssh-orb user:
+    #!/usr/bin/env bash
+    mkdir -p ~/.ssh
+    chmod 700 ~/.ssh
+    for keyfile in {{ ssh_backup_path_orb }}/{{ user }}/*.gpg; do
+      base=$(basename "$keyfile")
+      name="${base%.gpg}"
+      echo "Restoring $name..."
+      gpg --decrypt "$keyfile" > ~/.ssh/"$name"
+      chmod 600 ~/.ssh/"$name"
+      if [ -f {{ ssh_backup_path_orb }}/{{ user }}/"$name.pub" ]; then
+        cp {{ ssh_backup_path_orb }}/{{ user }}/"$name.pub" ~/.ssh/"$name.pub"
+      fi
+    done
+
 ssh_backup_path_vmware := "/mnt/hfgs/ssh"
 
 [linux]
