@@ -8,7 +8,7 @@
     enable = true;
     settings = {
       style = "round";
-      width = 8.0;
+      width = 6.0;
       hidpi = "off";
       active_color = "0xff${config.lib.stylix.colors.base04}";
       inactive_color = "0xff${config.lib.stylix.colors.base02}";
