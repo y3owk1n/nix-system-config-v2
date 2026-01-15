@@ -50,7 +50,7 @@ in
       "blender"
       "affinity"
       "helium-browser"
-      "firefox"
+      # "firefox"
     ];
 
     masApps = { };
