@@ -11,17 +11,15 @@
     # Core Nix Ecosystem
     # ============================================================================
 
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2511";
-
-    nixpkgs-unstable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
+    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
 
     home-manager = {
-      url = "https://flakehub.com/f/nix-community/home-manager/0.2511";
+      url = "https://flakehub.com/f/nix-community/home-manager/0.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     darwin = {
-      url = "https://flakehub.com/f/nix-darwin/nix-darwin/0.2511";
+      url = "https://flakehub.com/f/nix-darwin/nix-darwin/0.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -59,7 +57,7 @@
     # ============================================================================
 
     stylix = {
-      url = "github:nix-community/stylix/release-25.11";
+      url = "https://flakehub.com/f/nix-community/stylix/0.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
