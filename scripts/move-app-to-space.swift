@@ -214,7 +214,17 @@ func simulateDragAndMove(titleBarPos: CGPoint, targetSpace: Int, pid: pid_t) {
 
     // NOTE: These are keycodes for 1 - 9
     // If you have different shortcuts, change these to your respective keycodes
-    let keyCodes: [Int: CGKeyCode] = [1: 18, 2: 19, 3: 20, 4: 21, 5: 22, 6: 23, 7: 24, 8: 25, 9: 26]
+    let keyCodes: [Int: CGKeyCode] = [
+        1: 18,  // Key '1'
+        2: 19,  // Key '2'
+        3: 20,  // Key '3'
+        4: 21,  // Key '4'
+        5: 23,  // Key '5'
+        6: 22,  // Key '6'
+        7: 26,  // Key '7'
+        8: 28,  // Key '8'
+        9: 25   // Key '9'
+    ]
 
     if let keyCode = keyCodes[targetSpace] {
         // Press Command+Shift+Control+Option + Number
