@@ -86,8 +86,8 @@
       left_click = "Shift+H"
       middle_click = "Shift+T"
       right_click = "Shift+N"
-      mouse_down = "Shift+R"
-      mouse_up = "Shift+C"
+      mouse_down = "Shift+C"
+      mouse_up = "Shift+R"
 
       # ============================================================================
       # Smooth Cursor Movement
