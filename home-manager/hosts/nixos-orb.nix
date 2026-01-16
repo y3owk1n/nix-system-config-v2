@@ -10,8 +10,6 @@
     ../modules/shell.nix
     ../modules/utils.nix
     ../modules/nvim.nix
-
-    ../packages/gpg.nix
-    ../packages/pass.nix
+    ../modules/security.nix
   ];
 }
