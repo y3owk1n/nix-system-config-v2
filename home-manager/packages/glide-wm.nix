@@ -20,9 +20,6 @@ _: {
       group_bars.horizontal_placement = "top"
       group_bars.vertical_placement = "right"
 
-      [settings.experimental]
-      status_icon.enable = true
-
       [keys]
       "Alt + Z" = "toggle_space_activated"
       "Alt + H" = { move_focus = "left" }
@@ -45,10 +42,12 @@ _: {
       "Alt + F" = "toggle_window_floating"
       # "Alt + Space" = "toggle_focus_floating"
       "Alt + M" = "toggle_fullscreen"
-      # "Alt + Shift + E" = "save_and_exit"
       # "Alt + Shift + D" = "debug"
-      # "Alt + M" = "show_timing"
-      # "Alt + Shift + S" = "serialize"
+
+      [settings.experimental]
+      status_icon.enable = true
+      status_icon.space_index = true
+      status_icon.color = false
     '';
   };
 }
