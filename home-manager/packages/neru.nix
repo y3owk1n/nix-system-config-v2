@@ -68,7 +68,7 @@
       "Alt+Shift+9" = "exec move-to-space 9"
 
       # ============================================================================
-      # Hints (Link following)
+      # Hints
       # ============================================================================
       [hints]
       enabled = false  # Disabled in favor of grid navigation
@@ -81,13 +81,22 @@
       characters = "aoeuidhtnspyfgcrlqjkxbmwvz"  # Dvorak-optimized character set
       sublayer_keys = "gcrhtnmwv"
 
+      # ============================================================================
+      # Actions
+      # ============================================================================
       [action]
+      move_mouse_step = 10
+
       [action.key_bindings]
       left_click = "Shift+H"
       middle_click = "Shift+T"
       right_click = "Shift+N"
       mouse_down = "Shift+C"
       mouse_up = "Shift+R"
+      move_mouse_up = "Up"
+      move_mouse_down = "Down"
+      move_mouse_left = "Left"
+      move_mouse_right = "Right"
 
       # ============================================================================
       # Smooth Cursor Movement
