@@ -93,7 +93,6 @@
       "orbstack"
       "whatsapp"
       "imageoptim"
-      "safari-technology-preview"
     ];
 
     masApps = { };
