@@ -9,7 +9,7 @@
   # ============================================================================
 
   # Custom settings written to /etc/nix/nix.custom.conf
-  determinate-nix.customSettings = {
+  determinateNix.customSettings = {
     trusted-users = [
       "@admin"
       "root"
