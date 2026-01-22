@@ -43,6 +43,10 @@ _: {
       # "Alt + Space" = "toggle_focus_floating"
       "Alt + M" = "toggle_fullscreen"
       # "Alt + Shift + D" = "debug"
+      # "Alt + Ctrl + H" = { resize = { direction = "left", percent = 5 } }
+      # "Alt + Ctrl + J" = { resize = { direction = "down", percent = 5 } }
+      # "Alt + Ctrl + K" = { resize = { direction = "up", percent = 5 } }
+      # "Alt + Ctrl + L" = { resize = { direction = "right", percent = 5 } }
 
       [settings.experimental]
       status_icon.enable = true
