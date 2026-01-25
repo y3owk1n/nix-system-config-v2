@@ -24,7 +24,7 @@
 
       # These keys dont have to be here, i didn't want to install another program to run these
       "Cmd+Alt+Shift+Ctrl+F" = "exec open -a \"Finder\""
-      "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Helium\""
+      "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Safari\""
       "Cmd+Alt+Shift+Ctrl+T" = "exec open -a \"Ghostty\""
       "Cmd+Alt+Shift+Ctrl+N" = "exec open -a \"Notes\""
       "Cmd+Alt+Shift+Ctrl+M" = "exec open -a \"Mail\""
