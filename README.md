@@ -28,15 +28,20 @@ This is a project to help me to manage my Nix system configuration, mainly with 
 
 ### MacOS
 
-- Nix: [Determinate](https://determinate.systems)
+- Nix: [Determinate Nix](https://determinate.systems)
 - Neovim Version Manager: [nvs](https://github.com/y3owk1n/nvs)
 - Keyboard Remapping: [kanata](https://github.com/jtroo/kanata) - only used to remap on mac default keyboard
-- Tiling Window Manager: ~[aerospace](https://github.com/nikitabobko/AeroSpace)~ [yabai (without SIP disabled)](https://github.com/asmvik/yabai)
+- Tiling Window Manager: ~[aerospace](https://github.com/nikitabobko/AeroSpace)~ [glide wm](https://github.com/glide-wm/glide)
 - Systemwide vimium: [neru](https://github.com/y3owk1n/neru)
 - Launcher: Spotlight
 - Docker: [orbstack](https://orbstack.dev/)
 - Browser: [helium](https://helium.computer/)
 - Terminal: [ghostty](https://ghostty.org/)
+
+## Safari Extensions
+
+- [wBlock](https://github.com/0xCUB3/wBlock) - content blocker for Safari (ublock alternative)
+- [Refined Github](https://github.com/refined-github/refined-github) - better github experience
 
 ## Getting Started
 
@@ -84,11 +89,6 @@ The `scripts/` directory contains various utilities:
 - `nvim-reset.sh` - Neovim configuration reset
 - `atuin-run-script.sh` - Atuin shell history integration
 
-## Safari Extensions
-
-- [wBlock](https://github.com/0xCUB3/wBlock) - content blocker for Safari (ublock alternative)
-- [Refined Github](https://github.com/refined-github/refined-github) - better github experience
-
 ## Configuration Philosophy
 
 This configuration follows these principles:
@@ -102,8 +102,4 @@ This configuration follows these principles:
 
 ## Contributing
 
-1. Make changes to the appropriate module
-2. Run `just fmt` to format code
-3. Run `just check` to validate
-4. Test on target system with `just rebuild <hostname>`
-5. Commit with descriptive message
+Contributions are not welcome... this is personal to me.
