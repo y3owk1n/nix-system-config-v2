@@ -16,9 +16,6 @@ _: {
       outer_gap = 8
       inner_gap = 8
       group_bars.enable = false
-      group_bars.thickness = 6
-      group_bars.horizontal_placement = "top"
-      group_bars.vertical_placement = "right"
 
       [keys]
       "Alt + Z" = "toggle_space_activated"
@@ -30,23 +27,8 @@ _: {
       "Alt + Shift + J" = { move_node = "down" }
       "Alt + Shift + K" = { move_node = "up" }
       "Alt + Shift + L" = { move_node = "right" }
-      # "Alt + A" = "ascend"
-      # "Alt + D" = "descend"
-      # "Alt + N" = "next_layout"
-      # "Alt + P" = "prev_layout"
-      # "Alt + Backslash" = { split = "horizontal" }
-      # "Alt + Equal" = { split = "vertical" }
-      # "Alt + T" = { group = "horizontal" }
-      # "Alt + S" = { group = "vertical" }
-      # "Alt + E" = "ungroup"
       "Alt + F" = "toggle_window_floating"
-      # "Alt + Space" = "toggle_focus_floating"
       "Alt + M" = "toggle_fullscreen"
-      # "Alt + Shift + D" = "debug"
-      # "Alt + Ctrl + H" = { resize = { direction = "left", percent = 5 } }
-      # "Alt + Ctrl + J" = { resize = { direction = "down", percent = 5 } }
-      # "Alt + Ctrl + K" = { resize = { direction = "up", percent = 5 } }
-      # "Alt + Ctrl + L" = { resize = { direction = "right", percent = 5 } }
 
       [settings.experimental]
       status_icon.enable = true
