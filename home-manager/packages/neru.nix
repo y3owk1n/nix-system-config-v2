@@ -14,13 +14,15 @@
       # ============================================================================
       [general]
       restore_cursor_position = true
+      mode_exit_keys = ["escape", "Ctrl+C"]
 
       # ============================================================================
       # Hotkeys
       # ============================================================================
       [hotkeys]
-      "Ctrl+F" = "grid"               # Grid navigation
-      "Ctrl+S" = "scroll"             # Scroll mode
+      # "Ctrl+F" = "grid"               # Grid navigation
+      "Ctrl+F" = "quadgrid"             # Quad Grid navigation
+      "Ctrl+S" = "scroll"               # Scroll mode
 
       # These keys dont have to be here, i didn't want to install another program to run these
       "Cmd+Alt+Shift+Ctrl+F" = "exec open -a \"Finder\""
@@ -77,9 +79,18 @@
       # Grid Navigation
       # ============================================================================
       [grid]
+      enabled = false
       font_family = "JetBrainsMonoNLNFP-Bold"
       characters = "aoeuidhtnspyfgcrlqjkxbmwvz"  # Dvorak-optimized character set
       sublayer_keys = "gcrhtnmwv"
+
+      # ============================================================================
+      # Quad Grid Navigation
+      # ============================================================================
+      [quad_grid]
+      enabled = true
+      keys = "crtn"
+      label_font_family = "JetBrainsMonoNLNFP-Bold"
 
       # ============================================================================
       # Actions
