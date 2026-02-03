@@ -91,6 +91,7 @@
       enabled = true
       keys = "crtn"
       label_font_family = "JetBrainsMonoNLNFP-Bold"
+      line_width = 1
 
       # ============================================================================
       # Actions
