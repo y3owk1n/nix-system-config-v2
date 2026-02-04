@@ -83,7 +83,7 @@
 
     brews = [
       # replacement for `onyx`, `cleanmymac` and `appcleaner`
-      "tw93/homebrew-tap/mole"
+      "mole"
     ];
 
     casks = [
