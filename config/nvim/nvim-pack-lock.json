@@ -5,7 +5,7 @@
       "src": "https://github.com/y3owk1n/base16-pro-max.nvim"
     },
     "blink.cmp": {
-      "rev": "b19413d214068f316c78978b08264ed1c41830ec",
+      "rev": "bc54f81b6d92f91dac06c77c3ffccec5291e98cd",
       "src": "https://github.com/saghen/blink.cmp",
       "version": ">=0.0.0"
     },
@@ -26,7 +26,7 @@
       "src": "https://github.com/rafamadriz/friendly-snippets"
     },
     "grug-far": {
-      "rev": "14babc9b4520184d9696ef282eb7ac20687d4373",
+      "rev": "275dbedc96e61a6b8d1dfb28ba51586ddd233dcf",
       "src": "https://github.com/MagicDuck/grug-far.nvim"
     },
     "inc_rename": {
@@ -86,7 +86,7 @@
       "src": "https://github.com/nvim-mini/mini.statusline"
     },
     "mini.surround": {
-      "rev": "f9358544ed06bc10197e698b7fc8dc5963be3f4b",
+      "rev": "d648a5601e1c48f175b07d10eba141da338a0a2a",
       "src": "https://github.com/nvim-mini/mini.surround"
     },
     "notifier": {
@@ -107,7 +107,7 @@
       "src": "https://github.com/windwp/nvim-ts-autotag"
     },
     "render-markdown": {
-      "rev": "48934b49a2363b49ae1d698ed4cb30fb79d7efe8",
+      "rev": "48b4175dbca8439d30c1f52231cbe5a712c8f9d9",
       "src": "https://github.com/MeanderingProgrammer/render-markdown.nvim"
     },
     "supermaven-nvim": {
