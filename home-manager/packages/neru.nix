@@ -29,6 +29,7 @@
       "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Helium\""
       "Cmd+Alt+Shift+Ctrl+T" = "exec open -a \"Ghostty\""
       "Cmd+Alt+Shift+Ctrl+N" = "exec open -a \"Notes\""
+      "Cmd+Alt+Shift+Ctrl+R" = "exec open -a \"Reminders\""
       "Cmd+Alt+Shift+Ctrl+M" = "exec open -a \"Mail\""
       "Cmd+Alt+Shift+Ctrl+C" = "exec open -a \"Calendar\""
       "Cmd+Alt+Shift+Ctrl+W" = "exec open -a \"WhatsApp\""
