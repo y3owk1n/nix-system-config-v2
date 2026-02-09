@@ -16,7 +16,7 @@ _: {
     # Override yabai to use the specific version
     yabai = prev.yabai.overrideAttrs (_: rec {
       version = "7.1.16";
-      src = builtins.fetchTarball {
+      src = fetchTarball {
         url = "https://github.com/koekeishiya/yabai/releases/download/v${version}/yabai-v${version}.tar.gz";
         sha256 = "sha256:133b49xff3fmf2zj16h48ygpdxr26sfs9wmavs2igsmdqslvwhxc";
       };
@@ -50,8 +50,8 @@ _: {
         src = prev.fetchFromGitHub {
           owner = "christoomey";
           repo = "vim-tmux-navigator";
-          rev = "c45243dc1f32ac6bcf6068e5300f3b2b237e576a";
-          hash = "sha256-IEPnr/GdsAnHzdTjFnXCuMyoNLm3/Jz4cBAM0AJBrj8=";
+          rev = "e41c431a0c7b7388ae7ba341f01a0d217eb3a432";
+          hash = "sha256-efqiRffnidYx+qjgsHyWshCFWgZp/ZrHl+Clt04pfpM=";
         };
       });
     };
