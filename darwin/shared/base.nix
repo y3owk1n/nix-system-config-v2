@@ -89,10 +89,8 @@
     casks = [
       "tailscale-app"
       "rustdesk"
-      # "jordanbaird-ice@beta"
       "orbstack"
       "whatsapp"
-      "imageoptim"
       "safari-technology-preview"
     ];
 
