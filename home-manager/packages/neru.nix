@@ -13,7 +13,7 @@
       # General Settings
       # ============================================================================
       [general]
-      restore_cursor_position = true
+      restore_cursor_position = false
       mode_exit_keys = ["escape", "Ctrl+C"]
 
       # ============================================================================
