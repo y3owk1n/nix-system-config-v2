@@ -15,7 +15,7 @@
 # Custom build of Glide tiling window manager from git main branch
 
 let
-  rev = "7a23bb816be071df72af7fed2652c6b182328998";
+  rev = "addae58db6cdf9fd60a4e150070913c2a9d654de";
   shortHash = lib.substring 0 7 rev;
   pversion = "main-${shortHash}";
 in
@@ -27,7 +27,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     owner = "glide-wm";
     repo = "glide";
     inherit rev;
-    sha256 = "sha256-nI9OWzd1K9df1RZxu1ikiF2XV4rmfYo6Q3KyAFZq5Vw=";
+    sha256 = "sha256-+DMXlEsigNH1ZagYYygYrv/tuhLdoojrAP9pJzt1Mt4=";
   };
 
   cargoHash = "sha256-rt9Fd0iP6NjDY1wH873MPN44z/2sfs79zQYcvjbHD+8=";
