@@ -7,7 +7,18 @@
 
   services.neru = {
     enable = true;
-    package = pkgs.neru-source;
+    package = pkgs.neru;
+    # package = pkgs.neru-source;
+    # package = pkgs.neru-source.overrideAttrs (_: {
+    #   postPatch = ''
+    #     substituteInPlace go.mod \
+    #       --replace-fail "go 1.26.0" "go 1.25.5"
+    #
+    #     # Verify it worked
+    #     echo "=== go.mod after patch ==="
+    #     grep "^go " go.mod || true
+    #   '';
+    # });
     config = ''
       # ============================================================================
       # General Settings
@@ -15,13 +26,13 @@
       [general]
       restore_cursor_position = false
       mode_exit_keys = ["escape", "Ctrl+C"]
+      hide_overlay_in_screen_share = true
 
       # ============================================================================
       # Hotkeys
       # ============================================================================
       [hotkeys]
-      # "Ctrl+F" = "grid"               # Grid navigation
-      "Ctrl+F" = "quadgrid"             # Quad Grid navigation
+      "Ctrl+F" = "recursive_grid"       # Recursive Grid navigation
       "Ctrl+S" = "scroll"               # Scroll mode
 
       # These keys dont have to be here, i didn't want to install another program to run these
@@ -36,29 +47,6 @@
       "Cmd+Alt+Shift+Ctrl+P" = "exec open -a \"Passwords\""
       "Cmd+Alt+Shift+Ctrl+S" = "exec open -a \"System Settings\""
       "Cmd+Alt+Shift+Ctrl+A" = "exec open -a \"Activity Monitor\""
-
-      # "Alt+H" = "exec yabai -m window --focus west"
-      # "Alt+J" = "exec yabai -m window --focus south"
-      # "Alt+K" = "exec yabai -m window --focus north"
-      # "Alt+L" = "exec yabai -m window --focus east"
-
-      # "Alt+Shift+H" = "exec yabai -m window --swap west"
-      # "Alt+Shift+J" = "exec yabai -m window --swap south"
-      # "Alt+Shift+K" = "exec yabai -m window --swap north"
-      # "Alt+Shift+L" = "exec yabai -m window --swap east"
-
-      # "Alt+M" = "exec yabai -m window --toggle zoom-fullscreen"
-      # "Alt+F" = "exec yabai -m window --toggle float; yabai -m window --grid 4:4:1:1:2:2"
-
-      # "Alt+Shift+1" = "exec move-to-space 1; yabai -m space --balance"
-      # "Alt+Shift+2" = "exec move-to-space 2; yabai -m space --balance"
-      # "Alt+Shift+3" = "exec move-to-space 3; yabai -m space --balance"
-      # "Alt+Shift+4" = "exec move-to-space 4; yabai -m space --balance"
-      # "Alt+Shift+5" = "exec move-to-space 5; yabai -m space --balance"
-      # "Alt+Shift+6" = "exec move-to-space 6; yabai -m space --balance"
-      # "Alt+Shift+7" = "exec move-to-space 7; yabai -m space --balance"
-      # "Alt+Shift+8" = "exec move-to-space 8; yabai -m space --balance"
-      # "Alt+Shift+9" = "exec move-to-space 9; yabai -m space --balance"
 
       "Alt+Shift+1" = "exec move-to-space 1"
       "Alt+Shift+2" = "exec move-to-space 2"
@@ -86,13 +74,18 @@
       sublayer_keys = "gcrhtnmwv"
 
       # ============================================================================
-      # Quad Grid Navigation
+      # Recursive Grid Navigation
       # ============================================================================
-      [quad_grid]
+      [recursive_grid]
       enabled = true
+      grid_cols = 2
+      grid_rows = 2
       keys = "crtn"
       label_font_family = "JetBrainsMonoNLNFP-Bold"
       line_width = 1
+      min_size_width = 10
+      min_size_height = 10
+      label_color = "#00000000"
 
       # ============================================================================
       # Actions
