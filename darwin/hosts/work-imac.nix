@@ -14,7 +14,6 @@ in
   imports = [
     ../shared/base.nix
     ../shared/nix-settings.nix
-    ../shared/yabai.nix
     ../modules/karabiner.nix
     ../modules/hammerspoon.nix
     (import ../shared/darwin.nix {

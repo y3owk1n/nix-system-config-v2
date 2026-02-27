@@ -5,7 +5,7 @@ _: {
   # Custom tiling window manager for macOS with vim-like keybindings
 
   services.glide-wm = {
-    enable = true;
+    enable = false;
     config = ''
       [settings]
       animate = false

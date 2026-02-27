@@ -31,7 +31,7 @@ This is a project to help me to manage my Nix system configuration, mainly with 
 - Nix: [Determinate Nix](https://determinate.systems)
 - Neovim Version Manager: [nvs](https://github.com/y3owk1n/nvs)
 - Keyboard Remapping: [kanata](https://github.com/jtroo/kanata) - only used to remap on mac default keyboard
-- Tiling Window Manager: ~[aerospace](https://github.com/nikitabobko/AeroSpace)~ [glide wm](https://github.com/glide-wm/glide)
+- Tiling Window Manager: ~[aerospace](https://github.com/nikitabobko/AeroSpace)~ ~[glide wm](https://github.com/glide-wm/glide)~ [yabai](https://github.com/asmvik/yabai)
 - Systemwide vimium: [neru](https://github.com/y3owk1n/neru)
 - Launcher: Spotlight
 - Docker: [orbstack](https://orbstack.dev/)
@@ -42,6 +42,7 @@ This is a project to help me to manage my Nix system configuration, mainly with 
 
 - [wBlock](https://github.com/0xCUB3/wBlock) - content blocker for Safari (ublock alternative)
 - [Refined Github](https://github.com/refined-github/refined-github) - better github experience
+- [raindrop.io](https://raindrop.io/) - link manager for Safari
 
 ## Getting Started
 

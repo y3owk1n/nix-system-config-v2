@@ -92,6 +92,7 @@
       "orbstack"
       "whatsapp"
       "safari-technology-preview"
+      "spaceid" # use together with yabai in home manager
     ];
 
     masApps = { };

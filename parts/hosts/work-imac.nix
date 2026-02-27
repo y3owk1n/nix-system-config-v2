@@ -73,6 +73,8 @@ inputs.darwin.lib.darwinSystem {
           ../../home-manager/custom-modules/rift.nix
           # glide custom
           ../../home-manager/custom-modules/glide-wm.nix
+          # yabai custom
+          ../../home-manager/custom-modules/yabai.nix
         ];
       };
     }
