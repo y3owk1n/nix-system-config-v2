@@ -1,0 +1,69 @@
+{
+  "bundleId": "io.gechr.WhichSpace",
+  "settings": {
+    "clickToSwitchSpaces": false,
+    "dimInactiveSpaces": true,
+    "hideEmptySpaces": false,
+    "hideFullscreenApps": false,
+    "hideSingleSpace": false,
+    "launchAtLogin": true,
+    "localSpaceNumbers": false,
+    "showAllDisplays": false,
+    "showAllSpaces": false,
+    "sizeScale": 90,
+    "soundName": "",
+    "uniqueIconsPerDisplay": false
+  },
+  "spacePreferences": {
+    "fonts": {
+      "1": {
+        "name": "JetBrainsMonoNF-Bold",
+        "size": 14
+      },
+      "2": {
+        "name": "JetBrainsMonoNF-Bold",
+        "size": 14
+      },
+      "3": {
+        "name": "JetBrainsMonoNF-Bold",
+        "size": 14
+      },
+      "4": {
+        "name": "JetBrainsMonoNF-Bold",
+        "size": 14
+      },
+      "5": {
+        "name": "JetBrainsMonoNF-Bold",
+        "size": 14
+      },
+      "6": {
+        "name": "JetBrainsMonoNF-Bold",
+        "size": 14
+      },
+      "7": {
+        "name": "JetBrainsMonoNF-Bold",
+        "size": 14
+      },
+      "8": {
+        "name": "JetBrainsMonoNF-Bold",
+        "size": 14
+      },
+      "9": {
+        "name": "JetBrainsMonoNF-Bold",
+        "size": 14
+      }
+    },
+    "iconStyles": {
+      "1": "transparent",
+      "2": "transparent",
+      "3": "transparent",
+      "4": "transparent",
+      "5": "transparent",
+      "6": "transparent",
+      "7": "transparent",
+      "8": "transparent",
+      "9": "transparent"
+    }
+  },
+  "version": "0.15.1"
+}

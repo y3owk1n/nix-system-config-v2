@@ -393,12 +393,12 @@
         ]
       },
       "locked": {
-        "lastModified": 1772163563,
-        "narHash": "sha256-+AhkTx6cgPrSvmnQA7tCsyDtebb8NNLAYCb4hcAwGNg=",
-        "rev": "dcfc84871c96bfc0fc7c11ef10fb5a32d88d02dc",
-        "revCount": 6293,
+        "lastModified": 1772164835,
+        "narHash": "sha256-zRcwrZDeBfYipqv/7K7TqsfPb87LFU6b7JhoNUGSnvQ=",
+        "rev": "2a39b0828bbffce0d73769a61e46e780488d098b",
+        "revCount": 6296,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/nix-community/home-manager/0.1.6293%2Brev-dcfc84871c96bfc0fc7c11ef10fb5a32d88d02dc/019c9d2f-8b90-7c0f-a98e-74ff6f9e1944/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/nix-community/home-manager/0.1.6296%2Brev-2a39b0828bbffce0d73769a61e46e780488d098b/019c9d42-c4af-7354-bced-6a8b44845f3b/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -424,11 +424,11 @@
     "homebrew-cask": {
       "flake": false,
       "locked": {
-        "lastModified": 1772161996,
-        "narHash": "sha256-Xxx9sD21Q8wLkoJpp5rws1jEh1tOuHct8HPA+n3gros=",
+        "lastModified": 1772172768,
+        "narHash": "sha256-UKJ/5mJ0OymNq+vkkJjb7uCc0c483Xj1BJxDjI/rZwc=",
         "owner": "homebrew",
         "repo": "homebrew-cask",
-        "rev": "62cd0fcf72846e1963fa07742ddd854ee0b87422",
+        "rev": "95c545b7611ac7a65459cca8c7dd265e42b04023",
         "type": "github"
       },
       "original": {
@@ -450,6 +450,22 @@
       "original": {
         "owner": "homebrew",
         "repo": "homebrew-core",
+        "type": "github"
+      }
+    },
+    "homebrew-gechr": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1770769005,
+        "narHash": "sha256-nTrHVFSHO/0QwfQX9csuG/boL1QG6CdrJU9snsYqUaA=",
+        "owner": "gechr",
+        "repo": "homebrew-tap",
+        "rev": "75e3de8f874b614c865048dabe98e033a6d02f5d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gechr",
+        "repo": "homebrew-tap",
         "type": "github"
       }
     },
@@ -829,6 +845,7 @@
         "homebrew-bundle": "homebrew-bundle",
         "homebrew-cask": "homebrew-cask",
         "homebrew-core": "homebrew-core",
+        "homebrew-gechr": "homebrew-gechr",
         "homebrew-y3owk1n": "homebrew-y3owk1n",
         "neru": "neru",
         "nix-homebrew": "nix-homebrew",

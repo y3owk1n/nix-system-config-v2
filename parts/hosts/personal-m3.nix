@@ -94,6 +94,7 @@ inputs.darwin.lib.darwinSystem {
         homebrew-cask
         homebrew-bundle
         homebrew-y3owk1n
+        homebrew-gechr
         ;
     })
   ];
