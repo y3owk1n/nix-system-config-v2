@@ -12,7 +12,7 @@
     # package = pkgs.neru-source.overrideAttrs (_: {
     #   postPatch = ''
     #     substituteInPlace go.mod \
-    #       --replace-fail "go 1.26.0" "go 1.25.5"
+    #       --replace-fail "go 1.26.0" "go 1.25.7"
     #
     #     # Verify it worked
     #     echo "=== go.mod after patch ==="
@@ -24,7 +24,6 @@
       # General Settings
       # ============================================================================
       [general]
-      restore_cursor_position = false
       mode_exit_keys = ["escape", "Ctrl+C"]
       hide_overlay_in_screen_share = true
 
@@ -37,7 +36,8 @@
 
       # These keys dont have to be here, i didn't want to install another program to run these
       "Cmd+Alt+Shift+Ctrl+F" = "exec open -a \"Finder\""
-      "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Safari Technology Preview\""
+      "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Helium\""
+      # "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Safari Technology Preview\""
       "Cmd+Alt+Shift+Ctrl+T" = "exec open -a \"Ghostty\""
       "Cmd+Alt+Shift+Ctrl+N" = "exec open -a \"Notes\""
       "Cmd+Alt+Shift+Ctrl+R" = "exec open -a \"Reminders\""
@@ -92,9 +92,11 @@
       # ============================================================================
       [grid]
       enabled = false
-      font_family = "JetBrainsMonoNLNFP-Bold"
       characters = "aoeuidhtnspyfgcrlqjkxbmwvz"  # Dvorak-optimized character set
       sublayer_keys = "gcrhtnmwv"
+
+      [grid.ui]
+      font_family = "JetBrainsMonoNLNFP-Bold"
 
       # ============================================================================
       # Recursive Grid Navigation
@@ -104,16 +106,20 @@
       grid_cols = 2
       grid_rows = 2
       keys = "crtn"
-      label_font_family = "JetBrainsMonoNLNFP-Bold"
-      line_width = 1
       min_size_width = 10
       min_size_height = 10
-      label_color = "#00000000"
+      reset_key = ","
+
+      [recursive_grid.ui]
+      font_family = "JetBrainsMonoNLNFP-Bold"
+      line_width = 1
+      text_color_light = "#00000000"
+      text_color_dark = "#00000000"
 
       # ============================================================================
       # Mode Indicator
       # ============================================================================
-      [mode_indicator]
+      [mode_indicator.ui]
       font_family = "JetBrainsMonoNLNFP-Bold"
 
       # ============================================================================
@@ -140,13 +146,6 @@
       move_mouse_enabled = true
       steps = 10
       delay = 1
-
-      # ============================================================================
-      # Logging
-      # ============================================================================
-      [logging]
-      log_level = "info"
-      disable_file_logging = true
     '';
   };
 }
