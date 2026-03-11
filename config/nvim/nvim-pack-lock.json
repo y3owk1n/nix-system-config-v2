@@ -14,7 +14,7 @@
       "src": "https://github.com/laytan/cloak.nvim"
     },
     "conform": {
-      "rev": "40dcec5555f960b0a04340d76eabdf4efe78599d",
+      "rev": "086a40dc7ed8242c03be9f47fbcee68699cc2395",
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "dotmd": {
@@ -42,7 +42,7 @@
       "src": "https://github.com/mfussenegger/nvim-lint"
     },
     "lspconfig": {
-      "rev": "2163c54bb6cfec53e3e555665ada945b8c8331b9",
+      "rev": "0203a9608d63eda57679b01e69f33a7b4c34b0d1",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "mini.ai": {
@@ -107,7 +107,7 @@
       "src": "https://github.com/windwp/nvim-ts-autotag"
     },
     "render-markdown": {
-      "rev": "fcea0776a3019f49360b7aaec3318630633c522d",
+      "rev": "e3c18ddd27a853f85a6f513a864cf4f2982b9f26",
       "src": "https://github.com/MeanderingProgrammer/render-markdown.nvim"
     },
     "supermaven-nvim": {
@@ -115,7 +115,7 @@
       "src": "https://github.com/supermaven-inc/supermaven-nvim"
     },
     "tailwind-autosort": {
-      "rev": "b1f74a6aa567849c88bf94f2f2a4643968ca4aa7",
+      "rev": "a6b068c7f3dfda171bd4902d4e8b83250d1fcb89",
       "src": "https://github.com/y3owk1n/tailwind-autosort.nvim"
     },
     "time-machine": {
