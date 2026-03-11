@@ -11,6 +11,7 @@ M.lazy = {
 
 M.registry = {
   { src = "https://github.com/y3owk1n/tailwind-autosort.nvim", name = "tailwind-autosort" },
+  -- { src = "local:tailwind-autosort.nvim", name = "tailwind-autosort" },
 }
 
 function M.setup()
