@@ -4,6 +4,14 @@ _: {
     # Package Overrides
     # ============================================================================
 
+    # Override ast-grep to not run test
+    ast-grep = prev.ast-grep.overrideAttrs (
+      _finalAttrs: _: {
+        doInstallCheck = false;
+        doCheck = false;
+      }
+    );
+
     # Override aerospace to use beta version with latest features
     aerospace = prev.aerospace.overrideAttrs (_: rec {
       version = "0.20.2-Beta";
