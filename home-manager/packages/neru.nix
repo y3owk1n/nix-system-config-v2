@@ -26,6 +26,7 @@
       [general]
       mode_exit_keys = ["escape", "Ctrl+C"]
       hide_overlay_in_screen_share = true
+      passthrough_unbounded_keys = true
 
       # ============================================================================
       # Hotkeys
@@ -106,15 +107,39 @@
       grid_cols = 2
       grid_rows = 2
       keys = "crtn"
-      min_size_width = 10
-      min_size_height = 10
+      min_size_width = 20
+      min_size_height = 20
       reset_key = ","
+
+      [[recursive_grid.layers]]
+      depth = 1
+      grid_cols = 3
+      grid_rows = 2
+      keys = "gcrhtn"
+
+      [[recursive_grid.layers]]
+      depth = 2
+      grid_cols = 3
+      grid_rows = 3
+      keys = "gcrhtnmwv"
+
+      [[recursive_grid.layers]]
+      depth = 3
+      grid_cols = 3
+      grid_rows = 3
+      keys = "gcrhtnmwv"
+
+      [[recursive_grid.layers]]
+      depth = 4
+      grid_cols = 3
+      grid_rows = 3
+      keys = "gcrhtnmwv"
 
       [recursive_grid.ui]
       font_family = "JetBrainsMonoNLNFP-Bold"
       line_width = 1
-      text_color_light = "#00000000"
-      text_color_dark = "#00000000"
+      # text_color_light = "#00000000"
+      # text_color_dark = "#00000000"
 
       # ============================================================================
       # Mode Indicator
