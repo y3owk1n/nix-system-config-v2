@@ -5,7 +5,7 @@
       "src": "https://github.com/y3owk1n/base16-pro-max.nvim"
     },
     "blink.cmp": {
-      "rev": "4b18c32adef2898f95cdef6192cbd5796c1a332d",
+      "rev": "451168851e8e2466bc97ee3e026c3dcb9141ce07",
       "src": "https://github.com/saghen/blink.cmp",
       "version": ">=0.0.0"
     },
@@ -26,7 +26,7 @@
       "src": "https://github.com/rafamadriz/friendly-snippets"
     },
     "grug-far": {
-      "rev": "ac52ee2d87399dfd7b0d59d5b1d2bbaf2a4028f1",
+      "rev": "dc4684e163971bb1f5bfb93fbd4bb3e892bf9b15",
       "src": "https://github.com/MagicDuck/grug-far.nvim"
     },
     "inc_rename": {
@@ -34,7 +34,7 @@
       "src": "https://github.com/smjonas/inc-rename.nvim"
     },
     "lazydev": {
-      "rev": "5231c62aa83c2f8dc8e7ba957aa77098cda1257d",
+      "rev": "ff2cbcba459b637ec3fd165a2be59b7bbaeedf0d",
       "src": "https://github.com/folke/lazydev.nvim"
     },
     "lint": {
@@ -42,7 +42,7 @@
       "src": "https://github.com/mfussenegger/nvim-lint"
     },
     "lspconfig": {
-      "rev": "0203a9608d63eda57679b01e69f33a7b4c34b0d1",
+      "rev": "4d0724be90b633ddce51b328a631060e6acd7d66",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "mini.ai": {
@@ -98,7 +98,7 @@
       "src": "https://github.com/alexghergh/nvim-tmux-navigation"
     },
     "nvim-treesitter": {
-      "rev": "5cb05e1b0fa3c469958a2b26f36b3fe930af221c",
+      "rev": "2f5d4c3f3c675962242096bcc8e586d76dd72eb2",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
     },
