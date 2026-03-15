@@ -84,6 +84,7 @@
     brews = [
       # replacement for `onyx`, `cleanmymac` and `appcleaner`
       "mole"
+      "clang-format"
     ];
 
     casks = [
