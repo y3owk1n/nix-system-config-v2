@@ -37,8 +37,8 @@
 
       # These keys dont have to be here, i didn't want to install another program to run these
       "Cmd+Alt+Shift+Ctrl+F" = "exec open -a \"Finder\""
-      # "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Helium\""
-      "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Safari Technology Preview\""
+      "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Helium\""
+      # "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Safari Technology Preview\""
       "Cmd+Alt+Shift+Ctrl+T" = "exec open -a \"Ghostty\""
       "Cmd+Alt+Shift+Ctrl+N" = "exec open -a \"Notes\""
       "Cmd+Alt+Shift+Ctrl+R" = "exec open -a \"Reminders\""
@@ -139,6 +139,19 @@
       move_mouse_down = "Down"
       move_mouse_left = "Left"
       move_mouse_right = "Right"
+
+      # ============================================================================
+      # Scroll
+      # ============================================================================
+      [scroll.key_bindings]
+      scroll_up = ["k"]
+      scroll_down = ["j"]
+      scroll_left = ["h"]
+      scroll_right = ["l"]
+      go_top = ["gg"]
+      go_bottom = ["Shift+G"]
+      page_up = ["Ctrl+U"]
+      page_down = ["Ctrl+D"]
 
       # ============================================================================
       # Smooth Cursor Movement
