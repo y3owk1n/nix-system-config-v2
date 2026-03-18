@@ -1,9 +1,9 @@
 { pkgs, ... }:
 {
   # ============================================================================
-  # Neru - Vimium-like Browser Extension
+  # Neru - OS wide keyboard navigation
   # ============================================================================
-  # System-wide vimium extension for mouse and keyboard control
+  # System-wide application for mouse and keyboard control
 
   services.neru = {
     enable = true;
