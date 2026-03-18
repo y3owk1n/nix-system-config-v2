@@ -47,7 +47,7 @@ in
     brews = [ ];
 
     casks = [
-      "blender"
+      # "blender"
       "affinity"
       "helium-browser"
       # "firefox"
