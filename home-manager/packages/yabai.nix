@@ -31,7 +31,7 @@ _: {
 
       yabai -m mouse_drop_action swap
 
-      yabai -m rule --add app="^(Finder|System Settings|Archive Utility|Creative Cloud|Logi Options|FaceTime)$" manage=off
+      # yabai -m rule --add app="^(Finder|System Settings|Archive Utility|Creative Cloud|Logi Options|FaceTime)$" manage=off
     '';
   };
 }
