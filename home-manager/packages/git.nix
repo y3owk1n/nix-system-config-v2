@@ -96,6 +96,7 @@
     signing = {
       key = gpgkeyid;
       signByDefault = true;
+      format = "openpgp";
     };
   };
 }
