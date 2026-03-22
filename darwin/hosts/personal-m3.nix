@@ -51,6 +51,8 @@ in
       "affinity"
       "helium-browser"
       # "firefox"
+      # "y3owk1n/tap/neru"
+      # "karabiner-elements"
     ];
 
     masApps = { };
