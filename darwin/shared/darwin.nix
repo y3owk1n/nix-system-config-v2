@@ -92,6 +92,12 @@ in
           # so we do not need to logout and login again to make the changes take effect.
           sudo -i /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
           echo "Reloading settings and applying to current session..."
+
+          # codesign Neru.app
+          if [ -e "/Users/${username}/Applications/Home Manager Apps/Neru.app" ]; then
+            /usr/bin/codesign --force --deep --sign - --timestamp=none "/Users/${username}/Applications/Home Manager Apps/Neru.app"
+            echo "Codesign Neru.app..."
+          fi
         '';
       };
     };
