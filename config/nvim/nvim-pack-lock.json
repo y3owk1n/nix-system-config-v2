@@ -42,7 +42,7 @@
       "src": "https://github.com/mfussenegger/nvim-lint"
     },
     "lspconfig": {
-      "rev": "702f69fb167e9119f14adc4dfd4fcadf4d1b07a0",
+      "rev": "841c6d4139aedb8a3f2baf30cef5327371385b93",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "mini.ai": {
@@ -58,7 +58,7 @@
       "src": "https://github.com/nvim-mini/mini.extra"
     },
     "mini.files": {
-      "rev": "57eb96a828f80efb8095a611e3aafcfa43548f8b",
+      "rev": "b4796e09eb103f9f2d1e00aa2dab3753b879b17b",
       "src": "https://github.com/nvim-mini/mini.files"
     },
     "mini.hipatterns": {
@@ -78,7 +78,7 @@
       "src": "https://github.com/nvim-mini/mini.pairs"
     },
     "mini.pick": {
-      "rev": "96b968dc293729b6ee8770ec1a0e7f7d87ca4cfc",
+      "rev": "8f196683edb7e199dc392a5830cced4ba05671db",
       "src": "https://github.com/nvim-mini/mini.pick"
     },
     "mini.statusline": {
@@ -98,7 +98,7 @@
       "src": "https://github.com/alexghergh/nvim-tmux-navigation"
     },
     "nvim-treesitter": {
-      "rev": "2b50ab5ccbcd9e5708deb351308edd738adbf84c",
+      "rev": "0e0db770f2a3691fae478798342f4ac431accefd",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
     },
