@@ -359,7 +359,7 @@ in
           };
         };
         "com.apple.Safari" = safariSettings;
-        "com.apple.SafariTechnologyPreview" = safariSettings;
+        # "com.apple.SafariTechnologyPreview" = safariSettings;
         "com.apple.AdLib" = {
           allowApplePersonalizedAdvertising = false;
         };

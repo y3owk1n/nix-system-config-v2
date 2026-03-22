@@ -92,7 +92,7 @@
       "rustdesk"
       "orbstack"
       "whatsapp"
-      "safari-technology-preview"
+      # "safari-technology-preview"
       "gechr/tap/whichspace" # use together with yabai in home manager
     ];
 
