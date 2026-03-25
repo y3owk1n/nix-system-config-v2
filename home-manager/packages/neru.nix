@@ -32,6 +32,12 @@
       # Hotkeys
       # ============================================================================
       [hotkeys]
+      # disable defaults
+      "Cmd+Shift+Space" = "__disabled__"
+      "Cmd+Shift+G" = "__disabled__"
+      "Cmd+Shift+C" = "__disabled__"
+      "Cmd+Shift+S" = "__disabled__"
+
       "Ctrl+F" = "recursive_grid"       # Recursive Grid navigation
       "Ctrl+S" = "scroll"               # Scroll mode
 
@@ -117,41 +123,51 @@
       text_color_light = "#00000000"
       text_color_dark = "#00000000"
 
+      [recursive_grid.hotkeys]
+      # disable defaults
+      "Space" = "__disabled__"
+      "Shift+L" = "__disabled__"
+      "Shift+M" = "__disabled__"
+      "Shift+I" = "__disabled__"
+      "Shift+U" = "__disabled__"
+
+      "Ctrl+C" = "idle"
+      "," = "action reset"
+      "Shift+H" = "action left_click"
+      "Shift+N" = "action right_click"
+      "Shift+T" = "action middle_click"
+      "Shift+C" = "action mouse_down"
+      "Shift+R" = "action mouse_up"
+      "Ctrl+J" = "action scroll_down"
+      "Ctrl+K" = "action scroll_up"
+      "Ctrl+H" = "action scroll_left"
+      "Ctrl+L" = "action scroll_right"
+
+      # ============================================================================
+      # Scroll
+      # ============================================================================
+
+      [scroll]
+
+      [scroll.hotkeys]
+      # disable defaults
+      "Shift+L" = "__disabled__"
+      "Shift+M" = "__disabled__"
+      "Shift+I" = "__disabled__"
+      "Shift+U" = "__disabled__"
+
+      "Ctrl+C" = "idle"
+      "Shift+H" = "action left_click"
+      "Shift+N" = "action right_click"
+      "Shift+T" = "action middle_click"
+      "Shift+C" = "action mouse_down"
+      "Shift+R" = "action mouse_up"
+
       # ============================================================================
       # Mode Indicator
       # ============================================================================
       [mode_indicator.ui]
       font_family = "JetBrainsMonoNLNFP-Bold"
-
-      # ============================================================================
-      # Actions
-      # ============================================================================
-      [action]
-      move_mouse_step = 10
-
-      [action.key_bindings]
-      left_click = "Shift+H"
-      middle_click = "Shift+T"
-      right_click = "Shift+N"
-      mouse_down = "Shift+C"
-      mouse_up = "Shift+R"
-      move_mouse_up = "Up"
-      move_mouse_down = "Down"
-      move_mouse_left = "Left"
-      move_mouse_right = "Right"
-
-      # ============================================================================
-      # Scroll
-      # ============================================================================
-      [scroll.key_bindings]
-      scroll_up = ["k"]
-      scroll_down = ["j"]
-      scroll_left = ["h"]
-      scroll_right = ["l"]
-      go_top = ["gg"]
-      go_bottom = ["Shift+G"]
-      page_up = ["Ctrl+U"]
-      page_down = ["Ctrl+D"]
 
       # ============================================================================
       # Smooth Cursor Movement
