@@ -24,7 +24,6 @@
       # General Settings
       # ============================================================================
       [general]
-      mode_exit_keys = ["escape", "Ctrl+C"]
       hide_overlay_in_screen_share = true
       passthrough_unbounded_keys = true
 
@@ -38,8 +37,8 @@
       "Cmd+Shift+C" = "__disabled__"
       "Cmd+Shift+S" = "__disabled__"
 
-      "Ctrl+F" = "recursive_grid"       # Recursive Grid navigation
-      "Ctrl+S" = "scroll"               # Scroll mode
+      "Ctrl+F" = "recursive_grid --cursor-selection-mode hold"
+      "Ctrl+S" = "scroll"
 
       # These keys dont have to be here, i didn't want to install another program to run these
       "Cmd+Alt+Shift+Ctrl+F" = "exec open -a \"Finder\""
@@ -92,18 +91,13 @@
       # Hints
       # ============================================================================
       [hints]
-      enabled = false  # Disabled in favor of grid navigation
+      enabled = false
 
       # ============================================================================
       # Grid Navigation
       # ============================================================================
       [grid]
       enabled = false
-      characters = "aoeuidhtnspyfgcrlqjkxbmwvz"  # Dvorak-optimized character set
-      sublayer_keys = "gcrhtnmwv"
-
-      [grid.ui]
-      font_family = "JetBrainsMonoNLNFP-Bold"
 
       # ============================================================================
       # Recursive Grid Navigation
@@ -113,9 +107,8 @@
       grid_cols = 3
       grid_rows = 3
       keys = "gcrhtnmwv"
-      min_size_width = 20
-      min_size_height = 20
-      reset_key = ","
+      min_size_width = 10
+      min_size_height = 10
 
       [recursive_grid.ui]
       font_family = "JetBrainsMonoNLNFP-Bold"
@@ -130,14 +123,19 @@
       "Shift+M" = "__disabled__"
       "Shift+I" = "__disabled__"
       "Shift+U" = "__disabled__"
+      "Shift+R" = "__disabled__"
+      "`" = "__disabled__"
 
       "Ctrl+C" = "idle"
       "," = "action reset"
-      "Shift+H" = "action left_click"
-      "Shift+N" = "action right_click"
-      "Shift+T" = "action middle_click"
-      "Shift+C" = "action mouse_down"
-      "Shift+R" = "action mouse_up"
+      "Tab" = "toggle-cursor-follow-selection"
+      "'" = "action move_mouse --center"
+      "i" = "action move_mouse"
+      "u" = "action left_click"
+      "e" = "action middle_click"
+      "o" = "action right_click"
+      "." = "action mouse_down"
+      "p" = "action mouse_up"
       "Ctrl+J" = "action scroll_down"
       "Ctrl+K" = "action scroll_up"
       "Ctrl+H" = "action scroll_left"
@@ -155,13 +153,9 @@
       "Shift+M" = "__disabled__"
       "Shift+I" = "__disabled__"
       "Shift+U" = "__disabled__"
+      "Shift+R" = "__disabled__"
 
       "Ctrl+C" = "idle"
-      "Shift+H" = "action left_click"
-      "Shift+N" = "action right_click"
-      "Shift+T" = "action middle_click"
-      "Shift+C" = "action mouse_down"
-      "Shift+R" = "action mouse_up"
 
       # ============================================================================
       # Mode Indicator
@@ -174,9 +168,8 @@
       # ============================================================================
       [smooth_cursor]
       move_mouse_enabled = true
-      steps = 10
-      max_duration = 200
-      duration_per_pixel = 0.1
+      steps = 100
+      max_duration = 50
     '';
   };
 }
