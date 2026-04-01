@@ -7,8 +7,8 @@
 
   services.neru = {
     enable = true;
-    package = pkgs.neru;
-    # package = pkgs.neru-source;
+    # package = pkgs.neru;
+    package = pkgs.neru-source;
     # package = pkgs.neru-source.overrideAttrs (_: {
     #   postPatch = ''
     #     substituteInPlace go.mod \
@@ -38,12 +38,11 @@
       "Cmd+Shift+S" = "__disabled__"
 
       "Ctrl+F" = "recursive_grid --cursor-selection-mode hold"
-      "Ctrl+S" = "scroll"
 
       # These keys dont have to be here, i didn't want to install another program to run these
       "Cmd+Alt+Shift+Ctrl+F" = "exec open -a \"Finder\""
-      "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Helium\""
-      # "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Safari Technology Preview\""
+      # "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Helium\""
+      "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Safari\""
       "Cmd+Alt+Shift+Ctrl+T" = "exec open -a \"Ghostty\""
       "Cmd+Alt+Shift+Ctrl+N" = "exec open -a \"Notes\""
       "Cmd+Alt+Shift+Ctrl+R" = "exec open -a \"Reminders\""
@@ -113,8 +112,7 @@
       [recursive_grid.ui]
       font_family = "JetBrainsMonoNLNFP-Bold"
       line_width = 1
-      text_color_light = "#00000000"
-      text_color_dark = "#00000000"
+      text_color = "#00000000"
 
       [recursive_grid.hotkeys]
       # disable defaults
@@ -128,6 +126,7 @@
 
       "Ctrl+C" = "idle"
       "," = "action reset"
+      "s" = "scroll"
       "Tab" = "toggle-cursor-follow-selection"
       "'" = "action move_mouse --center"
       "i" = "action move_mouse"
@@ -156,6 +155,8 @@
       "Shift+R" = "__disabled__"
 
       "Ctrl+C" = "idle"
+      "s" = "recursive_grid --cursor-selection-mode hold"
+      "'" = "action move_mouse --center"
 
       # ============================================================================
       # Mode Indicator
