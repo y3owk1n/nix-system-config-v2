@@ -42,7 +42,7 @@
       "src": "https://github.com/mfussenegger/nvim-lint"
     },
     "lspconfig": {
-      "rev": "16812abf0e8d8175155f26143a8504e8253e92b0",
+      "rev": "8e2084bf5e40c79c1f42210a6ef96a0a4793a763",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "mini.ai": {
@@ -107,7 +107,7 @@
       "src": "https://github.com/windwp/nvim-ts-autotag"
     },
     "render-markdown": {
-      "rev": "e3c18ddd27a853f85a6f513a864cf4f2982b9f26",
+      "rev": "c7188a8f9d2953696b6303caccbf39c51fa2c1b1",
       "src": "https://github.com/MeanderingProgrammer/render-markdown.nvim"
     },
     "supermaven-nvim": {
