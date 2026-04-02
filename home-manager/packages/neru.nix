@@ -38,6 +38,7 @@
       "Cmd+Shift+S" = "__disabled__"
 
       "Ctrl+F" = "recursive_grid --cursor-selection-mode hold"
+      "Ctrl+S" = "scroll"
 
       # These keys dont have to be here, i didn't want to install another program to run these
       "Cmd+Alt+Shift+Ctrl+F" = "exec open -a \"Finder\""
@@ -108,6 +109,10 @@
       keys = "gcrhtnmwv"
       min_size_width = 10
       min_size_height = 10
+
+      [recursive_grid.animation]
+      enabled = true
+      duration_ms = 180
 
       [recursive_grid.ui]
       font_family = "JetBrainsMonoNLNFP-Bold"
