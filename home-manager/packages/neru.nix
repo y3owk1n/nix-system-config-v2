@@ -124,6 +124,7 @@
       font_family = "JetBrainsMonoNLNFP-Bold"
       line_width = 1
       label_background = true
+      sub_key_preview = true
       # text_color = "#00000000"
 
       [recursive_grid.hotkeys]
@@ -144,7 +145,7 @@
       "/" = "action move_mouse --selection"
       "Enter" = "action left_click"
       "Cmd+Enter" = "action middle_click"
-      "Shift+Enter" = "action right_click"
+      "Alt+Enter" = "action right_click"
       "1" = "action mouse_down"
       "2" = "action mouse_up"
       "Ctrl+J" = "action scroll_down"
