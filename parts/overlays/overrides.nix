@@ -25,19 +25,21 @@ _: {
     # Override kanata to use specific version with custom features
     kanata = prev.kanata.overrideAttrs (
       finalAttrs: _: {
-        cargoHash = "sha256-Qxa90fMZ3c1+jlyxbIkC94DtSQSKFNr2V8GiLII6PNc=";
+        cargoHash = "sha256-GhiPQO2kbx8Y5EnGP+XOa2HNLSuH/YW+Yrxffusnhfo=";
         src = prev.fetchFromGitHub {
           owner = "jtroo";
           repo = "kanata";
-          rev = "v1.11.0";
-          sha256 = "sha256-7rGV0nfI/ntvByz3NQs/2Sa2q/Ml8O3XRD14Mbt5fIU=";
+          rev = "v1.12.0-prerelease-1";
+          sha256 = "sha256-aYKjC4g3QKfTlZsI2axRNdKEzdW9VSb6o7EtRBmQiqY=";
         };
-        version = "1.11.0";
+        version = "v1.12.0-prerelease-1";
 
         cargoDeps = prev.rustPlatform.fetchCargoVendor {
           inherit (finalAttrs) pname src version;
           hash = finalAttrs.cargoHash;
         };
+
+        doInstallCheck = false; # do not check for --version matches for prereleases
       }
     );
 
