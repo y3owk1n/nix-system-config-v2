@@ -62,7 +62,7 @@ vim.keymap.set(
 --  Update vim.pack
 -- =========================================================
 vim.keymap.set("n", "<leader>pu", function()
-  vim.pack.update()
+  vim.pack.update(nil, { target = "lockfile" })
 end, { desc = "Pack update" })
 
 -- =========================================================
