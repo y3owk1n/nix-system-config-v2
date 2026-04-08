@@ -33,7 +33,13 @@ _: {
         }
         {
           name = "neovim config";
-          path = "~/nix-system-config-v2/config/nvim";
+          path = "~/nix-system-config-v2/config/nvim-min";
+        }
+        {
+          name = "yabai config";
+          path = "~/nix-system-config-v2/home-manager/packages";
+          startup_command = "nvim yabai.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/home-manager/packages/yabai.nix";
         }
         {
           name = "sesh config";
@@ -54,16 +60,10 @@ _: {
           preview_command = "bat --color=always ~/nix-system-config-v2/home-manager/packages/tmux.nix";
         }
         {
-          name = "skhd config";
+          name = "neru config";
           path = "~/nix-system-config-v2/home-manager/packages";
-          startup_command = "nvim skhd.nix";
-          preview_command = "bat --color=always ~/nix-system-config-v2/home-manager/packages/skhd.nix";
-        }
-        {
-          name = "hammerspoon config";
-          path = "~/nix-system-config-v2/config/hammerspoon";
-          startup_command = "nvim init.lua";
-          preview_command = "bat --color=always ~/nix-system-config-v2/config/hammerspoon/init.lua";
+          startup_command = "nvim neru.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/home-manager/packages/neru.nix";
         }
         {
           name = "btop";
