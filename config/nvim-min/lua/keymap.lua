@@ -26,6 +26,39 @@ vim.keymap.set("n", "<leader>gd", function()
 end, { desc = "Toggle diff overlay" })
 
 -- =========================================================
+--  Restart
+-- =========================================================
+
+vim.keymap.set("n", "<leader>R", function()
+  require("custom.restart").save_restart()
+end, { desc = "Save and restart" })
+
+-- =========================================================
+--  Markdown utils
+-- =========================================================
+
+vim.keymap.set(
+  "n",
+  "<leader>cc",
+  require("custom.markdown-utils").toggle_markdown_checkbox,
+  { desc = "Toggle markdown checkbox" }
+)
+
+vim.keymap.set(
+  "n",
+  "<leader>cgC",
+  require("custom.markdown-utils").insert_markdown_checkbox,
+  { desc = "Insert markdown checkbox" }
+)
+
+vim.keymap.set(
+  "n",
+  "<leader>cgc",
+  require("custom.markdown-utils").insert_markdown_checkbox_below,
+  { desc = "Insert checkbox below" }
+)
+
+-- =========================================================
 --  Update vim.pack
 -- =========================================================
 vim.keymap.set("n", "<leader>pu", function()

@@ -16,7 +16,7 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- =========================================================
---  Native completion on LSP attached
+--  LSP attached with actions
 -- =========================================================
 vim.api.nvim_create_autocmd("LspAttach", {
   group = augroup("lsp"),
@@ -35,6 +35,10 @@ vim.api.nvim_create_autocmd("LspAttach", {
         end,
       })
     end
+
+    vim.keymap.set("n", "<leader>cr", function()
+      require("custom.lsp-rename").rename_file()
+    end, { desc = "Rename file" })
   end,
 })
 
