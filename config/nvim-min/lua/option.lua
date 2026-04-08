@@ -183,7 +183,7 @@ vim.cmd("syntax off")
 -- =========================================================
 if vim.fn.executable("rg") == 1 then
   function _G.RgFindFiles(cmdarg)
-    local fnames = vim.fn.systemlist('rg --files --hidden --color=never --glob="!.git"')
+    local fnames = vim.fn.systemlist('rg --sort=path --files --hidden --color=never --glob="!.git"')
     if #cmdarg == 0 then
       return fnames
     else
