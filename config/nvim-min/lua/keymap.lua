@@ -72,43 +72,84 @@ end
 -- =========================================================
 local original_qf = nil
 
--- Fuzzy scoring (higher = better match)
 local function fuzzy_score(str, query)
   str = str:lower()
   query = query:lower()
 
-  local score = 0
-  local str_len = #str
-  local query_len = #query
-
-  local i = 1
-  local last_match_pos = 0
-
-  for j = 1, str_len do
-    if str:sub(j, j) == query:sub(i, i) then
-      -- base match
-      score = score + 1
-
-      -- bonus for consecutive matches
-      if last_match_pos == j - 1 then
-        score = score + 2
-      end
-
-      -- bonus for word/path boundaries
-      if j == 1 or str:sub(j - 1, j - 1):match("[/._-]") then
-        score = score + 2
-      end
-
-      last_match_pos = j
-      i = i + 1
-
-      if i > query_len then
-        return score
-      end
-    end
+  -- Exact match (strongest)
+  if str == query then
+    return 10000
   end
 
-  return nil
+  -- Split query into tokens
+  local tokens = {}
+  for token in query:gmatch("%S+") do
+    tokens[#tokens + 1] = token
+  end
+
+  local total_score = 0
+
+  for _, token in ipairs(tokens) do
+    local score = 0
+    local i = 1
+    local last_match = 0
+
+    for j = 1, #str do
+      if str:sub(j, j) == token:sub(i, i) then
+        -- base match
+        score = score + 1
+
+        -- consecutive bonus
+        if last_match == j - 1 then
+          score = score + 4
+        end
+
+        -- boundary bonus (very important for paths)
+        if j == 1 or str:sub(j - 1, j - 1):match("[/._%-]") then
+          score = score + 6
+        end
+
+        last_match = j
+        i = i + 1
+
+        if i > #token then
+          break
+        end
+      end
+    end
+
+    -- token not fully matched → reject
+    if i <= #token then
+      return nil
+    end
+
+    -- substring bonus (strong signal)
+    local s = str:find(token, 1, true)
+    if s then
+      score = score + 8
+
+      -- extra bonus if near start
+      if s == 1 then
+        score = score + 4
+      end
+    end
+
+    total_score = total_score + score
+  end
+
+  -- === GLOBAL RANKING TWEAKS ===
+
+  -- Prefer shorter paths
+  total_score = total_score - (#str * 0.02)
+
+  -- Prefer filename matches over directories
+  local filename = str:match("[^/]+$") or str
+  local last_token = tokens[#tokens]
+  if last_token and filename:find(last_token, 1, true) then
+    total_score = total_score + 12
+  end
+
+  return total_score
 end
 
 local function build_file_list()
@@ -135,27 +176,27 @@ end
 vim.keymap.set("n", "<leader><leader>", function()
   local qf = vim.fn.getqflist()
 
-  -- Build list if not initialized
+  -- Initialize original list if needed
   if not original_qf or #qf == 0 then
     build_file_list()
-    vim.cmd("copen")
+    original_qf = vim.fn.getqflist()
   end
 
+  -- Ask first (no UI yet)
   local query = vim.fn.input("Fuzzy filter: ")
+
+  -- Cancel / empty input → restore but DON'T open
   if query == "" then
-    -- reset to full list if empty input
     if original_qf then
       vim.fn.setqflist(original_qf, "r")
-      vim.cmd("copen")
     end
     return
   end
 
-  local source = original_qf or vim.fn.getqflist()
+  local source = original_qf or {}
 
   -- Score + collect
   local scored = {}
-
   for _, item in ipairs(source) do
     if item.text then
       local score = fuzzy_score(item.text, query)
@@ -168,17 +209,24 @@ vim.keymap.set("n", "<leader><leader>", function()
     end
   end
 
-  -- Sort by score (descending)
+  -- If nothing matched → don't open, just notify
+  if #scored == 0 then
+    vim.notify("No matches", vim.log.levels.INFO)
+    return
+  end
+
+  -- Sort
   table.sort(scored, function(a, b)
     return a.score > b.score
   end)
 
-  -- Extract items
+  -- Extract
   local filtered = {}
   for _, v in ipairs(scored) do
     table.insert(filtered, v.item)
   end
 
+  -- Apply + open ONLY now
   vim.fn.setqflist(filtered, "r")
   vim.cmd("copen")
 end)
