@@ -102,7 +102,6 @@ vim.opt.wildignore:append({
 vim.opt.swapfile = false
 vim.opt.confirm = true
 vim.opt.updatetime = 50
-vim.opt.timeoutlen = 300
 
 -- =========================================================
 --  Statusline
@@ -178,3 +177,19 @@ end)
 -- =========================================================
 -- Only highlight with treesitter
 vim.cmd("syntax off")
+
+-- =========================================================
+--  Fuzzy find function
+-- =========================================================
+if vim.fn.executable("rg") == 1 then
+  function _G.RgFindFiles(cmdarg)
+    local fnames = vim.fn.systemlist('rg --files --hidden --color=never --glob="!.git"')
+    if #cmdarg == 0 then
+      return fnames
+    else
+      return vim.fn.matchfuzzy(fnames, cmdarg)
+    end
+  end
+
+  vim.o.findfunc = "v:lua.RgFindFiles"
+end
