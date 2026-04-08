@@ -133,6 +133,44 @@ require("mini.files").setup({
     trim_left = "<",
     trim_right = ">",
   },
-  options = { use_as_default_explorer = true },
-  content = { prefix = function() end },
 })
+
+-- =========================================================
+--  Git Diff
+-- =========================================================
+require("mini.diff").setup({
+  view = {
+    style = "sign",
+    signs = {
+      add = "▎",
+      change = "▎",
+      delete = "",
+    },
+  },
+})
+
+-- =========================================================
+--  Icons
+-- =========================================================
+require("mini.icons").setup({
+  file = {
+    [".keep"] = { glyph = "󰊢", hl = "MiniIconsGrey" },
+    ["devcontainer.json"] = { glyph = "", hl = "MiniIconsAzure" },
+    [".go-version"] = { glyph = "", hl = "MiniIconsBlue" },
+    [".eslintrc.js"] = { glyph = "󰱺", hl = "MiniIconsYellow" },
+    [".node-version"] = { glyph = "", hl = "MiniIconsGreen" },
+    [".prettierrc"] = { glyph = "", hl = "MiniIconsPurple" },
+    [".yarnrc.yml"] = { glyph = "", hl = "MiniIconsBlue" },
+    ["eslint.config.js"] = { glyph = "󰱺", hl = "MiniIconsYellow" },
+    ["package.json"] = { glyph = "", hl = "MiniIconsGreen" },
+    ["tsconfig.json"] = { glyph = "", hl = "MiniIconsAzure" },
+    ["tsconfig.build.json"] = { glyph = "", hl = "MiniIconsAzure" },
+    ["yarn.lock"] = { glyph = "", hl = "MiniIconsBlue" },
+  },
+  filetype = {
+    dotenv = { glyph = "", hl = "MiniIconsYellow" },
+    gotmpl = { glyph = "󰟓", hl = "MiniIconsGrey" },
+  },
+})
+
+require("mini.icons").mock_nvim_web_devicons()

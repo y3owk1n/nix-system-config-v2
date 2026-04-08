@@ -8,6 +8,9 @@ require("base16-pro-max").setup({
   },
   plugins = {
     enable_all = false,
+    nvim_mini_mini_diff = true,
+    nvim_mini_mini_icons = true,
+    nvim_mini_mini_files = true,
   },
 })
 

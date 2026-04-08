@@ -11,6 +11,8 @@ vim.pack.add({
   "https://github.com/mfussenegger/nvim-lint",
   "https://github.com/supermaven-inc/supermaven-nvim",
   "https://github.com/nvim-mini/mini.files",
+  "https://github.com/nvim-mini/mini.diff",
+  "https://github.com/nvim-mini/mini.icons",
 })
 
 -- =========================================================

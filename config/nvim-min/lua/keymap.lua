@@ -18,6 +18,14 @@ vim.keymap.set("n", "<leader>E", function()
 end, { desc = "Explorer (cwd)" })
 
 -- =========================================================
+--  Toggle git diffs with mini.diff
+-- =========================================================
+
+vim.keymap.set("n", "<leader>gd", function()
+  require("mini.diff").toggle_overlay(0)
+end, { desc = "Toggle diff overlay" })
+
+-- =========================================================
 --  Update vim.pack
 -- =========================================================
 vim.keymap.set("n", "<leader>pu", function()
