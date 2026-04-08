@@ -17,6 +17,7 @@ vim.opt.signcolumn = "yes"
 vim.opt.winborder = "rounded"
 vim.opt.fillchars = { eob = " " }
 vim.opt.linebreak = true
+vim.opt.showtabline = 0
 
 -- =========================================================
 --  Window Behaviour
@@ -71,10 +72,37 @@ vim.opt.undolevels = 10000
 vim.opt.undodir = os.getenv("HOME") .. "/.vim/undodir"
 
 -- =========================================================
+--  Spelling
+-- =========================================================
+vim.opt.iskeyword:append("-")
+
+-- =========================================================
+--  Wildmenu
+-- =========================================================
+vim.opt.wildmenu = true
+vim.opt.wildignorecase = true
+vim.opt.path:append("**")
+vim.opt.wildignore:append({
+  ".git,.hg,.svn",
+  ".aux,*.out,*.toc",
+  ".o,*.obj,*.exe,*.dll,*.manifest,*.rbc,*.class",
+  ".ai,*.bmp,*.gif,*.ico,*.jpg,*.jpeg,*.png,*.psd,*.webp",
+  ".avi,*.divx,*.mp4,*.webm,*.mov,*.m2ts,*.mkv,*.vob,*.mpg,*.mpeg",
+  ".mp3,*.oga,*.ogg,*.wav,*.flac",
+  ".eot,*.otf,*.ttf,*.woff",
+  ".doc,*.pdf,*.cbr,*.cbz",
+  ".zip,*.tar.gz,*.tar.bz2,*.rar,*.tar.xz,*.kgb",
+  ".swp,.lock,.DS_Store,._*",
+  ".,..",
+})
+
+-- =========================================================
 --  Others
 -- =========================================================
 vim.opt.swapfile = false
 vim.opt.confirm = true
+vim.opt.updatetime = 50
+vim.opt.timeoutlen = 300
 
 -- =========================================================
 --  Statusline
