@@ -218,15 +218,6 @@ vim.keymap.set("v", "J", ":m '>+1<cr> | :normal gv=gv<cr>")
 vim.keymap.set("v", "K", ":m '<-2<cr> | :normal gv=gv<cr>")
 
 -- =========================================================
---  LSP
--- =========================================================
-vim.keymap.set("n", "grd", vim.lsp.buf.definition)
-vim.keymap.set("n", "grr", vim.lsp.buf.references)
-vim.keymap.set("n", "gri", vim.lsp.buf.implementation)
-vim.keymap.set("n", "grt", vim.lsp.buf.type_definition)
-vim.keymap.set("n", "grs", vim.lsp.buf.document_symbol)
-
--- =========================================================
 --  Disable some default mappings
 -- =========================================================
 vim.keymap.set({ "n", "x" }, "Q", "<nop>")

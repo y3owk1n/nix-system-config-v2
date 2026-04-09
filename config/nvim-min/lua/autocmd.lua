@@ -21,6 +21,8 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd("LspAttach", {
   group = augroup("lsp"),
   callback = function(args)
+    local bufnr = args.buf
+
     vim.o.signcolumn = "yes:1"
     local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
 
@@ -36,9 +38,13 @@ vim.api.nvim_create_autocmd("LspAttach", {
       })
     end
 
+    -- rename filename
     vim.keymap.set("n", "<leader>cr", function()
       require("custom.lsp-rename").rename_file()
-    end, { desc = "Rename file" })
+    end, { buffer = bufnr, desc = "Rename file" })
+
+    -- lsp thingy (the rest are already included by neovim default)
+    vim.keymap.set("n", "grd", vim.lsp.buf.definition, { buffer = bufnr, desc = "Go to definition" })
   end,
 })
 
