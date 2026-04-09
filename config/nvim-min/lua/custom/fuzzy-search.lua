@@ -117,30 +117,7 @@ local function lua_fuzzy_match(items, query)
     return items
   end
 
-  local q = query:lower()
-  local results = {}
-  local cap = M.config.max_results or math.huge
-
-  for _, v in ipairs(items) do
-    if #results >= cap then
-      break
-    end
-    local name = v:lower()
-    local pos = 1
-    local matched = true
-    for i = 1, #q do
-      local s, e = name:find(q:sub(i, i), pos, true)
-      if not s then
-        matched = false
-        break
-      end
-      pos = e + 1
-    end
-    if matched then
-      table.insert(results, v)
-    end
-  end
-
+  local results = vim.fn.matchfuzzy(items, query, { matchseq = 0 })
   return results
 end
 
@@ -239,26 +216,35 @@ local function highlight_qf_files(query)
     return
   end
   local buf = vim.api.nvim_win_get_buf(qf_winid)
-
   vim.api.nvim_buf_clear_namespace(buf, qf_ns, 0, -1)
 
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-  local q = query:lower()
+  local search = query:lower()
 
   for lnum, line in ipairs(lines) do
-    local haystack = line:lower()
-    local pos = 1
-    for i = 1, #q do
-      local c = q:sub(i, i)
-      local s, e = haystack:find(c, pos, true)
-      if not s then
-        break
+    local filename = line:match("^([^|]+)")
+    if filename then
+      local haystack = filename:lower()
+
+      -- try substring match first
+      local ms, me = haystack:find(search, 1, true)
+      if ms then
+        vim.api.nvim_buf_set_extmark(buf, qf_ns, lnum - 1, ms - 1, {
+          end_col = me,
+          hl_group = "Search",
+        })
+      else
+        -- fall back to individual fuzzy character positions
+        local _, _, positions = vim.fn.matchfuzzypos({ filename }, query, { matchseq = 0 })
+        if positions and positions[1] then
+          for _, col in ipairs(positions[1]) do
+            vim.api.nvim_buf_set_extmark(buf, qf_ns, lnum - 1, col - 1, {
+              end_col = col,
+              hl_group = "Search",
+            })
+          end
+        end
       end
-      vim.api.nvim_buf_set_extmark(buf, qf_ns, lnum - 1, s - 1, {
-        end_col = e,
-        hl_group = "Search",
-      })
-      pos = e + 1
     end
   end
 end
@@ -270,7 +256,6 @@ end
 ---@class FuzzySearch.Config
 ---@field debounce_ms?    number    ms to debounce CmdlineChanged (default 50)
 ---@field max_files?      number    optional file list cap
----@field max_results?    number    max fuzzy match results returned (default 200)
 ---@field grep_flags?     string[]  extra rg flags for every grep run
 ---@field respect_ignore? boolean   honour .gitignore / .rgignore (default true)
 
@@ -279,7 +264,6 @@ M.config = {}
 local default_config = {
   debounce_ms = 50,
   max_files = nil,
-  max_results = 200,
   grep_flags = {},
   respect_ignore = true,
 }
@@ -373,6 +357,7 @@ function M.files(query)
     items = qf_items,
   })
   vim.cmd("copen")
+
   highlight_qf_files(query)
 end
 
