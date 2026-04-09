@@ -191,3 +191,10 @@ require("custom.bigfile").setup()
 --  Markdown utils
 -- =========================================================
 require("custom.markdown-utils").setup()
+
+-- =========================================================
+--  Fuzzy search
+-- =========================================================
+require("custom.fuzzy-search").setup({
+  grep_flags = { "--smart-case" },
+})

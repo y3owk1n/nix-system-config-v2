@@ -12,6 +12,9 @@ require("base16-pro-max").setup({
     nvim_mini_mini_icons = true,
     nvim_mini_mini_files = true,
   },
+  highlight_groups = {
+    QuickFixLine = { fg = "red" },
+  },
 })
 
 vim.cmd.colorscheme("base16-pro-max")

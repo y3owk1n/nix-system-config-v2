@@ -185,33 +185,3 @@ vim.api.nvim_create_autocmd("PackChanged", {
     end
   end,
 })
-
--- =========================================================
---  Trigger fuzzy finder
--- =========================================================
-local function is_cmdline_type_find()
-  local cmdline_cmd = vim.fn.split(vim.fn.getcmdline(), " ")[1]
-
-  return cmdline_cmd == "find" or cmdline_cmd == "fin"
-end
-
-vim.api.nvim_create_autocmd({ "CmdlineChanged", "CmdlineLeave" }, {
-  pattern = { "*" },
-  group = augroup("CmdlineAutocompletion"),
-  callback = function(ev)
-    local function should_enable_autocomplete()
-      local cmdline_cmd = vim.fn.split(vim.fn.getcmdline(), " ")[1]
-
-      return is_cmdline_type_find() or cmdline_cmd == "help" or cmdline_cmd == "h"
-    end
-
-    if ev.event == "CmdlineChanged" and should_enable_autocomplete() then
-      vim.opt.wildmode = "noselect:lastused,full"
-      vim.fn.wildtrigger()
-    end
-
-    if ev.event == "CmdlineLeave" then
-      vim.opt.wildmode = "full"
-    end
-  end,
-})

@@ -177,19 +177,3 @@ end)
 -- =========================================================
 -- Only highlight with treesitter
 vim.cmd("syntax off")
-
--- =========================================================
---  Fuzzy find function
--- =========================================================
-if vim.fn.executable("rg") == 1 then
-  function _G.RgFindFiles(cmdarg)
-    local fnames = vim.fn.systemlist('rg --sort=path --files --hidden --color=never --glob="!.git"')
-    if #cmdarg == 0 then
-      return fnames
-    else
-      return vim.fn.matchfuzzy(fnames, cmdarg)
-    end
-  end
-
-  vim.o.findfunc = "v:lua.RgFindFiles"
-end

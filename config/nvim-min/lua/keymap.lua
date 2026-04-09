@@ -118,74 +118,15 @@ vim.keymap.set("n", "<leader>sh", ":help<space>", { desc = "Fuzzy find help" })
 -- =========================================================
 vim.keymap.set("n", "<leader><leader>", ":find<space>", { desc = "Fuzzy find files" })
 
--- =========================================================
---  Grep texts with rg
--- =========================================================
-vim.keymap.set("n", "<leader>sg", function()
-  local input = vim.fn.input("Grep > ")
-  if input == "" then
-    return
-  end
-
-  local cmd = "rg --vimgrep " .. vim.fn.shellescape(input)
-
-  vim.fn.setqflist({}, " ", {
-    title = "Grep: " .. input,
-    lines = vim.fn.systemlist(cmd),
-  })
-
-  vim.cmd("copen")
-end)
-
--- =========================================================
---  Files that are changed in git
--- =========================================================
-vim.keymap.set("n", "<leader>gf", function()
-  local root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
-  if not root or root == "" then
-    print("Not in a git repo")
-    return
-  end
-
-  -- Collect files from all states
-  local staged = vim.fn.systemlist("git diff --cached --name-only")
-  local unstaged = vim.fn.systemlist("git diff --name-only")
-  local untracked = vim.fn.systemlist("git ls-files --others --exclude-standard")
-
-  -- Merge + deduplicate
-  local seen = {}
-  local all_files = {}
-
-  local function add(files)
-    for _, f in ipairs(files) do
-      if f ~= "" and not seen[f] then
-        seen[f] = true
-        table.insert(all_files, f)
-      end
-    end
-  end
-
-  add(staged)
-  add(unstaged)
-  add(untracked)
-
-  -- Build quickfix items
-  local items = {}
-  for _, f in ipairs(all_files) do
-    table.insert(items, {
-      filename = root .. "/" .. f,
-      lnum = 1,
-      text = f,
-    })
-  end
-
-  vim.fn.setqflist({}, " ", {
-    title = "Git Files (All)",
-    items = items,
-  })
-
-  vim.cmd("copen")
-end)
+vim.keymap.set("n", "<leader>sf", require("custom.fuzzy-search").files, { desc = "Files fuzzy" })
+vim.keymap.set("n", "<leader>sg", require("custom.fuzzy-search").grep, { desc = "Grep text" })
+vim.keymap.set("n", "<leader>sw", function()
+  require("custom.fuzzy-search").grep(vim.fn.expand("<cword>"))
+end, { desc = "Grep word" })
+vim.keymap.set("n", "<leader>sr", require("custom.fuzzy-search").grep_last, { desc = "Grep repeat" })
+vim.keymap.set("n", "<leader>st", function()
+  require("custom.fuzzy-search").grep({ "TODO", "FIXME", "HACK" })
+end, { desc = "Grep TODOs" })
 
 -- =========================================================
 --  Movement enhancements
