@@ -1,24 +1,3 @@
-vim.lsp.enable({
-  "bashls",
-  "biome",
-  "clangd",
-  "docker_language_server",
-  "docker_compose_language_service",
-  "eslint",
-  "gh_actions_ls",
-  "gopls",
-  "jsonls",
-  "just",
-  "lua_ls",
-  "marksman",
-  "nixd",
-  "prismals",
-  "rust_analyzer",
-  "tailwindcss",
-  "vtsls",
-  "yamlls",
-})
-
 -- =========================================================
 --  Just overrides
 -- =========================================================
@@ -43,6 +22,7 @@ vim.lsp.config("lua_ls", {
         library = { vim.env.VIMRUNTIME },
         checkThirdParty = false,
       },
+      telemetry = { enable = false },
     },
   },
 })
@@ -142,4 +122,28 @@ vim.lsp.config("tailwindcss", {
       end
     end
   end,
+})
+
+-- =========================================================
+--  Enable LSPs
+-- =========================================================
+vim.lsp.enable({
+  "bashls",
+  "biome",
+  "clangd",
+  "docker_language_server",
+  "docker_compose_language_service",
+  "eslint",
+  "gh_actions_ls",
+  "gopls",
+  "jsonls",
+  "just",
+  "lua_ls",
+  "marksman",
+  "nixd",
+  "prismals",
+  "rust_analyzer",
+  "tailwindcss",
+  "vtsls",
+  "yamlls",
 })
