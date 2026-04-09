@@ -104,17 +104,11 @@
       # ============================================================================
       [recursive_grid]
       enabled = true
-      grid_cols = 5
-      grid_rows = 6
-      keys = "',.pyaoeui;qjkxfgcrldhtnsbmwvz"
-      # min_size_width = 10
-      # min_size_height = 10
-
-      [[recursive_grid.layers]]
-      depth = 2
-      grid_cols = 4
-      grid_rows = 2
-      keys = "htnsmwvz"
+      grid_cols = 3
+      grid_rows = 3
+      keys = "gcrhtnmwv"
+      min_size_width = 10
+      min_size_height = 10
 
       [recursive_grid.animation]
       enabled = true
@@ -123,9 +117,7 @@
       [recursive_grid.ui]
       font_family = "JetBrainsMonoNLNFP-Bold"
       line_width = 1
-      label_background = true
-      sub_key_preview = true
-      # text_color = "#00000000"
+      text_color = "#00000000"
 
       [recursive_grid.hotkeys]
       # disable defaults
@@ -138,16 +130,16 @@
       "`" = "__disabled__"
 
       "Ctrl+C" = "idle"
-      "=" = "action reset"
-      # "s" = "scroll"
+      "," = "action reset"
+      "s" = "scroll"
       "Tab" = "toggle-cursor-follow-selection"
-      "-" = "action move_mouse --center"
-      "/" = "action move_mouse --selection"
-      "Enter" = "action left_click"
-      "Cmd+Enter" = "action middle_click"
-      "Alt+Enter" = "action right_click"
-      "1" = "action mouse_down"
-      "2" = "action mouse_up"
+      "'" = "action move_mouse --center"
+      "i" = "action move_mouse"
+      "u" = "action left_click"
+      "e" = "action middle_click"
+      "o" = "action right_click"
+      "." = "action mouse_down"
+      "p" = "action mouse_up"
       "Ctrl+J" = "action scroll_down"
       "Ctrl+K" = "action scroll_up"
       "Ctrl+H" = "action scroll_left"
@@ -168,6 +160,7 @@
       "Shift+R" = "__disabled__"
 
       "Ctrl+C" = "idle"
+      "s" = "recursive_grid --cursor-selection-mode hold"
       "'" = "action move_mouse --center"
 
       # ============================================================================
