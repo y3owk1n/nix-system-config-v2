@@ -1,12 +1,14 @@
 -- =========================================================
 --  Leader keys
 -- =========================================================
+
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 -- =========================================================
 --  UI
 -- =========================================================
+
 vim.opt.termguicolors = true
 vim.opt.colorcolumn = "120"
 vim.opt.scrolloff = 8
@@ -22,6 +24,7 @@ vim.opt.showtabline = 0
 -- =========================================================
 --  Window Behaviour
 -- =========================================================
+
 vim.opt.virtualedit = "block"
 vim.opt.splitkeep = "screen"
 vim.opt.splitright = true
@@ -30,23 +33,27 @@ vim.opt.splitbelow = true
 -- =========================================================
 --  Line numbers
 -- =========================================================
+
 vim.opt.number = true
 vim.opt.relativenumber = true
 
 -- =========================================================
 --  Mouse
 -- =========================================================
+
 vim.opt.mouse = ""
 
 -- =========================================================
 --  Completions
 -- =========================================================
+
 vim.opt.inccommand = "split"
 vim.opt.completeopt = "menu,menuone,fuzzy,noinsert"
 
 -- =========================================================
 --  Indentations
 -- =========================================================
+
 vim.opt.expandtab = true
 vim.opt.shiftround = true
 vim.opt.smartindent = true
@@ -55,6 +62,7 @@ vim.opt.breakindent = true
 -- =========================================================
 --  Searches
 -- =========================================================
+
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.infercase = true
@@ -67,6 +75,7 @@ vim.opt.wildoptions:append({ "fuzzy" })
 -- =========================================================
 --  Undos
 -- =========================================================
+
 vim.opt.undofile = true
 vim.opt.undolevels = 10000
 vim.opt.undodir = os.getenv("HOME") .. "/.vim/undodir"
@@ -74,11 +83,13 @@ vim.opt.undodir = os.getenv("HOME") .. "/.vim/undodir"
 -- =========================================================
 --  Spelling
 -- =========================================================
+
 vim.opt.iskeyword:append("-")
 
 -- =========================================================
 --  Wildmenu
 -- =========================================================
+
 vim.opt.wildmenu = true
 vim.opt.wildignorecase = true
 vim.opt.path:append("**")
@@ -99,6 +110,7 @@ vim.opt.wildignore:append({
 -- =========================================================
 --  Others
 -- =========================================================
+
 vim.opt.swapfile = false
 vim.opt.confirm = true
 vim.opt.updatetime = 50
@@ -148,6 +160,7 @@ vim.opt.statusline = table.concat({
 -- =========================================================
 --  Clipboard
 -- =========================================================
+
 vim.schedule(function()
   -- vim.opt.clipboard = "unnamedplus"
 
@@ -175,5 +188,6 @@ end)
 -- =========================================================
 --  Syntax / Highlighting
 -- =========================================================
+
 -- Only highlight with treesitter
 vim.cmd("syntax off")

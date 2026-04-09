@@ -8,6 +8,7 @@ end
 -- =========================================================
 --  Start Treesitter
 -- =========================================================
+
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("treesitter"),
   callback = function()
@@ -18,6 +19,7 @@ vim.api.nvim_create_autocmd("FileType", {
 -- =========================================================
 --  LSP attached with actions
 -- =========================================================
+
 vim.api.nvim_create_autocmd("LspAttach", {
   group = augroup("lsp"),
   callback = function(args)
@@ -51,6 +53,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 -- =========================================================
 --  Yank highlight
 -- =========================================================
+
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = augroup("text_yank_post"),
   callback = function()
@@ -61,6 +64,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 -- =========================================================
 --  Close quickfix window on enter
 -- =========================================================
+
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("file_type_qf"),
   pattern = "qf",
@@ -72,6 +76,7 @@ vim.api.nvim_create_autocmd("FileType", {
 -- =========================================================
 --  Lint with nvim-lint
 -- =========================================================
+
 vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
   group = augroup("lint"),
   callback = function()
@@ -93,6 +98,7 @@ vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
 -- =========================================================
 --  Close with q key
 -- =========================================================
+
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("close_with_q"),
   pattern = {
@@ -125,6 +131,7 @@ vim.api.nvim_create_autocmd("FileType", {
 -- =========================================================
 --  Trim whitespace on save
 -- =========================================================
+
 vim.api.nvim_create_autocmd("BufWritePre", {
   group = augroup("remove_whitespace_on_save"),
   command = ":%s/\\s\\+$//e",
@@ -133,6 +140,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 -- =========================================================
 --  Disable auto commenting new lines
 -- =========================================================
+
 vim.api.nvim_create_autocmd("BufEnter", {
   group = augroup("no_auto_commeting_new_lines"),
   command = "set fo-=c fo-=r fo-=o",
@@ -141,6 +149,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
 -- =========================================================
 --  Auto reload when file changed
 -- =========================================================
+
 vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
   group = augroup("checktime"),
   callback = function()
@@ -153,6 +162,7 @@ vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
 -- =========================================================
 --  Resize splits
 -- =========================================================
+
 vim.api.nvim_create_autocmd("VimResized", {
   group = augroup("resize_splits"),
   callback = function()
@@ -165,6 +175,7 @@ vim.api.nvim_create_autocmd("VimResized", {
 -- =========================================================
 --  Move help to the right split
 -- =========================================================
+
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("split_help_right"),
   pattern = "help",
@@ -174,6 +185,7 @@ vim.api.nvim_create_autocmd("FileType", {
 -- =========================================================
 --  Do something when vim.pack updates
 -- =========================================================
+
 vim.api.nvim_create_autocmd("PackChanged", {
   group = augroup("pack_changed"),
   callback = function(ev)

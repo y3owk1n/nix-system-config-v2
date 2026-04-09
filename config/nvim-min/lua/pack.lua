@@ -1,6 +1,7 @@
 -- =========================================================
 --  External plugins to install
 -- =========================================================
+
 vim.pack.add({
   "https://github.com/nvim-treesitter/nvim-treesitter",
   "https://github.com/neovim/nvim-lspconfig",
@@ -18,5 +19,6 @@ vim.pack.add({
 -- =========================================================
 --  Builtin plugins to enable
 -- =========================================================
+
 vim.cmd.packadd("cfilter")
 vim.cmd.packadd("nvim.undotree")

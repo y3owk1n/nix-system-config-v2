@@ -1,6 +1,7 @@
 -- =========================================================
 --  Just overrides
 -- =========================================================
+
 vim.lsp.config("just", {
   on_attach = function(client)
     client.server_capabilities.documentFormattingProvider = false
@@ -10,6 +11,7 @@ vim.lsp.config("just", {
 -- =========================================================
 --  Lua overrides (so that vim don't shout at me)
 -- =========================================================
+
 vim.lsp.config("lua_ls", {
   settings = {
     Lua = {
@@ -30,6 +32,7 @@ vim.lsp.config("lua_ls", {
 -- =========================================================
 --  Tailwind overrides (default doesn't work with monorepo with v4)
 -- =========================================================
+
 vim.lsp.config("tailwindcss", {
   before_init = function(_, config)
     --- Find Tailwind entry CSS file within a root directory
@@ -127,6 +130,7 @@ vim.lsp.config("tailwindcss", {
 -- =========================================================
 --  Enable LSPs
 -- =========================================================
+
 vim.lsp.enable({
   "bashls",
   "biome",
