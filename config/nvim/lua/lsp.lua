@@ -62,7 +62,14 @@ vim.lsp.config("tailwindcss", {
             local content = uv.fs_read(fd, stat.size, 0)
             uv.fs_close(fd)
 
-            if content and (content:find('@import%s+"tailwindcss"', 1, true) or content:find("@tailwind", 1, true)) then
+            local has_tailwind_import = content
+              and (
+                content:match('@import%s+"tailwindcss"')
+                or content:match("@import%s+'tailwindcss'")
+                or content:find("@tailwind", 1, true)
+              )
+
+            if has_tailwind_import then
               return fullpath
             end
           end
