@@ -4,10 +4,6 @@
       "rev": "dcb683467f76c42644bb3d8ead9fe0cbfe10560d",
       "src": "https://github.com/y3owk1n/base16-pro-max.nvim"
     },
-    "cloak.nvim": {
-      "rev": "648aca6d33ec011dc3166e7af3b38820d01a71e4",
-      "src": "https://github.com/laytan/cloak.nvim"
-    },
     "conform.nvim": {
       "rev": "086a40dc7ed8242c03be9f47fbcee68699cc2395",
       "src": "https://github.com/stevearc/conform.nvim"
