@@ -3,7 +3,7 @@
 -- =========================================================
 
 vim.keymap.set("n", "<leader>pu", function()
-  vim.pack.update(nil, { target = "lockfile" })
+  vim.pack.update()
 end, { desc = "Pack update" })
 
 -- =========================================================
