@@ -1,3 +1,5 @@
+local lspconfig_util = require("lspconfig.util")
+
 -- =========================================================
 --  Just overrides
 -- =========================================================
@@ -30,109 +32,29 @@ vim.lsp.config("lua_ls", {
 })
 
 -- =========================================================
---  Tailwind overrides (default doesn't work with monorepo with v4)
+--  Tailwind overrides
 -- =========================================================
 
-vim.lsp.config("tailwindcss", {
-  before_init = function(_, config)
-    --- Find Tailwind entry CSS file within a root directory
-    ---@param root_dir string
-    ---@return string|nil
-    local function find_tailwind_entry_file(root_dir)
-      local uv = vim.loop
+--- see https://github.com/neovim/nvim-lspconfig/pull/4376
+--- put the following in the root of project `.nvim.lua`
+--- and then `:trust` it
 
-      local candidates = {
-        "tailwind.css",
-        "globals.css",
-        "app.css",
-        "src/styles.css",
-        "src/index.css",
-        "styles/globals.css",
-        "packages/ui/src/globals.css",
-        "packages/ui/src/styles/globals.css",
-        "packages/ui/src/styles.css",
-      }
-
-      for _, relpath in ipairs(candidates) do
-        local fullpath = root_dir .. "/" .. relpath
-        local stat = uv.fs_stat(fullpath)
-        if stat and stat.type == "file" then
-          local fd = uv.fs_open(fullpath, "r", 438) -- 0666
-          if fd then
-            local content = uv.fs_read(fd, stat.size, 0)
-            uv.fs_close(fd)
-
-            local has_tailwind_import = content
-              and (
-                content:match('@import%s+"tailwindcss"')
-                or content:match("@import%s+'tailwindcss'")
-                or content:find("@tailwind", 1, true)
-              )
-
-            if has_tailwind_import then
-              return fullpath
-            end
-          end
-        end
-      end
-
-      return nil
-    end
-
-    local root_dir = config.root_dir
-    if root_dir then
-      local entry_file = find_tailwind_entry_file(root_dir)
-      if entry_file then
-        config.settings.tailwindCSS = config.settings.tailwindCSS or {}
-        config.settings.tailwindCSS.experimental = config.settings.tailwindCSS.experimental or {}
-        config.settings.tailwindCSS.experimental.configFile = entry_file
-      end
-    end
-  end,
-  root_dir = function(bufnr, on_dir)
-    local util = require("lspconfig.util")
-
-    local function decode_json_file(filename)
-      local file = io.open(filename, "r")
-      if file then
-        local content = file:read("*all")
-        file:close()
-
-        local ok, data = pcall(vim.fn.json_decode, content)
-        if ok and type(data) == "table" then
-          return data
-        end
-      end
-    end
-
-    local function has_nested_key(json, ...)
-      return vim.tbl_get(json, ...) ~= nil
-    end
-
-    local fname = vim.api.nvim_buf_get_name(bufnr)
-
-    local workspace_root = util.root_pattern("pnpm-workspace.yaml")(fname)
-
-    local package_root = util.root_pattern("package.json")(fname)
-
-    if package_root then
-      local package_data = decode_json_file(package_root .. "/package.json")
-      if
-        package_data
-        and (
-          has_nested_key(package_data, "dependencies", "tailwindcss")
-          or has_nested_key(package_data, "devDependencies", "tailwindcss")
-        )
-      then
-        if workspace_root then
-          on_dir(workspace_root)
-        else
-          on_dir(package_root)
-        end
-      end
-    end
-  end,
-})
+-- vim.lsp.config("tailwindcss", {
+--   settings = {
+--     tailwindCSS = {
+--       experimental = {
+--         configFile = "packages/ui/src/styles.css", -- change this to the path to the global css for tailwind
+--       },
+--     },
+--   },
+--   root_dir = function(bufnr, on_dir)
+--     local root_files = {
+--       ".git",
+--     }
+--     local fname = vim.api.nvim_buf_get_name(bufnr)
+--     on_dir(vim.fs.dirname(vim.fs.find(root_files, { path = fname, upward = true })[1]))
+--   end,
+-- })
 
 -- =========================================================
 --  Enable LSPs

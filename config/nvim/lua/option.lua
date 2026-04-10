@@ -108,14 +108,6 @@ vim.opt.wildignore:append({
 })
 
 -- =========================================================
---  Others
--- =========================================================
-
-vim.opt.swapfile = false
-vim.opt.confirm = true
-vim.opt.updatetime = 50
-
--- =========================================================
 --  Statusline
 -- =========================================================
 
@@ -191,3 +183,14 @@ end)
 
 -- Only highlight with treesitter
 vim.cmd("syntax off")
+
+-- =========================================================
+--  Others
+-- =========================================================
+
+vim.opt.swapfile = false
+vim.opt.confirm = true
+vim.opt.updatetime = 50
+
+-- this is only used to load .nvim.lua for tailwind overrides
+vim.opt.exrc = true
