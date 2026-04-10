@@ -33,7 +33,7 @@ _: {
         }
         {
           name = "neovim config";
-          path = "~/nix-system-config-v2/config/nvim-min";
+          path = "~/nix-system-config-v2/config/nvim";
         }
         {
           name = "yabai config";
