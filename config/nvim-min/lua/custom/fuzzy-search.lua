@@ -36,9 +36,34 @@ local function get_cmd()
   return vim.fn.split(vim.fn.getcmdline(), " ")[1]
 end
 
-local function is_cmdline_type_find()
-  local cmd = get_cmd()
+---@param cmd string
+---@return boolean
+local function is_find(cmd)
   return cmd == "find" or cmd == "fin"
+end
+
+---@param cmd string
+---@return boolean
+local function is_help(cmd)
+  return cmd == "help" or cmd == "h"
+end
+
+---@param cmd string
+---@return boolean
+local function is_highlight(cmd)
+  return cmd == "highlight" or cmd == "hig"
+end
+
+---@param cmd string
+---@return boolean
+local function is_map(cmd)
+  return cmd == "map" or cmd == "m"
+end
+
+---@param cmd string
+---@return boolean
+local function should_enable(cmd)
+  return is_find(cmd) or is_help(cmd) or is_highlight(cmd) or is_map(cmd)
 end
 
 ---Build the base rg --files argument list
@@ -391,12 +416,9 @@ function M.setup(user_config)
     group = augroup,
     callback = function(ev)
       local cmd = get_cmd()
-      local function should_enable()
-        return is_cmdline_type_find() or cmd == "help" or cmd == "h"
-      end
 
-      if ev.event == "CmdlineChanged" and should_enable() then
-        if is_cmdline_type_find() then
+      if ev.event == "CmdlineChanged" and should_enable(cmd) then
+        if is_find(cmd) then
           preload_files()
         end
 

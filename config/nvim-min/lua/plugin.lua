@@ -263,6 +263,8 @@ fuzzy_search.setup({
 
 vim.keymap.set("n", "<leader><leader>", ":find<space>", { desc = "Fuzzy find files" })
 vim.keymap.set("n", "<leader>sh", ":help<space>", { desc = "Fuzzy find help" })
+vim.keymap.set("n", "<leader>sH", ":highlight<space>", { desc = "Fuzzy find highlight" })
+vim.keymap.set("n", "<leader>sk", ":map<space>", { desc = "Fuzzy find keymaps" })
 
 vim.keymap.set("n", "<leader>sf", fuzzy_search.files, { desc = "Files fuzzy" })
 vim.keymap.set("n", "<leader>sg", fuzzy_search.grep, { desc = "Grep text" })
