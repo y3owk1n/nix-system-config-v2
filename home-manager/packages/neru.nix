@@ -110,9 +110,9 @@
       min_size_width = 10
       min_size_height = 10
 
-      [recursive_grid.animation]
-      enabled = true
-      duration_ms = 180
+      # [recursive_grid.animation]
+      # enabled = true
+      # duration_ms = 180
 
       [recursive_grid.ui]
       font_family = "JetBrainsMonoNLNFP-Bold"
@@ -173,9 +173,9 @@
       # Smooth Cursor Movement
       # ============================================================================
       [smooth_cursor]
-      move_mouse_enabled = true
-      steps = 100
-      max_duration = 50
+      # move_mouse_enabled = true
+      # steps = 100
+      # max_duration = 50
     '';
   };
 }
