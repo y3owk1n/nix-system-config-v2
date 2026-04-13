@@ -74,7 +74,7 @@ in
 
   system = {
     primaryUser = "${username}";
-    stateVersion = 5;
+    stateVersion = 6;
     activationScripts = {
       extraActivation = {
         enable = true;
