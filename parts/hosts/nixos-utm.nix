@@ -93,6 +93,7 @@ inputs.nixpkgs.lib.nixosSystem {
           brightnessctl
           playerctl
           xwayland-satellite
+          neru-source
         ];
 
         # configure stylix
