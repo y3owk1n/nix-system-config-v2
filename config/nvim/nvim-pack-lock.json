@@ -25,7 +25,7 @@
       "src": "https://github.com/mfussenegger/nvim-lint"
     },
     "nvim-lspconfig": {
-      "rev": "c588db330592fa477a70d2fee6ba20a57194bdc3",
+      "rev": "8a9378a822719346a0288fa004dab302ca3c0a8f",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "nvim-tmux-navigation": {
