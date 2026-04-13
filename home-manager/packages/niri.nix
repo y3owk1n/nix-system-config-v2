@@ -1,4 +1,11 @@
-_: {
+{ config, ... }:
+{
+  ##############################################
+  # Disable Stylix's niri target to avoid conflict
+  stylix.targets.niri.enable = false;
+
+  ##############################################
+  # Niri config with Stylix colors
   xdg.configFile."niri/config.kdl".text = ''
     input {
       keyboard { xkb { layout "us"; } }
@@ -24,8 +31,8 @@ _: {
       default-column-width { proportion 0.5; }
       focus-ring {
         width 2
-        active-color "#5DCAA5"
-        inactive-color "#444441"
+        active-color   "#${config.lib.stylix.colors.base0D}"
+        inactive-color "#${config.lib.stylix.colors.base03}"
       }
       border { off; }
     }
@@ -98,7 +105,7 @@ _: {
   '';
 
   ##############################################
-  # Waybar
+  # Waybar — structure only, Stylix injects colors
   xdg.configFile."waybar/config.jsonc".text = ''
     {
       "layer": "top",
