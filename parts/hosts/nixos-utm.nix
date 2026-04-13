@@ -59,7 +59,6 @@ inputs.nixpkgs.lib.nixosSystem {
             ];
           };
           niri.enable = true;
-          ssh.startAgent = true;
         };
 
         # set shell
