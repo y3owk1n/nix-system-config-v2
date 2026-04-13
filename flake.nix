@@ -77,6 +77,12 @@
     flake-parts.url = "https://flakehub.com/f/hercules-ci/flake-parts/0.1";
     treefmt-nix.url = "https://flakehub.com/f/numtide/treefmt-nix/0.1";
     pre-commit-hooks.url = "https://flakehub.com/f/cachix/git-hooks.nix/0.1";
+
+    # ============================================================================
+    # Niri for nixos
+    # ============================================================================
+    niri.url = "github:sodiboo/niri-flake";
+    niri.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   # ============================================================================
