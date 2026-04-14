@@ -11,5 +11,6 @@
     ../modules/nvim.nix
     ../modules/terminal.nix
     ../modules/security.nix
+    ../packages/neru.nix
   ];
 }
