@@ -1,6 +1,31 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  nixgl,
+  needsNixGL,
+  ...
+}:
 let
-  ghostty-package = if pkgs.stdenv.isDarwin then pkgs.ghostty-bin else pkgs.ghostty;
+  ghostty-real = if pkgs.stdenv.isDarwin then pkgs.ghostty-bin else pkgs.ghostty;
+  ghostty-package =
+    if needsNixGL then
+      let
+        nixglWrapped = pkgs.writeShellScriptBin "ghostty" ''
+          exec ${nixgl.packages.${pkgs.system}.nixGLDefault}/bin/nixGL \
+            ${ghostty-real}/bin/ghostty "$@"
+        '';
+      in
+      pkgs.symlinkJoin {
+        name = "ghostty";
+        paths = [
+          ghostty-real
+          nixglWrapped
+        ];
+        postBuild = ''
+          ln -sf ${nixglWrapped}/bin/ghostty $out/bin/ghostty
+        '';
+      }
+    else
+      ghostty-real;
 in
 {
   # ============================================================================

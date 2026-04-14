@@ -21,6 +21,7 @@ inputs.home-manager.lib.homeManagerConfiguration {
       githubname
       gpgkeyid
       ;
+    needsNixGL = true;
   };
   modules = [
     {

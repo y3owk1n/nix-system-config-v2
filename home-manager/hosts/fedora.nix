@@ -1,4 +1,6 @@
 {
+  nixgl,
+  pkgs,
   ...
 }:
 {
@@ -12,5 +14,9 @@
     ../modules/terminal.nix
     ../modules/security.nix
     ../packages/neru.nix
+  ];
+
+  home.packages = [
+    nixgl.packages.${pkgs.system}.nixGLIntel
   ];
 }
