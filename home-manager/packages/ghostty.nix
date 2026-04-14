@@ -10,6 +10,7 @@ let
     if needsNixGL then
       let
         nixglWrapped = pkgs.writeShellScriptBin "ghostty" ''
+          export LIBGL_ALWAYS_SOFTWARE=true
           exec ${nixgl.packages.${pkgs.system}.nixGLDefault}/bin/nixGL \
             ${ghostty-real}/bin/ghostty "$@"
         '';
@@ -51,6 +52,7 @@ in
       window-padding-x = 10;
       window-padding-y = 10;
       window-padding-balance = true;
+      window-decoration = "none";
 
       # macOS-specific settings
       window-save-state = "never"; # Don't save/restore window state
