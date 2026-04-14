@@ -1,7 +1,7 @@
 { inputs, ... }:
 let
   username = "kylewong";
-  useremail = "62775956+y3owk1n@users.noreply.github.com"; # only used for git
+  useremail = "62775956+y3owk1n@users.noreply.github.com";
   hostname = "fedora";
   githubuser = "y3owk1n";
   githubname = "Kyle Wong";
@@ -23,17 +23,6 @@ inputs.home-manager.lib.homeManagerConfiguration {
       ;
   };
   modules = [
-    inputs.self.homeModules.shared
-    {
-      inherit
-        username
-        useremail
-        hostname
-        githubuser
-        githubname
-        gpgkeyid
-        ;
-    }
     {
       nixpkgs.overlays = [ inputs.self.overlays.default ];
       stylix = {
@@ -43,11 +32,8 @@ inputs.home-manager.lib.homeManagerConfiguration {
     }
     ../../home-manager/shared/base.nix
     ../../home-manager/hosts/fedora.nix
-    # nvs
     inputs.nvs.homeManagerModules.default
-    # neru
     inputs.neru.homeManagerModules.default
-    # stylix
     inputs.stylix.homeModules.stylix
   ];
 }
