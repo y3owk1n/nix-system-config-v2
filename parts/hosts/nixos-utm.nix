@@ -94,6 +94,8 @@ inputs.nixpkgs.lib.nixosSystem {
           playerctl
           xwayland-satellite
           neru-source
+          alacritty
+          kitty
         ];
 
         # configure stylix
@@ -105,6 +107,9 @@ inputs.nixpkgs.lib.nixosSystem {
 
         # Wayland support
         hardware.graphics.enable = true;
+
+        # A few performance-friendly defaults for VMs
+        powerManagement.cpuFreqGovernor = "performance";
 
         # Fonts
         fonts.packages = with pkgs; [
@@ -127,6 +132,12 @@ inputs.nixpkgs.lib.nixosSystem {
         };
 
         services = {
+          # UTM/QEMU guest tweaks (Apple Silicon)
+          qemuGuest.enable = true;
+
+          # Better clipboard + (sometimes) dynamic resolution when using SPICE/QEMU backend
+          spice-vdagentd.enable = true;
+
           greetd = {
             enable = true;
             settings.default_session = {
@@ -135,6 +146,31 @@ inputs.nixpkgs.lib.nixosSystem {
             };
           };
           openssh.enable = true;
+
+          pipewire = {
+            enable = true;
+            pulse.enable = true;
+            alsa.enable = true;
+            alsa.support32Bit = false;
+          };
+
+          dbus.enable = true;
+        };
+
+        security = {
+          rtkit.enable = true;
+          polkit.enable = true;
+        };
+
+        # Autostart polkit agent for GUI auth prompts
+        systemd.user.services.polkit-gnome-authentication-agent-1 = {
+          description = "polkit-gnome authentication agent";
+          wantedBy = [ "graphical-session.target" ];
+          serviceConfig = {
+            Type = "simple";
+            ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+            Restart = "on-failure";
+          };
         };
       }
     )
