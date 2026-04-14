@@ -22,6 +22,10 @@ rebuild host="":
 rebuild host="":
     sudo nixos-rebuild switch --impure --flake .{{ if host != "" { "#" + host } else { "" } }}
 
+[linux]
+rebuild-hm host="":
+    home-manager switch --impure --flake .{{ if host != "" { "#" + host } else { "" } }}
+
 ############################################################################
 #
 #  nix related commands
