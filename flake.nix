@@ -108,6 +108,7 @@
         ./parts/ci.nix
         ./parts/home-manager.nix
         ./parts/home-manager/shared.nix
+        ./parts/home-manager/linux.nix
         ./parts/treefmt.nix
         ./parts/pre-commit.nix
         ./parts/devshell.nix
