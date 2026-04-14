@@ -17,6 +17,18 @@ nix run github:nix-community/home-manager -- switch --impure --flake .#fedora
 
 - To rebuild use `just rebuild-hm fedora`
 
+### Change shell to fish
+
+```bash
+which fish # check the path
+
+cat /etc/shells # check the list of shells, if it doesn't have fish, add it
+
+which fish | sudo tee -a /etc/shells # only add fish to the list if we dont have it
+
+chsh -s $(which fish) # change the shell
+```
+
 ### SSH keys import
 
 Get ip from fedora with `ip a`
