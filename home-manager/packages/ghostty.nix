@@ -1,7 +1,7 @@
 {
   pkgs,
-  nixgl,
-  needsNixGL,
+  nixgl ? null,
+  needsNixGL ? false,
   ...
 }:
 let

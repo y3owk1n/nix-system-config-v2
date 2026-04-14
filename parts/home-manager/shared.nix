@@ -12,6 +12,7 @@
       githubuser,
       githubname,
       gpgkeyid,
+      needsNixGL ? false,
       ...
     }:
     {
@@ -28,6 +29,7 @@
           githubuser
           githubname
           gpgkeyid
+          needsNixGL
           ;
       };
     };
