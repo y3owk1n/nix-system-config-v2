@@ -49,9 +49,9 @@ _: {
         }
         {
           name = "ghostty config";
-          path = "~/nix-system-config-v2/config/ghostty";
-          startup_command = "nvim config";
-          preview_command = "bat --color=always ~/nix-system-config-v2/config/ghostty/config";
+          path = "~/nix-system-config-v2/home-manager/packages";
+          startup_command = "nvim ghostty.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/home-manager/packages/ghostty.nix";
         }
         {
           name = "tmux config";
