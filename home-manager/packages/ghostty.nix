@@ -52,7 +52,7 @@ in
       window-padding-x = 10;
       window-padding-y = 10;
       window-padding-balance = true;
-      window-decoration = "none";
+      window-decoration = if pkgs.stdenv.isDarwin then "auto" else "none";
 
       # macOS-specific settings
       window-save-state = "never"; # Don't save/restore window state
