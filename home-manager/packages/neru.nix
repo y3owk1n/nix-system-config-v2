@@ -9,16 +9,6 @@
     enable = true;
     # package = pkgs.neru;
     package = pkgs.neru-source;
-    # package = pkgs.neru-source.overrideAttrs (_: {
-    #   postPatch = ''
-    #     substituteInPlace go.mod \
-    #       --replace-fail "go 1.26.0" "go 1.25.7"
-    #
-    #     # Verify it worked
-    #     echo "=== go.mod after patch ==="
-    #     grep "^go " go.mod || true
-    #   '';
-    # });
     config = ''
       # ============================================================================
       # General Settings
