@@ -84,6 +84,9 @@
     niri.url = "github:sodiboo/niri-flake";
     niri.inputs.nixpkgs.follows = "nixpkgs";
 
+    # ============================================================================
+    # Ghostty fix for UTM based linux
+    # ============================================================================
     nixgl.url = "github:nix-community/nixGL";
     nixgl.inputs.nixpkgs.follows = "nixpkgs";
   };
