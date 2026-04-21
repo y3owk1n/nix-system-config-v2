@@ -20,6 +20,8 @@ vim.api.nvim_create_autocmd("FileType", {
 --  LSP attached with actions
 -- =========================================================
 
+local completion_timer = nil
+
 vim.api.nvim_create_autocmd("LspAttach", {
   group = augroup("lsp"),
   callback = function(args)
@@ -31,6 +33,17 @@ vim.api.nvim_create_autocmd("LspAttach", {
     if client:supports_method("textDocument/completion") then
       vim.o.complete = "o,.,w,b,u"
       vim.o.completeopt = "menu,menuone,popup,noinsert"
+
+      -- extend trigger characters to fire on every keypress
+      local triggers = client.server_capabilities.completionProvider.triggerCharacters or {}
+      local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+      for i = 1, #chars do
+        local c = chars:sub(i, i)
+        if not vim.tbl_contains(triggers, c) then
+          table.insert(triggers, c)
+        end
+      end
+      client.server_capabilities.completionProvider.triggerCharacters = triggers
 
       vim.lsp.completion.enable(true, client.id, args.buf, {
         autotrigger = true,
@@ -59,6 +72,26 @@ vim.api.nvim_create_autocmd("LspAttach", {
         end,
       })
     end
+
+    -- trigger completion on deleting keys backwards
+    vim.api.nvim_create_autocmd("TextChangedI", {
+      buffer = bufnr,
+      callback = function()
+        local line = vim.api.nvim_get_current_line()
+        local col = vim.api.nvim_win_get_cursor(0)[2]
+        local before_cursor = line:sub(1, col)
+        if not before_cursor:match("[%w_%.]+$") then
+          return
+        end
+
+        if completion_timer then
+          completion_timer:stop()
+        end
+        completion_timer = vim.defer_fn(function()
+          vim.lsp.completion.get()
+        end, 300)
+      end,
+    })
 
     -- rename filename
     vim.keymap.set("n", "<leader>cr", function()
