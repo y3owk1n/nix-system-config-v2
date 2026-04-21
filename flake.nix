@@ -102,6 +102,7 @@
   outputs =
     inputs@{ flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
+      debug = true;
       systems = import ./parts/systems.nix;
 
       imports = [

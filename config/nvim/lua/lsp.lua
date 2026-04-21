@@ -30,6 +30,42 @@ vim.lsp.config("lua_ls", {
 })
 
 -- =========================================================
+--  Nixd overrides (so that i can get some completion for nix)
+-- =========================================================
+
+local flake_path = vim.fn.expand("~/nix-system-config-v2")
+local hostname = vim.fn.trim(vim.fn.hostname())
+
+vim.lsp.config("nixd", {
+  cmd = { "nixd" },
+  filetypes = { "nix" },
+  root_markers = { "flake.nix", ".git" },
+  settings = {
+    nixd = {
+      nixpkgs = {
+        expr = string.format([[import (builtins.getFlake "%s").inputs.nixpkgs { }]], flake_path),
+      },
+      options = {
+        darwin = {
+          expr = string.format([[(builtins.getFlake "%s").darwinConfigurations."%s".options]], flake_path, hostname),
+        },
+        -- enable this if on nixos machine
+        -- nixos = {
+        --   expr = string.format([[(builtins.getFlake "%s").nixosConfigurations."%s".options]], flake_path, hostname),
+        -- },
+        -- enable this if on home-manager machine
+        -- ["home-manager"] = {
+        --   expr = string.format([[(builtins.getFlake "%s").homeConfigurations."%s".options]], flake_path, hostname),
+        -- },
+        ["flake-parts"] = {
+          expr = string.format([[(builtins.getFlake "%s").debug.options]], flake_path),
+        },
+      },
+    },
+  },
+})
+
+-- =========================================================
 --  Tailwind overrides
 -- =========================================================
 
