@@ -48,9 +48,6 @@ conform.setup({
 local supermaven = require("supermaven-nvim")
 
 supermaven.setup({
-  keymaps = {
-    accept_suggestion = "<C-y>",
-  },
   ignore_filetypes = { "bigfile", "float_info", "minifiles", "minipick" },
 })
 
