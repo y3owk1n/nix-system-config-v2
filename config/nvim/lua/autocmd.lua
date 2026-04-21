@@ -35,7 +35,27 @@ vim.api.nvim_create_autocmd("LspAttach", {
       vim.lsp.completion.enable(true, client.id, args.buf, {
         autotrigger = true,
         convert = function(item)
-          return { abbr = item.label:gsub("%b()", "") }
+          local kinds = vim.lsp.protocol.CompletionItemKind
+          local kind_name = kinds[item.kind] or "Text"
+          local icon, hl = require("mini.icons").get("lsp", kind_name)
+          local label = item.label:gsub("%b()", ""):gsub("%b<>", ""):gsub("^%s+", ""):gsub("%s+$", "")
+          local tags = item.tags or {}
+          local deprecated = item.deprecated or vim.tbl_contains(tags, vim.lsp.protocol.CompletionTag.Deprecated)
+          if deprecated then
+            label = "~~" .. label .. "~~"
+          end
+
+          return {
+            abbr = icon .. " " .. label,
+            abbr_hlgroup = hl,
+            kind = kind_name,
+            menu = item.labelDetails and vim
+              .iter({ item.labelDetails.detail, item.labelDetails.description })
+              :filter(function(s)
+                return s and s ~= ""
+              end)
+              :join(" ") or "",
+          }
         end,
       })
     end
