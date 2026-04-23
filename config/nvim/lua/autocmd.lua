@@ -19,6 +19,17 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- =========================================================
+--  Redraw LSP loading on statusline
+-- =========================================================
+
+vim.api.nvim_create_autocmd("LspProgress", {
+  group = augroup("lsp_progress"),
+  callback = function()
+    vim.cmd.redrawstatus()
+  end,
+})
+
+-- =========================================================
 --  LSP attached with actions
 -- =========================================================
 

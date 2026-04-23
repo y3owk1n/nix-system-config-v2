@@ -139,11 +139,22 @@ function _G.arglist_status()
   return string.format("[%d/%d]", index, total)
 end
 
+function _G.lsp_status()
+  local status = vim.lsp.status()
+
+  if status == nil or status == "" then
+    return ""
+  end
+
+  return string.format("[%s]", status)
+end
+
 vim.opt.statusline = table.concat({
   " %<%f",
   " %m%r",
   " %{v:lua.arglist_status()}",
   "%=",
+  " %{v:lua.lsp_status()}",
   " %{&filetype}",
   " %l:%c",
   " %p%%",
