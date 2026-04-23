@@ -149,9 +149,7 @@ vim.api.nvim_create_autocmd("FileType", {
   group = augroup("file_type_qf"),
   pattern = "qf",
   callback = function()
-    vim.keymap.set("n", "<CR>", function()
-      vim.cmd("cclose")
-    end, { buffer = true })
+    vim.keymap.set("n", "<CR>", "<CR><cmd>cclose<CR>", { buffer = true })
   end,
 })
 
