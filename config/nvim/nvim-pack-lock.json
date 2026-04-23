@@ -5,7 +5,7 @@
       "src": "https://github.com/y3owk1n/base16-pro-max.nvim"
     },
     "conform.nvim": {
-      "rev": "086a40dc7ed8242c03be9f47fbcee68699cc2395",
+      "rev": "dca1a190aa85f9065979ef35802fb77131911106",
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "mini.diff": {
