@@ -15,10 +15,10 @@ _: {
 
     # Override yabai to use the specific version
     yabai = prev.yabai.overrideAttrs (_: rec {
-      version = "7.1.23";
+      version = "7.1.24";
       src = fetchTarball {
         url = "https://github.com/koekeishiya/yabai/releases/download/v${version}/yabai-v${version}.tar.gz";
-        sha256 = "sha256:1qrbn149arkd3zw8sc0ghkz3w0548y1w6j0kj57s743612wcghm7";
+        sha256 = "sha256:1ys6c7q5rz78dxg6a04mi7mcdsrs6128kxf6x82ifnkd399xkm6q";
       };
     });
 
