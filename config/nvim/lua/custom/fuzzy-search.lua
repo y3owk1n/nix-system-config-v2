@@ -17,12 +17,6 @@ local loading = false
 ---@type uv_fs_event_t|nil
 local fs_watcher = nil
 
----@type string|nil
-local last_grep_query = nil
-
----@type table|nil
-local last_grep_opts = nil
-
 ---@type uv_timer_t|nil
 local debounce_timer = nil
 
@@ -304,9 +298,6 @@ function M.grep(query, opts)
     end
   end
 
-  last_grep_query = query
-  last_grep_opts = opts
-
   local args, display_query = build_grep_args(query, opts)
 
   vim.schedule(function()
@@ -341,15 +332,6 @@ function M.grep(query, opts)
       highlight_qf_grep(query)
     end)
   end)
-end
-
----Re-run the last grep query with the same options.
-function M.grep_last()
-  if not last_grep_query then
-    vim.notify("FuzzySearch: no previous grep", vim.log.levels.WARN)
-    return
-  end
-  M.grep(last_grep_query, last_grep_opts)
 end
 
 ---Fuzzy-match the file list and populate quickfix (outside of :find).
@@ -447,17 +429,6 @@ function M.setup(user_config)
     end,
   })
 
-  -- Re-apply grep highlights when returning to an existing quickfix window
-  vim.api.nvim_create_autocmd("BufWinEnter", {
-    group = augroup,
-    pattern = "quickfix",
-    callback = function()
-      if last_grep_query then
-        highlight_qf_grep(last_grep_query)
-      end
-    end,
-  })
-
   -- Kick off background preload + fs watch on startup ----------------
   preload_files()
   start_fs_watch()
@@ -484,7 +455,6 @@ function M.status()
     loading = loading,
     count = file_cache and #file_cache or 0,
     watching = fs_watcher ~= nil,
-    last_grep_query = last_grep_query,
   }
 end
 
