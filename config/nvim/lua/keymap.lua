@@ -19,6 +19,10 @@ vim.keymap.set("n", "<leader>he", function()
   local args = vim.fn.argv()
   local items = {}
 
+  if type(args) == "string" then
+    args = { args }
+  end
+
   for _, file in ipairs(args) do
     table.insert(items, {
       filename = file,

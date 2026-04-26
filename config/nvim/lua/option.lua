@@ -125,6 +125,10 @@ function _G.arglist_status()
   local current = vim.fn.expand("%:p")
   local index = -1
 
+  if type(args) == "string" then
+    args = vim.split(args, " ")
+  end
+
   for i, file in ipairs(args) do
     if vim.fn.fnamemodify(file, ":p") == current then
       index = i
@@ -132,21 +136,33 @@ function _G.arglist_status()
     end
   end
 
+  local text
   if index == -1 then
-    return string.format("[-/%d]", total)
+    text = string.format("[-/%d]", total)
+  else
+    text = string.format("[%d/%d]", index, total)
   end
 
-  return string.format("[%d/%d]", index, total)
+  return " " .. text
 end
 
-function _G.lsp_status()
-  local status = vim.lsp.status()
-
-  if status == nil or status == "" then
+function _G.lsp_clients()
+  local clients = vim.lsp.get_clients({ bufnr = 0 })
+  if not clients or #clients == 0 then
     return ""
   end
 
-  return string.format("[%s]", status)
+  local names = {}
+  local seen = {}
+
+  for _, client in ipairs(clients) do
+    if not seen[client.name] then
+      seen[client.name] = true
+      table.insert(names, client.name)
+    end
+  end
+
+  return " [" .. table.concat(names, ",") .. "]"
 end
 
 function _G.diagnostic_status()
@@ -168,16 +184,27 @@ function _G.diagnostic_status()
     return ""
   end
 
-  return table.concat(parts, " ")
+  return " " .. table.concat(parts, " ")
+end
+
+function _G.mod_ro()
+  local m = vim.bo.modified and "[+]" or ""
+  local r = vim.bo.readonly and "[RO]" or ""
+
+  if m == "" and r == "" then
+    return ""
+  end
+
+  return " " .. m .. r
 end
 
 vim.opt.statusline = table.concat({
   " %<%f",
-  " %m%r",
-  " %{v:lua.arglist_status()}",
+  "%{v:lua.mod_ro()}",
+  "%{v:lua.arglist_status()}",
   "%=",
-  " %{v:lua.diagnostic_status()}",
-  " %{v:lua.lsp_status()}",
+  "%{v:lua.diagnostic_status()}",
+  "%{v:lua.lsp_clients()}",
   " %{&filetype}",
   " %l:%c",
   " %p%%",

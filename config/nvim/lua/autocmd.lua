@@ -19,13 +19,48 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- =========================================================
---  Redraw LSP loading on statusline
+--  Lsp progress notification
 -- =========================================================
+
+local progress = {}
+local spinner = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
+local spinner_index = 1
 
 vim.api.nvim_create_autocmd("LspProgress", {
   group = augroup("lsp_progress"),
-  callback = function()
-    vim.cmd.redrawstatus()
+  callback = function(ev)
+    local client = vim.lsp.get_client_by_id(ev.data.client_id)
+    if not client then
+      return
+    end
+
+    local value = ev.data.params.value
+    if not value then
+      return
+    end
+
+    local key = client.name
+
+    if value.kind == "begin" then
+      progress[key] = value.title or "Working..."
+    elseif value.kind == "report" then
+      progress[key] = value.message or progress[key]
+    elseif value.kind == "end" then
+      progress[key] = nil
+      vim.notify(client.name .. " done", vim.log.levels.INFO, { id = "lsp" })
+      return
+    end
+
+    -- show aggregated progress
+    local msgs = {}
+    for name, msg in pairs(progress) do
+      table.insert(msgs, name .. ": " .. msg)
+    end
+
+    if #msgs > 0 then
+      spinner_index = (spinner_index % #spinner) + 1
+      vim.notify(spinner[spinner_index] .. " " .. table.concat(msgs, " | "), vim.log.levels.INFO, { id = "lsp" })
+    end
   end,
 })
 
