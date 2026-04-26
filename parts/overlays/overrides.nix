@@ -4,6 +4,10 @@ _: {
     # Package Overrides
     # ============================================================================
 
+    direnv = prev.direnv.overrideAttrs (_: {
+      doCheck = false;
+    });
+
     # Override aerospace to use beta version with latest features
     aerospace = prev.aerospace.overrideAttrs (_: rec {
       version = "0.20.2-Beta";
