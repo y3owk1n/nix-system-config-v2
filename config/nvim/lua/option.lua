@@ -149,11 +149,34 @@ function _G.lsp_status()
   return string.format("[%s]", status)
 end
 
+function _G.diagnostic_status()
+  local counts = vim.diagnostic.count(0)
+  local icons = vim.diagnostic.config().signs.text
+  local sev = vim.diagnostic.severity
+
+  local order = { sev.ERROR, sev.WARN, sev.INFO, sev.HINT }
+  local parts = {}
+
+  for _, s in ipairs(order) do
+    local count = counts[s]
+    if count and count > 0 and icons and icons[s] then
+      table.insert(parts, icons[s] .. count)
+    end
+  end
+
+  if #parts == 0 then
+    return ""
+  end
+
+  return table.concat(parts, " ")
+end
+
 vim.opt.statusline = table.concat({
   " %<%f",
   " %m%r",
   " %{v:lua.arglist_status()}",
   "%=",
+  " %{v:lua.diagnostic_status()}",
   " %{v:lua.lsp_status()}",
   " %{&filetype}",
   " %l:%c",
