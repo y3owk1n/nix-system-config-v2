@@ -55,14 +55,14 @@ let
     "com.apple.Safari.WebInspectorPageGroupIdentifier.WebKit2InspectorAttachedWidth" = 1098;
     "com.apple.Safari.WebInspectorPageGroupIdentifier.WebKit2InspectorAttachmentSide" = 1;
     NSUserKeyEquivalents = {
-      # "Go to Next Tab Group" = "^j";
-      # "Go to Previous Tab Group" = "^k";
-      # "Show Next Tab" = "^l";
-      # "Show Previous Tab" = "^h";
-      # "Move Tab to New Window" = "^\\";
-      # "Merge All Windows" = "^-";
-      # "Pin Tab" = "@d";
-      # "Unpin Tab" = "@d";
+      "Go to Next Tab Group" = "^j";
+      "Go to Previous Tab Group" = "^k";
+      "Show Next Tab" = "^l";
+      "Show Previous Tab" = "^h";
+      "Move Tab to New Window" = "^\\";
+      "Merge All Windows" = "^-";
+      "Pin Tab" = "@d";
+      "Unpin Tab" = "@d";
     }
     // safariKeys;
   };
@@ -357,13 +357,13 @@ in
           DSDontWriteNetworkStores = true;
           DSDontWriteUSBStores = true;
         };
-        # "net.imput.helium" = {
-        #   NSUserKeyEquivalents = {
-        #     "Pin Tab" = "@d";
-        #     "Select Next Tab" = "^l";
-        #     "Select Previous Tab" = "^h";
-        #   };
-        # };
+        "net.imput.helium" = {
+          NSUserKeyEquivalents = {
+            "Pin Tab" = "@d";
+            "Select Next Tab" = "^l";
+            "Select Previous Tab" = "^h";
+          };
+        };
         "com.apple.Safari" = safariSettings;
         # "com.apple.SafariTechnologyPreview" = safariSettings;
         "com.apple.AdLib" = {
