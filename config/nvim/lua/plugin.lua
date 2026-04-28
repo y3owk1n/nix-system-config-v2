@@ -283,3 +283,138 @@ vim.keymap.set("n", "<leader>sr", ":copen<cr>", { desc = "Resume qf list" })
 vim.keymap.set("n", "<leader>st", function()
   fuzzy_search.grep({ "TODO", "FIXME", "HACK" })
 end, { desc = "Grep TODOs" })
+
+-- =========================================================
+--  Undo glow
+-- =========================================================
+
+local undo_glow = require("undo-glow")
+
+undo_glow.setup({
+  animation = {
+    enabled = true,
+    duration = 300,
+    window_scoped = true,
+  },
+  priority = 2048 * 3,
+})
+
+local api = require("undo-glow.api")
+
+api.register_hook("pre_animation", function(data)
+  local search = { "search_next", "search_prev", "search_star", "search_hash" }
+
+  if vim.tbl_contains(search, data.operation) then
+    data.animation_type = "strobe"
+  elseif data.operation == "cursor_moved" then
+    data.animation_type = "slide"
+  elseif data.operation == "search_cmd" then
+    data.animation_type = "fade"
+  end
+end, 75)
+
+local function preserve_cursor()
+  local pos = vim.fn.getpos(".")
+
+  vim.schedule(function()
+    vim.g.ug_ignore_cursor_moved = true
+    vim.fn.setpos(".", pos)
+  end)
+end
+
+vim.keymap.set("n", "u", function()
+  undo_glow.undo()
+end, { desc = "Undo with highlight", noremap = true })
+
+vim.keymap.set("n", "U", function()
+  undo_glow.redo()
+end, { desc = "Redo with highlight", noremap = true })
+
+vim.keymap.set("n", "p", function()
+  undo_glow.paste_below()
+end, { desc = "Paste below with highlight", noremap = true })
+
+vim.keymap.set("n", "P", function()
+  undo_glow.paste_above()
+end, { desc = "Paste above with highlight", noremap = true })
+
+vim.keymap.set("n", "n", function()
+  undo_glow.search_next()
+end, { desc = "Search next with highlight", noremap = true })
+
+vim.keymap.set("n", "N", function()
+  undo_glow.search_prev()
+end, { desc = "Search prev with highlight", noremap = true })
+
+vim.keymap.set("n", "*", function()
+  undo_glow.search_star()
+end, { desc = "Search star with highlight", noremap = true })
+
+vim.keymap.set("n", "#", function()
+  undo_glow.search_hash()
+end, { desc = "Search hash with highlight", noremap = true })
+
+vim.keymap.set({ "n", "x" }, "gc", function()
+  preserve_cursor()
+  return undo_glow.comment()
+end, { desc = "Toggle comment with highlight", noremap = true, expr = true })
+
+vim.keymap.set("o", "gc", function()
+  undo_glow.comment_textobject()
+end, { desc = "Toggle textobject with highlight", noremap = true })
+
+vim.keymap.set("n", "gcc", function()
+  return undo_glow.comment_line()
+end, { desc = "Toggle comment line with highlight", noremap = true, expr = true })
+
+local augroup = vim.api.nvim_create_augroup("UndoGlow", { clear = true })
+
+vim.api.nvim_create_autocmd("TextYankPost", {
+  group = augroup,
+  desc = "Highlight when yanking (copying) text",
+  callback = function()
+    undo_glow.yank()
+  end,
+})
+
+-- This only handles neovim instance and do not highlight when switching panes in tmux
+vim.api.nvim_create_autocmd("CursorMoved", {
+  group = augroup,
+  desc = "Highlight when cursor moved significantly",
+  callback = function()
+    undo_glow.cursor_moved()
+  end,
+})
+
+-- This will handle highlights when focus gained, including switching panes in tmux
+vim.api.nvim_create_autocmd("FocusGained", {
+  group = augroup,
+  desc = "Highlight when focus gained",
+  callback = function()
+    ---@type UndoGlow.CommandOpts
+    local opts = {
+      animation = {
+        animation_type = "slide",
+      },
+    }
+
+    opts = require("undo-glow.utils").merge_command_opts("UgCursor", opts)
+    local pos = require("undo-glow.utils").get_current_cursor_row()
+
+    undo_glow.highlight_region(vim.tbl_extend("force", opts, {
+      s_row = pos.s_row,
+      s_col = pos.s_col,
+      e_row = pos.e_row,
+      e_col = pos.e_col,
+      force_edge = opts.force_edge == nil and true or opts.force_edge,
+    }))
+  end,
+})
+
+vim.api.nvim_create_autocmd("CmdlineLeave", {
+  group = augroup,
+  desc = "Highlight when search cmdline leave",
+  callback = function()
+    undo_glow.search_cmd()
+  end,
+})
