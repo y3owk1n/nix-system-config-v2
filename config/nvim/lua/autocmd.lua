@@ -20,9 +20,10 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- =========================================================
 --  Lsp progress notification
+--  This uses primitives from my notifier plugin
+--  Won't work on vanilla vim.notify
 -- =========================================================
 
-local progress = {}
 local spinner = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
 local spinner_index = 1
 
@@ -35,32 +36,94 @@ vim.api.nvim_create_autocmd("LspProgress", {
     end
 
     local value = ev.data.params.value
+    local token = ev.data.token
+    local is_complete = value.kind == "end"
+
     if not value then
       return
     end
 
-    local key = client.name
+    local client_name = client.name
 
-    if value.kind == "begin" then
-      progress[key] = value.title or "Working..."
-    elseif value.kind == "report" then
-      progress[key] = value.message or progress[key]
-    elseif value.kind == "end" then
-      progress[key] = nil
-      vim.notify(client.name .. " done", vim.log.levels.INFO, { id = "lsp" })
-      return
+    local function get_right_percentage(percentage)
+      if percentage == 0 or percentage == nil then
+        return nil
+      end
+      return percentage
     end
 
-    -- show aggregated progress
-    local msgs = {}
-    for name, msg in pairs(progress) do
-      table.insert(msgs, name .. ": " .. msg)
+    local progress_data = {
+      percentage = get_right_percentage(value.percentage),
+      description = value.title or "Loading workspace",
+      file_progress = value.message or nil,
+    }
+
+    if is_complete then
+      progress_data.description = "Done"
+      progress_data.file_progress = nil
+      progress_data.percentage = 100
     end
 
-    if #msgs > 0 then
-      spinner_index = (spinner_index % #spinner) + 1
-      vim.notify(spinner[spinner_index] .. " " .. table.concat(msgs, " | "), vim.log.levels.INFO, { id = "lsp" })
+    spinner_index = (spinner_index % #spinner) + 1
+
+    local icon
+    if is_complete then
+      icon = " "
+    else
+      icon = spinner[spinner_index]
     end
+
+    vim.notify("", vim.log.levels.INFO, {
+      id = string.format("lsp_progress_%s_%s", client_name, token),
+      title = client_name,
+      _notif_formatter = function(opts)
+        local notif = opts.notif
+        local _notif_formatter_data = notif._notif_formatter_data
+
+        if not _notif_formatter_data then
+          return {}
+        end
+
+        local separator = { display_text = " " }
+
+        local icon_hl = notif.hl_group or opts.log_level_map[notif.level].hl_group
+
+        local percent_text = _notif_formatter_data.percentage
+            and string.format("%3d%%", _notif_formatter_data.percentage)
+          or nil
+
+        local description_text = _notif_formatter_data.description
+
+        local file_progress_text = _notif_formatter_data.file_progress or nil
+
+        local entries = {}
+
+        if icon then
+          table.insert(entries, { display_text = icon, hl_group = icon_hl })
+          table.insert(entries, separator)
+        end
+
+        if percent_text then
+          table.insert(entries, { display_text = percent_text, hl_group = "Normal" })
+          table.insert(entries, separator)
+        end
+
+        table.insert(entries, { display_text = description_text, hl_group = "Comment" })
+
+        if file_progress_text then
+          table.insert(entries, separator)
+          table.insert(entries, { display_text = file_progress_text, hl_group = "Removed" })
+        end
+
+        if client_name then
+          table.insert(entries, separator)
+          table.insert(entries, { display_text = client_name, hl_group = "ErrorMsg" })
+        end
+
+        return entries
+      end,
+      _notif_formatter_data = progress_data,
+    })
   end,
 })
 

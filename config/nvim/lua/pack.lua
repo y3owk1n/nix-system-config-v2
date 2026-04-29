@@ -14,6 +14,7 @@ vim.pack.add({
   "https://github.com/nvim-mini/mini.diff",
   "https://github.com/nvim-mini/mini.icons",
   "https://github.com/y3owk1n/undo-glow.nvim",
+  "https://github.com/y3owk1n/notifier.nvim",
 })
 
 -- =========================================================

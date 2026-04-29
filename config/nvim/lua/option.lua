@@ -21,7 +21,7 @@ vim.opt.winborder = "rounded"
 vim.opt.fillchars = { eob = " " }
 vim.opt.linebreak = true
 vim.opt.showtabline = 0
-vim.o.cmdheight = 0
+-- vim.o.cmdheight = 0
 
 -- =========================================================
 --  Window Behaviour
@@ -186,7 +186,7 @@ function _G.diagnostic_status()
     return ""
   end
 
-  return " " .. table.concat(parts, " ")
+  return " " .. table.concat(parts, " ") .. " "
 end
 
 function _G.mod_ro()

@@ -285,6 +285,45 @@ vim.keymap.set("n", "<leader>st", function()
 end, { desc = "Grep TODOs" })
 
 -- =========================================================
+--  Notifier
+-- =========================================================
+
+local notifier = require("notifier")
+
+notifier.setup({
+  border = "rounded",
+  padding = { left = 1, right = 1 },
+  animation = {
+    enabled = true,
+  },
+})
+
+vim.keymap.set("n", "<leader>N", function()
+  notifier.show_history()
+end, { desc = "Show Notification History" })
+vim.keymap.set("n", "<leader>un", function()
+  notifier.dismiss_all()
+end, { desc = "Dismiss All Notifications" })
+
+local old_laststatus = vim.o.laststatus
+local old_cmdheight = vim.o.cmdheight
+
+vim.api.nvim_create_autocmd("OptionSet", {
+  callback = function()
+    local new_laststatus = vim.o.laststatus
+    local new_cmdheight = vim.o.cmdheight
+
+    if new_laststatus ~= old_laststatus or new_cmdheight ~= old_cmdheight then
+      old_laststatus = new_laststatus
+      old_cmdheight = new_cmdheight
+
+      -- let the plugin recalculate positions
+      notifier._internal.utils.cache_config_group_row_col()
+    end
+  end,
+})
+
+-- =========================================================
 --  Undo glow
 -- =========================================================
 
@@ -391,7 +430,6 @@ vim.api.nvim_create_autocmd("FocusGained", {
   group = augroup,
   desc = "Highlight when focus gained",
   callback = function()
-    ---@type UndoGlow.CommandOpts
     local opts = {
       animation = {
         animation_type = "slide",

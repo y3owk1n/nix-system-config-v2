@@ -20,9 +20,9 @@
       "rev": "bac6317300e205335df425296570d84322730067",
       "src": "https://github.com/nvim-mini/mini.icons"
     },
-    "nvim-lint": {
-      "rev": "eab58b48eb11d7745c11c505e0f3057165902461",
-      "src": "https://github.com/mfussenegger/nvim-lint"
+    "notifier.nvim": {
+      "rev": "cbd5be5f16ff03fb592d6e62a585f522dad0e8a8",
+      "src": "https://github.com/y3owk1n/notifier.nvim"
     },
     "nvim-lspconfig": {
       "rev": "6419b36f50c42420cbbf1d3ffba573094cf414c8",
