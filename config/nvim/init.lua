@@ -4,6 +4,7 @@ end
 
 require("pack")
 require("colorscheme")
+require("notification")
 require("option")
 require("plugin")
 require("keymap")
