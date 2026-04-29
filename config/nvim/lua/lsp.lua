@@ -94,15 +94,43 @@ vim.lsp.config("nixd", {
 --  Enable LSPs
 -- =========================================================
 
-vim.lsp.enable({
+-- list of mappings that the executable name is different from the lspserver name
+local lsp_exec_map = {
+  bashls = "bash-language-server",
+  docker_language_server = "docker-language-server",
+  eslint = "vscode-eslint-language-server",
+  fish_lsp = "fish-lsp",
+  gh_actions_ls = "gh-actions-language-server",
+  golangci_lint_ls = "golangci-lint-langserver",
+  jsonls = "vscode-json-language-server",
+  just = "just-lsp",
+  lua_ls = "lua-language-server",
+  prismals = "prisma-language-server",
+  tailwindcss = "tailwindcss-language-server",
+  yamlls = "yaml-language-server",
+}
+
+---Enable LSP if executable is available from a list
+---@param lsps string[]
+local function enable_lsp_if_available(lsps)
+  for _, lsp in ipairs(lsps) do
+    local executable = lsp_exec_map[lsp] or lsp
+    if executable and vim.fn.executable(executable) == 1 then
+      vim.lsp.enable(lsp)
+    end
+  end
+end
+
+enable_lsp_if_available({
   "bashls",
   "biome",
   "clangd",
   "docker_language_server",
-  "docker_compose_language_service",
   "eslint",
+  "fish_lsp",
   "gh_actions_ls",
   "gopls",
+  "golangci_lint_ls",
   "jsonls",
   "just",
   "lua_ls",

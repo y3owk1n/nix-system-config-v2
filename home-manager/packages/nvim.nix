@@ -20,12 +20,13 @@
     # so that we can build treesitter in neovim
     tree-sitter
 
-    shfmt
-    shellcheck
+    fish-lsp
+    # shfmt
+    # shellcheck
     bash-language-server
     vscode-langservers-extracted # includes html, css, json, eslint, json lsp is part of it and noramlly a config file
     marksman # markdown is not project specific
-    markdownlint-cli2 # markdown is not project specific
+    # markdownlint-cli2 # markdown is not project specific
     yaml-language-server # yaml normally used as a config language
     prettierd # general formatter
     gh-actions-language-server # from custom flake

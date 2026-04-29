@@ -265,29 +265,6 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- =========================================================
---  Lint with nvim-lint
--- =========================================================
-
-local lint = require("lint")
-
-lint.linters_by_ft = {
-  dockerfile = { "hadolint" },
-  fish = { "fish" },
-  go = { "golangcilint" },
-  markdown = { "markdownlint-cli2" },
-  ["markdown.mdx"] = { "markdownlint-cli2" },
-}
-
-vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
-  group = augroup("lint"),
-  callback = function()
-    local linters = lint.linters_by_ft[vim.bo.filetype]
-
-    lint.try_lint(linters)
-  end,
-})
-
--- =========================================================
 --  Close with q key
 -- =========================================================
 

@@ -19,8 +19,6 @@ local conform = require("conform")
 
 conform.setup({
   formatters_by_ft = {
-    sh = { "shfmt" },
-    fish = { "fish_indent" },
     javascript = { "biome", "prettierd", stop_after_first = true },
     javascriptreact = { "biome", "prettierd", stop_after_first = true },
     typescript = { "biome", "prettierd", stop_after_first = true },
@@ -28,12 +26,10 @@ conform.setup({
     json = { "biome", "prettierd", stop_after_first = true },
     jsonc = { "biome", "prettierd", stop_after_first = true },
     css = { "biome", "prettierd", stop_after_first = true },
-    ["markdown"] = { "prettierd", "markdownlint-cli2" },
-    ["markdown.mdx"] = { "prettierd", "markdownlint-cli2" },
+    ["markdown"] = { "prettierd" },
+    ["markdown.mdx"] = { "prettierd" },
     go = { "goimports", "gofumpt" },
     just = { "just" },
-    lua = { "stylua" },
-    nix = { "nixfmt" },
   },
   format_on_save = {
     timeout_ms = 500,
@@ -101,7 +97,8 @@ nvim_treesitter.install({
 
 vim.filetype.add({
   pattern = {
-    ["docker?-compose?.ya?ml"] = "yaml.docker-compose",
+    ["docker%-compose%.ya?ml"] = "yaml.docker-compose",
+    ["docker%-compose%..*%.ya?ml"] = "yaml.docker-compose", -- e.g. docker-compose.dev.yml
   },
 })
 
