@@ -3,17 +3,59 @@
 -- =========================================================
 
 vim.lsp.config("lua_ls", {
+  on_init = function(client)
+    if client.workspace_folders then
+      local path = client.workspace_folders[1].name
+      if
+        path ~= vim.fn.stdpath("config")
+        and (vim.uv.fs_stat(path .. "/.luarc.json") or vim.uv.fs_stat(path .. "/.luarc.jsonc"))
+      then
+        return
+      end
+    end
+
+    local library = {
+      vim.env.VIMRUNTIME,
+      vim.api.nvim_get_runtime_file("lua/lspconfig", false)[1],
+      vim.api.nvim_get_runtime_file("lua/base16-pro-max", false)[1],
+      vim.api.nvim_get_runtime_file("lua/conform", false)[1],
+      vim.api.nvim_get_runtime_file("lua/notifier", false)[1],
+      vim.api.nvim_get_runtime_file("lua/nvim-tmux-navigation", false)[1],
+      vim.api.nvim_get_runtime_file("lua/nvim-treesitter", false)[1],
+      vim.api.nvim_get_runtime_file("lua/supermaven-nvim", false)[1],
+      vim.api.nvim_get_runtime_file("lua/undo-glow", false)[1],
+    }
+
+    -- get all mini files in the runtimepath
+    -- the reason is that all standalon mini are in the same `lua/mini` folder...
+    vim.list_extend(library, vim.api.nvim_get_runtime_file("lua/mini", true))
+
+    client.config.settings.Lua = vim.tbl_deep_extend("force", client.config.settings.Lua, {
+      runtime = {
+        -- Tell the language server which version of Lua you're using (most
+        -- likely LuaJIT in the case of Neovim)
+        version = "LuaJIT",
+        -- Tell the language server how to find Lua modules same way as Neovim
+        -- (see `:h lua-module-load`)
+        path = {
+          "lua/?.lua",
+          "lua/?/init.lua",
+        },
+      },
+      -- Make the server aware of Neovim runtime files
+      workspace = {
+        checkThirdParty = false,
+        library = library,
+        -- Or pull in all of 'runtimepath'.
+        -- NOTE: this is a lot slower and will cause issues when working on
+        -- your own configuration.
+        -- See https://github.com/neovim/nvim-lspconfig/issues/3189
+        -- library = vim.api.nvim_get_runtime_file('', true),
+      },
+    })
+  end,
   settings = {
     Lua = {
-      completion = { enable = true },
-      diagnostics = {
-        enable = true,
-        globals = { "vim" },
-      },
-      workspace = {
-        library = { vim.env.VIMRUNTIME },
-        checkThirdParty = false,
-      },
       telemetry = { enable = false },
     },
   },
