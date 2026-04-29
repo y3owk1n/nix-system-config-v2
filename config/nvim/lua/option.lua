@@ -21,6 +21,7 @@ vim.opt.winborder = "rounded"
 vim.opt.fillchars = { eob = " " }
 vim.opt.linebreak = true
 vim.opt.showtabline = 0
+vim.o.cmdheight = 0
 
 -- =========================================================
 --  Window Behaviour

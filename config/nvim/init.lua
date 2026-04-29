@@ -4,7 +4,7 @@ end
 
 require("pack")
 require("colorscheme")
-require("notification")
+require("ui")
 require("option")
 require("hack")
 require("plugin")
