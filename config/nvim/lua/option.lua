@@ -15,6 +15,7 @@ vim.opt.scrolloff = 8
 vim.opt.wrap = false
 vim.opt.pumblend = 10
 vim.opt.pumheight = 10
+vim.o.pumborder = "rounded"
 vim.opt.signcolumn = "yes"
 vim.opt.winborder = "rounded"
 vim.opt.fillchars = { eob = " " }

@@ -15,6 +15,7 @@ require("base16-pro-max").setup({
   },
   highlight_groups = {
     QuickFixLine = { fg = "red" },
+    PmenuBorder = { link = "FloatBorder" },
   },
 })
 
