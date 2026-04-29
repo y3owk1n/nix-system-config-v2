@@ -1,3 +1,9 @@
+-- =========================================================
+--  My amazing base16 theme colorscheme
+--  I am currently using stylix with my preferred colorscheme
+--  on nix, so it's nice to have this here for consistency
+-- =========================================================
+
 require("base16-pro-max").setup({
   colors = require("base16-pro-max.parser").get_base16_colors(
     "~/nix-system-config-v2/config/pastel-twilight/base16.yml"

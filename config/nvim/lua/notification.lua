@@ -1,3 +1,7 @@
+-- =========================================================
+--  Native notifications
+-- =========================================================
+
 local ok, ui2 = pcall(require, "vim._core.ui2")
 
 if ok and ui2.enable then
