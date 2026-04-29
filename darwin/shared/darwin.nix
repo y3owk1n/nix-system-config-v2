@@ -103,11 +103,18 @@ in
     };
     startup.chime = false; # MUTE STARTUP CHIME!
     defaults = {
-      # universalaccess.reduceMotion = true;
+      # ============================================================================
+      # Clock
+      # ============================================================================
+
       menuExtraClock = {
+        FlashDateSeparators = false;
         Show24Hour = false;
         ShowAMPM = true;
         ShowDate = 0;
+        ShowDayOfMonth = false;
+        ShowDayOfWeek = false;
+        ShowSeconds = false;
       };
 
       # ============================================================================
@@ -123,15 +130,20 @@ in
         # how fast is the dock showing animation
         autohide-time-modifier = 0.0;
         expose-animation-duration = 0.1;
-        tilesize = 48;
+        expose-group-apps = true;
         launchanim = false;
-        static-only = false;
-        showhidden = true;
+        magnification = false;
+        mru-spaces = false;
+        orientation = "left";
         show-recents = false;
         show-process-indicators = true;
-        orientation = "left";
-        mru-spaces = false;
-        expose-group-apps = true;
+        showAppExposeGestureEnabled = true;
+        showDesktopGestureEnabled = true;
+        showLaunchpadGestureEnabled = true;
+        showMissionControlGestureEnabled = true;
+        showhidden = true;
+        static-only = true;
+        tilesize = 48;
       };
 
       # ============================================================================
@@ -140,24 +152,25 @@ in
 
       # customize finder
       finder = {
-        CreateDesktop = false; # Whether to show icons on the desktop or not. The default is true.
         AppleShowAllExtensions = true;
         AppleShowAllFiles = true;
+        CreateDesktop = false; # Whether to show icons on the desktop or not. The default is true.
         # When performing a search, search the current folder by default
         FXDefaultSearchScope = "SCcf";
         FXEnableExtensionChangeWarning = false;
         # Use list view in all Finder windows by default
         FXPreferredViewStyle = "Nlsv";
+        NewWindowTarget = "Other";
+        NewWindowTargetPath = "/Users/${username}/Downloads";
         QuitMenuItem = true;
-        ShowPathbar = true;
-        ShowStatusBar = true;
-        _FXShowPosixPathInTitle = true;
         ShowExternalHardDrivesOnDesktop = false;
         ShowHardDrivesOnDesktop = false;
         ShowMountedServersOnDesktop = false;
+        ShowPathbar = true;
         ShowRemovableMediaOnDesktop = false;
+        ShowStatusBar = true;
+        _FXShowPosixPathInTitle = true;
         _FXSortFoldersFirst = true;
-        NewWindowTarget = "Home";
       };
 
       # ============================================================================
@@ -171,8 +184,28 @@ in
         # enable tap to click
         Clicking = true;
         Dragging = true; # tap and a half to drag
+
+        TrackpadFourFingerHorizSwipeGesture = 2;
+        TrackpadFourFingerPinchGesture = 2;
+        TrackpadFourFingerVertSwipeGesture = 2;
+        TrackpadPinch = true;
+        TrackpadRightClick = true;
+
         # three finger click and drag
         TrackpadThreeFingerDrag = true;
+        TrackpadThreeFingerHorizSwipeGesture = 0;
+        TrackpadThreeFingerTapGesture = 0;
+        TrackpadThreeFingerVertSwipeGesture = 0;
+
+        TrackpadTwoFingerFromRightEdgeSwipeGesture = 3;
+      };
+
+      # ============================================================================
+      # Magic Mouse
+      # ============================================================================
+
+      magicmouse = {
+        MouseButtonMode = "TwoButton";
       };
 
       # ============================================================================
@@ -192,12 +225,12 @@ in
 
       # login window settings
       loginwindow = {
+        # Disables the ability for a user to access the console by typing “>console” for a username at the login window.
+        DisableConsoleAccess = true;
         # disable guest account
         GuestEnabled = false;
         # show name instead of username
         SHOWFULLNAME = false;
-        # Disables the ability for a user to access the console by typing “>console” for a username at the login window.
-        DisableConsoleAccess = true;
       };
 
       # ============================================================================
@@ -232,15 +265,15 @@ in
 
       WindowManager = {
         EnableStandardClickToShowDesktop = false; # Click wallpaper to reveal desktop
-        GloballyEnabled = false;
-        HideDesktop = true; # Do not hide items on desktop & stage manager
-        StageManagerHideWidgets = true;
-        StandardHideDesktopIcons = true; # Show items on desktop
-        StandardHideWidgets = true;
-        EnableTiledWindowMargins = true;
+        EnableTiledWindowMargins = false;
         EnableTilingByEdgeDrag = false;
         EnableTilingOptionAccelerator = false;
         EnableTopTilingByEdgeDrag = false;
+        GloballyEnabled = false;
+        HideDesktop = true;
+        StageManagerHideWidgets = true;
+        StandardHideDesktopIcons = true; # Show items on desktop
+        StandardHideWidgets = true;
       };
 
       # ============================================================================
@@ -249,10 +282,6 @@ in
 
       controlcenter = {
         BatteryShowPercentage = true;
-      };
-
-      ".GlobalPreferences" = {
-        "com.apple.mouse.scaling" = 9.0;
       };
 
       # ============================================================================
@@ -264,48 +293,52 @@ in
       #   https://github.com/yannbertrand/macos-defaults
       NSGlobalDomain = {
         AppleEnableSwipeNavigateWithScrolls = true;
+        AppleEnableMouseSwipeNavigateWithScrolls = true;
         # 2 = heavy font smoothing; if text looks blurry, back this down to 1
         AppleFontSmoothing = 2;
-        AppleShowAllExtensions = true;
-        AppleShowAllFiles = true;
+        AppleIconAppearanceTheme = "RegularAutomatic";
         # Dark mode
         AppleInterfaceStyle = "Dark";
         # auto switch between light/dark mode
         AppleInterfaceStyleSwitchesAutomatically = false;
-        "com.apple.sound.beep.feedback" = 1;
-        "com.apple.sound.beep.volume" = 0.606531; # 50%
-        "com.apple.mouse.tapBehavior" = 1; # tap to click
-        "com.apple.swipescrolldirection" = true; # "natural" scrolling
-        "com.apple.keyboard.fnState" = false;
-        "com.apple.springing.enabled" = false;
-        "com.apple.trackpad.scaling" = 3.0; # fast
-        "com.apple.trackpad.enableSecondaryClick" = true;
         # enable full keyboard control
         # (e.g. enable Tab in modal dialogs)
         AppleKeyboardUIMode = 3;
-        AppleTemperatureUnit = "Celsius";
         AppleMeasurementUnits = "Centimeters";
         # no popup menus when holding down letters
         ApplePressAndHoldEnabled = false;
+        AppleShowAllExtensions = true;
+        AppleShowAllFiles = true;
+        AppleShowScrollBars = "Automatic";
+        AppleSpacesSwitchOnActivate = false;
+        AppleTemperatureUnit = "Celsius";
         # delay before repeating keystrokes
         InitialKeyRepeat = 10;
         # delay between repeated keystrokes upon holding a key
         KeyRepeat = 1;
-        AppleShowScrollBars = "Automatic";
-        NSScrollAnimationEnabled = true; # smooth scrolling
         NSAutomaticCapitalizationEnabled = false;
         NSAutomaticDashSubstitutionEnabled = false;
         NSAutomaticInlinePredictionEnabled = false;
         NSAutomaticPeriodSubstitutionEnabled = false;
         NSAutomaticQuoteSubstitutionEnabled = false;
         NSAutomaticSpellingCorrectionEnabled = false;
+        NSAutomaticWindowAnimationsEnabled = true;
+        NSDocumentSaveNewDocumentsToCloud = false;
         NSNavPanelExpandedStateForSaveMode = true;
         NSNavPanelExpandedStateForSaveMode2 = true;
-        NSDocumentSaveNewDocumentsToCloud = false;
+        NSScrollAnimationEnabled = true; # smooth scrolling
         # speed up animation on open/save boxes (default:0.2)
         NSWindowResizeTime = 0.001;
         PMPrintingExpandedStateForPrint = true;
         PMPrintingExpandedStateForPrint2 = true;
+        "com.apple.keyboard.fnState" = false;
+        "com.apple.mouse.tapBehavior" = 1; # tap to click
+        "com.apple.sound.beep.feedback" = 1;
+        "com.apple.sound.beep.volume" = 0.606531; # 50%
+        "com.apple.springing.enabled" = false;
+        "com.apple.swipescrolldirection" = true; # "natural" scrolling
+        "com.apple.trackpad.enableSecondaryClick" = true;
+        "com.apple.trackpad.scaling" = 3.0; # fast
       };
 
       # ============================================================================
@@ -320,6 +353,7 @@ in
       # or `defaults read xxx` to read a specific domain.
       CustomUserPreferences = {
         ".GlobalPreferences" = {
+          "com.apple.mouse.scaling" = 9.0;
           AppleLanguages = [
             "en-SG"
             "ms-MY"
@@ -387,108 +421,6 @@ in
         "com.apple.ImageCapture".disableHotPlug = true;
         # Turn on app auto-update
         "com.apple.commerce".AutoUpdate = true;
-        # Macos hotkeys
-        # "com.apple.symbolichotkeys" = {
-        #   AppleSymbolicHotKeys = {
-        #     # Window -> Fill (control + shift + m)
-        #     "237" = {
-        #       enabled = 1;
-        #       value = {
-        #         parameters = [
-        #           109
-        #           46 # m
-        #           393216
-        #         ];
-        #         type = "standard";
-        #       };
-        #     };
-        #     # Window -> Move & resize left (control + shift + h)
-        #     "240" = {
-        #       enabled = 1;
-        #       value = {
-        #         parameters = [
-        #           104
-        #           4
-        #           393216
-        #         ];
-        #         type = "standard";
-        #       };
-        #     };
-        #     # Window -> Move & resize right (control + shift + l)
-        #     "241" = {
-        #       enabled = 1;
-        #       value = {
-        #         parameters = [
-        #           108
-        #           37
-        #           393216
-        #         ];
-        #         type = "standard";
-        #       };
-        #     };
-        #     # Window -> Move & resize top (control + shift + k)
-        #     "242" = {
-        #       enabled = 1;
-        #       value = {
-        #         parameters = [
-        #           107
-        #           40
-        #           393216
-        #         ];
-        #         type = "standard";
-        #       };
-        #     };
-        #     # Window -> Move & resize bottom (control + shift + j)
-        #     "243" = {
-        #       enabled = 1;
-        #       value = {
-        #         parameters = [
-        #           106
-        #           38
-        #           393216
-        #         ];
-        #         type = "standard";
-        #       };
-        #     };
-        #     # Window -> Move & resize left & right (control + shift + \)
-        #     "248" = {
-        #       enabled = 1;
-        #       value = {
-        #         parameters = [
-        #           92
-        #           42
-        #           393216
-        #         ];
-        #         type = "standard";
-        #       };
-        #     };
-        #     # Window -> Move & resize top & bottom (control + shift + -)
-        #     "250" = {
-        #       enabled = 1;
-        #       value = {
-        #         parameters = [
-        #           45
-        #           27
-        #           393216
-        #         ];
-        #         type = "standard";
-        #       };
-        #     };
-        #   };
-        # };
-        # "com.apple.Siri" = {
-        #   CustomizedKeyboardShortcutSAE = {
-        #     enabled = 1;
-        #     value = {
-        #       parameters = [
-        #         115
-        #         1
-        #         1966080
-        #       ];
-        #       type = "SAE1.0";
-        #     };
-        #   };
-        # };
       };
     };
   };
