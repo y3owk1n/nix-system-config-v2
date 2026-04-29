@@ -1,14 +1,4 @@
 -- =========================================================
---  Just overrides
--- =========================================================
-
-vim.lsp.config("just", {
-  on_attach = function(client)
-    client.server_capabilities.documentFormattingProvider = false
-  end,
-})
-
--- =========================================================
 --  Lua overrides (so that vim don't shout at me)
 -- =========================================================
 

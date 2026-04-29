@@ -29,7 +29,6 @@ conform.setup({
     ["markdown"] = { "prettierd" },
     ["markdown.mdx"] = { "prettierd" },
     go = { "goimports", "gofumpt" },
-    just = { "just" },
   },
   format_on_save = {
     timeout_ms = 500,
