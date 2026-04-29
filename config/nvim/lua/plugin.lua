@@ -357,6 +357,17 @@ local function preserve_cursor()
   end)
 end
 
+vim.keymap.set({ "n", "x" }, "y", function()
+  -- Preserve the current cursor position when yanking.
+  local pos = vim.fn.getpos(".")
+
+  vim.schedule(function()
+    vim.g.ug_ignore_cursor_moved = true
+    vim.fn.setpos(".", pos)
+  end)
+  return "y"
+end, { expr = true, noremap = true, desc = "Yank and remain cursor" })
+
 vim.keymap.set("n", "u", function()
   undo_glow.undo()
 end, { desc = "Undo with highlight", noremap = true })
