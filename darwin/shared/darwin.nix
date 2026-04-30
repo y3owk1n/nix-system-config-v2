@@ -161,7 +161,7 @@ in
         # Use list view in all Finder windows by default
         FXPreferredViewStyle = "Nlsv";
         NewWindowTarget = "Other";
-        NewWindowTargetPath = "/Users/${username}/Downloads";
+        NewWindowTargetPath = "file:///Users/${username}/Downloads";
         QuitMenuItem = true;
         ShowExternalHardDrivesOnDesktop = false;
         ShowHardDrivesOnDesktop = false;
@@ -194,7 +194,7 @@ in
         # three finger click and drag
         TrackpadThreeFingerDrag = true;
         TrackpadThreeFingerHorizSwipeGesture = 0;
-        TrackpadThreeFingerTapGesture = 0;
+        TrackpadThreeFingerTapGesture = 2;
         TrackpadThreeFingerVertSwipeGesture = 0;
 
         TrackpadTwoFingerFromRightEdgeSwipeGesture = 3;
