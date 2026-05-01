@@ -49,7 +49,8 @@ in
     casks = [
       # "blender"
       "affinity"
-      "helium-browser"
+      # "helium-browser"
+      "brave-browser"
       # "firefox"
       # "y3owk1n/tap/neru"
       # "karabiner-elements"
