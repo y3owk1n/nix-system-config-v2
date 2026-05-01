@@ -310,7 +310,7 @@ in
         AppleShowAllExtensions = true;
         AppleShowAllFiles = true;
         AppleShowScrollBars = "Automatic";
-        AppleSpacesSwitchOnActivate = false;
+        AppleSpacesSwitchOnActivate = true;
         AppleTemperatureUnit = "Celsius";
         # delay before repeating keystrokes
         InitialKeyRepeat = 10;
