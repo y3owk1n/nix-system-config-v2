@@ -296,7 +296,7 @@ in
         AppleEnableMouseSwipeNavigateWithScrolls = true;
         # 2 = heavy font smoothing; if text looks blurry, back this down to 1
         AppleFontSmoothing = 2;
-        AppleIconAppearanceTheme = "RegularAutomatic";
+        AppleIconAppearanceTheme = null;
         # Dark mode
         AppleInterfaceStyle = "Dark";
         # auto switch between light/dark mode
