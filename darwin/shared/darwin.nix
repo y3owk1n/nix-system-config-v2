@@ -90,7 +90,7 @@ in
         text = ''
           # activateSettings -u will reload the settings from the database and apply them to the current session,
           # so we do not need to logout and login again to make the changes take effect.
-          sudo -i /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+          sudo -u ${username} /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
           echo "Reloading settings and applying to current session..."
 
           # codesign Neru.app
