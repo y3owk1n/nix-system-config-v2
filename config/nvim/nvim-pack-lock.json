@@ -9,7 +9,7 @@
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "mini.diff": {
-      "rev": "ab11575a6c147ecfba894d676d0c93e855021d34",
+      "rev": "0ee0459152b141c0e1b0931eb6949105be4850a9",
       "src": "https://github.com/nvim-mini/mini.diff"
     },
     "mini.files": {
