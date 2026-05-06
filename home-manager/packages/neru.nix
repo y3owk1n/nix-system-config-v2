@@ -27,6 +27,7 @@
       "Cmd+Shift+C" = "__disabled__"
       "Cmd+Shift+S" = "__disabled__"
 
+      # "Ctrl+F" = "hints"
       "Ctrl+F" = "recursive_grid --cursor-selection-mode hold"
       "Ctrl+S" = "scroll"
 
@@ -83,6 +84,38 @@
       # ============================================================================
       [hints]
       enabled = false
+      hint_characters = "aoeuidhtns"
+      include_menubar_hints = true
+      include_dock_hints = true
+      include_nc_hints = true
+      include_stage_manager_hints = true
+      detect_mission_control = true
+
+      [hints.additional_ax_support]
+      enable = true
+
+      additional_electron_bundles = []
+      additional_chromium_bundles = []
+      additional_firefox_bundles = []
+
+      [[hints.app_configs]]
+      bundle_id = "com.brave.Browser"
+      additional_clickable_roles = ["AXTabGroup"]
+      ignore_clickable_check = false
+
+      [hints.hotkeys]
+      "Enter" = "action left_click"
+      "Shift+Enter" = "action right_click"
+      "Primary+Enter" = "action middle_click"
+      "," = "hints"
+      "Up" = "action move_mouse_relative --dx=0 --dy=-10"
+      "Down" = "action move_mouse_relative --dx=0 --dy=10"
+      "Left" = "action move_mouse_relative --dx=-10 --dy=0"
+      "Right" = "action move_mouse_relative --dx=10 --dy=0"
+      "Ctrl+J" = "action scroll_down"
+      "Ctrl+K" = "action scroll_up"
+      "Ctrl+H" = "action scroll_left"
+      "Ctrl+L" = "action scroll_right"
 
       # ============================================================================
       # Grid Navigation
@@ -131,6 +164,16 @@
       "Ctrl+K" = "action scroll_up"
       "Ctrl+H" = "action scroll_left"
       "Ctrl+L" = "action scroll_right"
+
+      [[recursive_grid.app_configs]]
+      bundle_id = "com.brave.Browser"
+      hotkeys = {
+        "1" = ["action right_click", "action sleep 0.1", "action feed o p e n enter m d a enter"],
+        "2" = ["action right_click", "action sleep 0.1", "action feed o p e n enter s k b enter"],
+        "3" = ["action right_click", "action sleep 0.1", "action feed o p e n enter t r a enter"],
+        "4" = ["action right_click", "action sleep 0.1", "action feed o p e n enter m a d enter"],
+        "5" = ["action right_click", "action sleep 0.1", "action feed o p e n enter w a k enter"],
+      }
 
       # ============================================================================
       # Scroll
