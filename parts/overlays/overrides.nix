@@ -8,6 +8,17 @@ _: {
       doCheck = false;
     });
 
+    # Override sesh to downgrade due to startup bug on 2.26.1
+    sesh = prev.sesh.overrideAttrs (_: rec {
+      version = "2.25.0";
+      src = prev.fetchFromGitHub {
+        owner = "joshmedeski";
+        repo = "sesh";
+        rev = "v${version}";
+        hash = "sha256-azs1tf9eR4MVSdjMdd3U/xdPAANn1Kyamf0TwFrBSTU=";
+      };
+    });
+
     # Override aerospace to use beta version with latest features
     aerospace = prev.aerospace.overrideAttrs (_: rec {
       version = "0.20.2-Beta";
