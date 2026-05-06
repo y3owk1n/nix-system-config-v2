@@ -13,7 +13,6 @@
     ../packages/glide-wm.nix
     ../packages/yabai.nix
     ../packages/skhd.nix
-    ../packages/move-to-space.nix
     ../packages/jankyborders.nix
   ];
 }

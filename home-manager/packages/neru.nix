@@ -69,15 +69,15 @@
       "Alt+M" = "exec yabai -m window --toggle zoom-fullscreen"
       "Alt+F" = "exec yabai -m window --toggle float; yabai -m window --grid 4:4:1:1:2:2"
 
-      "Alt+Shift+1" = "exec move-to-space 1; yabai -m space --balance"
-      "Alt+Shift+2" = "exec move-to-space 2; yabai -m space --balance"
-      "Alt+Shift+3" = "exec move-to-space 3; yabai -m space --balance"
-      "Alt+Shift+4" = "exec move-to-space 4; yabai -m space --balance"
-      "Alt+Shift+5" = "exec move-to-space 5; yabai -m space --balance"
-      "Alt+Shift+6" = "exec move-to-space 6; yabai -m space --balance"
-      "Alt+Shift+7" = "exec move-to-space 7; yabai -m space --balance"
-      "Alt+Shift+8" = "exec move-to-space 8; yabai -m space --balance"
-      "Alt+Shift+9" = "exec move-to-space 9; yabai -m space --balance"
+      "Alt+Shift+1" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed cmd+shift+ctrl+alt+1", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "exec yabai -m space --balance", "action restore_cursor_pos"]
+      "Alt+Shift+2" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed cmd+shift+ctrl+alt+2", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "exec yabai -m space --balance", "action restore_cursor_pos"]
+      "Alt+Shift+3" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed cmd+shift+ctrl+alt+3", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "exec yabai -m space --balance", "action restore_cursor_pos"]
+      "Alt+Shift+4" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed cmd+shift+ctrl+alt+4", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "exec yabai -m space --balance", "action restore_cursor_pos"]
+      "Alt+Shift+5" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed cmd+shift+ctrl+alt+5", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "exec yabai -m space --balance", "action restore_cursor_pos"]
+      "Alt+Shift+6" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed cmd+shift+ctrl+alt+6", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "exec yabai -m space --balance", "action restore_cursor_pos"]
+      "Alt+Shift+7" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed cmd+shift+ctrl+alt+7", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "exec yabai -m space --balance", "action restore_cursor_pos"]
+      "Alt+Shift+8" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed cmd+shift+ctrl+alt+8", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "exec yabai -m space --balance", "action restore_cursor_pos"]
+      "Alt+Shift+9" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed cmd+shift+ctrl+alt+9", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "exec yabai -m space --balance", "action restore_cursor_pos"]
 
       # ============================================================================
       # Hints
