@@ -95,15 +95,10 @@ in
 
           # codesign Neru.app
           if [ -e "/Users/${username}/Applications/Home Manager Apps/Neru.app" ]; then
-            CURRENT_CERT=$(/usr/bin/codesign -dv "/Users/${username}/Applications/Home Manager Apps/Neru.app" 2>&1 | grep "^Authority=" | head -1 | cut -d= -f2 || true)
-            if [ "$CURRENT_CERT" != "neru-cert" ]; then
               echo "Codesigning Neru.app..."
-              sudo -u ${username} /usr/bin/codesign --force --deep --sign "neru-cert" --timestamp=none "/Users/${username}/Applications/Home Manager Apps/Neru.app"
+              /usr/bin/codesign --force --deep --sign - --timestamp=none "/Users/${username}/Applications/Home Manager Apps/Neru.app"
 
               pkill -9 neru > /dev/null 2>&1 || true
-            else
-              echo "Neru.app already signed with neru-cert, skipping."
-            fi
           fi
         '';
       };
