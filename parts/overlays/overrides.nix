@@ -4,10 +4,6 @@ _: {
     # Package Overrides
     # ============================================================================
 
-    direnv = prev.direnv.overrideAttrs (_: {
-      doCheck = false;
-    });
-
     # Override sesh to downgrade due to startup bug on 2.26.1
     sesh = prev.sesh.overrideAttrs (_: rec {
       version = "2.25.0";
@@ -30,10 +26,10 @@ _: {
 
     # Override yabai to use the specific version
     yabai = prev.yabai.overrideAttrs (_: rec {
-      version = "7.1.24";
+      version = "7.1.25";
       src = fetchTarball {
         url = "https://github.com/koekeishiya/yabai/releases/download/v${version}/yabai-v${version}.tar.gz";
-        sha256 = "sha256:1ys6c7q5rz78dxg6a04mi7mcdsrs6128kxf6x82ifnkd399xkm6q";
+        sha256 = "sha256:12glpxnxf5x6mdgkgr9p7w02x80y2l7626rknraknrkkishlnrl4";
       };
     });
 
