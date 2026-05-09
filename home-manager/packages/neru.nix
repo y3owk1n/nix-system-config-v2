@@ -180,6 +180,7 @@
       # ============================================================================
 
       [scroll]
+      scroll_step = 150
 
       [scroll.hotkeys]
       # disable defaults
@@ -192,6 +193,12 @@
       "Ctrl+C" = "idle"
       "s" = "recursive_grid --cursor-selection-mode hold"
       "'" = "action move_mouse --center"
+
+      [smooth_scroll]
+      enabled = true
+      steps = 100
+      max_duration = 100
+      duration_per_pixel = 5.00
 
       # ============================================================================
       # Mode Indicator
