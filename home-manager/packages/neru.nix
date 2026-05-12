@@ -33,9 +33,9 @@
 
       # These keys dont have to be here, i didn't want to install another program to run these
       "Cmd+Alt+Shift+Ctrl+F" = "exec open -a \"Finder\""
-      "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Brave Browser\""
+      # "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Brave Browser\""
       # "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Helium\""
-      # "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Safari\""
+      "Cmd+Alt+Shift+Ctrl+B" = "exec open -a \"Safari\""
       "Cmd+Alt+Shift+Ctrl+T" = "exec open -a \"Ghostty\""
       "Cmd+Alt+Shift+Ctrl+N" = "exec open -a \"Notes\""
       "Cmd+Alt+Shift+Ctrl+R" = "exec open -a \"Reminders\""
@@ -165,15 +165,15 @@
       "Ctrl+H" = "action scroll_left"
       "Ctrl+L" = "action scroll_right"
 
-      [[recursive_grid.app_configs]]
-      bundle_id = "com.brave.Browser"
-      hotkeys = {
-        "1" = ["action right_click", "action sleep 0.1", "action feed o p e n enter m d a enter"],
-        "2" = ["action right_click", "action sleep 0.1", "action feed o p e n enter s k b enter"],
-        "3" = ["action right_click", "action sleep 0.1", "action feed o p e n enter t r a enter"],
-        "4" = ["action right_click", "action sleep 0.1", "action feed o p e n enter m a d enter"],
-        "5" = ["action right_click", "action sleep 0.1", "action feed o p e n enter w a k enter"],
-      }
+      # [[recursive_grid.app_configs]]
+      # bundle_id = "com.brave.Browser"
+      # hotkeys = {
+      #   "1" = ["action right_click", "action sleep 0.1", "action feed o p e n enter m d a enter"],
+      #   "2" = ["action right_click", "action sleep 0.1", "action feed o p e n enter s k b enter"],
+      #   "3" = ["action right_click", "action sleep 0.1", "action feed o p e n enter t r a enter"],
+      #   "4" = ["action right_click", "action sleep 0.1", "action feed o p e n enter m a d enter"],
+      #   "5" = ["action right_click", "action sleep 0.1", "action feed o p e n enter w a k enter"],
+      # }
 
       # ============================================================================
       # Scroll
