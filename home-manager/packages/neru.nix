@@ -21,13 +21,7 @@
       # Hotkeys
       # ============================================================================
       [hotkeys]
-      # disable defaults
-      "Cmd+Shift+Space" = "__disabled__"
-      "Cmd+Shift+G" = "__disabled__"
-      "Cmd+Shift+C" = "__disabled__"
-      "Cmd+Shift+S" = "__disabled__"
-
-      # "Ctrl+F" = "hints"
+      # "Ctrl+F" = "hints --search"
       "Ctrl+F" = "recursive_grid --cursor-selection-mode hold"
       "Ctrl+S" = "scroll"
 
@@ -107,7 +101,7 @@
       "Enter" = "action left_click"
       "Shift+Enter" = "action right_click"
       "Primary+Enter" = "action middle_click"
-      "," = "hints"
+      "," = "hints --search"
       "Up" = "action move_mouse_relative --dx=0 --dy=-10"
       "Down" = "action move_mouse_relative --dx=0 --dy=10"
       "Left" = "action move_mouse_relative --dx=-10 --dy=0"
