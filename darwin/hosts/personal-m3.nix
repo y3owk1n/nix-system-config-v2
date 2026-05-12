@@ -6,6 +6,7 @@
 }:
 let
   safariKeys = {
+    "New Wakesport Window" = "^6";
     "New Madani TRX Window" = "^5";
     "New Traworld Window" = "^4";
     "New SKBA Window" = "^3";
