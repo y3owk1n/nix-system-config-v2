@@ -21,7 +21,7 @@
       # Hotkeys
       # ============================================================================
       [hotkeys]
-      # "Ctrl+F" = "hints --search"
+      # "Ctrl+F" = "hints --action left_click"
       "Ctrl+F" = "recursive_grid --cursor-selection-mode hold"
       "Ctrl+S" = "scroll"
 
@@ -78,38 +78,23 @@
       # ============================================================================
       [hints]
       enabled = false
-      hint_characters = "aoeuidhtns"
+      hint_characters = "aeudhtnspyfgcrqjkxbmwvz"
       include_menubar_hints = true
       include_dock_hints = true
       include_nc_hints = true
       include_stage_manager_hints = true
+      include_pip_hints = true
       detect_mission_control = true
 
       [hints.additional_ax_support]
       enable = true
 
-      additional_electron_bundles = []
+      additional_electron_bundles = ["com.openai.codex"]
       additional_chromium_bundles = []
       additional_firefox_bundles = []
 
-      [[hints.app_configs]]
-      bundle_id = "com.brave.Browser"
-      additional_clickable_roles = ["AXTabGroup"]
-      ignore_clickable_check = false
-
-      [hints.hotkeys]
-      "Enter" = "action left_click"
-      "Shift+Enter" = "action right_click"
-      "Primary+Enter" = "action middle_click"
-      "," = "hints --search"
-      "Up" = "action move_mouse_relative --dx=0 --dy=-10"
-      "Down" = "action move_mouse_relative --dx=0 --dy=10"
-      "Left" = "action move_mouse_relative --dx=-10 --dy=0"
-      "Right" = "action move_mouse_relative --dx=10 --dy=0"
-      "Ctrl+J" = "action scroll_down"
-      "Ctrl+K" = "action scroll_up"
-      "Ctrl+H" = "action scroll_left"
-      "Ctrl+L" = "action scroll_right"
+      [hints.boundary_highlight]
+      enabled = true
 
       # ============================================================================
       # Grid Navigation
@@ -174,7 +159,7 @@
       # ============================================================================
 
       [scroll]
-      scroll_step = 150
+      scroll_step = 100
 
       [scroll.hotkeys]
       # disable defaults
@@ -190,9 +175,9 @@
 
       [smooth_scroll]
       enabled = true
-      steps = 100
-      max_duration = 100
-      duration_per_pixel = 5.00
+      steps = 300
+      max_duration = 300
+      duration_per_pixel = 20.00
 
       [mouse_action_indicator]
       enabled = true
