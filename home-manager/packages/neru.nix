@@ -79,19 +79,41 @@
       [hints]
       enabled = false
       hint_characters = "aeudhtnspyfgcrqjkxbmwvz"
+
       include_menubar_hints = true
       include_dock_hints = true
       include_nc_hints = true
       include_stage_manager_hints = true
       include_pip_hints = true
+      include_screen_capture_hints = true
       detect_mission_control = true
+      on_mission_control_activated = "hints --action left_click"
+      on_mission_control_deactivated = "idle"
+
+      additional_menubar_hints_targets = [
+        "com.apple.TextInputMenuAgent",
+        "com.apple.controlcenter",
+        "com.apple.systemuiserver",
+        "com.y3owk1n.neru",
+        "com.openai.codex",
+        "com.google.antigravity",
+      ]
+
+      [[hints.app_configs]]
+      bundle_id = "com.apple.Safari"
+      visible_check_enabled = true
 
       [hints.additional_ax_support]
       enable = true
 
-      additional_electron_bundles = ["com.openai.codex"]
+      additional_electron_bundles = [
+        "com.openai.codex",
+        "com.hnc.discord",
+        "com.google.antigravity"
+      ]
       additional_chromium_bundles = []
       additional_firefox_bundles = []
+      additional_webkit_bundles = []
 
       [hints.boundary_highlight]
       enabled = true
