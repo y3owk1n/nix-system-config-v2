@@ -27,6 +27,109 @@ vim.api.nvim_create_autocmd("FileType", {
 local spinner = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
 local spinner_index = 1
 
+-- local progress = {}
+--
+-- vim.api.nvim_create_autocmd("LspProgress", {
+--   group = augroup("lsp_progress"),
+--   callback = function(ev)
+--     local client = vim.lsp.get_client_by_id(ev.data.client_id)
+--     if not client then
+--       return
+--     end
+--
+--     local value = ev.data.params.value
+--
+--     local is_begin = value.kind == "begin"
+--     local is_complete = value.kind == "end"
+--     local is_report = value.kind == "report"
+--
+--     if not value then
+--       return
+--     end
+--
+--     local client_name = client.name
+--
+--     local id = string.format("lsp_progress_%s", client_name)
+--
+--     local function get_right_percentage(percentage)
+--       if percentage == 0 or percentage == nil then
+--         return nil
+--       end
+--       return percentage
+--     end
+--
+--     local function format_msg(progress_data)
+--       local has_icon = progress_data.icon and progress_data.icon ~= ""
+--       local has_description = progress_data.description and progress_data.description ~= ""
+--       local has_percentage = progress_data.percentage and progress_data.percentage ~= 0
+--
+--       local string = ""
+--
+--       if has_icon then
+--         string = string .. progress_data.icon
+--       end
+--
+--       if has_description then
+--         string = string .. " " .. progress_data.description
+--       end
+--
+--       if has_percentage then
+--         string = string .. " " .. progress_data.percentage .. "%"
+--       end
+--
+--       return string
+--     end
+--
+--     spinner_index = (spinner_index % #spinner) + 1
+--
+--     local default_progress = {
+--       percentage = get_right_percentage(value.percentage),
+--       description = value.title or "Loading workspace",
+--       file_progress = value.message or nil,
+--       icon = spinner[spinner_index],
+--     }
+--
+--     if is_begin then
+--       progress[client_name] = default_progress
+--     end
+--
+--     if is_report then
+--       progress[client_name] = default_progress
+--
+--       progress[client_name].description = value.title
+--       progress[client_name].file_progress = value.message
+--     end
+--
+--     if is_complete then
+--       progress[client_name] = default_progress
+--
+--       progress[client_name].description = "Done"
+--       progress[client_name].file_progress = nil
+--       progress[client_name].percentage = 100
+--       progress[client_name].icon = " "
+--
+--       vim.notify(format_msg(progress[client_name]), vim.log.levels.INFO, { id = id })
+--
+--       progress[client_name] = nil
+--     end
+--
+--
+--     -- show aggregated progress
+--     local msgs = {}
+--     for name, _ in pairs(progress) do
+--       table.insert(msgs,
+--         format_msg(progress[name])
+--       )
+--     end
+--
+--     if #msgs > 0 then
+--       for _, msg in ipairs(msgs) do
+--         vim.notify(msg, vim.log.levels.INFO, { id = id })
+--       end
+--     end
+--   end,
+-- })
+
 vim.api.nvim_create_autocmd("LspProgress", {
   group = augroup("lsp_progress"),
   callback = function(ev)
