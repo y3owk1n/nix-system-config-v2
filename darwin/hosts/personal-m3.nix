@@ -52,8 +52,10 @@ in
       "affinity"
       # "helium-browser"
       "brave-browser"
+      # "google-chrome"
       # "keycastr"
-      # "firefox"
+      "discord"
+      "firefox"
       # "y3owk1n/tap/neru"
       # "karabiner-elements"
     ];
