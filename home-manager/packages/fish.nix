@@ -15,6 +15,9 @@
       if test -n "$GHOSTTY_RESOURCES_DIR"
         source "$GHOSTTY_RESOURCES_DIR/shell-integration/fish/vendor_conf.d/ghostty-shell-integration.fish"
       end
+
+      fish_add_path /opt/homebrew/bin
+      set -gx MANPATH /run/current-system/sw/share/man /nix/var/nix/profiles/default/share/man $MANPATH
     '';
     shellInit = ''
       __load-em
