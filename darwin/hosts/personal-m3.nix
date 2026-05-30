@@ -57,6 +57,10 @@ in
       "discord"
       "firefox"
       # "y3owk1n/tap/neru"
+      # {
+      #   name = "y3owk1n/tap/neru-nightly";
+      #   greedy = true;
+      # }
       # "karabiner-elements"
     ];
 
