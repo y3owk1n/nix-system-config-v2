@@ -63,7 +63,10 @@
       http.sslVerify = true;
       init.defaultBranch = "main";
       interactive.singlekey = true;
-      log.abbrevCommit = true;
+      log = {
+        abbrevCommit = true;
+        date = "iso";
+      };
       merge.conflictstyle = "diff3";
       protocol.version = "2";
       pull.rebase = true;
