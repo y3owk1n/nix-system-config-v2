@@ -68,6 +68,8 @@ inputs.darwin.lib.darwinSystem {
         imports = [
           ../../home-manager/shared/base.nix
           ../../home-manager/hosts/personal-m3.nix
+          # mimi
+          inputs.mimi.homeManagerModules.default
           # neru
           inputs.neru.homeManagerModules.default
           # nvs

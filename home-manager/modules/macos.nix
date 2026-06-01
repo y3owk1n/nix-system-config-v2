@@ -9,6 +9,7 @@
     ../packages/hammerspoon.nix
     ../packages/kanata.nix
     ../packages/neru.nix
+    ../packages/mimi.nix
     ../packages/rift.nix
     ../packages/glide-wm.nix
     ../packages/yabai.nix

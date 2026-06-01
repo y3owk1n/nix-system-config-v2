@@ -10,6 +10,7 @@ in
   flake.overlays.default = lib.composeManyExtensions [
     # External overlays
     inputs.neru.overlays.default
+    inputs.mimi.overlays.default
     inputs.nvs.overlays.default
     inputs.nixos-npm-ls.overlays.default
 

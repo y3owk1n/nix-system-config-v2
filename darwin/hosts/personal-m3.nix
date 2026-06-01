@@ -56,6 +56,7 @@ in
       # "keycastr"
       "discord"
       "firefox"
+      # "y3owk1n/tap/mimi"
       # "y3owk1n/tap/neru"
       # {
       #   name = "y3owk1n/tap/neru-nightly";
