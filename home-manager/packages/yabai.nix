@@ -5,7 +5,7 @@ _: {
   # Custom tiling window manager for macOS
 
   services.yabai = {
-    enable = true;
+    enable = false;
     config = ''
       # by default, tile all windows
       yabai -m config layout bsp

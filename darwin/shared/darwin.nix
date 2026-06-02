@@ -267,10 +267,10 @@ in
 
       WindowManager = {
         EnableStandardClickToShowDesktop = false; # Click wallpaper to reveal desktop
-        EnableTiledWindowMargins = false;
-        EnableTilingByEdgeDrag = false;
-        EnableTilingOptionAccelerator = false;
-        EnableTopTilingByEdgeDrag = false;
+        EnableTiledWindowMargins = true;
+        EnableTilingByEdgeDrag = true;
+        EnableTilingOptionAccelerator = true;
+        EnableTopTilingByEdgeDrag = true;
         GloballyEnabled = false;
         HideDesktop = true;
         StageManagerHideWidgets = true;
