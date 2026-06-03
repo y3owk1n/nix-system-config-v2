@@ -67,8 +67,9 @@
 
     nixos-npm-ls.url = "https://flakehub.com/f/y3owk1n/nixos-npm-ls/0.1";
     mimi.url = "https://flakehub.com/f/y3owk1n/mimi/0.1";
+    # mimi.url = "git+file:/Users/kylewong/Dev/mimi";
     neru.url = "https://flakehub.com/f/y3owk1n/neru/0.1";
-    # neru.url = "path:/Users/kylewong/Dev/neru";
+    # neru.url = "git+file:/Users/kylewong/Dev/neru";
     nvs.url = "https://flakehub.com/f/y3owk1n/nvs/0.1";
 
     # ============================================================================
