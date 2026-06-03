@@ -25,8 +25,8 @@
       "Ctrl+S" = "scroll"
 
       # Focus window and move cursor to center
-      "Alt+H" = ["action focus_window", "action move_mouse --window"]
-      "Alt+L" = ["action focus_window --backward", "action move_mouse --window"]
+      "Alt+H" = "action focus_window"
+      "Alt+L" = "action focus_window --backward"
 
       # Launchers
       "Cmd+Alt+Shift+Ctrl+F" = "exec open -a \"Finder\""
