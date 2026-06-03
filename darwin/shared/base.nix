@@ -89,7 +89,7 @@
 
     casks = [
       "tailscale-app"
-      "rustdesk"
+      # "rustdesk"
       "orbstack"
       "whatsapp"
       # "deskpad" # use this to test external monitor
