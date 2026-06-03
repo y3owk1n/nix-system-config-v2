@@ -5,245 +5,30 @@
   # ============================================================================
 
   services.mimi = {
-    enable = false;
+    enable = true;
     # package = pkgs.mimi;
     package = pkgs.mimi-source;
     config = ''
-      # mimi — macOS Event Daemon
-      # =============================================================================
-      # Documentation: https://github.com/y3owk1n/mimi
-      # Validate:      mimi config validate
-      # Re-create:     mimi init
-      #
-      # Every hook receives these environment variables:
-      #   mimi_EVENT        — event kind (e.g. "app_activate")
-      #   mimi_EVENT_ID     — unique event UUID
-      #   mimi_APP_NAME     — app display name
-      #   mimi_BUNDLE_ID    — bundle identifier (e.g. "com.apple.Safari")
-      #   mimi_PID          — app process ID
-      #   mimi_WINDOW_TITLE — focused window title (window events only)
-      #   mimi_VOLUME_PATH  — mount path (volume events only)
-      #   mimi_VOLUME_NAME  — volume display name
-      #   mimi_TIMESTAMP    — RFC3339 timestamp
-      # =============================================================================
-
       [settings]
-      # Log file path (supports ~/ expansion). Empty or omitted = console-only.
-      # log_file = "~/.local/share/mimi/mimi.log"
 
-      # Log level: debug | info | warn | error
-      log_level = "info"
+      hook_shell = "/bin/dash"
 
-      # Log format: text | json
-      log_format = "text"
-
-      # Default timeout (seconds) for each hook. Can be overridden per-hook.
-      hook_timeout_secs = 10
-
-      # Shell used to execute hook commands.
-      hook_shell = "/bin/sh"
-
-      # Maximum number of hook processes running concurrently.
-      max_hook_workers = 4
-
-      # PID file path (supports ~/ expansion).
-      pid_file = "~/.local/share/mimi/mimi.pid"
-
-      # =============================================================================
-      # Hooks
-      # =============================================================================
-      # Each hook is an array of entries. An entry can be either:
-      #
-      #   1) A plain string — the shell command to run:
-      #        on_app_activate = ["echo hello"]
-      #
-      #   2) An inline table with options:
-      #        on_app_activate = [
-      #          { run = "echo hello", app = "Slack", async = true }
-      #        ]
-      #
-      # Available entry fields:
-      #   run          — shell command (required)
-      #   app          — only fire when app name matches (glob: "Slack", "Code*")
-      #   bundle_id    — only fire when bundle ID matches exactly
-      #   title        — only fire when window title matches (regex)
-      #   timeout_secs — override global hook_timeout_secs for this entry
-      #   async        — run in background without blocking (default: false)
-      # =============================================================================
+      [systray]
+      # Show the Mimi menu bar item while the daemon is running.
+      enabled = true
+      show_workspace_number = true
 
       [hooks]
 
-      # ── Application Lifecycle ─────────────────────────────────────────────────────
-
       # App comes to foreground.
-      # on_app_activate = [
-      #     "echo 'activated: $mimi_APP_NAME ($mimi_BUNDLE_ID)'"
-      # ]
-
-      # App loses foreground.
-      # on_app_deactivate = [
-      #     "echo 'deactivated: $mimi_APP_NAME'"
-      # ]
-
-      # App process started.
-      # on_app_launch = [
-      #     "logger 'launched: $mimi_APP_NAME'"
-      # ]
-
-      # App process terminated.
-      # on_app_quit = [
-      #     "echo 'quit: $mimi_APP_NAME'"
-      # ]
-
-      # App hidden (Cmd+H).
-      # on_app_hide = [
-      #     "echo 'hidden: $mimi_APP_NAME'"
-      # ]
-
-      # App unhidden.
-      # on_app_unhide = [
-      #     "echo 'unhidden: $mimi_APP_NAME'"
-      # ]
-
-      # ── Window Events (requires Accessibility permission) ─────────────────────────
+      on_app_activate = [
+      	"command -v neru >/dev/null 2>&1 && neru action move_mouse --window",
+      ]
 
       # Focused window changed.
-      # on_window_focus = [
-      #     { run = "echo 'focus: $mimi_APP_NAME — $mimi_WINDOW_TITLE'", async = true }
-      # ]
-
-      # Active window title changed.
-      # on_window_title_change = [
-      #     "echo 'title: $mimi_WINDOW_TITLE'"
-      # ]
-
-      # New window opened.
-      # on_window_created = [
-      #     "echo 'window opened: $mimi_APP_NAME'"
-      # ]
-
-      # Window closed.
-      # on_window_closed = [
-      #     "echo 'window closed: $mimi_APP_NAME'"
-      # ]
-
-      # ── System Power Events ────────────────────────────────────────────────────────
-
-      # System going to sleep.
-      on_system_sleep = [
-          "logger 'mimi: system sleeping'"
+      on_window_focus = [
+      	"command -v neru >/dev/null 2>&1 && neru action move_mouse --window",
       ]
-
-      # System woke up.
-      on_system_wake = [
-          "logger 'mimi: system woke'"
-      ]
-
-      # Screen locked / session resigned active.
-      # on_screen_lock = []
-
-      # Screen unlocked / session became active.
-      # on_screen_unlock = []
-
-      # Shutdown or restart imminent.
-      # on_system_shutdown = []
-
-      # User session ended (logout).
-      # on_user_session_end = []
-
-      # ── Storage Events ─────────────────────────────────────────────────────────────
-
-      # Volume / USB drive mounted.
-      on_volume_mount = [
-          "echo 'mounted: $mimi_VOLUME_NAME at $mimi_VOLUME_PATH'"
-      ]
-
-      # Volume / USB drive unmounted.
-      # on_volume_unmount = []
-
-      # ── Display / Appearance Events ───────────────────────────────────────────────
-
-      # External display connected.
-      # on_external_display_connected = [
-      #     "echo 'external display connected'"
-      # ]
-
-      # External display disconnected.
-      # on_external_display_disconnected = [
-      #     "echo 'external display disconnected'"
-      # ]
-
-      # Dark/Light mode changed.
-      # on_appearance_changed = [
-      #     "echo 'appearance changed'"
-      # ]
-
-      # ── Power / Battery Events ────────────────────────────────────────────────────
-
-      # AC power adapter plugged in.
-      # on_power_adapter_connected = [
-      #     "echo 'power adapter connected'"
-      # ]
-
-      # AC power adapter unplugged (now on battery).
-      # on_power_adapter_disconnected = [
-      #     "echo 'switched to battery'"
-      # ]
-
-      # Battery level is low.
-      # on_battery_low = [
-      #     "echo 'battery low'"
-      # ]
-
-      # Battery level is critically low.
-      # on_battery_critical = [
-      #     "echo 'battery critical!'"
-      # ]
-
-      # ── Audio Events ──────────────────────────────────────────────────────────────
-
-      # Audio device list or default input/output changed.
-      # on_audio_device_changed = [
-      #     "echo 'audio device changed'"
-      # ]
-
-      # ── Workspace / Desktop Events ────────────────────────────────────────────────
-
-      # Active Space / Desktop changed (Mission Control).
-      # on_workspace_changed = [
-      #     "echo 'workspace changed'"
-      # ]
-
-      # ── USB / Peripheral Events ──────────────────────────────────────────────────
-
-      # USB device connected.
-      # on_usb_device_connected = [
-      #     "echo 'USB device connected'"
-      # ]
-
-      # USB device disconnected.
-      # on_usb_device_disconnected = [
-      #     "echo 'USB device disconnected'"
-      # ]
-
-      # ── Network Events ────────────────────────────────────────────────────────────
-
-      # Network connectivity restored.
-      # on_network_up = [
-      #     "echo 'network is up'"
-      # ]
-
-      # Network connectivity lost.
-      # on_network_down = [
-      #     "echo 'network is down'"
-      # ]
-
-      # ── Clipboard Events ─────────────────────────────────────────────────────────
-
-      # Clipboard content changed.
-      # on_clipboard_changed = [
-      #     "echo 'clipboard changed'"
-      # ]
     '';
   };
 }
