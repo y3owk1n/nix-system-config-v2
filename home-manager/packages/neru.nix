@@ -16,6 +16,8 @@
       [general]
       hide_overlay_in_screen_share = true
       passthrough_unbounded_keys = true
+      exec_shell = "/bin/dash"
+      exec_shell_args = ["-lc"]
 
       # ============================================================================
       # Hotkeys
