@@ -45,27 +45,25 @@
       "Cmd+Alt+Shift+Ctrl+S" = "exec open -a \"System Settings\""
       "Cmd+Alt+Shift+Ctrl+A" = "exec open -a \"Activity Monitor\""
 
-      # Moving to spaces (default macOS keys)
-      "Cmd+Alt+Shift+Ctrl+1" = "action feed ctrl+1"
-      "Cmd+Alt+Shift+Ctrl+2" = "action feed ctrl+2"
-      "Cmd+Alt+Shift+Ctrl+3" = "action feed ctrl+3"
-      "Cmd+Alt+Shift+Ctrl+4" = "action feed ctrl+4"
-      "Cmd+Alt+Shift+Ctrl+5" = "action feed ctrl+5"
-      "Cmd+Alt+Shift+Ctrl+6" = "action feed ctrl+6"
-      "Cmd+Alt+Shift+Ctrl+7" = "action feed ctrl+7"
-      "Cmd+Alt+Shift+Ctrl+8" = "action feed ctrl+8"
-      "Cmd+Alt+Shift+Ctrl+9" = "action feed ctrl+9"
+      "Cmd+Alt+Shift+Ctrl+1" = "action space 1"
+      "Cmd+Alt+Shift+Ctrl+2" = "action space 2"
+      "Cmd+Alt+Shift+Ctrl+3" = "action space 3"
+      "Cmd+Alt+Shift+Ctrl+4" = "action space 4"
+      "Cmd+Alt+Shift+Ctrl+5" = "action space 5"
+      "Cmd+Alt+Shift+Ctrl+6" = "action space 6"
+      "Cmd+Alt+Shift+Ctrl+7" = "action space 7"
+      "Cmd+Alt+Shift+Ctrl+8" = "action space 8"
+      "Cmd+Alt+Shift+Ctrl+9" = "action space 9"
 
-      # Hack to move windows to spaces
-      "Alt+Shift+1" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+1", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
-      "Alt+Shift+2" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+2", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
-      "Alt+Shift+3" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+3", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
-      "Alt+Shift+4" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+4", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
-      "Alt+Shift+5" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+5", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
-      "Alt+Shift+6" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+6", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
-      "Alt+Shift+7" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+7", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
-      "Alt+Shift+8" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+8", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
-      "Alt+Shift+9" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+9", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
+      "Alt+Shift+1" = ["action move_window_to_space 1", "action space 1"]
+      "Alt+Shift+2" = ["action move_window_to_space 2", "action space 2"]
+      "Alt+Shift+3" = ["action move_window_to_space 3", "action space 3"]
+      "Alt+Shift+4" = ["action move_window_to_space 4", "action space 4"]
+      "Alt+Shift+5" = ["action move_window_to_space 5", "action space 5"]
+      "Alt+Shift+6" = ["action move_window_to_space 6", "action space 6"]
+      "Alt+Shift+7" = ["action move_window_to_space 7", "action space 7"]
+      "Alt+Shift+8" = ["action move_window_to_space 8", "action space 8"]
+      "Alt+Shift+9" = ["action move_window_to_space 9", "action space 9"]
 
       # Window manager
       # maximise window
@@ -78,6 +76,17 @@
       "Alt+Shift+J" = "exec osascript -e 'tell application \"System Events\" to tell (first process whose frontmost is true) to click menu item \"Bottom\" of menu \"Move & Resize\" of menu item \"Move & Resize\" of menu \"Window\" of menu bar 1'"
       # move to top
       "Alt+Shift+K" = "exec osascript -e 'tell application \"System Events\" to tell (first process whose frontmost is true) to click menu item \"Top\" of menu \"Move & Resize\" of menu item \"Move & Resize\" of menu \"Window\" of menu bar 1'"
+
+      # # Hack to move windows to spaces
+      # "Alt+Shift+1" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+1", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
+      # "Alt+Shift+2" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+2", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
+      # "Alt+Shift+3" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+3", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
+      # "Alt+Shift+4" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+4", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
+      # "Alt+Shift+5" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+5", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
+      # "Alt+Shift+6" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+6", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
+      # "Alt+Shift+7" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+7", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
+      # "Alt+Shift+8" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+8", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
+      # "Alt+Shift+9" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+9", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
 
       # # If yabai is uninstalled or not working anymore, set these keys in system settings and bear with the animations
       # "Cmd+Alt+Shift+Ctrl+1" = "exec yabai -m space --focus 1"
