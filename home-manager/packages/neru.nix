@@ -24,7 +24,7 @@
       # ============================================================================
       [hotkeys]
       "Ctrl+F" = "recursive_grid --cursor-selection-mode hold"
-      "Ctrl+S" = "scroll"
+      "Ctrl+S" = ["action move_mouse --selection", "scroll"]
 
       # Focus window and move cursor to center
       "Alt+H" = "action focus_window"
@@ -195,14 +195,11 @@
       # ============================================================================
       [recursive_grid]
       enabled = true
-      grid_cols = 3
-      grid_rows = 3
-      keys = "gcrhtnmwv"
-      # grid_cols = 5
-      # grid_rows = 4
-      # keys = "67890fgcrldhtnsbmwvz"
-      min_size_width = 10
-      min_size_height = 10
+      grid_cols = 5
+      grid_rows = 5
+      keys = "fgcrlaoeuidhtns;qjkxbmwvz"
+      min_size_width = 1
+      min_size_height = 1
 
       [recursive_grid.animation]
       enabled = false
@@ -211,11 +208,12 @@
       font_family = "JetBrainsMonoNLNFP-Bold"
       line_width = 1
       # highlight_color = "#B00A1338"
+      highlight_color = "#00000000"
       text_color = "#00000000"
 
       [recursive_grid.hotkeys]
       # disable defaults
-      "Space" = "__disabled__"
+      # "Space" = "__disabled__"
       "Shift+L" = "__disabled__"
       "Shift+M" = "__disabled__"
       "Shift+I" = "__disabled__"
@@ -223,16 +221,21 @@
       "Shift+R" = "__disabled__"
       "`" = "__disabled__"
 
-      "Ctrl+C" = "idle"
-      "," = "action reset"
       "Tab" = "toggle-cursor-follow-selection"
-      "'" = "action move_mouse --center"
-      "i" = "action move_mouse"
-      "u" = "action left_click"
-      "e" = "action middle_click"
-      "o" = "action right_click"
-      "." = "action mouse_down"
-      "p" = "action mouse_up"
+
+      "'" = "action move_mouse"
+      "," = "action move_mouse --center"
+      "." = "action reset"
+      "p" = "action mouse_down"
+      "y" = "action mouse_up"
+      "Enter" = "action left_click"
+      "Shift+Enter" = "action middle_click"
+      "Ctrl+Enter" = "action right_click"
+      "Space" = "action left_click"
+      "Shift+Space" = "action middle_click"
+      "Ctrl+Space" = "action right_click"
+
+      "Ctrl+C" = "idle"
       "Ctrl+J" = "action scroll_down"
       "Ctrl+K" = "action scroll_up"
       "Ctrl+H" = "action scroll_left"
@@ -264,7 +267,7 @@
       "Shift+R" = "__disabled__"
 
       "Ctrl+C" = "idle"
-      "'" = "action move_mouse --center"
+      "f" = "action feed ctrl+f"
 
       # [smooth_scroll]
       # enabled = true
