@@ -10,7 +10,6 @@
     package = pkgs.mimi-source;
     config = ''
       [settings]
-
       hook_shell = "/bin/dash"
 
       [systray]

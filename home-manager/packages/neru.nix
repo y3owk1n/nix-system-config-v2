@@ -27,8 +27,8 @@
       "Ctrl+S" = ["action move_mouse --selection", "scroll"]
 
       # Focus window and move cursor to center
-      "Alt+H" = "action focus_window"
-      "Alt+L" = "action focus_window --backward"
+      "Alt+H" = "exec mimi action focus_window"
+      "Alt+L" = "exec mimi action focus_window --backward"
 
       # Launchers
       "Cmd+Alt+Shift+Ctrl+F" = "exec open -a \"Finder\""
@@ -45,37 +45,44 @@
       "Cmd+Alt+Shift+Ctrl+S" = "exec open -a \"System Settings\""
       "Cmd+Alt+Shift+Ctrl+A" = "exec open -a \"Activity Monitor\""
 
-      "Cmd+Alt+Shift+Ctrl+1" = "action space 1"
-      "Cmd+Alt+Shift+Ctrl+2" = "action space 2"
-      "Cmd+Alt+Shift+Ctrl+3" = "action space 3"
-      "Cmd+Alt+Shift+Ctrl+4" = "action space 4"
-      "Cmd+Alt+Shift+Ctrl+5" = "action space 5"
-      "Cmd+Alt+Shift+Ctrl+6" = "action space 6"
-      "Cmd+Alt+Shift+Ctrl+7" = "action space 7"
-      "Cmd+Alt+Shift+Ctrl+8" = "action space 8"
-      "Cmd+Alt+Shift+Ctrl+9" = "action space 9"
+      "Cmd+Alt+Shift+Ctrl+1" = "exec mimi action space 1"
+      "Cmd+Alt+Shift+Ctrl+2" = "exec mimi action space 2"
+      "Cmd+Alt+Shift+Ctrl+3" = "exec mimi action space 3"
+      "Cmd+Alt+Shift+Ctrl+4" = "exec mimi action space 4"
+      "Cmd+Alt+Shift+Ctrl+5" = "exec mimi action space 5"
+      "Cmd+Alt+Shift+Ctrl+6" = "exec mimi action space 6"
+      "Cmd+Alt+Shift+Ctrl+7" = "exec mimi action space 7"
+      "Cmd+Alt+Shift+Ctrl+8" = "exec mimi action space 8"
+      "Cmd+Alt+Shift+Ctrl+9" = "exec mimi action space 9"
 
-      "Alt+Shift+1" = ["action move_window_to_space 1", "action space 1"]
-      "Alt+Shift+2" = ["action move_window_to_space 2", "action space 2"]
-      "Alt+Shift+3" = ["action move_window_to_space 3", "action space 3"]
-      "Alt+Shift+4" = ["action move_window_to_space 4", "action space 4"]
-      "Alt+Shift+5" = ["action move_window_to_space 5", "action space 5"]
-      "Alt+Shift+6" = ["action move_window_to_space 6", "action space 6"]
-      "Alt+Shift+7" = ["action move_window_to_space 7", "action space 7"]
-      "Alt+Shift+8" = ["action move_window_to_space 8", "action space 8"]
-      "Alt+Shift+9" = ["action move_window_to_space 9", "action space 9"]
+      "Alt+Shift+1" = ["exec mimi action move_window_to_space 1 && mimi action space 1", "exec mimi action space 1"]
+      "Alt+Shift+2" = ["exec mimi action move_window_to_space 2 && mimi action space 2", "exec mimi action space 2"]
+      "Alt+Shift+3" = ["exec mimi action move_window_to_space 3 && mimi action space 3", "exec mimi action space 3"]
+      "Alt+Shift+4" = ["exec mimi action move_window_to_space 4 && mimi action space 4", "exec mimi action space 4"]
+      "Alt+Shift+5" = ["exec mimi action move_window_to_space 5 && mimi action space 5", "exec mimi action space 5"]
+      "Alt+Shift+6" = ["exec mimi action move_window_to_space 6 && mimi action space 6", "exec mimi action space 6"]
+      "Alt+Shift+7" = ["exec mimi action move_window_to_space 7 && mimi action space 7", "exec mimi action space 7"]
+      "Alt+Shift+8" = ["exec mimi action move_window_to_space 8 && mimi action space 8", "exec mimi action space 8"]
+      "Alt+Shift+9" = ["exec mimi action move_window_to_space 9 && mimi action space 9", "exec mimi action space 9"]
 
       # Window manager
+      # center window
+      "Alt+Shift+C" = "exec mimi action resize_window center"
       # maximise window
-      "Alt+Shift+M" = "exec osascript -e 'tell application \"System Events\" to tell (first process whose frontmost is true) to click menu item \"Fill\" of menu \"Window\" of menu bar 1'"
+      # "Alt+Shift+M" = "exec osascript -e 'tell application \"System Events\" to tell (first process whose frontmost is true) to click menu item \"Fill\" of menu \"Window\" of menu bar 1'"
+      "Alt+Shift+M" = "exec mimi action resize_window fill"
       # move to left
-      "Alt+Shift+H" = "exec osascript -e 'tell application \"System Events\" to tell (first process whose frontmost is true) to click menu item \"Left\" of menu \"Move & Resize\" of menu item \"Move & Resize\" of menu \"Window\" of menu bar 1'"
+      # "Alt+Shift+H" = "exec osascript -e 'tell application \"System Events\" to tell (first process whose frontmost is true) to click menu item \"Left\" of menu \"Move & Resize\" of menu item \"Move & Resize\" of menu \"Window\" of menu bar 1'"
+      "Alt+Shift+H" = "exec mimi action resize_window left-half"
       # move to right
-      "Alt+Shift+L" = "exec osascript -e 'tell application \"System Events\" to tell (first process whose frontmost is true) to click menu item \"Right\" of menu \"Move & Resize\" of menu item \"Move & Resize\" of menu \"Window\" of menu bar 1'"
+      # "Alt+Shift+L" = "exec osascript -e 'tell application \"System Events\" to tell (first process whose frontmost is true) to click menu item \"Right\" of menu \"Move & Resize\" of menu item \"Move & Resize\" of menu \"Window\" of menu bar 1'"
+      "Alt+Shift+L" = "exec mimi action resize_window right-half"
       # move to bottom
-      "Alt+Shift+J" = "exec osascript -e 'tell application \"System Events\" to tell (first process whose frontmost is true) to click menu item \"Bottom\" of menu \"Move & Resize\" of menu item \"Move & Resize\" of menu \"Window\" of menu bar 1'"
+      # "Alt+Shift+J" = "exec osascript -e 'tell application \"System Events\" to tell (first process whose frontmost is true) to click menu item \"Bottom\" of menu \"Move & Resize\" of menu item \"Move & Resize\" of menu \"Window\" of menu bar 1'"
+      "Alt+Shift+J" = "exec mimi action resize_window bottom-half"
       # move to top
-      "Alt+Shift+K" = "exec osascript -e 'tell application \"System Events\" to tell (first process whose frontmost is true) to click menu item \"Top\" of menu \"Move & Resize\" of menu item \"Move & Resize\" of menu \"Window\" of menu bar 1'"
+      # "Alt+Shift+K" = "exec osascript -e 'tell application \"System Events\" to tell (first process whose frontmost is true) to click menu item \"Top\" of menu \"Move & Resize\" of menu item \"Move & Resize\" of menu \"Window\" of menu bar 1'"
+      "Alt+Shift+K" = "exec mimi action resize_window top-half"
 
       # # Hack to move windows to spaces
       # "Alt+Shift+1" = ["action save_cursor_pos", "action move_mouse --window --y -1000 --x -1000", "action sleep 0.05", "action move_mouse_relative --dx 100 --dy 2", "action sleep 0.05", "action mouse_down", "action sleep 0.1", "action move_mouse_relative --dx 5 --dy 5", "action sleep 0.1", "action feed ctrl+1", "action sleep 0.2", "action mouse_up", "action sleep 0.05", "action restore_cursor_pos"]
