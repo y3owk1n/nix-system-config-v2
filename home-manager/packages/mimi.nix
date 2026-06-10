@@ -18,6 +18,10 @@
       show_workspace_number = true
 
       [hooks]
+      # App process started.
+      on_app_launch = [
+      	{ run = "command -v neru >/dev/null 2>&1 && neru action move_mouse --window", async = true },
+      ]
 
       # App comes to foreground.
       on_app_activate = [
