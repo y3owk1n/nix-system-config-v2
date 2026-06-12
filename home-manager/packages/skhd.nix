@@ -2,11 +2,11 @@
 let
   skhd = pkgs.stdenv.mkDerivation rec {
     pname = "skhd-zig";
-    version = "0.1.7";
+    version = "0.1.9";
 
     src = pkgs.fetchurl {
       url = "https://github.com/jackielii/skhd.zig/releases/download/v${version}/skhd-arm64-macos.tar.gz";
-      sha256 = "sha256-pk1/rj20tQ1BFwCln7SCa42WVxlOw5NY1hrinvkDlWE=";
+      sha256 = "sha256-CE5qZkDkm37iAtQwueiitmIQ/4RcdmZKJ4pUqDgam9Q=";
     };
 
     nativeBuildInputs = [
@@ -40,12 +40,16 @@ let
 in
 {
   services.skhd = {
-    enable = false;
+    enable = true;
     package = skhd;
     config = ''
       .shell "/bin/dash"
 
       .define open : open -a "{{1}}"
+      .define mimi_space : mimi action space "{{1}}"
+      .define mimi_move : mimi action move_window_to_space "{{1}}" && mimi action space "{{1}}"
+      .define mimi_resize : mimi action resize_window "{{1}}"
+      .define mimi_focus : mimi action focus_window "{{1}}"
 
       # launchers
       hyper - f : @open("finder")
@@ -60,38 +64,39 @@ in
       hyper - s : @open("System Settings")
       hyper - a : @open("Activity Monitor")
 
-      hyper - 1 : yabai -m space --focus 1
-      hyper - 2 : yabai -m space --focus 2
-      hyper - 3 : yabai -m space --focus 3
-      hyper - 4 : yabai -m space --focus 4
-      hyper - 5 : yabai -m space --focus 5
-      hyper - 6 : yabai -m space --focus 6
-      hyper - 7 : yabai -m space --focus 7
-      hyper - 8 : yabai -m space --focus 8
-      hyper - 9 : yabai -m space --focus 9
+      hyper - 1 : @mimi_space("1")
+      hyper - 2 : @mimi_space("2")
+      hyper - 3 : @mimi_space("3")
+      hyper - 4 : @mimi_space("4")
+      hyper - 5 : @mimi_space("5")
+      hyper - 6 : @mimi_space("6")
+      hyper - 7 : @mimi_space("7")
+      hyper - 8 : @mimi_space("8")
+      hyper - 9 : @mimi_space("9")
 
-      alt + shift - 1 : yabai -m window --space 1; yabai -m space --focus 1
-      alt + shift - 2 : yabai -m window --space 2; yabai -m space --focus 2
-      alt + shift - 3 : yabai -m window --space 3; yabai -m space --focus 3
-      alt + shift - 4 : yabai -m window --space 4; yabai -m space --focus 4
-      alt + shift - 5 : yabai -m window --space 5; yabai -m space --focus 5
-      alt + shift - 6 : yabai -m window --space 6; yabai -m space --focus 6
-      alt + shift - 7 : yabai -m window --space 7; yabai -m space --focus 7
-      alt + shift - 8 : yabai -m window --space 8; yabai -m space --focus 8
-      alt + shift - 9 : yabai -m window --space 9; yabai -m space --focus 9
+      alt + shift - 1 : @mimi_move("1")
+      alt + shift - 2 : @mimi_move("2")
+      alt + shift - 3 : @mimi_move("3")
+      alt + shift - 4 : @mimi_move("4")
+      alt + shift - 5 : @mimi_move("5")
+      alt + shift - 6 : @mimi_move("6")
+      alt + shift - 7 : @mimi_move("7")
+      alt + shift - 8 : @mimi_move("8")
+      alt + shift - 9 : @mimi_move("9")
 
-      alt - h : yabai -m window --focus west
-      alt - j : yabai -m window --focus south
-      alt - k : yabai -m window --focus north
-      alt - l : yabai -m window --focus east
+      alt - h : @mimi_focus("--left")
+      alt - l : @mimi_focus("--right")
+      alt - j : @mimi_focus("--down")
+      alt - k : @mimi_focus("--up")
+      alt - tab : @mimi_focus("")
+      alt + shift - tab : @mimi_focus("--backward")
 
-      alt + shift - h : yabai -m window --swap west
-      alt + shift - j : yabai -m window --swap south
-      alt + shift - k : yabai -m window --swap north
-      alt + shift - l : yabai -m window --swap east
-
-      alt - m : yabai -m window --toggle zoom-fullscreen
-      alt - f : yabai -m window --toggle float
+      alt + shift - c : @mimi_resize("center")
+      alt + shift - f : @mimi_resize("fill")
+      alt + shift - h : @mimi_resize("left-half")
+      alt + shift - l : @mimi_resize("right-half")
+      alt + shift - j : @mimi_resize("bottom-half")
+      alt + shift - k : @mimi_resize("top-half")
     '';
   };
 }
