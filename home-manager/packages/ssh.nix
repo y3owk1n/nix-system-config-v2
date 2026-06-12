@@ -32,7 +32,9 @@
       "github.com" = {
         AddKeysToAgent = "yes";
         IdentityFile = "~/.ssh/id_ed25519";
-        UseKeychain = if pkgs.stdenv.isDarwin then "yes" else "no";
+      }
+      // pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
+        UseKeychain = "yes";
       };
     };
   };
