@@ -2,8 +2,8 @@
 {
   programs.nvs = {
     enable = true;
-    package = pkgs.nvs;
-    # package = pkgs.nvs-source;
+    # package = pkgs.nvs;
+    package = pkgs.nvs-source;
     # package = pkgs.nvs-source.overrideAttrs (_: {
     #   postPatch = ''
     #     substituteInPlace go.mod \
