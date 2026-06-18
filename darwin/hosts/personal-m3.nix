@@ -54,6 +54,7 @@ in
       "brave-browser"
       # "google-chrome"
       # "keycastr"
+      # "obs"
       "discord"
       "firefox"
       # "y3owk1n/tap/mimi"
