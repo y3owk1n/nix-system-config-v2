@@ -9,7 +9,7 @@
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "mini.diff": {
-      "rev": "5af2b6be4a4beb673f3196a414f6fd932bbedd48",
+      "rev": "05be51814a718e74244829754a2a900a430a8d8b",
       "src": "https://github.com/nvim-mini/mini.diff"
     },
     "mini.files": {
@@ -17,7 +17,7 @@
       "src": "https://github.com/nvim-mini/mini.files"
     },
     "mini.icons": {
-      "rev": "284509648db084c5e40a31afa9abb9887c49e04a",
+      "rev": "ac38c983aed0a2bd32a65ca3e2348e12e58ca292",
       "src": "https://github.com/nvim-mini/mini.icons"
     },
     "notifier.nvim": {
