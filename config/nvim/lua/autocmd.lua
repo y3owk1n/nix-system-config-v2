@@ -27,108 +27,7 @@ vim.api.nvim_create_autocmd("FileType", {
 local spinner = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
 local spinner_index = 1
 
--- local progress = {}
---
--- vim.api.nvim_create_autocmd("LspProgress", {
---   group = augroup("lsp_progress"),
---   callback = function(ev)
---     local client = vim.lsp.get_client_by_id(ev.data.client_id)
---     if not client then
---       return
---     end
---
---     local value = ev.data.params.value
---
---     local is_begin = value.kind == "begin"
---     local is_complete = value.kind == "end"
---     local is_report = value.kind == "report"
---
---     if not value then
---       return
---     end
---
---     local client_name = client.name
---
---     local id = string.format("lsp_progress_%s", client_name)
---
---     local function get_right_percentage(percentage)
---       if percentage == 0 or percentage == nil then
---         return nil
---       end
---       return percentage
---     end
---
---     local function format_msg(progress_data)
---       local has_icon = progress_data.icon and progress_data.icon ~= ""
---       local has_description = progress_data.description and progress_data.description ~= ""
---       local has_percentage = progress_data.percentage and progress_data.percentage ~= 0
---
---       local string = ""
---
---       if has_icon then
---         string = string .. progress_data.icon
---       end
---
---       if has_description then
---         string = string .. " " .. progress_data.description
---       end
---
---       if has_percentage then
---         string = string .. " " .. progress_data.percentage .. "%"
---       end
---
---       return string
---     end
---
---     spinner_index = (spinner_index % #spinner) + 1
---
---     local default_progress = {
---       percentage = get_right_percentage(value.percentage),
---       description = value.title or "Loading workspace",
---       file_progress = value.message or nil,
---       icon = spinner[spinner_index],
---     }
---
---     if is_begin then
---       progress[client_name] = default_progress
---     end
---
---     if is_report then
---       progress[client_name] = default_progress
---
---       progress[client_name].description = value.title
---       progress[client_name].file_progress = value.message
---     end
---
---     if is_complete then
---       progress[client_name] = default_progress
---
---       progress[client_name].description = "Done"
---       progress[client_name].file_progress = nil
---       progress[client_name].percentage = 100
---       progress[client_name].icon = " "
---
---       vim.notify(format_msg(progress[client_name]), vim.log.levels.INFO, { id = id })
---
---       progress[client_name] = nil
---     end
---
---
---     -- show aggregated progress
---     local msgs = {}
---     for name, _ in pairs(progress) do
---       table.insert(msgs,
---         format_msg(progress[name])
---       )
---     end
---
---     if #msgs > 0 then
---       for _, msg in ipairs(msgs) do
---         vim.notify(msg, vim.log.levels.INFO, { id = id })
---       end
---     end
---   end,
--- })
+local progress = {}
 
 vim.api.nvim_create_autocmd("LspProgress", {
   group = augroup("lsp_progress"),
@@ -139,14 +38,18 @@ vim.api.nvim_create_autocmd("LspProgress", {
     end
 
     local value = ev.data.params.value
-    local token = ev.data.token
+
+    local is_begin = value.kind == "begin"
     local is_complete = value.kind == "end"
+    local is_report = value.kind == "report"
 
     if not value then
       return
     end
 
     local client_name = client.name
+
+    local id = string.format("lsp_progress_%s", client_name)
 
     local function get_right_percentage(percentage)
       if percentage == 0 or percentage == nil then
@@ -155,80 +58,186 @@ vim.api.nvim_create_autocmd("LspProgress", {
       return percentage
     end
 
-    local progress_data = {
-      percentage = get_right_percentage(value.percentage),
-      description = value.title or "Loading workspace",
-      file_progress = value.message or nil,
-    }
+    local function format_msg(progress_data)
+      local has_icon = progress_data.icon and progress_data.icon ~= ""
+      local has_description = progress_data.description and progress_data.description ~= ""
+      local has_percentage = progress_data.percentage and progress_data.percentage ~= 0
 
-    if is_complete then
-      progress_data.description = "Done"
-      progress_data.file_progress = nil
-      progress_data.percentage = 100
+      local string = string.format("[%s]", progress_data.name)
+
+      if has_icon then
+        string = string.format("%s %s", string, progress_data.icon)
+      end
+
+      if has_description then
+        string = string.format("%s %s", string, progress_data.description)
+      end
+
+      if has_percentage then
+        string = string.format("%s %s%%", string, progress_data.percentage)
+      end
+
+      return string
     end
 
     spinner_index = (spinner_index % #spinner) + 1
 
-    local icon
-    if is_complete then
-      icon = " "
-    else
-      icon = spinner[spinner_index]
+    local default_progress = {
+      name = client_name,
+      percentage = get_right_percentage(value.percentage),
+      description = value.title or "Loading workspace",
+      file_progress = value.message or nil,
+      icon = spinner[spinner_index],
+    }
+
+    if is_begin then
+      progress[client_name] = default_progress
     end
 
-    vim.notify("", vim.log.levels.INFO, {
-      id = string.format("lsp_progress_%s_%s", client_name, token),
-      title = client_name,
-      _notif_formatter = function(opts)
-        local notif = opts.notif
-        local _notif_formatter_data = notif._notif_formatter_data
+    if is_report then
+      progress[client_name] = default_progress
 
-        if not _notif_formatter_data then
-          return {}
-        end
+      progress[client_name].description = value.title
+      progress[client_name].file_progress = value.message
+    end
 
-        local separator = { display_text = " " }
+    if is_complete then
+      progress[client_name] = default_progress
 
-        local icon_hl = notif.hl_group or opts.log_level_map[notif.level].hl_group
+      progress[client_name].description = "Done"
+      progress[client_name].file_progress = nil
+      progress[client_name].percentage = 100
+      progress[client_name].icon = " "
 
-        local percent_text = _notif_formatter_data.percentage
-            and string.format("%3d%%", _notif_formatter_data.percentage)
-          or nil
+      vim.api.nvim_echo({ { format_msg(progress[client_name]), "Normal" } }, true, {
+        id = id,
+      })
 
-        local description_text = _notif_formatter_data.description
+      -- vim.notify(format_msg(progress[client_name]), vim.log.levels.INFO, {
+      --   id = id,
+      -- })
 
-        local file_progress_text = _notif_formatter_data.file_progress or nil
+      progress[client_name] = nil
+    end
 
-        local entries = {}
+    -- show aggregated progress
+    local msgs = {}
+    for name, _ in pairs(progress) do
+      table.insert(msgs, format_msg(progress[name]))
+    end
 
-        if icon then
-          table.insert(entries, { display_text = icon, hl_group = icon_hl })
-          table.insert(entries, separator)
-        end
-
-        if percent_text then
-          table.insert(entries, { display_text = percent_text, hl_group = "Normal" })
-          table.insert(entries, separator)
-        end
-
-        table.insert(entries, { display_text = description_text, hl_group = "Comment" })
-
-        if file_progress_text then
-          table.insert(entries, separator)
-          table.insert(entries, { display_text = file_progress_text, hl_group = "Removed" })
-        end
-
-        if client_name then
-          table.insert(entries, separator)
-          table.insert(entries, { display_text = client_name, hl_group = "ErrorMsg" })
-        end
-
-        return entries
-      end,
-      _notif_formatter_data = progress_data,
-    })
+    if #msgs > 0 then
+      for _, msg in ipairs(msgs) do
+        vim.api.nvim_echo({ { msg, "Normal" } }, true, {
+          id = id,
+        })
+        -- vim.notify(msg, vim.log.levels.INFO, {
+        --   id = id,
+        -- })
+      end
+    end
   end,
 })
+
+-- vim.api.nvim_create_autocmd("LspProgress", {
+--   group = augroup("lsp_progress"),
+--   callback = function(ev)
+--     local client = vim.lsp.get_client_by_id(ev.data.client_id)
+--     if not client then
+--       return
+--     end
+--
+--     local value = ev.data.params.value
+--     local token = ev.data.token
+--     local is_complete = value.kind == "end"
+--
+--     if not value then
+--       return
+--     end
+--
+--     local client_name = client.name
+--
+--     local function get_right_percentage(percentage)
+--       if percentage == 0 or percentage == nil then
+--         return nil
+--       end
+--       return percentage
+--     end
+--
+--     local progress_data = {
+--       percentage = get_right_percentage(value.percentage),
+--       description = value.title or "Loading workspace",
+--       file_progress = value.message or nil,
+--     }
+--
+--     if is_complete then
+--       progress_data.description = "Done"
+--       progress_data.file_progress = nil
+--       progress_data.percentage = 100
+--     end
+--
+--     spinner_index = (spinner_index % #spinner) + 1
+--
+--     local icon
+--     if is_complete then
+--       icon = " "
+--     else
+--       icon = spinner[spinner_index]
+--     end
+--
+--     vim.notify("", vim.log.levels.INFO, {
+--       id = string.format("lsp_progress_%s_%s", client_name, token),
+--       title = client_name,
+--       _notif_formatter = function(opts)
+--         local notif = opts.notif
+--         local _notif_formatter_data = notif._notif_formatter_data
+--
+--         if not _notif_formatter_data then
+--           return {}
+--         end
+--
+--         local separator = { display_text = " " }
+--
+--         local icon_hl = notif.hl_group or opts.log_level_map[notif.level].hl_group
+--
+--         local percent_text = _notif_formatter_data.percentage
+--             and string.format("%3d%%", _notif_formatter_data.percentage)
+--           or nil
+--
+--         local description_text = _notif_formatter_data.description
+--
+--         local file_progress_text = _notif_formatter_data.file_progress or nil
+--
+--         local entries = {}
+--
+--         if icon then
+--           table.insert(entries, { display_text = icon, hl_group = icon_hl })
+--           table.insert(entries, separator)
+--         end
+--
+--         if percent_text then
+--           table.insert(entries, { display_text = percent_text, hl_group = "Normal" })
+--           table.insert(entries, separator)
+--         end
+--
+--         table.insert(entries, { display_text = description_text, hl_group = "Comment" })
+--
+--         if file_progress_text then
+--           table.insert(entries, separator)
+--           table.insert(entries, { display_text = file_progress_text, hl_group = "Removed" })
+--         end
+--
+--         if client_name then
+--           table.insert(entries, separator)
+--           table.insert(entries, { display_text = client_name, hl_group = "ErrorMsg" })
+--         end
+--
+--         return entries
+--       end,
+--       _notif_formatter_data = progress_data,
+--     })
+--   end,
+-- })
 
 -- =========================================================
 --  LSP attached with actions
@@ -346,19 +355,16 @@ vim.api.nvim_create_autocmd("LspAttach", {
 --  Yank highlight
 -- =========================================================
 
--- we are using undo-glow for highlight
-
--- vim.api.nvim_create_autocmd("TextYankPost", {
---   group = augroup("text_yank_post"),
---   callback = function()
---     vim.hl.on_yank()
---   end,
--- })
+vim.api.nvim_create_autocmd({ "TextYankPost", "TextPutPost" }, {
+  group = augroup("text_yank_post"),
+  callback = function()
+    vim.hl.hl_op()
+  end,
+})
 
 -- =========================================================
 --  Close quickfix window on enter
 -- =========================================================
-
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("file_type_qf"),
   pattern = "qf",

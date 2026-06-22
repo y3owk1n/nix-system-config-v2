@@ -9,23 +9,19 @@
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "mini.diff": {
-      "rev": "05be51814a718e74244829754a2a900a430a8d8b",
+      "rev": "0743d26bd858ebe32efcf5c86a91a422a000f273",
       "src": "https://github.com/nvim-mini/mini.diff"
     },
     "mini.files": {
-      "rev": "02874bc653fbecf2bee2c65441d0ebd09110f011",
+      "rev": "a5689dae6b732955e33eec225b798d6815063179",
       "src": "https://github.com/nvim-mini/mini.files"
     },
     "mini.icons": {
-      "rev": "ac38c983aed0a2bd32a65ca3e2348e12e58ca292",
+      "rev": "e56797f90192d81f1fda02e662fc3e8e3d775027",
       "src": "https://github.com/nvim-mini/mini.icons"
     },
-    "notifier.nvim": {
-      "rev": "cbd5be5f16ff03fb592d6e62a585f522dad0e8a8",
-      "src": "https://github.com/y3owk1n/notifier.nvim"
-    },
     "nvim-lspconfig": {
-      "rev": "a683e0ddf0cf64c6cd689e18ffb480ade3c162b7",
+      "rev": "bfcc0171a43f22afa61d927ffe9fcb6cb85dc99e",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "nvim-tmux-navigation": {
@@ -39,10 +35,6 @@
     "supermaven-nvim": {
       "rev": "07d20fce48a5629686aefb0a7cd4b25e33947d50",
       "src": "https://github.com/supermaven-inc/supermaven-nvim"
-    },
-    "undo-glow.nvim": {
-      "rev": "25314a94cdfd84a3ca62bada1f88ed00982659ac",
-      "src": "https://github.com/y3owk1n/undo-glow.nvim"
     }
   }
 }
