@@ -50,7 +50,8 @@ in
     casks = [
       # "blender"
       "affinity"
-      # "helium-browser"
+      "helium-browser"
+      # "microsoft-teams"
       "brave-browser"
       # "google-chrome"
       # "keycastr"
