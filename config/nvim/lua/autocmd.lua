@@ -473,11 +473,17 @@ vim.api.nvim_create_autocmd("PackChanged", {
   callback = function(ev)
     local name, kind = ev.data.spec.name, ev.data.kind
 
-    -- run TSUpdate when nvim-treesitter is updated
-    if name == "nvim-treesitter" and kind == "update" then
-      pcall(function()
-        vim.cmd("TSUpdate")
-      end)
+    -- run on install or update
+    if kind == "install" or kind == "update" then
+      if name == "nvim-treesitter" then
+        pcall(function()
+          vim.cmd("TSUpdate")
+        end)
+      end
+
+      if name == "fff.nvim" then
+        require("fff.download").download_or_build_binary()
+      end
     end
   end,
 })

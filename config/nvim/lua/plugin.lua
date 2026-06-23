@@ -46,7 +46,7 @@ supermaven.setup({
   keymaps = {
     accept_suggestion = "<C-y>",
   },
-  ignore_filetypes = { "bigfile", "float_info", "minifiles", "minipick" },
+  ignore_filetypes = { "bigfile", "float_info", "minifiles", "minipick", "fff_input" },
 })
 
 -- =========================================================
@@ -256,26 +256,23 @@ vim.keymap.set("n", "<leader>cgC", markdown_utils.insert_markdown_checkbox, { de
 vim.keymap.set("n", "<leader>cgc", markdown_utils.insert_markdown_checkbox_below, { desc = "Insert checkbox below" })
 
 -- =========================================================
---  Fuzzy search
+--  fff.nvim
 -- =========================================================
 
-local fuzzy_search = require("custom.fuzzy-search")
+local fff = require("fff")
 
-fuzzy_search.setup({
-  grep_flags = { "--smart-case" },
+fff.setup({
+  prompt = "> ",
+  layout = {
+    prompt_position = "top",
+  },
 })
 
-vim.keymap.set("n", "<leader><leader>", ":find<space>", { desc = "Fuzzy find files" })
-vim.keymap.set("n", "<leader>sh", ":help<space>", { desc = "Fuzzy find help" })
-vim.keymap.set("n", "<leader>sH", ":highlight<space>", { desc = "Fuzzy find highlight" })
-vim.keymap.set("n", "<leader>sk", ":map<space>", { desc = "Fuzzy find keymaps" })
-
-vim.keymap.set("n", "<leader>sf", fuzzy_search.files, { desc = "Files fuzzy" })
-vim.keymap.set("n", "<leader>sg", fuzzy_search.grep, { desc = "Grep text" })
+vim.keymap.set("n", "<leader><leader>", fff.find_files, { desc = "FFF files" })
+vim.keymap.set("n", "<leader>sg", function()
+  fff.live_grep()
+end, { desc = "FFF live grep" })
 vim.keymap.set("n", "<leader>sw", function()
-  fuzzy_search.grep(vim.fn.expand("<cword>"))
+  fff.live_grep({ query = vim.fn.expand("<cword>") })
 end, { desc = "Grep word" })
-vim.keymap.set("n", "<leader>sr", ":copen<cr>", { desc = "Resume qf list" })
-vim.keymap.set("n", "<leader>st", function()
-  fuzzy_search.grep({ "TODO", "FIXME", "HACK" })
-end, { desc = "Grep TODOs" })
+vim.keymap.set("n", "<leader>sr", ":FFFResume<cr>", { desc = "FFF Resume" })

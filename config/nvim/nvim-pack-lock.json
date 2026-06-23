@@ -8,6 +8,10 @@
       "rev": "619363c30309d29ffa631e67c8183f2a72caa373",
       "src": "https://github.com/stevearc/conform.nvim"
     },
+    "fff.nvim": {
+      "rev": "957f222da76f120868defdf9e7204309c3800e5e",
+      "src": "https://github.com/dmtrKovalenko/fff.nvim"
+    },
     "mini.diff": {
       "rev": "0743d26bd858ebe32efcf5c86a91a422a000f273",
       "src": "https://github.com/nvim-mini/mini.diff"
