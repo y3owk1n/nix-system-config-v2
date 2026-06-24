@@ -47,10 +47,6 @@
       url = "github:y3owk1n/homebrew-tap";
       flake = false;
     };
-    homebrew-gechr = {
-      url = "github:gechr/homebrew-tap";
-      flake = false;
-    };
 
     # ============================================================================
     # Theming & UI

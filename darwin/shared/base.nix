@@ -94,7 +94,6 @@
       "whatsapp"
       # "deskpad" # use this to test external monitor
       # "safari-technology-preview"
-      # "gechr/tap/whichspace" # use together with yabai in home manager
     ];
 
     masApps = { };
