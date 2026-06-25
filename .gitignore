@@ -33,3 +33,6 @@ config/hammerspoon/Spoons/
 
 # Pre-commit
 .pre-commit-config.yaml
+
+# Chrome colorscheme cached pak
+*.pak
