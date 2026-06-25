@@ -355,12 +355,14 @@ vim.api.nvim_create_autocmd("LspAttach", {
 --  Yank highlight
 -- =========================================================
 
-vim.api.nvim_create_autocmd({ "TextYankPost", "TextPutPost" }, {
-  group = augroup("text_yank_post"),
-  callback = function()
-    vim.hl.hl_op()
-  end,
-})
+-- we are using undo-glow for highlight
+
+-- vim.api.nvim_create_autocmd({ "TextYankPost", "TextPutPost" }, {
+--   group = augroup("text_yank_post"),
+--   callback = function()
+--     vim.hl.hl_op()
+--   end,
+-- })
 
 -- =========================================================
 --  Close quickfix window on enter

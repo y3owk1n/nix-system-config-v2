@@ -13,6 +13,7 @@ vim.pack.add({
   "https://github.com/nvim-mini/mini.diff",
   "https://github.com/nvim-mini/mini.icons",
   "https://github.com/dmtrKovalenko/fff.nvim",
+  "https://github.com/y3owk1n/undo-glow.nvim",
 })
 
 -- =========================================================

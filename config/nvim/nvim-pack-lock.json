@@ -17,7 +17,7 @@
       "src": "https://github.com/nvim-mini/mini.diff"
     },
     "mini.files": {
-      "rev": "a5689dae6b732955e33eec225b798d6815063179",
+      "rev": "8bfdad2e32dc2fe9451acca9caafcf8564658669",
       "src": "https://github.com/nvim-mini/mini.files"
     },
     "mini.icons": {
@@ -39,6 +39,10 @@
     "supermaven-nvim": {
       "rev": "07d20fce48a5629686aefb0a7cd4b25e33947d50",
       "src": "https://github.com/supermaven-inc/supermaven-nvim"
+    },
+    "undo-glow.nvim": {
+      "rev": "25314a94cdfd84a3ca62bada1f88ed00982659ac",
+      "src": "https://github.com/y3owk1n/undo-glow.nvim"
     }
   }
 }
