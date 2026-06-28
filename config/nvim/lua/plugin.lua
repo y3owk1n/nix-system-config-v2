@@ -308,7 +308,7 @@ vim.keymap.set("n", "u", function()
   undo_glow.undo()
 end, { desc = "Undo with highlight", noremap = true })
 
-vim.keymap.set("n", "U", function()
+vim.keymap.set("n", "<C-r>", function()
   undo_glow.redo()
 end, { desc = "Redo with highlight", noremap = true })
 
