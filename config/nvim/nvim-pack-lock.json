@@ -9,7 +9,7 @@
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "fff.nvim": {
-      "rev": "957f222da76f120868defdf9e7204309c3800e5e",
+      "rev": "0a953ab918e9485a2f8ce566ea23030585b885c0",
       "src": "https://github.com/dmtrKovalenko/fff.nvim"
     },
     "mini.diff": {
@@ -17,7 +17,7 @@
       "src": "https://github.com/nvim-mini/mini.diff"
     },
     "mini.files": {
-      "rev": "8bfdad2e32dc2fe9451acca9caafcf8564658669",
+      "rev": "0da2aa91bd89418671cde22a9d4a8a4f3035bb2d",
       "src": "https://github.com/nvim-mini/mini.files"
     },
     "mini.icons": {
@@ -25,7 +25,7 @@
       "src": "https://github.com/nvim-mini/mini.icons"
     },
     "nvim-lspconfig": {
-      "rev": "bfcc0171a43f22afa61d927ffe9fcb6cb85dc99e",
+      "rev": "3371bf298c1f56efc26771ee961f461176958fb5",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "nvim-tmux-navigation": {

@@ -1,4 +1,15 @@
 -- =========================================================
+--  File explorer
+-- =========================================================
+
+vim.keymap.set("n", "<leader>e", function()
+  local sucess = pcall(vim.cmd, "e %:h")
+  if not sucess then
+    vim.cmd("e $PWD")
+  end
+end, { desc = "Explorer" })
+
+-- =========================================================
 --  Arglist (harpoon like but not persistent)
 -- =========================================================
 

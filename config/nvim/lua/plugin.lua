@@ -121,49 +121,49 @@ vim.treesitter.language.register("markdown", "markdown.mdx")
 --  File Explorer
 -- =========================================================
 
-local mini_files = require("mini.files")
-local mini_files_git = require("custom.mini-files-git")
-
-mini_files.setup({
-  windows = {
-    preview = true,
-    width_focus = 30,
-    width_preview = 60,
-  },
-  mappings = {
-    close = "q",
-    go_in = "",
-    go_in_plus = "l",
-    go_out = "",
-    go_out_plus = "h",
-    mark_goto = "'",
-    mark_set = "m",
-    reset = "<BS>",
-    reveal_cwd = "@",
-    show_help = "g?",
-    synchronize = "=",
-    trim_left = "<",
-    trim_right = ">",
-  },
-})
-
-mini_files_git.setup()
-
-vim.keymap.set("n", "<leader>e", function()
-  if not mini_files.close() then
-    local buf_path = vim.api.nvim_buf_get_name(0)
-    if buf_path == "" or not vim.uv.fs_stat(buf_path) then
-      buf_path = vim.uv.cwd() or ""
-    end
-    mini_files.open(buf_path, true)
-  end
-end, { desc = "Explorer (buffer path)" })
-
-vim.keymap.set("n", "<leader>E", function()
-  if not mini_files.close() then
-    mini_files.open(vim.uv.cwd(), true)
-  end
-end, { desc = "Explorer (cwd)" })
+-- local mini_files = require("mini.files")
+-- local mini_files_git = require("custom.mini-files-git")
+--
+-- mini_files.setup({
+--   windows = {
+--     preview = true,
+--     width_focus = 30,
+--     width_preview = 60,
+--   },
+--   mappings = {
+--     close = "q",
+--     go_in = "",
+--     go_in_plus = "l",
+--     go_out = "",
+--     go_out_plus = "h",
+--     mark_goto = "'",
+--     mark_set = "m",
+--     reset = "<BS>",
+--     reveal_cwd = "@",
+--     show_help = "g?",
+--     synchronize = "=",
+--     trim_left = "<",
+--     trim_right = ">",
+--   },
+-- })
+--
+-- mini_files_git.setup()
+--
+-- vim.keymap.set("n", "<leader>e", function()
+--   if not mini_files.close() then
+--     local buf_path = vim.api.nvim_buf_get_name(0)
+--     if buf_path == "" or not vim.uv.fs_stat(buf_path) then
+--       buf_path = vim.uv.cwd() or ""
+--     end
+--     mini_files.open(buf_path, true)
+--   end
+-- end, { desc = "Explorer (buffer path)" })
+--
+-- vim.keymap.set("n", "<leader>E", function()
+--   if not mini_files.close() then
+--     mini_files.open(vim.uv.cwd(), true)
+--   end
+-- end, { desc = "Explorer (cwd)" })
 
 -- =========================================================
 --  Git Diff
