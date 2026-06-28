@@ -9,7 +9,6 @@ vim.pack.add({
   "https://github.com/alexghergh/nvim-tmux-navigation",
   "https://github.com/stevearc/conform.nvim",
   "https://github.com/supermaven-inc/supermaven-nvim",
-  "https://github.com/nvim-mini/mini.files",
   "https://github.com/nvim-mini/mini.diff",
   "https://github.com/nvim-mini/mini.icons",
   "https://github.com/dmtrKovalenko/fff.nvim",
