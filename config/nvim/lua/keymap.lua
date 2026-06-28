@@ -3,9 +3,17 @@
 -- =========================================================
 
 vim.keymap.set("n", "<leader>e", function()
-  local sucess = pcall(vim.cmd, "e %:h")
-  if not sucess then
-    vim.cmd("e $PWD")
+  if vim.bo.filetype == "directory" then
+    local prev = vim.w.dir_prev_buf
+    if prev and vim.api.nvim_buf_is_valid(prev) then
+      vim.api.nvim_set_current_buf(prev)
+    end
+  else
+    vim.w.dir_prev_buf = vim.api.nvim_get_current_buf()
+    local ok = pcall(vim.cmd, "e %:h")
+    if not ok then
+      vim.cmd("e $PWD")
+    end
   end
 end, { desc = "Explorer" })
 
