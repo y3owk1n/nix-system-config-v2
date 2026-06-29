@@ -6,7 +6,7 @@
 
 require("base16-pro-max").setup({
   colors = require("base16-pro-max.parser").get_base16_colors(
-    "~/nix-system-config-v2/config/pastel-twilight/base16.yml"
+    "~/nix-system-config-v2/config/colorschemes/pastel-twilight/base16.yml"
   ),
   styles = {
     italic = true,

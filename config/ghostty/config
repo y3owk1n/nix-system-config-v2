@@ -1,4 +1,4 @@
-theme = /Users/kylewong/nix-system-config-v2/config/pastel-twilight/ghostty
+theme = /Users/kylewong/nix-system-config-v2/config/colorscheme/pastel-twilight/ghostty
 
 font-family = JetBrainsMonoNL Nerd Font
 font-size = 16

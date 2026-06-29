@@ -28,7 +28,7 @@ inputs.home-manager.lib.homeManagerConfiguration {
       nixpkgs.overlays = [ inputs.self.overlays.default ];
       stylix = {
         enable = true;
-        base16Scheme = ../../config/pastel-twilight/base16.yml;
+        base16Scheme = ../../config/colorschemes/pastel-twilight/base16.yml;
       };
     }
     ../../home-manager/shared/base.nix

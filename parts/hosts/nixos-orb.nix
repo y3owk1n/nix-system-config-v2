@@ -86,7 +86,7 @@ if builtins.pathExists /etc/nixos/configuration.nix then
           stylix = {
             enable = true;
             # base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";
-            base16Scheme = ../../config/pastel-twilight/base16.yml;
+            base16Scheme = ../../config/colorschemes/pastel-twilight/base16.yml;
           };
         }
       )
