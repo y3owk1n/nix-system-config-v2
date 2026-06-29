@@ -53,9 +53,9 @@ in
 
       # launchers
       hyper - f : @open("finder")
-      # hyper - b : @open("safari")
+      hyper - b : @open("safari")
       # hyper - b : @open("helium")
-      hyper - b : @open("Brave Browser")
+      # hyper - b : @open("Brave Browser")
       hyper - t : @open("ghostty")
       hyper - n : @open("notes")
       hyper - r : @open("reminders")
