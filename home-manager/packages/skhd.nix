@@ -62,6 +62,7 @@ in
       hyper - m : @open("mail")
       hyper - c : @open("calendar")
       hyper - w : @open("WhatsApp")
+      hyper - d : @open("Discord")
       hyper - p : @open("Passwords")
       hyper - s : @open("System Settings")
       hyper - a : @open("Activity Monitor")
