@@ -91,7 +91,7 @@
       "tailscale-app"
       # "rustdesk"
       "orbstack"
-      "whatsapp"
+      # "whatsapp"
       # "deskpad" # use this to test external monitor
       # "safari-technology-preview"
     ];

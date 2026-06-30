@@ -57,7 +57,7 @@ in
       # "google-chrome"
       # "keycastr"
       # "obs"
-      "discord"
+      # "discord"
       "firefox"
       # "y3owk1n/tap/mimi"
       # "y3owk1n/tap/neru"
