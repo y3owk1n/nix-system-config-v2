@@ -70,46 +70,6 @@
     };
   };
 
-  # ── Work iMac ────────────────────────────────────────────────────────────────
-  "Kyles-iMac" = {
-    system = "aarch64-darwin";
-    username = "kylewong";
-    useremail = "140996996+mtraworld@users.noreply.github.com";
-    hostname = "Kyles-iMac";
-    githubuser = "mtraworld";
-    githubname = "mtraworld";
-    gpgkeyid = "B0C4C961630F3318";
-    type = "darwin";
-    needsNixGL = false;
-
-    homeProfiles = [
-      "cli"
-      "shell"
-      "git"
-      "editors"
-      "security"
-      "terminal"
-      "macos"
-      "ai"
-    ];
-
-    safariWorkspaces = {
-      "New Traworld Window" = "^1";
-      "New Madani TRX Window" = "^2";
-    };
-
-    homebrew = {
-      brews = [ "mole" ];
-      casks = [
-        "tailscale-app"
-        "orbstack"
-        "adobe-creative-cloud"
-        "helium-browser"
-      ];
-      masApps = { };
-    };
-  };
-
   # ── Fedora (Standalone Home-Manager) ────────────────────────────────────────
   "fedora" = {
     system = "aarch64-linux";
