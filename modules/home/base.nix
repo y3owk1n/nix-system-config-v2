@@ -1,0 +1,21 @@
+{ pkgs, username, ... }: {
+  home = {
+    inherit username;
+    homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
+    stateVersion = "25.11";
+    shell.enableFishIntegration = true;
+    shell.enableShellIntegration = true;
+    shellAliases = {
+      gg = "lazygit";
+      c = "clear";
+      x = "exit";
+      cat = "bat";
+      tx = "tmux kill-server";
+      vim = "nvim";
+    };
+  };
+
+  programs.home-manager.enable = true;
+
+  xdg.enable = true;
+}

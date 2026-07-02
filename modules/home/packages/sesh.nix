@@ -1,0 +1,76 @@
+_: {
+  programs.sesh = {
+    enable = true;
+    enableAlias = true;
+    enableTmuxIntegration = true;
+    tmuxKey = "C-b";
+    settings = {
+      default_session = {
+        startup_command = "ls";
+        preview_command = "eza --tree --level=1 --color=always --group-directories-first -a {}";
+      };
+      session = [
+        {
+          name = "home (~)";
+          path = "~";
+        }
+        {
+          name = "start kanata";
+          path = "~/nix-system-config-v2/";
+          startup_command = "just kanata";
+        }
+        {
+          name = "downloads";
+          path = "~/Downloads";
+        }
+        {
+          name = "dot config";
+          path = "~/.config";
+        }
+        {
+          name = "nix config";
+          path = "~/nix-system-config-v2";
+        }
+        {
+          name = "neovim config";
+          path = "~/nix-system-config-v2/config/nvim";
+        }
+        {
+          name = "yabai config";
+          path = "~/nix-system-config-v2/modules/home/packages";
+          startup_command = "nvim yabai.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/modules/home/packages/yabai.nix";
+        }
+        {
+          name = "sesh config";
+          path = "~/nix-system-config-v2/modules/home/packages";
+          startup_command = "nvim sesh.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/modules/home/packages/sesh.nix";
+        }
+        {
+          name = "ghostty config";
+          path = "~/nix-system-config-v2/modules/home/packages";
+          startup_command = "nvim ghostty.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/modules/home/packages/ghostty.nix";
+        }
+        {
+          name = "tmux config";
+          path = "~/nix-system-config-v2/modules/home/packages";
+          startup_command = "nvim tmux.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/modules/home/packages/tmux.nix";
+        }
+        {
+          name = "neru config";
+          path = "~/nix-system-config-v2/modules/home/packages";
+          startup_command = "nvim neru.nix";
+          preview_command = "bat --color=always ~/nix-system-config-v2/modules/home/packages/neru.nix";
+        }
+        {
+          name = "btop";
+          path = "~";
+          startup_command = "btop";
+        }
+      ];
+    };
+  };
+}
