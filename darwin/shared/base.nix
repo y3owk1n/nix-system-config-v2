@@ -91,9 +91,6 @@
       "tailscale-app"
       # "rustdesk"
       "orbstack"
-      # "whatsapp"
-      # "deskpad" # use this to test external monitor
-      # "safari-technology-preview"
     ];
 
     masApps = { };
