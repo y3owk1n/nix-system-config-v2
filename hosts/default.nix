@@ -44,6 +44,7 @@
       "terminal"
       "macos"
       "ai"
+      "messaging"
     ];
 
     safariWorkspaces = {
@@ -59,11 +60,8 @@
       brews = [ "mole" ];
       casks = [
         "tailscale-app"
-        "orbstack"
         "affinity"
         "brave-browser"
-        "discord"
-        "whatsapp"
         "firefox"
       ];
       masApps = { };

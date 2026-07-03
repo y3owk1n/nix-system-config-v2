@@ -13,7 +13,6 @@ _: {
       "--layout reverse"
       "--tmux center"
     ];
-    fileWidgetCommand = "fd --exclude .git --type f"; # for when ctrl-t is pressed
-    changeDirWidgetCommand = "fd --type d --hidden --follow --max-depth 3 --exclude .git"; # for when alt-c is pressed
+    historyWidget.command = ""; # Disable history widget and use atuin for Ctrl-R
   };
 }

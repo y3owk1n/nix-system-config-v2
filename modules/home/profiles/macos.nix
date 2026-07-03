@@ -10,5 +10,6 @@
     ../packages/rift.nix
     ../packages/skhd.nix
     ../packages/yabai.nix
+    ../packages/orbstack.nix
   ];
 }
