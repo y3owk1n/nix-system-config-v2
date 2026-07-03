@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   # ============================================================================
   # Neru - OS wide keyboard navigation
@@ -10,6 +10,23 @@
     # package = pkgs.neru;
     package = pkgs.neru-source;
     config = ''
+      # ============================================================================
+      # Theme
+      # ============================================================================
+      [theme.light]
+      surface = "#${config.lib.stylix.colors.base00}"
+      accent = "#${config.lib.stylix.colors.base04}"
+      accent_alt = "#${config.lib.stylix.colors.base04}"
+      on_accent_alt = "#${config.lib.stylix.colors.base07}"
+      text = "#${config.lib.stylix.colors.base05}"
+
+      [theme.dark]
+      surface = "#${config.lib.stylix.colors.base00}"
+      accent = "#${config.lib.stylix.colors.base04}"
+      accent_alt = "#${config.lib.stylix.colors.base04}"
+      on_accent_alt = "#${config.lib.stylix.colors.base07}"
+      text = "#${config.lib.stylix.colors.base05}"
+
       # ============================================================================
       # General Settings
       # ============================================================================
