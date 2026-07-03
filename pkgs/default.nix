@@ -8,10 +8,11 @@ in
     inputs.neru.overlays.default
     inputs.mimi.overlays.default
     inputs.nvs.overlays.default
-    inputs.nixos-npm-ls.overlays.default
 
     # Custom overlay
     (final: _prev: {
+      gh-actions-language-server = final.callPackage ./custom/gh-actions-language-server.nix { };
+
       custom = {
         hammerspoon = final.callPackage ./custom/hammerspoon.nix { };
         rift = final.callPackage ./custom/rift.nix { };
