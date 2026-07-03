@@ -5,9 +5,7 @@
 -- =========================================================
 
 require("base16-pro-max").setup({
-  colors = require("base16-pro-max.parser").get_base16_colors(
-    "~/nix-system-config-v2/config/colorschemes/pastel-twilight/base16.yml"
-  ),
+  colors = require("base16-pro-max.parser").get_base16_colors("~/.config/stylix/palette.json"),
   styles = {
     italic = true,
     bold = true,

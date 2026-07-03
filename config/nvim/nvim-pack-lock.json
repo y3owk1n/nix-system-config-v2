@@ -1,7 +1,7 @@
 {
   "plugins": {
     "base16-pro-max.nvim": {
-      "rev": "dcb683467f76c42644bb3d8ead9fe0cbfe10560d",
+      "rev": "e6f80a49a1c2182f4e67b7a1ad3c9b841570e53c",
       "src": "https://github.com/y3owk1n/base16-pro-max.nvim"
     },
     "conform.nvim": {
