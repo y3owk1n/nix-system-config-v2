@@ -1,7 +1,8 @@
 { pkgs, ... }: {
   stylix = {
     enable = true;
-    base16Scheme = ../../config/colorschemes/pastel-twilight/base16.yml;
+    # base16Scheme = ../../config/colorschemes/pastel-twilight/base16.yml;
+    base16Scheme = ../../config/colorschemes/forest-ink/base16.yml;
     fonts = {
       serif = {
         package = pkgs.nerd-fonts.jetbrains-mono;
