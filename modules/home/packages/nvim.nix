@@ -29,7 +29,7 @@
     # markdownlint-cli2 # markdown is not project specific
     yaml-language-server # yaml normally used as a config language
     prettierd # general formatter
-    gh-actions-language-server # github actions
+    custom.gh-actions-language-server # github actions
 
     # These are project specific lsp or tools
     # They should be installed in the project via devbox or direnv flake
