@@ -14,9 +14,6 @@ in
       custom = {
         gh-actions-language-server = final.callPackage ./custom/gh-actions-language-server.nix { };
         freebuff = final.callPackage ./custom/freebuff.nix { };
-        hammerspoon = final.callPackage ./custom/hammerspoon.nix { };
-        rift = final.callPackage ./custom/rift.nix { };
-        glide = final.callPackage ./custom/glide-wm.nix { };
         asr = final.callPackage ./custom/asr.nix { };
         diagnose = final.callPackage ./custom/diagnose.nix { };
         cpenv = final.callPackage ./custom/cpenv.nix { };

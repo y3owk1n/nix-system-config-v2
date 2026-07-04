@@ -7,22 +7,6 @@ _final: prev: {
     noCheck = true;
   });
 
-  aerospace = prev.aerospace.overrideAttrs (_: rec {
-    version = "0.20.2-Beta";
-    src = prev.fetchzip {
-      url = "https://github.com/nikitabobko/AeroSpace/releases/download/v${version}/AeroSpace-v${version}.zip";
-      sha256 = "sha256-PyWHtM38XPNkkEZ0kACPia0doR46FRpmSoNdsOhU4uw=";
-    };
-  });
-
-  yabai = prev.yabai.overrideAttrs (_: rec {
-    version = "7.1.25";
-    src = fetchTarball {
-      url = "https://github.com/koekeishiya/yabai/releases/download/v${version}/yabai-v${version}.tar.gz";
-      sha256 = "sha256:12glpxnxf5x6mdgkgr9p7w02x80y2l7626rknraknrkkishlnrl4";
-    };
-  });
-
   kanata = prev.kanata.overrideAttrs (
     finalAttrs: _: {
       cargoHash = "sha256-da7kmSvm+z6C+RPqEBEY9PNWxrAEQ8h/ZGDvS9WJ1J8=";
