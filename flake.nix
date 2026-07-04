@@ -53,10 +53,6 @@
     treefmt-nix.url = "https://flakehub.com/f/numtide/treefmt-nix/0.1";
     pre-commit-hooks.url = "https://flakehub.com/f/cachix/git-hooks.nix/0.1";
 
-    # Niri for NixOS
-    niri.url = "github:sodiboo/niri-flake";
-    niri.inputs.nixpkgs.follows = "nixpkgs";
-
     # nixGL for Linux Ghostty
     nixgl.url = "github:nix-community/nixGL";
     nixgl.inputs.nixpkgs.follows = "nixpkgs";

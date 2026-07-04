@@ -92,41 +92,4 @@ in
       "ai"
     ];
   };
-
-  # ── NixOS Orbstack VM ───────────────────────────────────────────────────────
-  "nixos-orb" = defaults // {
-    system = "aarch64-linux";
-    hostname = "nixos-orb";
-    type = "nixos";
-    needsNixGL = false;
-    nixosProfile = "orb";
-
-    homeProfiles = [
-      "cli"
-      "shell"
-      "git"
-      "editors"
-      "security"
-      "ai"
-    ];
-  };
-
-  # ── NixOS UTM VM ────────────────────────────────────────────────────────────
-  "nixos-utm" = defaults // {
-    system = "aarch64-linux";
-    hostname = "nixos-utm";
-    type = "nixos";
-    needsNixGL = false;
-    nixosProfile = "utm";
-
-    homeProfiles = [
-      "cli"
-      "shell"
-      "git"
-      "editors"
-      "security"
-      "terminal"
-      "ai"
-    ];
-  };
 }
