@@ -72,13 +72,6 @@ vim.keymap.set("v", "<", "<gv", { desc = "Visual indent left" })
 vim.keymap.set("v", ">", ">gv", { desc = "Visual indent right" })
 
 -- =========================================================
---  Splits
--- =========================================================
-
-vim.keymap.set("n", "-", "<C-W>s", { remap = true, desc = "Horizontal split" })
-vim.keymap.set("n", "\\", "<C-W>v", { remap = true, desc = "Vertical split" })
-
--- =========================================================
 --  QOL improvements
 -- =========================================================
 
