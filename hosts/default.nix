@@ -52,6 +52,7 @@ in
       "macos"
       "ai"
       "messaging"
+      "browsers"
     ];
 
     safariWorkspaces = {
@@ -64,12 +65,9 @@ in
     };
 
     homebrew = {
-      brews = [ "mole" ];
+      brews = [ ];
       casks = [
         "tailscale-app"
-        "affinity"
-        "brave-browser"
-        "firefox"
       ];
       masApps = { };
     };

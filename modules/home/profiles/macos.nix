@@ -6,5 +6,6 @@
     ../packages/neru.nix
     ../packages/skhd.nix
     ../packages/orbstack.nix
+    ../packages/affinity.nix
   ];
 }

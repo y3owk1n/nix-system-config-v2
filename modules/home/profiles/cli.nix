@@ -17,5 +17,6 @@
     ../packages/rip2.nix
     ../packages/ripgrep.nix
     ../packages/stripe.nix
+    ../packages/mole.nix
   ];
 }

@@ -19,6 +19,8 @@ in
         cpenv = final.callPackage ./custom/cpenv.nix { };
         cmd = final.callPackage ./custom/cmd.nix { };
         passx = final.callPackage ./custom/passx.nix { };
+        mole = final.callPackage ./custom/mole.nix { };
+        affinity = final.callPackage ./custom/affinity.nix { };
       };
     })
 
