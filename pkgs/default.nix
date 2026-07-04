@@ -16,7 +16,6 @@ in
         freebuff = final.callPackage ./custom/freebuff.nix { };
         asr = final.callPackage ./custom/asr.nix { };
         diagnose = final.callPackage ./custom/diagnose.nix { };
-        cpenv = final.callPackage ./custom/cpenv.nix { };
         cmd = final.callPackage ./custom/cmd.nix { };
         passx = final.callPackage ./custom/passx.nix { };
         mole = final.callPackage ./custom/mole.nix { };
