@@ -3,7 +3,6 @@
     inherit username;
     homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
     stateVersion = "25.11";
-    shell.enableFishIntegration = true;
     shell.enableShellIntegration = true;
     shellAliases = {
       gg = "lazygit";
