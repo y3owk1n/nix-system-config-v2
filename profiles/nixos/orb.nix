@@ -8,11 +8,7 @@
     /etc/nixos/configuration.nix
   ];
 
-  # Stylix (base16Scheme set in modules/stylix/default.nix but can be overridden)
-  stylix = {
-    enable = true;
-    base16Scheme = ../../config/colorschemes/pastel-twilight/base16.yml;
-  };
+  # Stylix inherits base16Scheme from modules/stylix/default.nix (via hosts/default.nix)
 
   system.stateVersion = "25.11";
 }

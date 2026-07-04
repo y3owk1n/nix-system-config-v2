@@ -31,10 +31,7 @@
     kitty
   ];
 
-  stylix = {
-    enable = true;
-    base16Scheme = ../../config/colorschemes/pastel-twilight/base16.yml;
-  };
+  # Stylix inherits base16Scheme from modules/stylix/default.nix (via hosts/default.nix)
 
   hardware.graphics.enable = true;
 
