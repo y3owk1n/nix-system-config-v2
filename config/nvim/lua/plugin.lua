@@ -168,18 +168,6 @@ mini_icons.setup({
 mini_icons.mock_nvim_web_devicons()
 
 -- =========================================================
---  Better restart
--- =========================================================
-
-local restart = require("custom.restart")
-
-restart.setup()
-
-vim.keymap.set("n", "<leader>R", function()
-  restart.save_restart()
-end, { desc = "Save and restart" })
-
--- =========================================================
 --  LSP Rename
 -- =========================================================
 
