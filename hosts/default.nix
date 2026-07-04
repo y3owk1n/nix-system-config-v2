@@ -1,3 +1,14 @@
+let
+  # ── Shared Defaults ─────────────────────────────────────────────────────────
+  defaults = {
+    username = "kylewong";
+    useremail = "62775956+y3owk1n@users.noreply.github.com";
+    githubuser = "y3owk1n";
+    githubname = "Kyle Wong";
+    gpgkeyid = "F3EBDBB90E035E02";
+    stylixTheme = ../config/colorschemes/forest-ink/base16.yml;
+  };
+in
 {
   # ============================================================================
   # Centralized Host Metadata
@@ -19,19 +30,15 @@
   #   nixosModules:  Extra NixOS module paths (optional)
   #   nixosProfile: Name of NixOS profile (for type = "nixos")
   #   needsNixGL: Whether nixGL wrapping is needed (for Linux)
+  #   stylixTheme: Path to base16 theme YAML (shared across all hosts)
   #   safariWorkspaces: Safari "New Window" keybindings (for Darwin)
   #   homebrew: Per-host Homebrew formulae/casks (for Darwin)
   # ============================================================================
 
   # ── Personal MacBook Air M3 ─────────────────────────────────────────────────
-  "Kyles-MacBook-Air" = {
+  "Kyles-MacBook-Air" = defaults // {
     system = "aarch64-darwin";
-    username = "kylewong";
-    useremail = "62775956+y3owk1n@users.noreply.github.com";
     hostname = "Kyles-MacBook-Air";
-    githubuser = "y3owk1n";
-    githubname = "Kyle Wong";
-    gpgkeyid = "F3EBDBB90E035E02";
     type = "darwin";
     needsNixGL = false;
 
@@ -69,14 +76,9 @@
   };
 
   # ── Fedora (Standalone Home-Manager) ────────────────────────────────────────
-  "fedora" = {
+  "fedora" = defaults // {
     system = "aarch64-linux";
-    username = "kylewong";
-    useremail = "62775956+y3owk1n@users.noreply.github.com";
     hostname = "fedora";
-    githubuser = "y3owk1n";
-    githubname = "Kyle Wong";
-    gpgkeyid = "F3EBDBB90E035E02";
     type = "home-manager";
     needsNixGL = true;
 
@@ -92,14 +94,9 @@
   };
 
   # ── NixOS Orbstack VM ───────────────────────────────────────────────────────
-  "nixos-orb" = {
+  "nixos-orb" = defaults // {
     system = "aarch64-linux";
-    username = "kylewong";
-    useremail = "62775956+y3owk1n@users.noreply.github.com";
     hostname = "nixos-orb";
-    githubuser = "y3owk1n";
-    githubname = "Kyle Wong";
-    gpgkeyid = "F3EBDBB90E035E02";
     type = "nixos";
     needsNixGL = false;
     nixosProfile = "orb";
@@ -115,14 +112,9 @@
   };
 
   # ── NixOS UTM VM ────────────────────────────────────────────────────────────
-  "nixos-utm" = {
+  "nixos-utm" = defaults // {
     system = "aarch64-linux";
-    username = "kylewong";
-    useremail = "62775956+y3owk1n@users.noreply.github.com";
     hostname = "nixos-utm";
-    githubuser = "y3owk1n";
-    githubname = "Kyle Wong";
-    gpgkeyid = "F3EBDBB90E035E02";
     type = "nixos";
     needsNixGL = false;
     nixosProfile = "utm";

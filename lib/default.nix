@@ -25,6 +25,7 @@ let
       githubname,
       gpgkeyid,
       needsNixGL ? false,
+      stylixTheme,
     }:
     {
       home-manager = {
@@ -41,6 +42,7 @@ let
           githubname
           gpgkeyid
           needsNixGL
+          stylixTheme
           ;
       };
     };
@@ -82,6 +84,7 @@ let
         githubuser
         githubname
         gpgkeyid
+        stylixTheme
         safariWorkspaces
         homebrew
         ;
@@ -96,6 +99,7 @@ let
           githubuser
           githubname
           gpgkeyid
+          stylixTheme
           safariWorkspaces
           homebrew
           ;
@@ -106,7 +110,6 @@ let
         ../modules/darwin/nix.nix
         ../modules/darwin/homebrew.nix
         ../modules/darwin/karabiner.nix
-        ../modules/darwin/hammerspoon.nix
 
         # Stylix
         inputs.stylix.darwinModules.stylix
@@ -125,6 +128,7 @@ let
             githubuser
             githubname
             gpgkeyid
+            stylixTheme
             ;
         })
         (mkHomeImports { inherit username hostData; })
@@ -151,6 +155,7 @@ let
         githubuser
         githubname
         gpgkeyid
+        stylixTheme
         ;
       nixosProfile = ../profiles/nixos + "/${hostData.nixosProfile}.nix";
     in
@@ -164,6 +169,7 @@ let
           githubuser
           githubname
           gpgkeyid
+          stylixTheme
           ;
       };
       modules = [
@@ -187,6 +193,7 @@ let
             githubuser
             githubname
             gpgkeyid
+            stylixTheme
             ;
         })
         (mkHomeImports { inherit username hostData; })
@@ -224,6 +231,7 @@ in
             githubname
             gpgkeyid
             needsNixGL
+            stylixTheme
             ;
         };
         modules = [
