@@ -352,12 +352,12 @@
         ]
       },
       "locked": {
-        "lastModified": 1783099620,
-        "narHash": "sha256-prQSM9PGnrfSaqknJOZ3DCQKbpMiXAWLVC5SHbjLcJ4=",
-        "rev": "b2e4390ff35319c52935d6a700b615da4c0f204d",
-        "revCount": 7023,
+        "lastModified": 1783134515,
+        "narHash": "sha256-qMoZazubXlXUD9k/syJ/aiWC4X4g73mwVmZ7Z4+rdpM=",
+        "rev": "b885baad531fa3d3beae2ba9a0712d22974d8016",
+        "revCount": 7024,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/nix-community/home-manager/0.1.7023%2Brev-b2e4390ff35319c52935d6a700b615da4c0f204d/019f2905-f1e4-7052-9946-dc212e2e7911/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/nix-community/home-manager/0.1.7024%2Brev-b885baad531fa3d3beae2ba9a0712d22974d8016/019f2b1a-ec4c-7e43-bb94-9980b2b7ad61/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -383,11 +383,11 @@
     "homebrew-cask": {
       "flake": false,
       "locked": {
-        "lastModified": 1783119431,
-        "narHash": "sha256-M4Nw28eyFdY9HqXqjJyi95mE0A2x71n7J8bRYhox27o=",
+        "lastModified": 1783156454,
+        "narHash": "sha256-zmJNjjeZNdswbMWEphipix2zw9PywMr149Eehl8R12g=",
         "owner": "homebrew",
         "repo": "homebrew-cask",
-        "rev": "ec4382e81873b82853608d9a7ea053939331cd5f",
+        "rev": "4eee0394c96c52619c59e2076826564e19149770",
         "type": "github"
       },
       "original": {
@@ -399,11 +399,11 @@
     "homebrew-core": {
       "flake": false,
       "locked": {
-        "lastModified": 1783115407,
-        "narHash": "sha256-9jjjHZEcCMDAekObRX1QJmHjjGSiK6GKIX2YIRz+sWM=",
+        "lastModified": 1783159789,
+        "narHash": "sha256-RaX/2fHzcLTb/KWQGp05YpTT7tvqy4yicTdMywtkIUY=",
         "owner": "homebrew",
         "repo": "homebrew-core",
-        "rev": "5f767d4fbf29454f312eb6dfa8adda0622516911",
+        "rev": "25bae3d15c3dd880ed4c957d9e0dffb2a2dea131",
         "type": "github"
       },
       "original": {
@@ -792,12 +792,12 @@
         "tinted-zed": "tinted-zed"
       },
       "locked": {
-        "lastModified": 1783101142,
-        "narHash": "sha256-/UtZYYoXyJqKd7vopAwLN3RDck3RLfCVTSoHPriLmYk=",
-        "rev": "831414670d6b5b3aebb99e5ee6d3dac73f2a3f02",
-        "revCount": 1447,
+        "lastModified": 1783101802,
+        "narHash": "sha256-/Ti+wDco0f3C9s94RxyBKJyc0BklwYh0a/jFWKeHNYw=",
+        "rev": "718c14e8ecba215a65ff955c187fadb9732ddd01",
+        "revCount": 1448,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/nix-community/stylix/0.1.1447%2Brev-831414670d6b5b3aebb99e5ee6d3dac73f2a3f02/019f2923-9b7f-7221-8a65-9c8c3f30b786/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/nix-community/stylix/0.1.1448%2Brev-718c14e8ecba215a65ff955c187fadb9732ddd01/019f2bd5-bdd5-77a2-869d-80ae580df429/source.tar.gz"
       },
       "original": {
         "type": "tarball",
