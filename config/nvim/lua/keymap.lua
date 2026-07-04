@@ -85,7 +85,6 @@ vim.keymap.set("n", "\\", "<C-W>v", { remap = true, desc = "Vertical split" })
 vim.keymap.set({ "n", "v" }, "H", "^", { desc = "Move cursor to most left" })
 vim.keymap.set({ "n", "v" }, "L", "$", { desc = "Move cursor to most right" })
 
-vim.keymap.set("n", "<C-a>", "gg<S-v>G", { desc = "Select the whole buffer content" })
 vim.keymap.set("n", "x", '"_x', { desc = "Delete the character under the cursor without putting it in the register" })
 
 vim.keymap.set("v", "J", ":m '>+1<cr> | :normal gv=gv<cr>", { desc = "Move line down" })
