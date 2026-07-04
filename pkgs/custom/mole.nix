@@ -5,7 +5,7 @@
 }:
 
 let
-  version = "1.44.1";
+  version = "1.45.0";
 in
 buildGoModule {
   pname = "mole";
@@ -15,7 +15,7 @@ buildGoModule {
     owner = "tw93";
     repo = "Mole";
     rev = "V${version}";
-    sha256 = "sha256-cQK8RMp0tdAnz56tTldjw2lFa4LHXoXMNWIL8IHfo7w=";
+    sha256 = "sha256-8Crhqk8r8Xj+Lc2IpF4NCU8nkn/QH4gOPs4EUsfzQSw=";
   };
 
   vendorHash = "sha256-HcCJ3DYj5AXX+E5AD6jxBysCq4TAoIs2I6oVN4dCBxQ=";
