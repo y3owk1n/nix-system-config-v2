@@ -6,6 +6,7 @@
 }:
 
 let
+  # BUMP: Latest version refer here -> https://github.com/Homebrew/homebrew-cask/blob/main/Casks/a/affinity.rb
   version = "3.2.2";
   build = "4557";
 in

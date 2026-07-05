@@ -6,6 +6,7 @@
 
 let
   pname = "freebuff";
+  # BUMP: Latest version refer here -> https://www.npmjs.com/package/freebuff
   version = "0.0.118";
 
   systems = {

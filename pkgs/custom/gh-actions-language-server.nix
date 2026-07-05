@@ -8,6 +8,7 @@
 
 let
   pname = "gh-actions-language-server";
+  # BUMP: Latest version refer here -> https://www.npmjs.com/package/@actions/languageserver
   version = "0.3.58";
 in
 stdenv.mkDerivation {

@@ -5,6 +5,7 @@
 }:
 
 let
+  # BUMP: Latest version refer here -> https://github.com/tw93/Mole/releases/latest
   version = "1.45.0";
 in
 buildGoModule {

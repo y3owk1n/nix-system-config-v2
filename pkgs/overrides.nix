@@ -3,10 +3,13 @@ _final: prev: {
   # Package Overrides
   # ============================================================================
 
+  # TODO: Remove this once statix cache is updated without need to build
   statix = prev.statix.overrideAttrs (_: {
     noCheck = true;
   });
 
+  # TODO: Remove this once the nixpkgs version is updated to 1.12.0
+  # BUMP: Latest version refer here -> https://github.com/jtroo/kanata/releases/latest
   kanata = prev.kanata.overrideAttrs (
     finalAttrs: _: {
       cargoHash = "sha256-4UBN4I35ZPPPL68LxxPna9Fs9sATCiwoTbWgHYwqOjs=";
@@ -25,6 +28,7 @@ _final: prev: {
     }
   );
 
+  # BUMP: Latest commit refer here -> https://github.com/christoomey/vim-tmux-navigator
   tmuxPlugins = prev.tmuxPlugins // {
     vim-tmux-navigator = prev.tmuxPlugins.vim-tmux-navigator.overrideAttrs (_: {
       src = prev.fetchFromGitHub {
