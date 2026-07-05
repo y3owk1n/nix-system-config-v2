@@ -28,12 +28,6 @@ in
       set -ga terminal-overrides ",xterm-ghostty:Tc"
       set -ga terminal-features ",*:usstyle,*:RGB,*:strikethrough"
 
-      bind -r j resize-pane -D 5
-      bind -r k resize-pane -U 5
-      bind -r l resize-pane -R 5
-      bind -r h resize-pane -L 5
-      bind -r m resize-pane -Z
-
       bind -N "last-session (via sesh) " L run-shell "sesh last" # overwrite last-session with sesh last
 
       bind C-g display-popup -T "Lazygit" -w 90% -h 80% -d "#{pane_current_path}" -E "lazygit"
