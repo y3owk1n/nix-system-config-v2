@@ -9,14 +9,14 @@ _final: prev: {
 
   kanata = prev.kanata.overrideAttrs (
     finalAttrs: _: {
-      cargoHash = "sha256-da7kmSvm+z6C+RPqEBEY9PNWxrAEQ8h/ZGDvS9WJ1J8=";
+      cargoHash = "sha256-4UBN4I35ZPPPL68LxxPna9Fs9sATCiwoTbWgHYwqOjs=";
       src = prev.fetchFromGitHub {
         owner = "jtroo";
         repo = "kanata";
-        rev = "v1.12.0-prerelease-2";
-        sha256 = "sha256-bNUlQBsyGxCu3GHP+qgrYLikLagXxzLjjuZFZFi7Vzk=";
+        rev = "v1.12.0";
+        sha256 = "sha256-WjdmjgEMoo3QNqT4yWxaKOkfuRLdNg4Im+V1Hy5vWgY=";
       };
-      version = "v1.12.0-prerelease-2";
+      version = "v1.12.0";
       cargoDeps = prev.rustPlatform.fetchCargoVendor {
         inherit (finalAttrs) pname src version;
         hash = finalAttrs.cargoHash;
