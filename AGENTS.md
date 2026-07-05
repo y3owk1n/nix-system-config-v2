@@ -46,6 +46,16 @@ flake.nix                 ← Entry point (flake-parts based)
 1. Create `modules/home/packages/<name>.nix` with the program config.
 2. Add it to the appropriate profile in `modules/home/profiles/<category>.nix`.
 
+## Converting from Homebrew
+
+When asked to convert a brew install to Nix:
+
+- **CLI tool (formula)** → `home.packages = [ pkgs.<name> ]` or `programs.<name>.enable = true` if a home-manager module exists.
+- **GUI app (cask)** → Same patterns, but check `https://search.nixos.org/packages` first — the Nix name often differs (e.g. `whatsapp-for-mac` not `whatsapp`).
+- **Not in nixpkgs** → Create a custom derivation in `pkgs/custom/<name>.nix` using `pkgs.fetchurl` or `pkgs.fetchzip`, then reference as `pkgs.custom.<name>`.
+- Always prefer `programs.<name>.enable` over `home.packages` when a home-manager module exists (gives config management).
+- Package modules go in `modules/home/packages/<name>.nix`, imported via `modules/home/profiles/<category>.nix`.
+
 ## Key Commands
 
 - `just rebuild <host>` — Rebuild nix-darwin/NixOS

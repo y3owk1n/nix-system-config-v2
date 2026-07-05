@@ -2,40 +2,78 @@
 
 Common day-to-day tasks for this Nix config.
 
-## Add a CLI Program
+## Converting from Homebrew
 
-Create `modules/home/packages/<name>.nix`:
+All packages are now managed through Nix. Here's how to convert common brew patterns:
+
+### Brew Formula (CLI Tool)
 
 ```nix
-_: {
-  programs.<name>.enable = true;
-  # or home.packages = [ pkgs.<name> ];
+# brew install bat        → modules/home/packages/bat.nix
+{ pkgs, ... }: {
+  home.packages = [ pkgs.bat ];
+}
+
+# brew install ripgrep    → modules/home/packages/ripgrep.nix
+{ config, ... }: {
+  programs.ripgrep = {
+    enable = true;
+    arguments = [ "--smart-case" ];
+  };
 }
 ```
 
-Add it to the right profile in `modules/home/profiles/<category>.nix`:
+Check if a home-manager module exists (`programs.<name>.enable`) before falling back to `home.packages`.
+
+### Brew Cask (GUI App)
 
 ```nix
-../packages/<name>.nix
+# brew install --cask firefox    → modules/home/packages/firefox.nix
+{ pkgs, ... }: {
+  home.packages = [ pkgs.firefox ];
+}
+
+# brew install --cask discord    → modules/home/packages/discord.nix
+_: {
+  programs.discord.enable = true;
+}
+
+# brew install --cask whatsapp   → modules/home/packages/whatsapp.nix
+{ pkgs, ... }: {
+  home.packages = with pkgs; [ whatsapp-for-mac ];
+}
 ```
+
+Search `https://search.nixos.org/packages` for the Nix package name — it often differs from the cask name.
+
+### Not in nixpkgs?
+
+Create a custom derivation in `pkgs/custom/<name>.nix`:
+
+```nix
+{ pkgs, lib, ... }:
+pkgs.stdenv.mkDerivation {
+  name = "my-app";
+  src = pkgs.fetchurl {
+    url = "https://example.com/app.dmg";
+    hash = "sha256-...";
+  };
+  installPhase = ''
+    mkdir -p $out/Applications
+    cp -r *.app $out/Applications/
+  '';
+}
+```
+
+Then reference as `pkgs.custom.<name>` in a package module.
+
+### Steps
+
+1. Create `modules/home/packages/<name>.nix` with the config
+2. Add `../packages/<name>.nix` to the appropriate profile in `modules/home/profiles/<category>.nix`
+3. Run `just rebuild <hostname>`
 
 Profiles: `cli`, `shell`, `git`, `editors`, `security`, `macos`, `ai`.
-
-## Add a Homebrew Cask
-
-Add to `homebrew.casks` in the host entry in `hosts/default.nix`:
-
-```nix
-homebrew.casks = [ "firefox" "discord" "new-cask" ];
-```
-
-## Add a Homebrew Formula
-
-Same place — add to `homebrew.brews`:
-
-```nix
-homebrew.brews = [ "mole" "new-formula" ];
-```
 
 ## Add a Custom Package
 
@@ -70,9 +108,8 @@ If the module needs per-host config values, add the field to `hosts/default.nix`
 ## Add a Flake Input
 
 1. Add to `inputs` in `flake.nix`
-2. If using with nix-homebrew taps, use `flake = false`
-3. Access as `inputs.<name>` anywhere
-4. If needed as a `specialArg` in `lib/default.nix`, add it to `baseSpecialArgs` or the individual builder's `specialArgs`
+2. Access as `inputs.<name>` anywhere
+3. If needed as a `specialArg` in `lib/default.nix`, add it to `baseSpecialArgs` or the individual builder's `specialArgs`
 
 ## Update Everything
 
@@ -111,12 +148,6 @@ nix eval '.#homeConfigurations.<hostname>.home.activationPackage' --impure --no-
 
 **`access to absolute path '/etc/nixos/configuration.nix' is forbidden in pure evaluation mode`**
 → NixOS configs need `--impure` at build time. Normal.
-
-**Homebrew tap permission error** (`could not create work tree dir`)
-→ Tap key name doesn't match GitHub repo. Use `user/homebrew-repo` format, not `user/repo`.
-
-**`The option 'nix-homebrew.user' was accessed but has no value`**
-→ Missing `nix-homebrew.user = username;` in the nix-homebrew config.
 
 **`path '/nix/store/scripts/...' does not exist`**
 → Wrong relative path in `pkgs/custom/*.nix`. From `pkgs/custom/`, use `../../scripts/<file>.sh`.

@@ -72,7 +72,6 @@
     SYSTEMD_COLORS = "true";
     COLORTERM = "truecolor";
     TERMINAL = "ghostty";
-    # HOMEBREW_NO_AUTO_UPDATE = 1;
     PAGER = "less";
     LESS = "-R";
     CLICOLOR = 1;

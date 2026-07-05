@@ -86,7 +86,6 @@ let
         gpgkeyid
         stylixTheme
         safariWorkspaces
-        homebrew
         ;
     in
     inputs.darwin.lib.darwinSystem {
@@ -101,14 +100,12 @@ let
           gpgkeyid
           stylixTheme
           safariWorkspaces
-          homebrew
           ;
       };
       modules = [
         ../modules/darwin/base.nix
         ../modules/darwin/defaults.nix
         ../modules/darwin/nix.nix
-        ../modules/darwin/homebrew.nix
         ../modules/darwin/karabiner.nix
         ../modules/darwin/tailscale.nix
 
@@ -136,9 +133,6 @@ let
 
         # Determinate Nix
         inputs.determinate.darwinModules.default
-
-        # Homebrew
-        inputs.nix-homebrew.darwinModules.nix-homebrew
       ]
       ++ hostData.darwinModules or [ ];
     };

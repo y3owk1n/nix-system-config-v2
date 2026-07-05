@@ -32,7 +32,6 @@ in
   #   needsNixGL: Whether nixGL wrapping is needed (for Linux)
   #   stylixTheme: Path to base16 theme YAML (shared across all hosts)
   #   safariWorkspaces: Safari "New Window" keybindings (for Darwin)
-  #   homebrew: Per-host Homebrew formulae/casks (for Darwin)
   # ============================================================================
 
   # ── Personal MacBook Air M3 ─────────────────────────────────────────────────
@@ -62,12 +61,6 @@ in
       "New SKBA Window" = "^3";
       "New MDA Window" = "^2";
       "New Kyle Window" = "^1";
-    };
-
-    homebrew = {
-      brews = [ ];
-      casks = [ ];
-      masApps = { };
     };
   };
 

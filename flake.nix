@@ -18,25 +18,6 @@
     };
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
 
-    # Homebrew Integration
-    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
-    homebrew-core = {
-      url = "github:homebrew/homebrew-core";
-      flake = false;
-    };
-    homebrew-cask = {
-      url = "github:homebrew/homebrew-cask";
-      flake = false;
-    };
-    homebrew-bundle = {
-      url = "github:homebrew/homebrew-bundle";
-      flake = false;
-    };
-    homebrew-y3owk1n = {
-      url = "github:y3owk1n/homebrew-tap";
-      flake = false;
-    };
-
     # Theming & UI
     stylix = {
       url = "https://flakehub.com/f/nix-community/stylix/0.1";
