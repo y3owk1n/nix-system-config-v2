@@ -1,47 +1,8 @@
 { pkgs, ... }:
-let
-  skhd = pkgs.stdenv.mkDerivation rec {
-    pname = "skhd-zig";
-    version = "0.1.9";
-
-    src = pkgs.fetchurl {
-      url = "https://github.com/jackielii/skhd.zig/releases/download/v${version}/skhd-arm64-macos.tar.gz";
-      sha256 = "sha256-CE5qZkDkm37iAtQwueiitmIQ/4RcdmZKJ4pUqDgam9Q=";
-    };
-
-    nativeBuildInputs = [
-      pkgs.installShellFiles
-    ];
-
-    phases = [
-      "unpackPhase"
-      "installPhase"
-    ];
-
-    unpackPhase = ''
-      tar -xvf $src
-    '';
-
-    dontBuild = true; # nothing to compile
-
-    installPhase = ''
-      mkdir -p $out/Applications
-      mv skhd.app $out/Applications
-
-      mkdir -p $out/bin
-      ln -s $out/Applications/skhd.app/Contents/MacOS/skhd $out/bin/skhd
-      ln -s $out/Applications/skhd.app/Contents/MacOS/skhd-grabber $out/bin/skhd-grabber
-    '';
-
-    meta = {
-      mainProgram = "skhd";
-    };
-  };
-in
 {
   services.skhd = {
     enable = true;
-    package = skhd;
+    package = pkgs.custom.skhd-zig;
     config = ''
       .shell "/bin/dash"
 
