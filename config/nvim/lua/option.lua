@@ -9,28 +9,28 @@ vim.g.maplocalleader = " "
 --  UI
 -- =========================================================
 
-vim.opt.termguicolors = true
-vim.opt.colorcolumn = "120"
-vim.opt.scrolloff = 8
-vim.opt.wrap = false
-vim.opt.pumblend = 10
-vim.opt.pumheight = 10
+-- vim.o.cmdheight = 0
 vim.o.pumborder = "rounded"
-vim.opt.signcolumn = "yes"
-vim.opt.winborder = "rounded"
+vim.opt.colorcolumn = "120"
 vim.opt.fillchars = { eob = " " }
 vim.opt.linebreak = true
+vim.opt.pumblend = 10
+vim.opt.pumheight = 10
+vim.opt.scrolloff = 8
 vim.opt.showtabline = 0
--- vim.o.cmdheight = 0
+vim.opt.signcolumn = "yes"
+vim.opt.termguicolors = true
+vim.opt.winborder = "rounded"
+vim.opt.wrap = false
 
 -- =========================================================
 --  Window Behaviour
 -- =========================================================
 
-vim.opt.virtualedit = "block"
+vim.opt.splitbelow = true
 vim.opt.splitkeep = "screen"
 vim.opt.splitright = true
-vim.opt.splitbelow = true
+vim.opt.virtualedit = "block"
 
 -- =========================================================
 --  Line numbers
@@ -49,38 +49,38 @@ vim.opt.mouse = ""
 --  Completions
 -- =========================================================
 
-vim.opt.inccommand = "split"
 vim.opt.completeopt = "menu,menuone,fuzzy,noinsert"
+vim.opt.inccommand = "split"
 
 -- =========================================================
 --  Indentations
 -- =========================================================
 
+vim.opt.breakindent = true
 vim.opt.expandtab = true
 vim.opt.shiftround = true
 vim.opt.smartindent = true
-vim.opt.breakindent = true
 
 -- =========================================================
 --  Searches
 -- =========================================================
 
-vim.opt.ignorecase = true
-vim.opt.smartcase = true
-vim.opt.infercase = true
-vim.opt.hlsearch = false
-vim.opt.incsearch = true
-vim.opt.path:append({ "**" })
 vim.opt.grepprg = "rg --vimgrep --no-messages --smart-case"
+vim.opt.hlsearch = false
+vim.opt.ignorecase = true
+vim.opt.incsearch = true
+vim.opt.infercase = true
+vim.opt.path:append({ "**" })
+vim.opt.smartcase = true
 vim.opt.wildoptions:append({ "fuzzy" })
 
 -- =========================================================
 --  Undos
 -- =========================================================
 
+vim.opt.undodir = os.getenv("HOME") .. "/.vim/undodir"
 vim.opt.undofile = true
 vim.opt.undolevels = 10000
-vim.opt.undodir = os.getenv("HOME") .. "/.vim/undodir"
 
 -- =========================================================
 --  Spelling
@@ -92,8 +92,6 @@ vim.opt.iskeyword:append("-")
 --  Wildmenu
 -- =========================================================
 
-vim.opt.wildmenu = true
-vim.opt.wildignorecase = true
 vim.opt.path:append("**")
 vim.opt.wildignore:append({
   ".git,.hg,.svn",
@@ -108,6 +106,8 @@ vim.opt.wildignore:append({
   ".swp,.lock,.DS_Store,._*",
   ".,..",
 })
+vim.opt.wildignorecase = true
+vim.opt.wildmenu = true
 
 -- =========================================================
 --  Statusline
@@ -251,8 +251,8 @@ vim.cmd("syntax off")
 --  Others
 -- =========================================================
 
-vim.opt.swapfile = false
 vim.opt.confirm = true
+vim.opt.swapfile = false
 vim.opt.updatetime = 50
 
 -- this is only used to load .nvim.lua for tailwind overrides
