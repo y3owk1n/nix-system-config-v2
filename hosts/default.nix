@@ -66,9 +66,7 @@ in
 
     homebrew = {
       brews = [ ];
-      casks = [
-        "tailscale-app"
-      ];
+      casks = [ ];
       masApps = { };
     };
   };

@@ -110,6 +110,7 @@ let
         ../modules/darwin/nix.nix
         ../modules/darwin/homebrew.nix
         ../modules/darwin/karabiner.nix
+        ../modules/darwin/tailscale.nix
 
         # Stylix
         inputs.stylix.darwinModules.stylix
