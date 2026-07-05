@@ -21,6 +21,7 @@ in
         mole = final.callPackage ./custom/mole.nix { };
         skhd-zig = final.callPackage ./custom/skhd.nix { };
         affinity = final.callPackage ./custom/affinity.nix { };
+        uts = final.callPackage ./custom/uts.nix { };
       };
     })
 
