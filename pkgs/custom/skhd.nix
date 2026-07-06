@@ -8,11 +8,11 @@
 stdenv.mkDerivation rec {
   pname = "skhd-zig";
   # BUMP: Latest release refer here -> https://github.com/jackielii/skhd.zig/releases/latest
-  version = "0.1.9";
+  version = "0.1.10";
 
   src = fetchurl {
     url = "https://github.com/jackielii/skhd.zig/releases/download/v${version}/skhd-arm64-macos.tar.gz";
-    sha256 = "sha256-CE5qZkDkm37iAtQwueiitmIQ/4RcdmZKJ4pUqDgam9Q=";
+    sha256 = "sha256-eU8I5HRpiag5zXd8B7zxE07SyukXxqMESVRBxBrm16Y=";
   };
 
   nativeBuildInputs = [ installShellFiles ];
