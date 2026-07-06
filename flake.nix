@@ -28,6 +28,7 @@
     mimi.url = "https://flakehub.com/f/y3owk1n/mimi/0.1";
     neru.url = "https://flakehub.com/f/y3owk1n/neru/0.1";
     nvs.url = "https://flakehub.com/f/y3owk1n/nvs/0.1";
+    uts.url = "https://flakehub.com/f/y3owk1n/uts/0.1";
 
     # Development Tools & Infrastructure
     flake-parts.url = "https://flakehub.com/f/hercules-ci/flake-parts/0.1";

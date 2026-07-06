@@ -1,6 +1,7 @@
 { pkgs, ... }:
 {
-  home.packages = with pkgs; [
-    custom.uts
-  ];
+  programs.uts = {
+    enable = true;
+    package = pkgs.uts-source;
+  };
 }

@@ -8,6 +8,7 @@ in
     inputs.neru.overlays.default
     inputs.mimi.overlays.default
     inputs.nvs.overlays.default
+    inputs.uts.overlays.default
 
     # Custom overlay
     (final: _prev: {
@@ -21,7 +22,6 @@ in
         mole = final.callPackage ./custom/mole.nix { };
         skhd-zig = final.callPackage ./custom/skhd.nix { };
         affinity = final.callPackage ./custom/affinity.nix { };
-        uts = final.callPackage ./custom/uts.nix { };
       };
     })
 

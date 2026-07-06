@@ -66,6 +66,7 @@ let
           inputs.mimi.homeManagerModules.default
           inputs.neru.homeManagerModules.default
           inputs.nvs.homeManagerModules.default
+          inputs.uts.homeManagerModules.default
         ]
         ++ (map profileModule homeProfiles);
       };
