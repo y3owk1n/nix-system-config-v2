@@ -14,8 +14,8 @@ require("base16-pro-max").setup({
     enable_all = false,
     nvim_mini_mini_diff = true,
     nvim_mini_mini_icons = true,
-    nvim_mini_mini_files = true,
     y3owk1n_undo_glow_nvim = true,
+    magicduck_grug_far_nvim = true,
   },
   highlight_groups = {
     QuickFixLine = { fg = "red" },

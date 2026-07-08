@@ -378,3 +378,11 @@ vim.keymap.set("n", "<leader>sw", function()
   fff.live_grep({ query = vim.fn.expand("<cword>") })
 end, { desc = "Grep word" })
 vim.keymap.set("n", "<leader>sr", ":FFFResume<cr>", { desc = "FFF Resume" })
+
+-- =========================================================
+-- grug-far.nvim
+-- =========================================================
+
+local grug_far = require("grug-far")
+
+grug_far.setup()

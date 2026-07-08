@@ -13,6 +13,7 @@ vim.pack.add({
   "https://github.com/supermaven-inc/supermaven-nvim",
   "https://github.com/y3owk1n/base16-pro-max.nvim",
   "https://github.com/y3owk1n/undo-glow.nvim",
+  "https://github.com/MagicDuck/grug-far.nvim",
 })
 
 -- =========================================================
