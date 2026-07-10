@@ -10,8 +10,9 @@ vim.keymap.set("n", "<leader>e", function()
     end
   else
     vim.w.dir_prev_buf = vim.api.nvim_get_current_buf()
-    local ok = pcall(vim.cmd, "e %:h")
-    if not ok then
+    if vim.fn.maparg("-", "n") ~= "" then
+      vim.cmd("normal -")
+    else
       vim.cmd("e $PWD")
     end
   end
