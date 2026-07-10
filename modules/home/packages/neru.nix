@@ -41,7 +41,7 @@
       # ============================================================================
       [hotkeys]
       "Ctrl+F" = "recursive_grid --cursor-selection-mode hold"
-      "Ctrl+S" = ["action move_mouse --selection", "scroll"]
+      "Ctrl+S" = "scroll"
 
       # ============================================================================
       # Hints
@@ -161,6 +161,7 @@
       "Ctrl+K" = "action scroll_up"
       "Ctrl+H" = "action scroll_left"
       "Ctrl+L" = "action scroll_right"
+      "Ctrl+S" = ["action move_mouse --selection", "scroll"]
 
       # [[recursive_grid.app_configs]]
       # bundle_id = "com.brave.Browser"
