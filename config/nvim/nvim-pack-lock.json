@@ -9,7 +9,7 @@
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "fff.nvim": {
-      "rev": "5858d893b5885eea6a87ff271aaf526110fc79d0",
+      "rev": "b4590ca108bdb3501030c971b1ebf65c150bf108",
       "src": "https://github.com/dmtrKovalenko/fff.nvim"
     },
     "grug-far.nvim": {
@@ -25,7 +25,7 @@
       "src": "https://github.com/nvim-mini/mini.icons"
     },
     "nvim-lspconfig": {
-      "rev": "d224a1920728ba129880efc700d4a0180ac4ecbb",
+      "rev": "d6ac7a0d46555d44bf21f4f9c65f5201f818b475",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "nvim-tmux-navigation": {
