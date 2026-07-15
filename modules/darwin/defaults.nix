@@ -84,12 +84,6 @@ in
         text = ''
           sudo -u ${username} /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
           echo "Reloading settings and applying to current session..."
-
-          if [ -e "/Users/${username}/Applications/Home Manager Apps/Neru.app" ]; then
-              echo "Codesigning Neru.app..."
-              /usr/bin/codesign --force --deep --sign - --timestamp=none "/Users/${username}/Applications/Home Manager Apps/Neru.app"
-              pkill -9 neru > /dev/null 2>&1 || true
-          fi
         '';
       };
     };
