@@ -5,7 +5,7 @@ _final: prev: {
 
   # TODO: Remove this once statix cache is updated without need to build
   statix = prev.statix.overrideAttrs (_: {
-    noCheck = true;
+    doCheck = false;
   });
 
   # BUMP: Latest commit refer here -> https://github.com/christoomey/vim-tmux-navigator
