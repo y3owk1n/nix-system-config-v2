@@ -1,9 +1,29 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  username,
+  ...
+}:
+let
+  appPath = "/Users/${username}/Applications/Home Manager Apps/Neru.app";
+  entitlements = "${appPath}/Contents/Resources/Neru.entitlements";
+in
 {
   # ============================================================================
   # Neru - OS wide keyboard navigation
   # ============================================================================
   # System-wide application for mouse and keyboard control
+  home.activation.signNeru = lib.hm.dag.entryAfter [ "copyApps" ] ''
+    if [ -e "${appPath}" ]; then
+      echo "Codesigning Neru.app..."
+       /usr/bin/codesign --force --deep --sign - \
+         --entitlements "${entitlements}" \
+         --options runtime \
+         --timestamp=none \
+         "${appPath}"
+    fi
+  '';
 
   services.neru = {
     enable = true;

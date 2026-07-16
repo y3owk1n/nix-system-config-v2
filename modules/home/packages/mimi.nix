@@ -1,8 +1,28 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  lib,
+  username,
+  ...
+}:
+let
+  appPath = "/Users/${username}/Applications/Home Manager Apps/Mimi.app";
+  entitlements = "${appPath}/Contents/Resources/Mimi.entitlements";
+in
 {
   # ============================================================================
   # Mimi - macOS event daemon that runs your shell commands when things happen
   # ============================================================================
+
+  home.activation.signMimi = lib.hm.dag.entryAfter [ "copyApps" ] ''
+    if [ -e "${appPath}" ]; then
+      echo "Codesigning Mimi.app..."
+       /usr/bin/codesign --force --deep --sign - \
+         --entitlements "${entitlements}" \
+         --options runtime \
+         --timestamp=none \
+         "${appPath}"
+    fi
+  '';
 
   services.mimi = {
     enable = true;
