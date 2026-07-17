@@ -47,6 +47,7 @@
       alt + shift - 7 : @mimi_move("7")
       alt + shift - 8 : @mimi_move("8")
       alt + shift - 9 : @mimi_move("9")
+      alt + shift - 0 : @mimi_move("10")
 
       alt - h : @mimi_focus("--left")
       alt - l : @mimi_focus("--right")
