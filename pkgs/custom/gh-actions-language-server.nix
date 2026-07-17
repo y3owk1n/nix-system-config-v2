@@ -9,14 +9,14 @@
 let
   pname = "gh-actions-language-server";
   # BUMP: Latest version refer here -> https://www.npmjs.com/package/@actions/languageserver
-  version = "0.3.58";
+  version = "0.3.60";
 in
 stdenv.mkDerivation {
   inherit pname version;
 
   src = fetchurl {
     url = "https://registry.npmjs.org/@actions/languageserver/-/languageserver-${version}.tgz";
-    hash = "sha256-H7td6s74NdcIdMzCGpU1Mh2xT3bZPMUw5dw92VepLZY=";
+    hash = "sha256-9MJp1EkCTHiy+0yBHM/hPZPm9Zws+6X/hk0t8bD3TCM=";
   };
 
   sourceRoot = ".";
