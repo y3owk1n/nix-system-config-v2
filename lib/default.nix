@@ -239,6 +239,7 @@ in
           # Flake input home-manager modules
           inputs.neru.homeManagerModules.default
           inputs.nvs.homeManagerModules.default
+          inputs.uts.homeManagerModules.default
         ]
         ++ (map (p: ../modules/home/profiles + "/${p}.nix") hostData.homeProfiles);
       }
