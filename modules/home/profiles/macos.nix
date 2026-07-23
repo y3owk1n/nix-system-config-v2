@@ -7,5 +7,7 @@
     ../packages/skhd.nix
     ../packages/orbstack.nix
     ../packages/affinity.nix
+    ../packages/mole.nix
+    ../packages/stripe.nix
   ];
 }

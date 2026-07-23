@@ -16,9 +16,6 @@
     ../packages/mkcert.nix
     ../packages/rip2.nix
     ../packages/ripgrep.nix
-    ../packages/stripe.nix
-    ../packages/mole.nix
-    ../packages/compress.nix
     ../packages/uts.nix
   ];
 }
