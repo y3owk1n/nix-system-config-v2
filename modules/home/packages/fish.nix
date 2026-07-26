@@ -16,7 +16,11 @@
         source "$GHOSTTY_RESOURCES_DIR/shell-integration/fish/vendor_conf.d/ghostty-shell-integration.fish"
       end
 
-      set -gx MANPATH /run/current-system/sw/share/man /nix/var/nix/profiles/default/share/man $MANPATH
+      set -gx MANPATH /opt/homebrew/share/man /run/current-system/sw/share/man /nix/var/nix/profiles/default/share/man $MANPATH
+
+      if not contains /opt/homebrew/share/fish/vendor_completions.d $fish_complete_path
+        set -gx fish_complete_path $fish_complete_path /opt/homebrew/share/fish/vendor_completions.d
+      end
     '';
     shellInit = ''
       __load-em
