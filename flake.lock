@@ -337,12 +337,12 @@
         ]
       },
       "locked": {
-        "lastModified": 1784725727,
-        "narHash": "sha256-J5+C9wsO0lhDyUalQzfplDbRjyHDYeEH5+9sdyXtwa8=",
-        "rev": "041a999e8c1c5b731913855909e68d30ca69b8e0",
-        "revCount": 7081,
+        "lastModified": 1784913159,
+        "narHash": "sha256-JWq0BfjO4ktpH5USfQNQzdvHpIDT8fSKD5K7LvdMRFs=",
+        "rev": "079a3b5d1aa6a719920a51316253b7d6dd22738d",
+        "revCount": 7086,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/nix-community/home-manager/0.1.7081%2Brev-041a999e8c1c5b731913855909e68d30ca69b8e0/019f8af9-2a79-7041-9ab5-d2ed8690c01a/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/nix-community/home-manager/0.1.7086%2Brev-079a3b5d1aa6a719920a51316253b7d6dd22738d/019f954c-190a-7d42-8ae9-01be99d1be95/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -371,12 +371,12 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1784778921,
-        "narHash": "sha256-fUDPSrWbhRlWktqL2HIxQLAqOa+tcPOhaAq7iUNO6Yk=",
-        "rev": "cdd466a547f72923210687dbb4b3848bbcfac7f0",
-        "revCount": 1008,
+        "lastModified": 1784964478,
+        "narHash": "sha256-JX0lgA3bN5/HyZtJRiY/aC/K7BzYY4kVDQ7ykwf1VG8=",
+        "rev": "4dac3c120c2c1fd5e314adba580157dde3d1db67",
+        "revCount": 1013,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/y3owk1n/neru/0.1.1008%2Brev-cdd466a547f72923210687dbb4b3848bbcfac7f0/019f8d1d-df60-78b3-9424-d4b324c0eddb/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/y3owk1n/neru/0.1.1013%2Brev-4dac3c120c2c1fd5e314adba580157dde3d1db67/019f982d-41ce-72e2-9cc5-0578910cf527/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -534,12 +534,12 @@
     },
     "nixpkgs_5": {
       "locked": {
-        "lastModified": 1784497964,
-        "narHash": "sha256-vlHUuqAcbcH2RKmHbPiuQzbv1pnzzavXnI62RD0bqCU=",
-        "rev": "241313f4e8e508cb9b13278c2b0fa25b9ca27163",
-        "revCount": 1037713,
+        "lastModified": 1784796856,
+        "narHash": "sha256-wWFrV5/Qbm+lyt5x20E/bSbfJiGKMo4RCxZV8cl/WZI=",
+        "rev": "e2587caef70cea85dd97d7daab492899902dbf5d",
+        "revCount": 1040357,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/NixOS/nixpkgs/0.1.1037713%2Brev-241313f4e8e508cb9b13278c2b0fa25b9ca27163/019f7ea2-cc7f-76e3-b0ff-0fefb2384cde/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/NixOS/nixpkgs/0.1.1040357%2Brev-e2587caef70cea85dd97d7daab492899902dbf5d/019f922f-0a2e-7171-b290-1559042ab482/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -548,11 +548,11 @@
     },
     "nixpkgs_6": {
       "locked": {
-        "lastModified": 1784120854,
-        "narHash": "sha256-KesHgItiZPgGX740axSiQLcIQ8D24MDqNpkKYWIek8k=",
+        "lastModified": 1784497964,
+        "narHash": "sha256-vlHUuqAcbcH2RKmHbPiuQzbv1pnzzavXnI62RD0bqCU=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "753cc8a3a87467296ddd1fa93f0cc3e81120ee46",
+        "rev": "241313f4e8e508cb9b13278c2b0fa25b9ca27163",
         "type": "github"
       },
       "original": {
@@ -640,12 +640,12 @@
         "nixpkgs": "nixpkgs_6"
       },
       "locked": {
-        "lastModified": 1784269890,
-        "narHash": "sha256-UbP4A4oRTUJ4GAuOoBFgZYSup2R5+plS4pG6vczzCJw=",
-        "rev": "4ed16688b1a6b14b742dffdcafa43daa7c582d7f",
-        "revCount": 526,
+        "lastModified": 1784900902,
+        "narHash": "sha256-pSjq3rgTvc/tcqQXZzzDMjKPDFMotzUZYS+Ao6UIMCg=",
+        "rev": "253d2ba0f81706e50fffbef8bf34986a0aabe5e9",
+        "revCount": 535,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/y3owk1n/nvs/0.1.526%2Brev-4ed16688b1a6b14b742dffdcafa43daa7c582d7f/019f6ec6-b3ed-72a2-b700-b494897d27a0/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/y3owk1n/nvs/0.1.535%2Brev-253d2ba0f81706e50fffbef8bf34986a0aabe5e9/019f9463-07b9-7a23-98b4-fd753fde28fd/source.tar.gz"
       },
       "original": {
         "type": "tarball",
