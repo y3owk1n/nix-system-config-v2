@@ -98,7 +98,7 @@ in
       [recursive_grid.hotkeys]
       # disable defaults
       # "Space" = "__disabled__"
-      "Shift+L" = "__disabled__"
+      # "Shift+L" = "__disabled__"
       "Shift+M" = "__disabled__"
       "Shift+I" = "__disabled__"
       "Shift+U" = "__disabled__"
@@ -107,11 +107,11 @@ in
 
       "Tab" = "toggle-cursor-follow-selection"
 
-      "'" = "action move_mouse"
+      # "'" = "action move_mouse"
       "," = "action move_mouse --center"
       "." = "action reset"
-      "p" = "action mouse_down"
-      "y" = "action mouse_up"
+      "p" = "action left_click --toggle"
+      "y" = "action move_mouse"
       "Enter" = "action left_click"
       "Shift+Enter" = "action middle_click"
       "Ctrl+Enter" = "action right_click"
@@ -125,6 +125,11 @@ in
       "Ctrl+H" = "action scroll_left"
       "Ctrl+L" = "action scroll_right"
       "Ctrl+S" = ["action move_mouse --selection", "scroll"]
+
+      "Shift+H" = "action move_cell --direction left"
+      "Shift+L" = "action move_cell --direction right"
+      "Shift+K" = "action move_cell --direction up"
+      "Shift+J" = "action move_cell --direction down"
 
       # ============================================================================
       # Scroll
