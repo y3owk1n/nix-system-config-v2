@@ -80,25 +80,25 @@ in
       # ============================================================================
       [recursive_grid]
       enabled = true
-      grid_cols = 5
-      grid_rows = 5
-      keys = "fgcrlaoeuidhtns;qjkxbmwvz"
+      grid_cols = 3
+      grid_rows = 3
+      keys = "gcrhtnmwv"
       min_size_width = 1
       min_size_height = 1
 
       [recursive_grid.animation]
-      enabled = false
+      enabled = true
 
       [recursive_grid.ui]
       font_family = "JetBrainsMonoNLNFP-Bold"
       line_width = 1
-      highlight_color = "#00000000"
+      # highlight_color = "#00000000"
       text_color = "#00000000"
 
       [recursive_grid.hotkeys]
       # disable defaults
-      # "Space" = "__disabled__"
-      # "Shift+L" = "__disabled__"
+      # "space" = "__disabled__"
+      # "shift+l" = "__disabled__"
       "Shift+M" = "__disabled__"
       "Shift+I" = "__disabled__"
       "Shift+U" = "__disabled__"
@@ -107,24 +107,20 @@ in
 
       "Tab" = "toggle-cursor-follow-selection"
 
-      # "'" = "action move_mouse"
       "," = "action move_mouse --center"
       "." = "action reset"
       "p" = "action left_click --toggle"
-      "y" = "action move_mouse"
-      "Enter" = "action left_click"
-      "Shift+Enter" = "action middle_click"
-      "Ctrl+Enter" = "action right_click"
-      "Space" = "action left_click"
-      "Shift+Space" = "action middle_click"
-      "Ctrl+Space" = "action right_click"
+      "i" = "action move_mouse"
+      "u" = "action left_click"
+      "e" = "action middle_click"
+      "o" = "action right_click"
 
       "Ctrl+C" = "idle"
       "Ctrl+J" = "action scroll_down"
       "Ctrl+K" = "action scroll_up"
       "Ctrl+H" = "action scroll_left"
       "Ctrl+L" = "action scroll_right"
-      "Ctrl+S" = ["action move_mouse --selection", "scroll"]
+      "Ctrl+S" = "macro move_and_scroll"
 
       "Shift+H" = "action move_cell --direction left"
       "Shift+L" = "action move_cell --direction right"
@@ -151,10 +147,33 @@ in
       "Enter" = "action left_click"
       "Shift+Enter" = "action middle_click"
       "Ctrl+Enter" = "action right_click"
-      "Space" = "action left_click"
-      "Shift+Space" = "action middle_click"
-      "Ctrl+Space" = "action right_click"
 
+      # ============================================================================
+      # Held Repeat
+      # ============================================================================
+      [held_repeat]
+      enabled = true
+
+      # ============================================================================
+      # Smooth Cursor
+      # ============================================================================
+      [smooth_cursor]
+      move_mouse_enabled = true
+      steps = 30
+      max_duration = 100
+
+      # ============================================================================
+      # Smooth Scroll
+      # ============================================================================
+      [smooth_scroll]
+      enabled = true
+      steps = 300
+      max_duration = 300
+      duration_per_pixel = 20.00
+
+      # ============================================================================
+      # Mouse Action Indicator
+      # ============================================================================
       [mouse_action_indicator]
       enabled = true
 
@@ -169,6 +188,12 @@ in
       # ============================================================================
       [virtual_pointer.ui]
       font_family = "JetBrainsMonoNLNFP-Bold"
+
+      # ============================================================================
+      # Macro
+      # ============================================================================
+      [macros]
+      move_and_scroll = "run 'action move_mouse --selection' 'scroll'"
     '';
   };
 }
