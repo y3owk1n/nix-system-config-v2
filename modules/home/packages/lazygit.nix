@@ -10,9 +10,10 @@ _: {
         showRandomTip = false;
       };
       git = {
-        pagers = [
+        diffRenderers = [
           {
-            externalDiffCommand = "difft --color=always";
+            command = "difft --color=always";
+            type = "extDiff";
           }
         ];
       };
