@@ -6,7 +6,7 @@
 
 let
   # BUMP: Latest version refer here -> https://github.com/tw93/Mole/releases/latest
-  version = "1.49.2";
+  version = "1.50.0";
 in
 buildGoModule {
   pname = "mole";
@@ -16,10 +16,10 @@ buildGoModule {
     owner = "tw93";
     repo = "Mole";
     rev = "V${version}";
-    sha256 = "sha256-F9uPcWK5C8Ca7bNVIEY2uUo1Me0lFnP2N14UEMUk17M=";
+    sha256 = "sha256-OM5OluR5PDQFIKpjPPhkooPNlDNisjhjfMU9yGIxAg8=";
   };
 
-  vendorHash = "sha256-fWmki7xFZzNU3+A3Ge60YnKkqXa7nf0sDmOIjGyf+RE=";
+  vendorHash = "sha256-Q7VzGJ1bGAyMi2Ih3LvI92lCVqxKIyr7H89LAFczNbo=";
 
   buildPhase = ''
     runHook preBuild
