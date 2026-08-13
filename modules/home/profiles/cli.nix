@@ -14,6 +14,7 @@
     ../packages/jq.nix
     ../packages/less.nix
     ../packages/mkcert.nix
+    ../packages/neru.nix
     ../packages/rip2.nix
     ../packages/ripgrep.nix
     ../packages/uts.nix
