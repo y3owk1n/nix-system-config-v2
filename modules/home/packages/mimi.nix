@@ -1,11 +1,11 @@
 {
   pkgs,
+  config,
   lib,
-  username,
   ...
 }:
 let
-  appPath = "/Users/${username}/Applications/Home Manager Apps/Mimi.app";
+  appPath = "${config.home.homeDirectory}/Applications/Home Manager Apps/Mimi.app";
   entitlements = "${appPath}/Contents/Resources/Mimi.entitlements";
 in
 {
