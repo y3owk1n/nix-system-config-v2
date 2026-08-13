@@ -2,28 +2,33 @@
   pkgs,
   config,
   lib,
-  username,
   ...
 }:
 let
-  appPath = "/Users/${username}/Applications/Home Manager Apps/Neru.app";
+  appPath = "${config.home.homeDirectory}/Applications/Home Manager Apps/Neru.app";
   entitlements = "${appPath}/Contents/Resources/Neru.entitlements";
+  # /bin/dash only exists on darwin, fall back to /bin/sh elsewhere
+  execShell = if pkgs.stdenv.isDarwin then "/bin/dash" else "/bin/sh";
 in
 {
   # ============================================================================
   # Neru - OS wide keyboard navigation
   # ============================================================================
   # System-wide application for mouse and keyboard control
-  home.activation.signNeru = lib.hm.dag.entryAfter [ "copyApps" ] ''
-    if [ -e "${appPath}" ]; then
-      echo "Codesigning Neru.app..."
-       /usr/bin/codesign --force --deep --sign - \
-         --entitlements "${entitlements}" \
-         --options runtime \
-         --timestamp=none \
-         "${appPath}"
-    fi
-  '';
+
+  # Codesigning is only relevant (and only possible) on darwin
+  home.activation = lib.optionalAttrs pkgs.stdenv.isDarwin {
+    signNeru = lib.hm.dag.entryAfter [ "copyApps" ] ''
+      if [ -e "${appPath}" ]; then
+        echo "Codesigning Neru.app..."
+         /usr/bin/codesign --force --deep --sign - \
+           --entitlements "${entitlements}" \
+           --options runtime \
+           --timestamp=none \
+           "${appPath}"
+      fi
+    '';
+  };
 
   services.neru = {
     enable = true;
@@ -53,7 +58,7 @@ in
       [general]
       hide_overlay_in_screen_share = true
       passthrough_unbounded_keys = true
-      exec_shell = "/bin/dash"
+      exec_shell = "${execShell}"
       exec_shell_args = ["-lc"]
 
       # ============================================================================
@@ -115,6 +120,7 @@ in
       "e" = "action middle_click"
       "o" = "action right_click"
 
+      "Ctrl+F" = "run 'idle' 'recursive_grid --cursor-selection-mode hold --zoom-to-depth 2'"
       "Ctrl+C" = "idle"
       "Ctrl+J" = "action scroll_down"
       "Ctrl+K" = "action scroll_up"
