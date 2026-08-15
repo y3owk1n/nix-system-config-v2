@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 let
   storeDir =
-    if pkgs.stdenv.isDarwin then
+    if pkgs.stdenv.hostPlatform.isDarwin then
       "${config.home.homeDirectory}/Library/Mobile Documents/com~apple~CloudDocs/pass-store"
     else
       "/mnt/mac/Users/kylewong/Library/Mobile Documents/com~apple~CloudDocs/pass-store";

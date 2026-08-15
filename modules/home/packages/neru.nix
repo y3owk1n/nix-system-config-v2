@@ -8,7 +8,7 @@ let
   appPath = "${config.home.homeDirectory}/Applications/Home Manager Apps/Neru.app";
   entitlements = "${appPath}/Contents/Resources/Neru.entitlements";
   # /bin/dash only exists on darwin, fall back to /bin/sh elsewhere
-  execShell = if pkgs.stdenv.isDarwin then "/bin/dash" else "/bin/sh";
+  execShell = if pkgs.stdenv.hostPlatform.isDarwin then "/bin/dash" else "/bin/sh";
 in
 {
   # ============================================================================
@@ -17,7 +17,7 @@ in
   # System-wide application for mouse and keyboard control
 
   # Codesigning is only relevant (and only possible) on darwin
-  home.activation = lib.optionalAttrs pkgs.stdenv.isDarwin {
+  home.activation = lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
     signNeru = lib.hm.dag.entryAfter [ "copyApps" ] ''
       if [ -e "${appPath}" ]; then
         echo "Codesigning Neru.app..."

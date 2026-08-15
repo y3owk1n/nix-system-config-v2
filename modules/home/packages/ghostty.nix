@@ -5,7 +5,7 @@
   ...
 }:
 let
-  ghostty-real = if pkgs.stdenv.isDarwin then pkgs.ghostty-bin else pkgs.ghostty;
+  ghostty-real = if pkgs.stdenv.hostPlatform.isDarwin then pkgs.ghostty-bin else pkgs.ghostty;
   ghostty-package =
     if needsNixGL then
       let
@@ -52,7 +52,7 @@ in
       window-padding-x = 10;
       window-padding-y = 10;
       window-padding-balance = true;
-      window-decoration = if pkgs.stdenv.isDarwin then "auto" else "none";
+      window-decoration = if pkgs.stdenv.hostPlatform.isDarwin then "auto" else "none";
 
       # macOS-specific settings
       window-save-state = "never"; # Don't save/restore window state

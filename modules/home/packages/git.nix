@@ -88,7 +88,7 @@
       };
       url."git@github.com:".insteadOf = "https://github.com/"; # Rewrite any HTTPS GitHub URL into SSH automatically
     }
-    // pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
+    // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
       # these should speed up vim nvim-tree and other things that watch git repos but
       # only works on mac. see https://github.com/nvim-tree/nvim-tree.lua/wiki/Troubleshooting#git-fsmonitor-daemon
       core.fsmonitor = true;

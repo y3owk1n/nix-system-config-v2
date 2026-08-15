@@ -1,12 +1,12 @@
 { pkgs, ... }:
 {
-  services.ssh-agent.enable = pkgs.stdenv.isLinux;
+  services.ssh-agent.enable = pkgs.stdenv.hostPlatform.isLinux;
 
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false; # Explicitly enable default config to suppress warning
     includes =
-      if pkgs.stdenv.isDarwin then
+      if pkgs.stdenv.hostPlatform.isDarwin then
         [
           "~/.orbstack/ssh/config" # Orbstack in host macos
         ]
@@ -33,7 +33,7 @@
         AddKeysToAgent = "yes";
         IdentityFile = "~/.ssh/id_ed25519";
       }
-      // pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
+      // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
         UseKeychain = "yes";
       };
     };
