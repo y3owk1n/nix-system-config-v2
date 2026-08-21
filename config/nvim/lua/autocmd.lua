@@ -433,3 +433,17 @@ vim.api.nvim_create_autocmd("PackChanged", {
     end
   end,
 })
+
+-- =========================================================
+--  Setup dir.lua
+-- =========================================================
+
+vim.api.nvim_create_autocmd("User", {
+  pattern = "DirReadPost",
+  callback = function(args)
+    local dir = require("directory")
+
+    dir.set_opts()
+    dir.render(args)
+  end,
+})

@@ -64,8 +64,17 @@ local status_symbols = {
   ["R "] = { "→", "MiniDiffSignChange" },
 }
 
-local function render(buf)
-  buf = buf or 0
+local function set_opts()
+  vim.opt_local.bufhidden = "wipe"
+  vim.opt_local.foldcolumn = "0"
+  vim.opt_local.number = false
+  vim.opt_local.relativenumber = false
+  vim.opt_local.signcolumn = "yes:1" -- keep 1 for git signs
+  vim.opt_local.statuscolumn = ""
+end
+
+local function render(args)
+  local buf = args.buf or 0
   vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
   vim.api.nvim_buf_clear_namespace(buf, ns_git, 0, -1)
 
@@ -108,8 +117,12 @@ local function render(buf)
   end
 end
 
-function M.render(buf)
-  render(buf)
+function M.render(cb_args)
+  render(cb_args)
+end
+
+function M.set_opts()
+  set_opts()
 end
 
 return M
