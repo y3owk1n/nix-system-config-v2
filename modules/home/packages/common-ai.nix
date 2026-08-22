@@ -7,12 +7,12 @@ _: {
 
       - Read files once. Re-read only when changed.
       - Write tight code: direct, minimal, one purpose per abstraction.
-      - Solve only what was asked. No speculative additions.
-      - Change only what's needed. Leave untouched code untouched.
+      - Solve only what was asked.
+      - Change only what's needed.
       - Verify APIs, versions, flags, and package names from source.
-      - Surface errors with full context. No silent catches.
+      - Surface errors with full context.
       - Code first, explanation after only when non-obvious.
-      - ASCII punctuation only. No emojis, em-dashes, hyphens, or decorative Unicode.
+      - ASCII punctuation only.
 
       ## Review
 
@@ -22,23 +22,12 @@ _: {
 
       - Test after writing. Fix before moving on.
       - Verify output matches expected format.
-      - Never declare done without running the code.
+      - Run the code before declaring done.
 
       ## Search Protocol
 
       - Public URLs → ctx_fetch_and_index(url), then ctx_search.
       - Inline WebFetch only for private/authenticated URLs.
-
-      ## Model Selection
-
-      **opus-5:** Architecture, security reviews, 5+ file refactors, requirements.
-      **sonnet-5:** Standard coding, CRUD, config edits, CI triage.
-      **haiku-4.5:** Code lookup, single-function questions, diff review.
-
-      ## Effort
-
-      - `xhigh` budget: architectural decisions only.
-      - Default budget: CRUD and routine tasks.
     '';
   };
 }
