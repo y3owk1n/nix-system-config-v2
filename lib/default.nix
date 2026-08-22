@@ -111,6 +111,7 @@ let
       ../modules/home/base.nix
 
       # Flake input home-manager modules
+      inputs.mimi.homeManagerModules.default
       inputs.neru.homeManagerModules.default
       inputs.nvs.homeManagerModules.default
       inputs.uts.homeManagerModules.default

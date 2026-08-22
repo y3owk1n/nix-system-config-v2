@@ -8,7 +8,7 @@ let
   appPath = "${config.home.homeDirectory}/Applications/Home Manager Apps/Mimi.app";
   entitlements = "${appPath}/Contents/Resources/Mimi.entitlements";
 in
-{
+lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   # ============================================================================
   # Mimi - macOS event daemon that runs your shell commands when things happen
   # ============================================================================
