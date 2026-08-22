@@ -1,22 +1,12 @@
 {
   imports = [
-    ../packages/ast-grep.nix
     ../packages/bat.nix
-    ../packages/btop.nix
-    ../packages/cmd.nix
-    ../packages/devbox.nix
-    ../packages/diagnose.nix
     ../packages/direnv.nix
     ../packages/editorconfig.nix
     ../packages/eza.nix
-    ../packages/fd.nix
     ../packages/fzf.nix
-    ../packages/jq.nix
-    ../packages/less.nix
-    ../packages/mkcert.nix
     ../packages/neru.nix
-    ../packages/rip2.nix
     ../packages/ripgrep.nix
-    ../packages/uts.nix
+    ../packages/common-cli.nix
   ];
 }
