@@ -67,6 +67,7 @@ let
           inputs.neru.homeManagerModules.default
           inputs.nvs.homeManagerModules.default
           inputs.uts.homeManagerModules.default
+          inputs.agent-skills.homeManagerModules.default
         ]
         ++ (map profileModule homeProfiles);
       };
@@ -240,6 +241,7 @@ in
           inputs.neru.homeManagerModules.default
           inputs.nvs.homeManagerModules.default
           inputs.uts.homeManagerModules.default
+          inputs.agent-skills.homeManagerModules.default
         ]
         ++ (map (p: ../modules/home/profiles + "/${p}.nix") hostData.homeProfiles);
       }

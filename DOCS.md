@@ -1,12 +1,10 @@
 # Operations Guide
 
-Common day-to-day tasks for this Nix config.
+Day-to-day tasks. For architecture and "how to add things", see `AGENTS.md`.
 
 ## Converting from Homebrew
 
-All packages are now managed through Nix. Here's how to convert common brew patterns:
-
-### Brew Formula (CLI Tool)
+### CLI tool (formula)
 
 ```nix
 # brew install bat        → modules/home/packages/bat.nix
@@ -23,9 +21,9 @@ All packages are now managed through Nix. Here's how to convert common brew patt
 }
 ```
 
-Check if a home-manager module exists (`programs.<name>.enable`) before falling back to `home.packages`.
+Prefer `programs.<name>.enable` when a home-manager module exists.
 
-### Brew Cask (GUI App)
+### GUI app (cask)
 
 ```nix
 # brew install --cask firefox    → modules/home/packages/firefox.nix
@@ -44,11 +42,11 @@ _: {
 }
 ```
 
-Search `https://search.nixos.org/packages` for the Nix package name — it often differs from the cask name.
+Search `https://search.nixos.org/packages` — the Nix name often differs from the cask name.
 
-### Not in nixpkgs?
+### Not in nixpkgs
 
-Create a custom derivation in `pkgs/custom/<name>.nix`:
+Create `pkgs/custom/<name>.nix`:
 
 ```nix
 { pkgs, lib, ... }:
@@ -65,105 +63,124 @@ pkgs.stdenv.mkDerivation {
 }
 ```
 
-Then reference as `pkgs.custom.<name>` in a package module.
+Reference as `pkgs.custom.<name>` in a package module.
 
-### Steps
+## Custom derivation patterns
 
-1. Create `modules/home/packages/<name>.nix` with the config
-2. Add `../packages/<name>.nix` to the appropriate profile in `modules/home/profiles/<category>.nix`
-3. Run `just rebuild <hostname>`
-
-Profiles: `cli`, `shell`, `git`, `editors`, `security`, `macos`, `ai`.
-
-## Add a Custom Package
-
-Two steps:
-
-1. Create the derivation in `pkgs/custom/<name>.nix` (e.g. fetch from GitHub or wrap a script)
-2. It's auto-discovered — reference as `pkgs.custom.<name>` anywhere
-
-If referencing a script in `scripts/`, use path `../../scripts/<file>.sh` (from `pkgs/custom/`).
-
-## Add a New Host
-
-1. Add entry to `hosts/default.nix` — required fields: `system`, `username`, `useremail`, `hostname`, `githubuser`, `githubname`, `gpgkeyid`, `type` (`"darwin"` / `"nixos"` / `"home-manager"`), `homeProfiles`.
-2. If `type = "darwin"`: create `profiles/darwin/<hostname>.nix` with `{ ... }: { }`
-3. If `type = "nixos"`: create `profiles/nixos/<name>.nix` and set `nixosProfile = "<name>"` in the host entry
-4. Run `just rebuild <hostname>`
-
-## Add a New Darwin Module
-
-Create `modules/darwin/<name>.nix`:
+### Rust package override
 
 ```nix
-{ pkgs, config, lib, ... }: {
-  # options and config here
-};
+(pkgs.FOO.overrideAttrs (finalAttrs: prevAttrs: {
+  cargoHash = "";  # build once, replace with hash
+  src = pkgs.fetchBAR { ... };
+  version = "...";
+  cargoDeps = pkgs.rustPlatform.fetchCargoTarball {
+    inherit (finalAttrs) pname src version;
+    hash = finalAttrs.cargoHash;
+  };
+}))
 ```
 
-Add to the module list in `lib/default.nix` → `mkDarwinSystem` → `modules` list.
+### Script from scripts/ directory
 
-If the module needs per-host config values, add the field to `hosts/default.nix` and pass it via `specialArgs`.
+In `pkgs/custom/<name>.nix`:
 
-## Add a Flake Input
-
-1. Add to `inputs` in `flake.nix`
-2. Access as `inputs.<name>` anywhere
-3. If needed as a `specialArg` in `lib/default.nix`, add it to `baseSpecialArgs` or the individual builder's `specialArgs`
-
-## Update Everything
-
-```sh
-just update       # nix flake update + optional determinate-nixd upgrade
+```nix
+{ pkgs, ... }:
+pkgs.writeShellApplication {
+  name = "my-script";
+  runtimeInputs = [ pkgs.coreutils ];
+  text = builtins.readFile ../../scripts/my-script.sh;
+}
 ```
 
-## Format & Check
+## Common errors
 
-```sh
-just fmt          # nix fmt (treefmt)
-just check        # nix flake check
+| Error                                                   | Fix                                                                                                                     |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `access to absolute path '/etc/nixos/...' is forbidden` | Add `--impure` — normal for NixOS                                                                                       |
+| `path '/nix/store/scripts/...' does not exist`          | Wrong relative path in `pkgs/custom/`. Use `../../scripts/<file>.sh`                                                    |
+| `Could not write domain ...com.apple.smb.server`        | Remove `system.defaults.smb.NetBIOSName` — plist doesn't exist until SMB sharing is enabled                             |
+| `file 'nixpkgs' was not found`                          | `sudo -i nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs && sudo -i nix-channel --update nixpkgs` |
+
+## SSL certificate fix
+
+```bash
+sudo rm /etc/ssl/certs/ca-certificates.crt
+sudo ln -s /nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt /etc/ssl/certs/ca-certificates.crt
 ```
 
-## Verify Before Rebuilding
+## Spotlight indexing for Nix apps
 
-Quick eval check without building:
+Nix-darwin links apps to `/Applications` directly. If you need Spotlight to find them, see the `home.activation.copyNixApps` pattern in `NOTES.md`.
 
-```sh
-nix eval '.#darwinConfigurations.<hostname>.system' --impure --no-write-lock-file
+## LaunchAgent management
+
+```bash
+# List services
+launchctl list | grep -i <name>
+
+# Kill a service
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/<name>.plist
+
+# Start a service
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<name>.plist
+
+# Remove dead plist
+rm ~/Library/LaunchAgents/<name>.plist
 ```
 
-For NixOS:
+## Atuin daemon fix
 
-```sh
-nix eval '.#nixosConfigurations.<hostname>.system' --impure --no-write-lock-file
+```bash
+pkill -9 atuin
+rm ~/.local/share/atuin/daemon.sock
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/org.nix-community.home.atuin-daemon
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/org.nix-community.home.atuin-daemon.plist
 ```
 
-For home-manager standalone:
+## Root fish shell
 
-```sh
-nix eval '.#homeConfigurations.<hostname>.home.activationPackage' --impure --no-write-lock-file
+```bash
+dscl . -read /Users/root UserShell
+sudo chsh -s /etc/profiles/per-user/kylewong/bin/fish root
 ```
 
-## Common Errors
+## GPG backup
 
-**`access to absolute path '/etc/nixos/configuration.nix' is forbidden in pure evaluation mode`**
-→ NixOS configs need `--impure` at build time. Normal.
+```bash
+gpg --list-secret-keys --keyid-format LONG
+# use the key after rsa4096 as input
+```
 
-**`path '/nix/store/scripts/...' does not exist`**
-→ Wrong relative path in `pkgs/custom/*.nix`. From `pkgs/custom/`, use `../../scripts/<file>.sh`.
+## Pass (secret manager)
 
-**`Could not write domain /Library/Preferences/SystemConfiguration/com.apple.smb.server`**
-→ Remove `system.defaults.smb.NetBIOSName` — plist doesn't exist on newer macOS until SMB sharing is enabled.
+Multi-machine setup:
 
-## Directory Reference
+1. Each machine has its own private key
+2. Exchange public keys between machines
+3. `pass init <pubkey-a> <pubkey-b>`
+4. Trust the other key: `pass --edit-key <pubkey> → trust → 5 → quit`
 
-| Path                          | Purpose                           |
-| ----------------------------- | --------------------------------- |
-| `hosts/default.nix`           | All per-host values               |
-| `modules/darwin/*.nix`        | Darwin system configs             |
-| `modules/home/packages/*.nix` | Program configs (one per file)    |
-| `modules/home/profiles/*.nix` | Category groups (import packages) |
-| `profiles/darwin/*.nix`       | Per-host darwin overrides         |
-| `pkgs/custom/*.nix`           | Custom derivations                |
-| `pkgs/overrides.nix`          | Package version overrides         |
-| `scripts/*.sh`                | Shell scripts                     |
+Key rotation: init with new keys first, verify access, then delete old keys.
+
+## OrbStack Docker in NixOS
+
+```bash
+mac link docker
+```
+
+See: https://github.com/orbstack/orbstack/issues/269#issuecomment-1548858675
+
+## Directory reference
+
+| Path                               | Purpose                           |
+| ---------------------------------- | --------------------------------- |
+| `hosts/default.nix`                | All per-host values               |
+| `modules/darwin/*.nix`             | macOS system configs              |
+| `modules/home/packages/*.nix`      | Program configs (one per file)    |
+| `modules/home/profiles/*.nix`      | Category groups (import packages) |
+| `modules/home/packages/skills.nix` | Agent skills configuration        |
+| `profiles/darwin/*.nix`            | Per-host darwin overrides         |
+| `pkgs/custom/*.nix`                | Custom derivations                |
+| `skills/*/SKILL.md`                | Local agent skills                |
