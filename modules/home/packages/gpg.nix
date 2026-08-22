@@ -11,7 +11,7 @@
     enable = true;
     defaultCacheTtl = 1800; # seconds (30min)
     maxCacheTtl = 7200; # 2h
-    enableSshSupport = if pkgs.stdenv.hostPlatform.isDarwin then true else false; # can also use GPG agent as SSH agent
+    enableSshSupport = pkgs.stdenv.hostPlatform.isDarwin; # can also use GPG agent as SSH agent
     pinentry.package =
       if pkgs.stdenv.hostPlatform.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-curses;
   };
