@@ -3,64 +3,112 @@
 ## Architecture
 
 ```
-flake.nix                 ← Entry point (flake-parts based)
-├── lib/                  ← Builder functions & flake-parts modules
-│   ├── default.nix       ← mkDarwinSystem, mkNixosSystem, mkHomeConfiguration
-│   ├── systems.nix       ← Supported system list
-│   ├── treefmt.nix       ← Code formatting config
-│   ├── pre-commit.nix    ← Git hooks
-│   └── devshell.nix      ← Development shell
-├── hosts/
-│   └── default.nix       ← Centralized host metadata (single source of truth)
+flake.nix                 ← Entry point (flake-parts)
+├── lib/default.nix       ← mkDarwinSystem, mkNixosSystem, mkHomeConfiguration
+├── hosts/default.nix     ← Per-host metadata (single source of truth)
 ├── modules/
-│   ├── darwin/           ← nix-darwin system modules
+│   ├── darwin/           ← macOS system modules
 │   ├── nixos/            ← NixOS system modules
-│   ├── home/             ← Home-manager modules
+│   ├── home/
 │   │   ├── base.nix      ← HM base (home dir, aliases, stateVersion)
 │   │   ├── profiles/     ← Feature profiles (import package groups)
-│   │   └── packages/     ← Individual program configs (one file per program)
-│   └── stylix/           ← Theming module
-├── pkgs/                 ← Custom packages & overrides
-├── profiles/             ← Per-host profiles
-│   ├── darwin/
-│   └── nixos/
-├── config/               ← Static dotfiles (symlinked, not managed by Nix)
-└── scripts/              ← Shell scripts
+│   │   └── packages/     ← One file per program
+│   └── stylix/           ← Theming
+├── pkgs/custom/          ← Custom derivations (fetchurl, fetchzip)
+├── profiles/
+│   ├── darwin/           ← Per-host darwin overrides
+│   └── nixos/            ← Per-host nixos overrides
+├── skills/               ← Local agent skills (SKILL.md per directory)
+├── config/               ← Static dotfiles (symlinked, not Nix-managed)
+└── scripts/              ← Shell utilities
 ```
 
-## Key Design Principles
+## How to add things
 
-1. **Data-driven hosts** — All per-host values in `hosts/default.nix`. Adding a new host means adding one entry there and one profile in `profiles/<type>/`.
-2. **No thin aggregation layers** — `modules/home/profiles/*.nix` group packages by category but with `imports = [...]`. No `lib.mkEnableOption` wrappers — just direct imports.
-3. **Proper Nix module system** — All darwin/NixOS modules use standard module args (`{ pkgs, config, lib, ... }`), not `import` function patterns.
-4. **Consistent package pattern** — Each program gets one file in `modules/home/packages/`. Files use destructured module args.
+### New host
 
-## Adding a New Host
+1. Add entry to `hosts/default.nix` — fields: `system`, `username`, `useremail`, `hostname`, `githubuser`, `githubname`, `gpgkeyid`, `type`, `homeProfiles`.
+2. Create `profiles/darwin/<hostname>.nix` or `profiles/nixos/<name>.nix`.
+3. `just rebuild <hostname>`
 
-1. Add entry to `hosts/default.nix` with all required fields.
-2. Create profile in `profiles/darwin/<hostname>.nix` or `profiles/nixos/<name>.nix`.
-3. Run `just rebuild <hostname>`.
+### New package
 
-## Adding a New Package
+1. Create `modules/home/packages/<name>.nix`:
+   ```nix
+   { pkgs, ... }: {
+     programs.<name>.enable = true;  # prefer if module exists
+     # or: home.packages = [ pkgs.<name> ];
+   }
+   ```
+2. Add `../packages/<name>.nix` to the profile in `modules/home/profiles/<category>.nix`.
+3. `just rebuild <hostname>`
 
-1. Create `modules/home/packages/<name>.nix` with the program config.
-2. Add it to the appropriate profile in `modules/home/profiles/<category>.nix`.
+Profiles: `cli`, `shell`, `git`, `editors`, `security`, `macos`, `ai`.
+
+### Custom derivation (not in nixpkgs)
+
+1. Create `pkgs/custom/<name>.nix` using `pkgs.fetchurl` or `pkgs.fetchzip`.
+2. Reference as `pkgs.custom.<name>` — auto-discovered.
+
+### New darwin module
+
+1. Create `modules/darwin/<name>.nix` with `{ pkgs, config, lib, ... }: { ... }`.
+2. Add to `modules` list in `lib/default.nix` → `mkDarwinSystem`.
+3. If per-host config needed, add field to `hosts/default.nix` and pass via `specialArgs`.
+
+### New flake input
+
+1. Add to `inputs` in `flake.nix`.
+2. Access as `inputs.<name>`.
+3. If needed in `specialArgs`, add to `baseSpecialArgs` in `lib/default.nix`.
+
+## Adding agent skills
+
+Skills live in `skills/<name>/SKILL.md`. The `local` source is pre-configured.
+
+1. Create `skills/<name>/SKILL.md` with frontmatter:
+   ```markdown
+   ---
+   name: <name>
+   description: "<what it does and when>"
+   ---
+   ```
+2. Add `"<name>"` to `skills.enable` in `modules/home/packages/skills.nix`.
+3. `just rebuild`
+
+For external skills, see `skills/add-skill/SKILL.md`.
+
+## Key commands
+
+```bash
+just rebuild <host>   # Rebuild system
+just update           # Update flake inputs
+just fmt              # Format (treefmt)
+just check            # Flake checks
+just dev              # Dev shell
+just gc               # Garbage collect
+```
+
+## Verification
+
+Before rebuilding, eval to catch errors:
+
+```bash
+nix eval '.#darwinConfigurations.<host>.system' --impure
+nix eval '.#nixosConfigurations.<host>.system' --impure
+```
+
+## Design principles
+
+- **Data-driven hosts** — all per-host values in `hosts/default.nix`.
+- **One file per program** — `modules/home/packages/<name>.nix`.
+- **Profiles group packages** — `modules/home/profiles/<category>.nix` with `imports = [...]`.
+- **Standard module args** — `{ pkgs, config, lib, ... }`, not `import` function patterns.
 
 ## Converting from Homebrew
 
-When asked to convert a brew install to Nix:
+See `DOCS.md` for detailed examples. Summary:
 
-- **CLI tool (formula)** → `home.packages = [ pkgs.<name> ]` or `programs.<name>.enable = true` if a home-manager module exists.
-- **GUI app (cask)** → Same patterns, but check `https://search.nixos.org/packages` first — the Nix name often differs (e.g. `whatsapp-for-mac` not `whatsapp`).
-- **Not in nixpkgs** → Create a custom derivation in `pkgs/custom/<name>.nix` using `pkgs.fetchurl` or `pkgs.fetchzip`, then reference as `pkgs.custom.<name>`.
-- Always prefer `programs.<name>.enable` over `home.packages` when a home-manager module exists (gives config management).
-- Package modules go in `modules/home/packages/<name>.nix`, imported via `modules/home/profiles/<category>.nix`.
-
-## Key Commands
-
-- `just rebuild <host>` — Rebuild nix-darwin/NixOS
-- `just update` — Update flake inputs
-- `just fmt` — Format all files
-- `just check` — Run flake checks
-- `just dev` — Enter dev shell
-- `just gc` — Clean up generations and garbage collect
+- CLI formula → `programs.<name>.enable = true` or `home.packages = [ pkgs.<name> ]`
+- GUI cask → same, but search `https://search.nixos.org/packages` for the Nix name
+- Not in nixpkgs → `pkgs/custom/<name>.nix` with `fetchurl`/`fetchzip`

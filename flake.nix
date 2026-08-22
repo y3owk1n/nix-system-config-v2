@@ -32,6 +32,32 @@
     nvs.url = "https://flakehub.com/f/y3owk1n/nvs/0.1";
     uts.url = "https://flakehub.com/f/y3owk1n/uts/0.1";
 
+    # Agent Skills
+    agent-skills = {
+      url = "github:Kyure-A/agent-skills-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    mattpocock-skills = {
+      url = "github:mattpocock/skills";
+      flake = false;
+    };
+    cursor-plugins = {
+      url = "github:cursor/plugins";
+      flake = false;
+    };
+    anthropics-skills = {
+      url = "github:anthropics/skills";
+      flake = false;
+    };
+    shadcn-ui = {
+      url = "github:shadcn-ui/ui";
+      flake = false;
+    };
+    emil-skills = {
+      url = "github:emilkowalski/skills";
+      flake = false;
+    };
+
     # Development Tools & Infrastructure
     flake-parts.url = "https://flakehub.com/f/hercules-ci/flake-parts/0.1";
     treefmt-nix.url = "https://flakehub.com/f/numtide/treefmt-nix/0.1";
