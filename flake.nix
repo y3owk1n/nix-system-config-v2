@@ -109,7 +109,6 @@
         in
         {
           _module.args.pkgs = pkgs;
-          nixpkgs.hostPlatform = system;
 
           formatter = config.treefmt.build.wrapper;
 
