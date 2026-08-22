@@ -128,6 +128,22 @@
         "type": "github"
       }
     },
+    "caveman-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787282775,
+        "narHash": "sha256-FagkzOnjW9tqeaAK8NX1X8REsjWRRMqfrvhByEtrAXM=",
+        "owner": "JuliusBrussee",
+        "repo": "caveman",
+        "rev": "2f49f0e1a352aa810e70056b7930aeb0b3d219b4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "JuliusBrussee",
+        "repo": "caveman",
+        "type": "github"
+      }
+    },
     "cursor-plugins": {
       "flake": false,
       "locked": {
@@ -500,12 +516,12 @@
         ]
       },
       "locked": {
-        "lastModified": 1787312936,
-        "narHash": "sha256-JBOwPoPNJMwpPnlyf4E2l2sT1Pv+DYXyupdWlsR12/k=",
-        "rev": "4ee665ca28657b2bfab8af5e2b1a8362ef42d85e",
-        "revCount": 1296,
+        "lastModified": 1787393920,
+        "narHash": "sha256-rZ7r/Wx+XBFwp8Re2FonS8VvFKRds+tQTg75vAcUtlY=",
+        "rev": "36989b70440771d5eb8b33e0df577124288163fc",
+        "revCount": 1297,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/y3owk1n/neru/0.1.1296%2Brev-4ee665ca28657b2bfab8af5e2b1a8362ef42d85e/01a02427-e5e6-7c40-a98f-7d5ba65d2c7c/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/y3owk1n/neru/0.1.1297%2Brev-36989b70440771d5eb8b33e0df577124288163fc/01a028fb-79a1-7c20-ae19-8500edcbee88/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -741,6 +757,7 @@
       "inputs": {
         "agent-skills": "agent-skills",
         "anthropics-skills": "anthropics-skills",
+        "caveman-skills": "caveman-skills",
         "cursor-plugins": "cursor-plugins",
         "darwin": "darwin",
         "determinate": "determinate",

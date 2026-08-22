@@ -69,6 +69,10 @@
       url = "github:emilkowalski/skills";
       flake = false;
     };
+    caveman-skills = {
+      url = "github:JuliusBrussee/caveman";
+      flake = false;
+    };
 
     # Development Tools & Infrastructure
     flake-parts.url = "https://flakehub.com/f/hercules-ci/flake-parts/0.1";
