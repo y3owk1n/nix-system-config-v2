@@ -28,6 +28,13 @@
         idPrefix = "cursor";
       };
 
+      # Cursor team kit skills (deslop, etc.)
+      cursor-team-kit = {
+        input = "cursor-plugins";
+        subdir = "cursor-team-kit/skills";
+        idPrefix = "cursor-team-kit";
+      };
+
       # Anthropic skills (frontend-design, etc.)
       anthropic = {
         input = "anthropics-skills";
@@ -61,6 +68,7 @@
 
       # Cursor plugins
       "cursor/unslop"
+      "cursor-team-kit/deslop"
 
       # Anthropic skills
       "anthropic/frontend-design"
