@@ -55,6 +55,13 @@
         subdir = "skills";
         idPrefix = "emil";
       };
+
+      # Caveman skills (compressed communication)
+      caveman = {
+        input = "caveman-skills";
+        subdir = "skills";
+        idPrefix = "julius";
+      };
     };
 
     # Enable specific skills from the catalog
@@ -65,6 +72,9 @@
       "add-skill"
       "create-pr"
       "find-skills"
+
+      # Caveman skills
+      "julius/caveman"
 
       # Cursor plugins
       "cursor/unslop"
