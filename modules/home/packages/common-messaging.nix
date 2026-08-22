@@ -1,6 +1,7 @@
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
-    rip2
+    discord
+    whatsapp-for-mac
   ];
 }

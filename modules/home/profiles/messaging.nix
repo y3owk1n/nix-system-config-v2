@@ -1,6 +1,5 @@
 {
   imports = [
-    ../packages/discord.nix
-    ../packages/whatsapp.nix
+    ../packages/common-messaging.nix
   ];
 }

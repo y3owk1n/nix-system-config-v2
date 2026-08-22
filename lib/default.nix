@@ -7,13 +7,40 @@ let
   inherit (builtins) removeAttrs;
 
   # ── Host Metadata ───────────────────────────────────────────────────────────
-  # Single source of truth for all per-host values
+  # All per-host values live here
   hosts = import ../hosts;
 
   # Strip self from inputs for specialArgs (avoids infinite recursion)
   baseSpecialArgs = (removeAttrs inputs [ "self" ]) // {
     inherit inputs;
   };
+
+  # ── Host Field Extraction ───────────────────────────────────────────────────
+  # Destructure once — every builder and mkHomeShared reads from here
+  hostFields =
+    hostData:
+    let
+      inherit (hostData)
+        username
+        useremail
+        hostname
+        githubuser
+        githubname
+        gpgkeyid
+        stylixTheme
+        ;
+    in
+    {
+      inherit
+        username
+        useremail
+        hostname
+        githubuser
+        githubname
+        gpgkeyid
+        stylixTheme
+        ;
+    };
 
   # ── Home-Manager Shared Config ──────────────────────────────────────────────
   mkHomeShared =
@@ -47,7 +74,7 @@ let
       };
     };
 
-  # ── Home-Manager Profile Imports ──────────────────────────────────────────
+  # ── Home-Manager Profile Imports (NixOS / Darwin) ────────────────────────
   mkHomeImports =
     {
       username,
@@ -73,93 +100,68 @@ let
       };
     };
 
-  # ── Build a Darwin System ──────────────────────────────────────────────────
-  mkDarwinSystem =
-    hostName:
+  # ── Home-Manager Profile Imports (Standalone) ────────────────────────────
+  mkStandaloneImports =
+    { hostData }:
+    let
+      inherit (hostData) homeProfiles;
+      profileModule = name: ../modules/home/profiles + "/${name}.nix";
+    in
+    [
+      ../modules/home/base.nix
+
+      # Flake input home-manager modules
+      inputs.neru.homeManagerModules.default
+      inputs.nvs.homeManagerModules.default
+      inputs.uts.homeManagerModules.default
+      inputs.agent-skills.homeManagerModules.default
+    ]
+    ++ (map profileModule homeProfiles);
+
+  # ── Shared module sets ────────────────────────────────────────────────────
+  overlayModule = {
+    nixpkgs.overlays = [ inputs.self.overlays.default ];
+  };
+
+  stylixModules =
+    { type }:
+    let
+      stylix =
+        if type == "darwin" then
+          inputs.stylix.darwinModules.stylix
+        else if type == "nixos" then
+          inputs.stylix.nixosModules.stylix
+        else
+          inputs.stylix.homeModules.stylix;
+    in
+    [
+      stylix
+      ../modules/stylix/default.nix
+    ];
+
+  hmModule =
+    { type }:
+    if type == "darwin" then
+      inputs.home-manager.darwinModules.home-manager
+    else if type == "nixos" then
+      inputs.home-manager.nixosModules.home-manager
+    else
+      inputs.home-manager.lib.homeManagerConfiguration;
+
+  # ── System Builder ──────────────────────────────────────────────────────
+  mkSystem =
+    {
+      hostName,
+      type,
+      extraModules ? [ ],
+    }:
     let
       hostData = hosts.${hostName};
-      inherit (hostData)
-        system
-        username
-        useremail
-        hostname
-        githubuser
-        githubname
-        gpgkeyid
-        stylixTheme
-        safariWorkspaces
-        ;
-    in
-    inputs.darwin.lib.darwinSystem {
-      inherit system;
-      specialArgs = baseSpecialArgs // {
-        inherit
-          username
-          useremail
-          hostname
-          githubuser
-          githubname
-          gpgkeyid
-          stylixTheme
-          safariWorkspaces
-          ;
-      };
-      modules = [
-        ../modules/darwin/base.nix
-        ../modules/darwin/defaults.nix
-        ../modules/darwin/nix.nix
-        ../modules/darwin/karabiner.nix
-        ../modules/darwin/tailscale.nix
+      fields = hostFields hostData;
+      inherit (fields) username;
 
-        # Stylix
-        inputs.stylix.darwinModules.stylix
-        ../modules/stylix/default.nix
-
-        # Overlays
-        { nixpkgs.overlays = [ inputs.self.overlays.default ]; }
-
-        # Home-manager
-        inputs.home-manager.darwinModules.home-manager
-        (mkHomeShared {
-          inherit
-            username
-            useremail
-            hostname
-            githubuser
-            githubname
-            gpgkeyid
-            stylixTheme
-            ;
-        })
-        (mkHomeImports { inherit username hostData; })
-
-        # Determinate Nix
-        inputs.determinate.darwinModules.default
-      ]
-      ++ hostData.darwinModules or [ ];
-    };
-
-  # ── Build a NixOS System ───────────────────────────────────────────────────
-  mkNixosSystem =
-    hostName:
-    let
-      hostData = hosts.${hostName};
-      inherit (hostData)
-        system
-        username
-        useremail
-        hostname
-        githubuser
-        githubname
-        gpgkeyid
-        stylixTheme
-        ;
-      nixosProfile = ../profiles/nixos + "/${hostData.nixosProfile}.nix";
-    in
-    inputs.nixpkgs.lib.nixosSystem {
-      inherit system;
-      specialArgs = baseSpecialArgs // {
-        inherit
+      homeShared = mkHomeShared {
+        inherit (fields)
           username
           useremail
           hostname
@@ -168,35 +170,80 @@ let
           gpgkeyid
           stylixTheme
           ;
+        inherit (hostData) needsNixGL;
       };
-      modules = [
-        ../modules/nixos/base.nix
-        nixosProfile
 
-        # Overlays
-        { nixpkgs.overlays = [ inputs.self.overlays.default ]; }
+      homeImports = mkHomeImports {
+        inherit username hostData;
+      };
 
-        # Stylix
-        inputs.stylix.nixosModules.stylix
-        ../modules/stylix/default.nix
-
-        # Home-manager
-        inputs.home-manager.nixosModules.home-manager
-        (mkHomeShared {
-          inherit
-            username
-            useremail
-            hostname
-            githubuser
-            githubname
-            gpgkeyid
-            stylixTheme
-            ;
-        })
-        (mkHomeImports { inherit username hostData; })
-      ]
-      ++ hostData.nixosModules or [ ];
-    };
+      specialArgs =
+        baseSpecialArgs
+        // fields
+        // lib.optionalAttrs (hostData ? safariWorkspaces) {
+          inherit (hostData) safariWorkspaces;
+        }
+        // lib.optionalAttrs (hostData ? needsNixGL) {
+          inherit (hostData) needsNixGL;
+        };
+    in
+    if type == "darwin" then
+      inputs.darwin.lib.darwinSystem {
+        inherit (hostData) system;
+        inherit specialArgs;
+        modules = [
+          ../modules/darwin/base.nix
+          ../modules/darwin/defaults.nix
+          ../modules/darwin/nix.nix
+          ../modules/darwin/karabiner.nix
+          ../modules/darwin/tailscale.nix
+          overlayModule
+          (hmModule { type = "darwin"; })
+          homeShared
+          homeImports
+          inputs.determinate.darwinModules.default
+        ]
+        ++ (stylixModules { type = "darwin"; })
+        ++ extraModules
+        ++ (hostData.darwinModules or [ ]);
+      }
+    else if type == "nixos" then
+      let
+        nixosProfile = ../profiles/nixos + "/${hostData.nixosProfile}.nix";
+      in
+      inputs.nixpkgs.lib.nixosSystem {
+        inherit (hostData) system;
+        inherit specialArgs;
+        modules = [
+          ../modules/nixos/base.nix
+          nixosProfile
+          overlayModule
+          (hmModule { type = "nixos"; })
+          homeShared
+          homeImports
+        ]
+        ++ (stylixModules { type = "nixos"; })
+        ++ extraModules
+        ++ (hostData.nixosModules or [ ]);
+      }
+    else
+      # standalone home-manager
+      let
+        standaloneImports = mkStandaloneImports { inherit hostData; };
+      in
+      inputs.home-manager.lib.homeManagerConfiguration {
+        pkgs = import inputs.nixpkgs {
+          inherit (hostData) system;
+          config.allowUnfree = true;
+        };
+        extraSpecialArgs = specialArgs;
+        modules = [
+          overlayModule
+        ]
+        ++ (stylixModules { type = "home-manager"; })
+        ++ standaloneImports
+        ++ extraModules;
+      };
 
   # ── Filter hosts by type ──────────────────────────────────────────────────
   filterHosts = type: lib.filterAttrs (_: v: v.type == type) hosts;
@@ -206,48 +253,33 @@ in
 
   flake = {
     # Darwin configurations
-    darwinConfigurations = builtins.mapAttrs (name: _: mkDarwinSystem name) (filterHosts "darwin");
+    darwinConfigurations = builtins.mapAttrs (
+      name: _:
+      mkSystem {
+        hostName = name;
+        type = "darwin";
+      }
+    ) (filterHosts "darwin");
 
     # NixOS configurations
-    nixosConfigurations = builtins.mapAttrs (name: _: mkNixosSystem name) (filterHosts "nixos");
+    nixosConfigurations = builtins.mapAttrs (
+      name: _:
+      mkSystem {
+        hostName = name;
+        type = "nixos";
+      }
+    ) (filterHosts "nixos");
 
     # Standalone home-manager configurations
     homeConfigurations = builtins.mapAttrs (
-      _name: hostData:
-      inputs.home-manager.lib.homeManagerConfiguration {
-        pkgs = import inputs.nixpkgs {
-          inherit (hostData) system;
-          config.allowUnfree = true;
-        };
-        extraSpecialArgs = baseSpecialArgs // {
-          inherit (hostData)
-            username
-            useremail
-            hostname
-            githubuser
-            githubname
-            gpgkeyid
-            needsNixGL
-            stylixTheme
-            ;
-        };
-        modules = [
-          { nixpkgs.overlays = [ inputs.self.overlays.default ]; }
-          ../modules/home/base.nix
-          inputs.stylix.homeModules.stylix
-          ../modules/stylix/default.nix
-
-          # Flake input home-manager modules
-          inputs.neru.homeManagerModules.default
-          inputs.nvs.homeManagerModules.default
-          inputs.uts.homeManagerModules.default
-          inputs.agent-skills.homeManagerModules.default
-        ]
-        ++ (map (p: ../modules/home/profiles + "/${p}.nix") hostData.homeProfiles);
+      name: _:
+      mkSystem {
+        hostName = name;
+        type = "home-manager";
       }
     ) (filterHosts "home-manager");
 
-    # Reusable home-manager shared module (for external use)
+    # Home-manager shared module (exported for external use)
     homeModules.shared = mkHomeShared;
   };
 }
