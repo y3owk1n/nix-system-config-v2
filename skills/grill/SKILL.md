@@ -1,10 +1,10 @@
 ---
-name: grill-interview
-description: "Relentless interview to sharpen a plan or design."
+name: grill
+description: "Structured interview to sharpen a plan or design, then emit a PRD delta."
 disable-model-invocation: true
 ---
 
-# Grill Interview
+# Grill
 
 A structured interview to sharpen a plan or design. The agent asks, recommends, and the user picks.
 
@@ -48,7 +48,7 @@ Open with: "What are we building and for whom?" Then sharpen with:
 
 ### 2. Vocabulary
 
-Before questioning, dispatch a **quick** subagent: `cat CONTEXT.md 2>/dev/null || echo "NO_CONTEXT"`
+Before questioning, read the PRD: `cat prd/glossary.md prd/behaviours.md prd/decisions.md 2>/dev/null || echo "NO_PRD"`
 
 As terms surface, sharpen them:
 
@@ -58,13 +58,15 @@ As terms surface, sharpen them:
 - B: [definition 2]
 - **Recommendation**: [whichever matches existing glossary or code]
 
-If the term conflicts with the glossary: "Your glossary defines 'X' as Y, but you seem to mean Z. Which is it?"
+If the term conflicts with `prd/glossary.md`: "Your glossary defines 'X' as Y, but you seem to mean Z. Which is it?"
 
 If the term is fuzzy: "You're saying '[vague term]': do you mean [A] or [B]? Those are different things."
 
 Stress-test with concrete scenarios. Invent edge cases that force precision.
 
-Cross-reference with code. When the user states how something works, dispatch a **quick** subagent to check whether the code agrees. Surface contradictions.
+Cross-reference with code. When the user states how something works, check whether the code agrees. Surface contradictions.
+
+Cross-reference with `prd/decisions.md` too. A plan that contradicts a recorded decision is either a mistake or a decision to reverse — make the user say which.
 
 ### 3. Design
 
@@ -131,6 +133,15 @@ Summarise what changed:
 - Scope adjusted (what moved in or out)
 - Open questions (anything unresolved)
 
+Then emit a **PRD delta** — the interview's output, in the form the PRD can absorb:
+
+- **Terms** → `prd/glossary.md`
+- **Decisions** that were hard to reverse, surprising, and a real trade-off → `prd/decisions.md`. Missing any of the three, do not record it.
+- **Boundaries that moved** → `prd/architecture.md`
+- **Behaviours proposed** → list them for the user. **Never write `prd/behaviours.md`.**
+
+Offer to apply the delta via `/prd` in update mode. Do not apply it unasked — an interview that silently rewrites the PRD is one the user cannot review.
+
 ## Completion
 
-Done when: all terms have been checked, every design decision has been stress-tested, and the plan is sharper than when it started. Checkable: the user confirms the plan is solid, or has made at least one concrete change to it.
+Done when: all terms have been checked, every design decision has been stress-tested, the plan is sharper than when it started, and a PRD delta has been offered. Checkable: the user confirms the plan is solid, or has made at least one concrete change to it.

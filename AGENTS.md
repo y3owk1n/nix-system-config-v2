@@ -19,6 +19,7 @@ flake.nix                 ← Entry point (flake-parts)
 │   ├── darwin/           ← Per-host darwin overrides
 │   └── nixos/            ← Per-host nixos overrides
 ├── skills/               ← Local agent skills (SKILL.md per directory)
+├── prd/                  ← Source of truth for the AI workflow (see AI_NOTES.md)
 ├── config/               ← Static dotfiles (symlinked, not Nix-managed)
 └── scripts/              ← Shell utilities
 ```

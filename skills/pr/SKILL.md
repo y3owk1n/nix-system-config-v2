@@ -1,9 +1,9 @@
 ---
-name: create-pr
+name: pr
 description: "Commit changes and open a pull request."
 ---
 
-# Create PR
+# PR
 
 ## Guardrails
 
@@ -14,14 +14,14 @@ description: "Commit changes and open a pull request."
 
 ## Steps
 
-1. **Branch.** If already on a feature branch (not `main`), skip this step. Otherwise dispatch a **quick** subagent: `git switch -c <type>/<short-kebab-summary>`
-2. **Verify.** Dispatch a **quick** subagent to run CI checks (`just ci`, `make test`, `npm test`). Only open when CI is green. Skip if already verified (e.g. called from `/ship-ticket` which ran fast checks).
-3. **Stage selectively.** Dispatch a **quick** subagent: `git add <paths> && git status --short`
-4. **Commit.** Compose the commit message (format: `<type>(<scope>): <subject>`, imperative, lowercase, no period). Dispatch a **quick** subagent to grep the message for AI attribution leaks (`claude|anthropic|co-authored|generated with`) and commit.
-5. **Check for template.** Dispatch a **quick** subagent: `ls .github/pull_request_template.md 2>/dev/null && cat .github/pull_request_template.md`
+1. **Branch.** Already on a feature branch: skip. Otherwise `git switch -c <type>/<short-kebab-summary>`.
+2. **Verify.** Run the repo's checks (`just ci`, `make test`, `npm test`). Open only on green. Skip when `/ship` already ran the fast checks.
+3. **Stage selectively.** `git add <paths> && git status --short` — named paths only.
+4. **Commit.** Compose the message, then grep it for attribution leaks (`claude|anthropic|co-authored|generated with`) before committing.
+5. **Check for a template.** `cat .github/pull_request_template.md 2>/dev/null`
 6. **Write PR body.** Compose the body using the template below. Open with `This PR <verb> ...`.
-7. **Push and open.** Dispatch a **quick** subagent: `git push -u origin <branch> && gh pr create --title "<title>" --body "<body>"`
-8. **Watch CI.** Dispatch a **quick** subagent: `gh pr checks --watch`
+7. **Push and open.** `git push -u origin <branch> && gh pr create --title "<title>" --body "<body>"`
+8. **Watch CI.** `gh pr checks --watch`
 
 ## Commit format
 
@@ -63,4 +63,4 @@ Config/command changes: name them exactly as typed, note defaults, say whether e
 
 ## Completion
 
-Done when: CI is green, PR is open with title and body, no AI attribution leaks. Checkable: dispatch a **quick** subagent to verify `gh pr checks` passes and `gh pr view` shows the expected title/body.
+Done when: checks are green, the PR is open with a title and body written for a reader, and no commit or PR text mentions Claude, Anthropic, or AI. Checkable: `gh pr checks` passes, and `gh pr view --json title,body` piped through `grep -iE 'claude|anthropic|co-authored|generated with'` returns nothing.

@@ -50,7 +50,7 @@ flowchart LR
   class A deep
 ```
 
-> ⚠️ Contradicts ADR-0007, but worth reopening because…
+> ⚠️ Contradicts decision 0007, but worth reopening because…
 
 ---
 

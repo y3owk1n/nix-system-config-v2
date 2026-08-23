@@ -16,7 +16,7 @@ Skills sync to `~/.claude/skills`, `~/.agents/skills`, `~/.config/opencode/skill
 
 ### 1. Find the skill path
 
-Dispatch a **quick** subagent to clone and find SKILL.md files:
+Clone and list the SKILL.md files:
 
 ```
 cd /tmp && git clone --depth 1 <repo-url> && find <repo> -name 'SKILL.md'
@@ -68,8 +68,6 @@ Skill ID format: `<idPrefix>_<relative-path-from-subdir>` (underscores, not slas
 
 ### 5. Verify
 
-Dispatch a **quick** subagent:
-
 ```
 git add flake.nix modules/home/packages/skills.nix
 nix flake update <source-name>
@@ -80,20 +78,11 @@ Confirm the skill appears in the output.
 
 ## Local skill
 
-1. Create `skills/<skill-name>/SKILL.md`:
+1. Create `skills/<name>/SKILL.md`. The frontmatter `name:` must equal the directory name.
+2. Add `"<name>"` to `skills.enable` — the `local` source is pre-configured.
+3. Add a row to `AI_NOTES.md`, or the skill is invisible to you next month.
 
-```markdown
----
-name: <skill-name>
-description: "<what it does and when to use it>"
----
-
-# <Skill Name>
-
-<instructions>
-```
-
-2. Add `"<skill-name>"` to `skills.enable` — the `local` source is pre-configured.
+What goes inside the file — the description, the hierarchy, the completion criterion — is `/writing-for-agents`. It ships `writing-for-agents/CHECKS.md`, which catches a name that does not match its directory and an enable list out of step with disk.
 
 ## Skill sources
 
@@ -101,4 +90,4 @@ Browse at [skills.sh](https://skills.sh/) or see `add-skill/SOURCES.md` for reco
 
 ## Completion
 
-Done when: the flake input is added, the source is configured in skills.nix, the skill is enabled, and `nix build` confirms it appears in the output. Checkable: dispatch a **quick** subagent to run the nix build and grep the output for the skill name.
+Done when: the flake input is added, the source is configured in skills.nix, the skill is enabled, and `nix build` confirms it appears in the output. Checkable: the `nix build` above succeeds and the skill's id appears in the bundle output.
