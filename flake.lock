@@ -475,22 +475,6 @@
         "url": "https://flakehub.com/f/nix-community/home-manager/0.1"
       }
     },
-    "mattpocock-skills": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1787309793,
-        "narHash": "sha256-FPAAotNqA5aHrFDlj/XddoLs4TDKi+4J5H/mvevlOlk=",
-        "owner": "mattpocock",
-        "repo": "skills",
-        "rev": "5b15a47f2d7150f545fbcacbfe381787fc0230dc",
-        "type": "github"
-      },
-      "original": {
-        "owner": "mattpocock",
-        "repo": "skills",
-        "type": "github"
-      }
-    },
     "mimi": {
       "inputs": {
         "nixpkgs": [
@@ -765,7 +749,6 @@
         "emil-skills": "emil-skills",
         "flake-parts": "flake-parts_2",
         "home-manager": "home-manager_2",
-        "mattpocock-skills": "mattpocock-skills",
         "mimi": "mimi",
         "neru": "neru",
         "nixgl": "nixgl",

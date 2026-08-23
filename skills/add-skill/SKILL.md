@@ -1,6 +1,6 @@
 ---
 name: add-skill
-description: "Adds a skill source or individual skill to the Nix configuration. Use when installing from skills.sh, a GitHub repo, or creating a local skill."
+description: "Add a skill source or local skill to the Nix configuration."
 ---
 
 # Add Skill
@@ -16,9 +16,9 @@ Skills sync to `~/.claude/skills`, `~/.agents/skills`, `~/.config/opencode/skill
 
 ### 1. Find the skill path
 
-Clone and find where SKILL.md files live:
+Dispatch a **quick** subagent to clone and find SKILL.md files:
 
-```bash
+```
 cd /tmp && git clone --depth 1 <repo-url> && find <repo> -name 'SKILL.md'
 ```
 
@@ -68,7 +68,9 @@ Skill ID format: `<idPrefix>_<relative-path-from-subdir>` (underscores, not slas
 
 ### 5. Verify
 
-```bash
+Dispatch a **quick** subagent:
+
+```
 git add flake.nix modules/home/packages/skills.nix
 nix flake update <source-name>
 nix build '.#darwinConfigurations.Kyles-MacBook-Air.config.home-manager.users.kylewong.programs.agent-skills.bundlePath' --no-link --print-out-paths
@@ -95,11 +97,8 @@ description: "<what it does and when to use it>"
 
 ## Skill sources
 
-Browse at [skills.sh](https://skills.sh/) or these repos:
+Browse at [skills.sh](https://skills.sh/) or see `add-skill/SOURCES.md` for recommended repos.
 
-- `anthropics/skills` — document handling, design
-- `mattpocock/skills` — engineering, TDD, debugging
-- `cursor/plugins` — Cursor ecosystem
-- `vercel-labs/agent-skills` — React/Next.js
-- `emilkowalski/skills` — animation, design
-- `shadcn-ui/ui` — shadcn/ui components
+## Completion
+
+Done when: the flake input is added, the source is configured in skills.nix, the skill is enabled, and `nix build` confirms it appears in the output. Checkable: dispatch a **quick** subagent to run the nix build and grep the output for the skill name.
