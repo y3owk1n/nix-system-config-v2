@@ -15,9 +15,9 @@ Spec: <spec ref — an absolute path if it is untracked, since your worktree hol
 1. Read the ticket and the spec in full. Read `AGENTS.md` / `CLAUDE.md` at the repo root and the nearest nested one to the code you're touching — they carry contracts you cannot infer from the code.
 2. You are already on a fresh branch cut from `origin/main` — do not assume you are on `main`, and do not branch again from a local ref. Rename it to the repo's convention if it has one: `git branch -m <type>/<short-kebab-summary>`.
 3. Build the ticket's end-to-end behaviour, and only that. Adjacent problems you spot get reported back, not fixed here.
-   - Use the `matt/engineering/tdd` skill at the seams the spec names.
+   - Apply TDD discipline at the seams the spec names.
    - Run typechecking and **the affected test files by name** as you go — never the full gate. The whole suite is what step 5 is for, and running it as an inner loop is the single easiest way to spend half an hour proving the same thing repeatedly.
-4. Review your own work with the `matt/engineering/code-review` skill, against the ticket as the spec axis. Fix what it finds.
+4. Review your own work with the `code-review` skill, against the ticket as the spec axis. Fix what it finds.
 5. Run `cursor-team-kit/deslop` to clean AI-specific slop patterns — unnecessary comments, defensive try/catch, `any` casts, deep nesting. Keep behavior unchanged.
 6. **Regenerate whatever your change invalidated**: `<the repo's regeneration commands>`. A checked-in generated artifact that nobody regenerated is the one failure that is certain rather than probable, and it is the one CI cannot tell you anything you did not already know.
 7. `git fetch origin && git rebase origin/main`, then run the **fast checks only** — `<fast check commands>` — plus, by name, the test files your change touches. **Do not run the full gate.** Then commit and open the PR with <the `create-pr` skill | `gh pr create`>. The PR body states what changed for a user and links the ticket (`Closes #<n>`).

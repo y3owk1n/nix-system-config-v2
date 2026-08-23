@@ -50,10 +50,6 @@
       # url = "path:/Users/kylewong/Dev/agent-skills-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    mattpocock-skills = {
-      url = "github:mattpocock/skills";
-      flake = false;
-    };
     cursor-plugins = {
       url = "github:cursor/plugins";
       flake = false;

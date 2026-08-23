@@ -1,6 +1,6 @@
 ---
 name: create-pr
-description: "Commits changes and opens a pull request. Use when asked to commit, create a PR, open a pull request, or ship finished work."
+description: "Commit changes and open a pull request."
 ---
 
 # Create PR
@@ -14,15 +14,14 @@ description: "Commits changes and opens a pull request. Use when asked to commit
 
 ## Steps
 
-1. **Branch.** `git switch -c <type>/<short-kebab-summary>` off `main`.
-2. **Verify.** Run CI checks (`just ci`, `make test`, `npm test`). Never open on red.
-3. **Stage selectively.** `git add <paths>` for this change only. Check `git status --short`.
-4. **Commit.** Format: `<type>(<scope>): <subject>` — imperative, lowercase, no period.
-5. **Check for template.** `ls .github/pull_request_template.md` and common locations. Use it if found.
-6. **Write PR body.** See template below. Open with `This PR <verb> ...`.
-7. **Grep for leaks.** Search commits and body for `claude`, `anthropic`, `co-authored`, `generated with`. Any hit is a bug.
-8. **Push and open.** `git push -u origin <branch>` then `gh pr create`.
-9. **Watch CI.** `gh pr checks --watch`. Fix failures yourself.
+1. **Branch.** If already on a feature branch (not `main`), skip this step. Otherwise dispatch a **quick** subagent: `git switch -c <type>/<short-kebab-summary>`
+2. **Verify.** Dispatch a **quick** subagent to run CI checks (`just ci`, `make test`, `npm test`). Only open when CI is green. Skip if already verified (e.g. called from `/ship-ticket` which ran fast checks).
+3. **Stage selectively.** Dispatch a **quick** subagent: `git add <paths> && git status --short`
+4. **Commit.** Compose the commit message (format: `<type>(<scope>): <subject>`, imperative, lowercase, no period). Dispatch a **quick** subagent to grep the message for AI attribution leaks (`claude|anthropic|co-authored|generated with`) and commit.
+5. **Check for template.** Dispatch a **quick** subagent: `ls .github/pull_request_template.md 2>/dev/null && cat .github/pull_request_template.md`
+6. **Write PR body.** Compose the body using the template below. Open with `This PR <verb> ...`.
+7. **Push and open.** Dispatch a **quick** subagent: `git push -u origin <branch> && gh pr create --title "<title>" --body "<body>"`
+8. **Watch CI.** Dispatch a **quick** subagent: `gh pr checks --watch`
 
 ## Commit format
 
@@ -61,3 +60,7 @@ Write for the **reader**, not the diff:
 - `Updates handleClick in Button.tsx` ✗
 
 Config/command changes: name them exactly as typed, note defaults, say whether existing configs keep working.
+
+## Completion
+
+Done when: CI is green, PR is open with title and body, no AI attribution leaks. Checkable: dispatch a **quick** subagent to verify `gh pr checks` passes and `gh pr view` shows the expected title/body.
