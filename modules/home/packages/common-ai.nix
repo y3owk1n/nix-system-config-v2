@@ -32,16 +32,26 @@ _: {
         ## Review
 
         - One pass: state the bug, show the fix, stop.
+        - Standards axis: conventions, naming, structure,
+          types, error handling, security. Cite the repo
+          rule you apply, not a general preference.
+        - Spec axis: does the diff do what the spec says and
+          no more. Missing criteria, wrong behaviour, scope
+          creep. Skip this axis when there is no spec.
+        - Rank by cost of being wrong. Skip nits.
 
         ## Workflow
 
         - Test after writing. Fix before moving on.
         - Verify output matches expected format.
         - Run the code before declaring done.
-        - TDD when writing new code or changing behaviour:
-          confirm seams, red before green, one slice at a time.
-          Tests verify behavior through public interfaces, not
-          implementation details. Mock at system boundaries only.
+        - Test only what the project promises: a behaviour
+          listed in prd/behaviours.md, or a public boundary
+          (CLI, exported API, route, persisted schema).
+        - Never assert the toolchain works. No install, build,
+          compile, lint, file-exists, or config-parses tests.
+        - Never mirror implementation. Test through public
+          interfaces. Mock at system boundaries only.
 
         ## Search Protocol
 
