@@ -32,7 +32,7 @@ Spec: <spec issue number>
 
 6. **Regenerate whatever your change invalidated**: <the repo's regeneration commands>. A checked-in generated artefact nobody regenerated is the one failure that is certain rather than probable, and the one CI cannot tell you anything new about.
 
-7. `git fetch origin && git rebase origin/main`, run the **fast checks only** — <fast check commands> — plus, by name, the test files your change touched. **Not the full gate.** Then commit and open the PR with <the `pr` skill | `gh pr create`>. The body states what changed for a user and links the ticket (`Closes #<n>`).
+7. `git fetch origin && git rebase origin/main`, run the **fast checks only** — <fast check commands> — plus, by name, the test files your change touched. **Not the full gate.** Then commit and open the PR with <the `pr` skill | `gh pr create`>. The title is a conventional commit subject (`<type>(<scope>): <subject>`) because PRs land as squash merges. The body states what changed for a user and links the ticket (`Closes #<n>`).
 
 **CI is the gate, and running it twice does not make it truer.** The suite takes minutes; CI runs the identical command on the identical commit within minutes of the push, and the orchestrator is already watching. A local full run buys a signal you are about to be handed for free, at the price of the slowest step in the ticket. The fast checks and the regeneration cover what CI would tell you _late_ — a type error, a lint finding, a stale artefact. What they do not cover is behaviour, and behaviour is what CI is for.
 
