@@ -1,9 +1,9 @@
 ---
-name: diagnosing-bugs
+name: diagnose
 description: "Diagnosis loop for hard bugs and performance regressions."
 ---
 
-# Diagnosing Bugs
+# Diagnose
 
 A discipline for hard bugs. Skip phases only when explicitly justified.
 
@@ -24,9 +24,7 @@ Spend disproportionate effort here. Be aggressive. Be creative. Refuse to give u
 3. **CLI invocation** with a fixture input, diffing stdout against a known-good snapshot.
 4. **Headless browser script** (Playwright / Puppeteer) driving the UI and asserting on DOM/console/network.
 
-For more approaches (replay traces, throwaway harnesses, property/fuzz loops, bisection, differential loops, HITL scripts), see `diagnosing-bugs/LOOP-APPROACHES.md`.
-
-Dispatch a **quick** subagent to run each candidate loop command and return the output.
+For more approaches (replay traces, throwaway harnesses, property/fuzz loops, bisection, differential loops, HITL scripts), see `LOOP-APPROACHES.md`.
 
 ### Tighten the loop
 
@@ -59,7 +57,7 @@ No red-capable command, no Phase 2.
 
 ## Phase 2: Reproduce + minimise
 
-Dispatch a **quick** subagent to run the loop. Watch it go red.
+Run the loop. Watch it go red.
 
 Confirm:
 
@@ -69,7 +67,7 @@ Confirm:
 
 ### Minimise
 
-Shrink the repro to the **smallest scenario that still goes red**. Cut inputs, callers, config, data, steps **one at a time**, dispatching a **quick** subagent to re-run after each cut. Keep only what's load-bearing.
+Shrink the repro to the **smallest scenario that still goes red**. Cut inputs, callers, config, data, steps **one at a time**, re-running after each cut. Keep only what's load-bearing.
 
 Done when **every remaining element is load-bearing**: removing any one makes the loop go green.
 
@@ -91,8 +89,6 @@ Show the ranked list to the user before testing. They often have domain knowledg
 
 Each probe must map to a specific prediction from Phase 3. Change one variable at a time.
 
-Dispatch a **quick** subagent to run each probe command and return output.
-
 Tool preference:
 
 1. **Debugger / REPL inspection** if available. One breakpoint beats ten logs.
@@ -111,21 +107,15 @@ A correct seam exercises the **real bug pattern** as it occurs at the call site.
 If a correct seam exists:
 
 1. Turn the minimised repro into a failing test at that seam.
-2. Dispatch a **quick** subagent to run it and confirm it fails.
+2. Run it. Confirm it fails.
 3. Apply the fix.
-4. Dispatch a **quick** subagent to run it and confirm it passes.
+4. Run it. Confirm it passes.
 5. Re-run the Phase 1 feedback loop against the original scenario.
 
 ## Phase 6: Cleanup
 
-Required before declaring done:
-
-- [ ] Original repro no longer reproduces (re-run Phase 1 loop).
-- [ ] Regression test passes (or absence of seam is documented).
-- [ ] All `[DEBUG-...]` instrumentation removed.
-- [ ] Throwaway prototypes deleted.
-- [ ] Correct hypothesis stated in commit/PR message.
+Delete the throwaway harnesses and prototypes. State the confirmed hypothesis in the commit or PR body — the next person to hit this reads that line, not the diff.
 
 ## Completion
 
-Done when: the bug is fixed with a regression test, all debug instrumentation is removed, and the hypothesis is documented. Checkable: the original repro no longer reproduces, the regression test passes, and no `[DEBUG-...]` tags remain in the codebase.
+Done when: the Phase 1 loop runs green against the original scenario, the regression test passes (or the absence of a correct seam is written down as a finding), every `[DEBUG-...]` tag is gone, and the confirmed hypothesis is in the commit or PR body. Checkable: re-run the Phase 1 command and `grep -r "DEBUG-" .` returns nothing.

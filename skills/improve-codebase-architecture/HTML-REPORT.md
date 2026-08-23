@@ -52,7 +52,7 @@ Each candidate is one `<article>`:
 - **Problem**: one sentence. What hurts.
 - **Solution**: one sentence. What changes.
 - **Wins**: bullets, ≤6 words each. Glossary terms only.
-- **ADR callout** (if applicable): one line in amber box.
+- **Decision callout** (if applicable): one line in amber box, naming the `prd/decisions.md` entry it contradicts.
 
 No paragraphs. If the diagram needs a paragraph, redraw the diagram.
 

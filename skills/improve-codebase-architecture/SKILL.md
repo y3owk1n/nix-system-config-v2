@@ -34,9 +34,9 @@ The **deletion test**: would deleting a module concentrate complexity, or just m
 - If the user named a direction (module, subsystem, pain point), take it.
 - Otherwise, walk back the commit history (`git log --oneline`) to find hot spots — files and areas that keep coming up. Let those paths pull your attention.
 
-Read the project's domain glossary (`CONTEXT.md`) and any ADRs in the area you're touching first.
+Read `prd/glossary.md`, `prd/architecture.md`, and `prd/decisions.md` for the area you're touching first.
 
-Then dispatch a **quick** subagent to walk the codebase. Note where you experience friction:
+Then walk the codebase. Note where you experience friction:
 
 - Where does understanding one concept require bouncing between many small modules?
 - Where are modules **shallow** — interface nearly as complex as implementation?
@@ -56,15 +56,15 @@ See `improve-codebase-architecture/HTML-REPORT.md` for the full scaffold, diagra
 
 #### Markdown
 
-Write to `.scratch/architecture-review-<timestamp>.md`. Return the file path. Committed to the repo or gitignored — your call.
+Write to `<tmpdir>/architecture-review-<timestamp>.md` (`$TMPDIR`, fallback `/tmp`). Return the absolute path.
 
 See `improve-codebase-architecture/MD-REPORT.md` for the full template and diagram patterns.
 
 #### Content (both formats)
 
-Use `CONTEXT.md` vocabulary for the domain. If CONTEXT.md defines "Order," say "the Order intake module," not "the FooBarHandler."
+Use `prd/glossary.md` vocabulary for the domain. If the glossary defines "Order," say "the Order intake module," not "the FooBarHandler."
 
-If a candidate contradicts an ADR, only surface it when the friction is real enough to warrant revisiting. Mark clearly: _"contradicts ADR-0007, but worth reopening because…"_.
+If a candidate contradicts an entry in `prd/decisions.md`, only surface it when the friction is real enough to warrant revisiting. Mark clearly: _"contradicts the '{decision title}' decision, but worth reopening because…"_.
 
 For each candidate, render a card with:
 
@@ -81,14 +81,15 @@ After the file is written, ask the user: "Which of these would you like to explo
 
 ### 3. Grilling loop
 
-Once the user picks a candidate, dispatch `/grill-interview` to walk the decision tree: constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive.
+Once the user picks a candidate, dispatch `/grill` to walk the decision tree: constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive.
 
 Side effects happen inline as decisions crystallise:
 
-- **Naming a deepened module not in `CONTEXT.md`?** Add the term. Create the file lazily if it doesn't exist.
-- **Sharpening a fuzzy term?** Update `CONTEXT.md` right there.
-- **User rejects with a load-bearing reason?** Offer an ADR: _"Want me to record this as an ADR so future reviews don't re-suggest it?"_ Only offer when the reason matters to a future explorer; skip ephemeral and self-evident ones.
+- **Naming a deepened module not in `prd/glossary.md`?** Add the term. Create the file lazily if it doesn't exist.
+- **Sharpening a fuzzy term?** Update `prd/glossary.md` right there.
+- **Boundary moved?** Update `prd/architecture.md`.
+- **User rejects with a load-bearing reason?** Offer a `prd/decisions.md` entry: _"Record this so future reviews don't re-suggest it?"_ Only when the reason matters to a future explorer; skip ephemeral and self-evident ones.
 
 ## Completion
 
-Done when: the report is written (HTML or Markdown), the user has picked a candidate, and the grilling loop has produced either a decision or an ADR. Checkable: the report file exists in the expected path, and the user has confirmed which candidate to pursue.
+Done when: the report is written (HTML or Markdown), the user has picked a candidate, and the grilling loop has produced either a decision or a `prd/decisions.md` entry. Checkable: the report file exists in the expected path, and the user has confirmed which candidate to pursue.
