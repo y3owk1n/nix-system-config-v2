@@ -46,7 +46,8 @@
 
     # Agent Skills
     agent-skills = {
-      url = "github:Kyure-A/agent-skills-nix";
+      url = "github:y3owk1n/agent-skills-nix/feat/idprefix-underscore-separator";
+      # url = "path:/Users/kylewong/Dev/agent-skills-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     mattpocock-skills = {

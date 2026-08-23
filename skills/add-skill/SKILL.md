@@ -16,16 +16,21 @@ Skills sync to `~/.claude/skills`, `~/.agents/skills`, `~/.config/opencode/skill
 
 ### 1. Find the skill path
 
+Clone and find where SKILL.md files live:
+
 ```bash
 cd /tmp && git clone --depth 1 <repo-url> && find <repo> -name 'SKILL.md'
 ```
 
-Common patterns and their `subdir` values:
-| Path | `subdir` |
-|---|---|
-| `skills/<name>/SKILL.md` | `"skills"` |
-| `<plugin>/skills/<name>/SKILL.md` | `"<plugin>/skills"` |
-| `skills/<cat>/<name>/SKILL.md` | `"skills"` + `filter.maxDepth = 2` |
+`subdir` is the **parent of each skill folder** — the directory that _contains_ the `SKILL.md` files (or directories containing them). Never the skill folder itself. The `find` output is the source of truth; the table covers common patterns.
+
+If a repo nests skills under multiple subdirectories (e.g. `skills/engineering/` and `skills/productivity/`), create **one source per subdirectory** — don't try to point a single source at a common ancestor.
+
+| If the tree looks like...    | `subdir`          |
+| ---------------------------- | ----------------- |
+| `skills/foo/SKILL.md`        | `"skills"`        |
+| `pstack/skills/foo/SKILL.md` | `"pstack/skills"` |
+| `skills/eng/foo/SKILL.md`    | `"skills/eng"`    |
 
 ### 2. Add flake input
 
@@ -46,7 +51,7 @@ In `modules/home/packages/skills.nix`, under `programs.agent-skills.sources`:
 <source-name> = {
   input = "<source-name>";       # must match flake input name
   subdir = "<path-to-skills>";   # relative to repo root
-  idPrefix = "<prefix>";         # namespaces IDs (e.g. "matt", "cursor")
+  idPrefix = "<prefix>";         # namespaces IDs (e.g. "matt-eng", "cursor")
 };
 ```
 
@@ -55,11 +60,11 @@ In `modules/home/packages/skills.nix`, under `programs.agent-skills.sources`:
 Add to `programs.agent-skills.skills.enable`:
 
 ```nix
-"<idPrefix>/<skill-name>"        # e.g. "cursor/unslop"
-"<idPrefix>/<category>/<name>"   # e.g. "matt/engineering/tdd"
+"<idPrefix>_<skill-name>"        # e.g. "cursor_unslop"
+"<idPrefix>_<category>_<name>"   # e.g. "matt-eng_tdd"
 ```
 
-Skill ID format: `<idPrefix>/<relative-path-from-subdir>`.
+Skill ID format: `<idPrefix>_<relative-path-from-subdir>` (underscores, not slashes).
 
 ### 5. Verify
 

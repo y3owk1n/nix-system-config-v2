@@ -1,5 +1,4 @@
-{ lib, ... }:
-{
+_: {
   # Agent Skills declarative configuration
   # Uses agent-skills-nix to manage skills across all harnesses
 
@@ -13,12 +12,18 @@
         path = ../../../skills;
       };
 
-      # Matt Pocock's skills (engineering, productivity, misc)
-      matt = {
+      # Matt Pocock's skills (engineering)
+      matt-eng = {
         input = "mattpocock-skills";
-        subdir = "skills";
-        idPrefix = "matt";
-        filter.maxDepth = 2;
+        subdir = "skills/engineering";
+        idPrefix = "matt-eng";
+      };
+
+      # Matt Pocock's skills (productivity)
+      matt-prod = {
+        input = "mattpocock-skills";
+        subdir = "skills/productivity";
+        idPrefix = "matt-prod";
       };
 
       # Cursor plugins (unslop, etc.)
@@ -60,7 +65,7 @@
       caveman = {
         input = "caveman-skills";
         subdir = "skills";
-        idPrefix = "julius";
+        idPrefix = "caveman";
       };
     };
 
@@ -74,53 +79,50 @@
       "find-skills"
 
       # Caveman skills
-      "julius/caveman"
+      "caveman_caveman"
 
       # Cursor plugins
-      "cursor/unslop"
-      "cursor-team-kit/deslop"
+      "cursor_unslop"
+      "cursor-team-kit_deslop"
 
       # Anthropic skills
-      "anthropic/frontend-design"
+      "anthropic_frontend-design"
 
       # shadcn/ui skills
-      "shadcn/shadcn"
+      "shadcn_shadcn"
 
       # Emil Kowalski - Animation & Design
-      "emil/animate"
-      "emil/animation-vocabulary"
-      "emil/apple-design"
-      "emil/ask-sonner"
-      "emil/emil-design-eng"
-      "emil/find-animation-opportunities"
-      "emil/improve-animations"
-      "emil/pick-ui-library"
-      "emil/prototype"
+      "emil_animate"
+      "emil_animation-vocabulary"
+      "emil_emil-design-eng"
+      "emil_find-animation-opportunities"
+      "emil_improve-animations"
+      "emil_prototype"
 
       # Matt Pocock - Engineering
-      "matt/engineering/ask-matt"
-      "matt/engineering/code-review"
-      "matt/engineering/codebase-design"
-      "matt/engineering/diagnosing-bugs"
-      "matt/engineering/domain-modeling"
-      "matt/engineering/grill-with-docs"
-      "matt/engineering/implement"
-      "matt/engineering/improve-codebase-architecture"
-      "matt/engineering/prototype"
-      "matt/engineering/research"
-      "matt/engineering/resolving-merge-conflicts"
-      "matt/engineering/setup-matt-pocock-skills"
-      "matt/engineering/tdd"
-      "matt/engineering/to-spec"
-      "matt/engineering/to-tickets"
-      "matt/engineering/triage"
-      "matt/engineering/wayfinder"
-      "matt/engineering/wizard"
+      "matt-eng_ask-matt"
+      "matt-eng_code-review"
+      "matt-eng_codebase-design"
+      "matt-eng_diagnosing-bugs"
+      "matt-eng_domain-modeling"
+      "matt-eng_grill-with-docs"
+      "matt-eng_implement"
+      "matt-eng_improve-codebase-architecture"
+      "matt-eng_prototype"
+      "matt-eng_research"
+      "matt-eng_resolving-merge-conflicts"
+      "matt-eng_setup-matt-pocock-skills"
+      "matt-eng_tdd"
+      "matt-eng_to-spec"
+      "matt-eng_to-tickets"
+      "matt-eng_triage"
+      "matt-eng_wayfinder"
+      "matt-eng_wizard"
 
       # Matt Pocock - Productivity
-      "matt/productivity/grill-me"
-      "matt/productivity/grilling"
-      "matt/productivity/writing-for-agents"
+      "matt-prod_grill-me"
+      "matt-prod_grilling"
+      "matt-prod_writing-for-agents"
     ];
 
     # Enable target harnesses for skill sync
@@ -135,21 +137,4 @@
       opencode.enable = true;
     };
   };
-
-  # Flatten nested skills for Claude (it only scans one level deep)
-  home.activation.flattenClaudeSkills = lib.hm.dag.entryAfter [ "agent-skills" ] ''
-    claude_skills="$HOME/.claude/skills"
-    if [ -d "$claude_skills" ]; then
-      # Follow symlinks (-L) and find SKILL.md files nested more than 1 level deep
-      find -L "$claude_skills" -mindepth 3 -name 'SKILL.md' | while read -r skill_file; do
-        skill_dir="$(dirname "$skill_file")"
-        skill_name="$(basename "$skill_dir")"
-        target="$claude_skills/$skill_name"
-        # Only create if not already a direct child
-        if [ ! -e "$target" ] && [ ! -L "$target" ]; then
-          ln -s "$skill_dir" "$target"
-        fi
-      done
-    fi
-  '';
 }
