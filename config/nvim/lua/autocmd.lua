@@ -439,11 +439,9 @@ vim.api.nvim_create_autocmd("PackChanged", {
 -- =========================================================
 
 vim.api.nvim_create_autocmd("User", {
+  group = augroup("dir_render"),
   pattern = "DirReadPost",
   callback = function(args)
-    local dir = require("directory")
-
-    dir.set_opts()
-    dir.render(args)
+    require("directory").render(args)
   end,
 })
