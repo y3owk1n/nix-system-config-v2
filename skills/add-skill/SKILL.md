@@ -86,7 +86,7 @@ What goes inside the file — the description, the hierarchy, the completion cri
 
 ## Skill sources
 
-Browse at [skills.sh](https://skills.sh/) or see `add-skill/SOURCES.md` for recommended repos.
+Browse at [skills.sh](https://skills.sh/) or see `SOURCES.md` for recommended repos.
 
 ## Completion
 

@@ -23,7 +23,7 @@ prd/
 
 **Every file is optional.** A repo with only `glossary.md` is a valid PRD. Never fabricate a file to complete the set, and never block on a missing one — read what exists, say what is missing, move on.
 
-Templates for each file: `prd/TEMPLATES.md`.
+Templates for each file: `TEMPLATES.md`, in this skill's own directory next to this `SKILL.md` — not `prd/` in the target repo.
 
 ## Modes
 
@@ -66,7 +66,7 @@ Interview first, code second. Run `/grill`, then write `product.md`, `glossary.m
 ## feature — add a feature file
 
 1. Read `product.md`, `glossary.md`, `behaviours.md`, `architecture.md` — whichever exist.
-2. Draft `prd/features/<slug>.md` from `TEMPLATES.md`. Use glossary vocabulary exactly; if the feature needs a term the glossary lacks, add the term first.
+2. Draft `prd/features/<slug>.md` from this skill's `TEMPLATES.md`. Use glossary vocabulary exactly; if the feature needs a term the glossary lacks, add the term first.
 3. **Sketch the seams.** Where will this be tested? Prefer existing seams. Use the highest seam available. Fewer is better; one is ideal. Name them in the feature file and confirm them with the user.
 4. Map the feature to `behaviours.md`. Each behaviour it touches gets referenced by number. A feature touching no listed behaviour gets no tests — say so out loud so the user can add a behaviour if that is wrong.
 

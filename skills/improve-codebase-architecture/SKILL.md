@@ -52,13 +52,13 @@ Ask the user: **HTML** (visual, opened in browser) or **Markdown** (terminal-fri
 
 Write a self-contained HTML file to the OS temp directory (`$TMPDIR`, fallback `/tmp`). Write to `<tmpdir>/architecture-review-<timestamp>.html`. Open it for the user (`open <path>` on macOS) and tell them the absolute path.
 
-See `improve-codebase-architecture/HTML-REPORT.md` for the full scaffold, diagram patterns, and styling guidance.
+See `HTML-REPORT.md` for the full scaffold, diagram patterns, and styling guidance.
 
 #### Markdown
 
 Write to `<tmpdir>/architecture-review-<timestamp>.md` (`$TMPDIR`, fallback `/tmp`). Return the absolute path.
 
-See `improve-codebase-architecture/MD-REPORT.md` for the full template and diagram patterns.
+See `MD-REPORT.md` for the full template and diagram patterns.
 
 #### Content (both formats)
 
