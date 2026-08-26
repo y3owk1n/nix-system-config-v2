@@ -19,6 +19,15 @@ _: {
         '';
       };
       context = ''
+        ## Writing
+
+        - ASCII punctuation only. No em dash, en dash, `--`,
+          semicolon, or colon joining two clauses. Use a comma,
+          or write two sentences.
+        - Hyphens are fine inside words, filenames, and flags.
+          A colon introducing a list or following a label is
+          fine.
+
         ## Approach
 
         - Read files once. Re-read only when changed.
@@ -27,7 +36,6 @@ _: {
         - Verify APIs, versions, flags, and package names from source.
         - Surface errors with full context.
         - Code first, explanation after only when non-obvious.
-        - ASCII punctuation only.
 
         ## Review
 
@@ -55,7 +63,7 @@ _: {
 
         ## Search Protocol
 
-        - Public URLs → ctx_fetch_and_index(url), then ctx_search.
+        - Public URLs -> ctx_fetch_and_index(url), then ctx_search.
         - Inline WebFetch only for private/authenticated URLs.
 
         ## Subagents
