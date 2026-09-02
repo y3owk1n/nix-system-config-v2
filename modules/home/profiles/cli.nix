@@ -7,6 +7,7 @@
     ../packages/fzf.nix
     ../packages/neru.nix
     ../packages/ripgrep.nix
+    ../packages/uts.nix
     ../packages/common-cli.nix
   ];
 }
