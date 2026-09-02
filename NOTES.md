@@ -141,51 +141,6 @@ Using macos host docker in nixos
 mac link docker
 ```
 
-## GPG related
-
-When doing backup, always use the secret key as input
-
-```bash
-gpg --list-secret-keys --keyid-format LONG
-
-# and grab the one after rsa4096
-```
-
-## PASS related
-
-> [!note]
-> For now I am only using pass as a secret manager with my `passx` scripts that supports project scoping with different
-> environments.
-
-When doing multiple machines with single store, ensure the following
-
-- Machine A & B needs to have their own private key
-- Machine A needs to have the public key of Machine B
-- Machine B needs to have the public key of Machine A
-
-Then we can init the pass
-
-```bash
-pass init <pubkey-machine-a> <pubkey-machine-b>
-```
-
-Also remember to trust the another machine's public key
-
-```bash
-pass --edit-key <pubkey-machine-b>
-
-> trust
-> 5
-> quit
-```
-
-> [!note]
-> When rotating keys, make sure to have the new pubkeys in both machines, do not delete the old private key first
->
-> - do the init again with the new keys
-> - then ensure we can access the passwords
-> - then delete the old private key and public key
-
 ## Override attrs for a rust build package
 
 [Overriding version on rust based package](https://discourse.nixos.org/t/overriding-version-on-rust-based-package/57445/2)
@@ -319,4 +274,114 @@ dscl . -read /Users/root UserShell
 
 # change the shell
 sudo chsh -s /etc/profiles/per-user/kylewong/bin/fish root
+```
+
+## Secrets (sops-nix) troubleshooting
+
+How it works: `secrets/secrets.yaml` is encrypted to the age public key in
+`.sops.yaml`. At rebuild and at every login, sops-nix decrypts it with
+`~/.config/sops/age/keys.txt` into `~/.config/sops-nix/secrets/`, then
+symlinks `~/.ssh/id_ed25519` to it. That directory survives reboots.
+The age identity is the single root of trust and lives in the password manager.
+
+### Check status
+
+```bash
+ls -la ~/.ssh/id_ed25519            # should be a symlink into .../secrets.d/
+cat ~/Library/Logs/SopsNix/stderr   # macOS, should be empty
+launchctl list | grep sops-nix      # macOS, agent should be listed
+systemctl --user status sops-nix    # Linux
+```
+
+### `~/.ssh/id_ed25519` is a dangling symlink
+
+The secrets dir was removed and the login agent did not recreate it.
+
+```bash
+# macOS
+launchctl kickstart -k gui/$(id -u)/org.nix-community.home.sops-nix
+# Linux
+systemctl --user restart sops-nix
+```
+
+If that fails, read the log above. Usually the age key file is missing.
+
+### Rebuild fails with "no key source" or "failed to decrypt"
+
+`~/.config/sops/age/keys.txt` is missing, unreadable, or the wrong identity.
+
+```bash
+mkdir -p ~/.config/sops/age
+# paste from password manager, one line starting with AGE-SECRET-KEY-
+chmod 600 ~/.config/sops/age/keys.txt
+# confirm it matches the recipient in .sops.yaml
+nix run nixpkgs#age -- -y ~/.config/sops/age/keys.txt
+```
+
+### Git says "unable to sign" or commits show unverified on GitHub
+
+```bash
+git config --get gpg.format          # must be ssh
+ssh-add -l                           # key should be listed
+ssh -T git@github.com                # loads key into agent, prompts once
+gh api user/ssh_signing_keys         # public key must be registered here
+git log --show-signature -1          # expect Good "git" signature
+```
+
+### Pre-commit treefmt fails on `secrets/secrets.yaml`
+
+`.pre-commit-config.yaml` is written by the dev shell hook. direnv caches the
+shell and rewrites the file with a stale treefmt wrapper until it re-evaluates.
+`.envrc` watches `lib/treefmt.nix`, `lib/pre-commit.nix`, and `lib/devshell.nix`
+for that reason. If it still happens:
+
+```bash
+direnv reload
+git checkout -- secrets/secrets.yaml
+```
+
+### Old shells still point at gpg-agent
+
+`SSH_AUTH_SOCK` is inherited from the parent process. A tmux server or
+terminal started before the rebuild keeps the old value. Fix:
+
+```bash
+tmux kill-server   # then open a fresh terminal window
+echo $SSH_AUTH_SOCK  # should be /private/tmp/com.apple.launchd.*/Listeners
+```
+
+### Edit or add a secret
+
+```bash
+sops secrets/secrets.yaml            # opens decrypted in $EDITOR, re-encrypts on save
+just rebuild
+```
+
+For a new file, add a `sops.secrets."name"` entry with `path` and `mode` in
+`modules/home/packages/sops.nix`. Never run `sops -e` on a file already in
+`secrets/`, and keep `secrets/` out of treefmt (yamlfmt rewraps ciphertext).
+
+### Add another age identity (e.g. a work machine)
+
+Add the public key under `keys` in `.sops.yaml`, then:
+
+```bash
+sops updatekeys secrets/secrets.yaml
+```
+
+### Recover the SSH key by hand (machine cannot rebuild)
+
+```bash
+nix run nixpkgs#sops -- -d --extract '["ssh"]["id_ed25519"]' secrets/secrets.yaml > ~/.ssh/id_ed25519
+chmod 600 ~/.ssh/id_ed25519
+```
+
+### Lost the age identity
+
+The encrypted file is unrecoverable. Generate a new identity, put the public
+key in `.sops.yaml`, re-create the secrets file from a machine that still has
+the plaintext keys, and update the password manager.
+
+```bash
+age-keygen -o ~/.config/sops/age/keys.txt
 ```

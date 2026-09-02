@@ -756,6 +756,7 @@
         "nvs": "nvs",
         "pre-commit-hooks": "pre-commit-hooks",
         "shadcn-ui": "shadcn-ui",
+        "sops-nix": "sops-nix",
         "stylix": "stylix",
         "treefmt-nix": "treefmt-nix",
         "uts": "uts"
@@ -775,6 +776,25 @@
         "owner": "shadcn-ui",
         "repo": "ui",
         "type": "github"
+      }
+    },
+    "sops-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788337237,
+        "narHash": "sha256-gkSH8VUtCo6hnysNmb9DbTuDepH2t5pv+QWjP75xKAk=",
+        "rev": "fbf759290e0cb0a98dfc813a4eb7d53ad1dacb57",
+        "revCount": 1238,
+        "type": "tarball",
+        "url": "https://api.flakehub.com/f/pinned/Mic92/sops-nix/0.1.1238%2Brev-fbf759290e0cb0a98dfc813a4eb7d53ad1dacb57/01a0613a-810f-7e62-aaca-7bae07caba0b/source.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://flakehub.com/f/Mic92/sops-nix/0.1"
       }
     },
     "stylix": {

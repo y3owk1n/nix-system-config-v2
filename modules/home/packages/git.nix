@@ -5,7 +5,7 @@
   githubname,
   pkgs,
   config,
-  gpgkeyid,
+  sshpubkey,
   ...
 }:
 {
@@ -87,6 +87,7 @@
         showUntrackedFiles = "all";
       };
       url."git@github.com:".insteadOf = "https://github.com/"; # Rewrite any HTTPS GitHub URL into SSH automatically
+      gpg.ssh.allowedSignersFile = "${config.home.homeDirectory}/.ssh/allowed_signers";
     }
     // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
       # these should speed up vim nvim-tree and other things that watch git repos but
@@ -97,9 +98,15 @@
     };
 
     signing = {
-      key = gpgkeyid;
+      key = "${config.home.homeDirectory}/.ssh/id_ed25519";
       signByDefault = true;
-      format = "openpgp";
+      format = "ssh";
     };
+  };
+
+  # Public half of the signing key. The private half is deployed by sops-nix.
+  home.file = {
+    ".ssh/id_ed25519.pub".text = "${sshpubkey} ${useremail}\n";
+    ".ssh/allowed_signers".text = "${useremail} ${sshpubkey}\n";
   };
 }

@@ -31,7 +31,7 @@ This is a project to help me to manage my Nix system configuration, mainly with 
 - Nix: [Determinate Nix](https://determinate.systems)
 - Neovim Version Manager: [nvs](https://github.com/y3owk1n/nvs)
 - Keyboard Remapping: [kanata](https://github.com/jtroo/kanata) - only used to remap on mac default keyboard
-- Tiling Window Manager: ~[aerospace](https://github.com/nikitabobko/AeroSpace)~ ~[glide wm](https://github.com/glide-wm/glide)~ [yabai](https://github.com/asmvik/yabai)
+- Tiling Window Manager: ~~[aerospace](https://github.com/nikitabobko/AeroSpace)~~ ~~[glide wm](https://github.com/glide-wm/glide)~~ [yabai](https://github.com/asmvik/yabai)
 - Systemwide vimium: [neru](https://github.com/y3owk1n/neru)
 - Launcher: Spotlight
 - Docker: [orbstack](https://orbstack.dev/)
@@ -86,7 +86,6 @@ The `scripts/` directory contains various utilities:
 
 - `init.sh` - Initial Nix Darwin setup
 - `run-project-cmd.sh` - Interactive project command runner
-- `passx.sh` - Password store environment manager
 - `nvim-reset.sh` - Neovim configuration reset
 - `atuin-run-script.sh` - Atuin shell history integration
 
@@ -96,7 +95,7 @@ This configuration follows these principles:
 
 - **Modular:** Each tool/service has its own module for easy maintenance
 - **Cross-platform:** Works on both macOS and Linux where possible
-- **Secure:** Uses GPG for secrets, secure defaults for services
+- **Secure:** Uses sops-nix for secrets, secure defaults for services
 - **Minimal:** Only includes what's needed, avoids bloat
 - **Documented:** Extensive comments and documentation for maintainability
 - **Automated:** CI/CD for validation, scripts for common tasks

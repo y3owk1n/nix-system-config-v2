@@ -1,7 +1,6 @@
 {
   imports = [
-    ../packages/gpg.nix
-    ../packages/pass.nix
+    ../packages/sops.nix
     ../packages/ssh.nix
   ];
 }

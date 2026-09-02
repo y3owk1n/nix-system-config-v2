@@ -23,6 +23,7 @@
         excludes = [
           ".envrc"
           ".env"
+          "secrets/*"
         ];
         on-unmatched = "info";
         formatter = {

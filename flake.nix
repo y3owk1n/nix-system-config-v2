@@ -17,6 +17,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
+    sops-nix = {
+      url = "https://flakehub.com/f/Mic92/sops-nix/0.1";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Theming & UI
     stylix = {

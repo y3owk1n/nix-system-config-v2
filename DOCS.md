@@ -146,23 +146,32 @@ dscl . -read /Users/root UserShell
 sudo chsh -s /etc/profiles/per-user/kylewong/bin/fish root
 ```
 
-## GPG backup
+## Secrets (sops-nix)
+
+Secrets live encrypted in `secrets/secrets.yaml` and are decrypted at rebuild
+with the age identity at `~/.config/sops/age/keys.txt`. The identity is stored
+in the password manager.
+
+New machine:
 
 ```bash
-gpg --list-secret-keys --keyid-format LONG
-# use the key after rsa4096 as input
+mkdir -p ~/.config/sops/age
+# paste the identity from the password manager
+$EDITOR ~/.config/sops/age/keys.txt
+chmod 600 ~/.config/sops/age/keys.txt
+just rebuild
 ```
 
-## Pass (secret manager)
+Edit or add a secret:
 
-Multi-machine setup:
+```bash
+sops secrets/secrets.yaml
+```
 
-1. Each machine has its own private key
-2. Exchange public keys between machines
-3. `pass init <pubkey-a> <pubkey-b>`
-4. Trust the other key: `pass --edit-key <pubkey> → trust → 5 → quit`
+Then declare it in `modules/home/packages/sops.nix` under `sops.secrets`.
 
-Key rotation: init with new keys first, verify access, then delete old keys.
+Git commits are signed with the SSH key. Register the public key from
+`hosts/default.nix` as a signing key on GitHub.
 
 ## OrbStack Docker in NixOS
 

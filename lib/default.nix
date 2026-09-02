@@ -26,7 +26,7 @@ let
         hostname
         githubuser
         githubname
-        gpgkeyid
+        sshpubkey
         stylixTheme
         ;
     in
@@ -37,7 +37,7 @@ let
         hostname
         githubuser
         githubname
-        gpgkeyid
+        sshpubkey
         stylixTheme
         ;
     };
@@ -50,7 +50,7 @@ let
       hostname,
       githubuser,
       githubname,
-      gpgkeyid,
+      sshpubkey,
       needsNixGL ? false,
       stylixTheme,
     }:
@@ -67,7 +67,7 @@ let
           hostname
           githubuser
           githubname
-          gpgkeyid
+          sshpubkey
           needsNixGL
           stylixTheme
           ;
@@ -95,6 +95,7 @@ let
           inputs.nvs.homeManagerModules.default
           inputs.uts.homeManagerModules.default
           inputs.agent-skills.homeManagerModules.default
+          inputs.sops-nix.homeManagerModules.sops
         ]
         ++ (map profileModule homeProfiles);
       };
@@ -116,6 +117,7 @@ let
       inputs.nvs.homeManagerModules.default
       inputs.uts.homeManagerModules.default
       inputs.agent-skills.homeManagerModules.default
+      inputs.sops-nix.homeManagerModules.sops
     ]
     ++ (map profileModule homeProfiles);
 
@@ -168,7 +170,7 @@ let
           hostname
           githubuser
           githubname
-          gpgkeyid
+          sshpubkey
           stylixTheme
           ;
         inherit (hostData) needsNixGL;
