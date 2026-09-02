@@ -7,7 +7,7 @@
 let
   pname = "freebuff";
   # BUMP: Latest version refer here -> https://www.npmjs.com/package/freebuff
-  version = "0.0.138";
+  version = "0.0.166";
 
   systems = {
     x86_64-linux = {
@@ -28,7 +28,7 @@ let
     };
     aarch64-darwin = {
       file = "freebuff-darwin-arm64.tar.gz";
-      hash = "sha256-NOGeH3H1cJQuCE1aiAT/Zjj5q4EZJPJxGYNQHaUuIsw=";
+      hash = "sha256-2GJUKZZsLg+uIPMJrg7tZdV3jKs4Dwig+ZpZ/98Hjbc=";
     };
   };
 
