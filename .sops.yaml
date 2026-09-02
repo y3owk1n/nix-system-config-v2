@@ -1,0 +1,7 @@
+keys:
+  - &kyle age17l2ly30m3v9pw68hhdsfk3l8v5wjjr0t93nqnrpfwmpmfyumr4ws502z0u
+creation_rules:
+  - path_regex: secrets/.*\.yaml$
+    key_groups:
+      - age:
+          - *kyle

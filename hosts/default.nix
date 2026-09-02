@@ -5,7 +5,7 @@ let
     useremail = "62775956+y3owk1n@users.noreply.github.com";
     githubuser = "y3owk1n";
     githubname = "Kyle Wong";
-    gpgkeyid = "F3EBDBB90E035E02";
+    sshpubkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINE+DcJD2D/tw74/b0mh4E+rnZNSLqCYHB5igImNo6Ol";
     stylixTheme = ../config/colorschemes/forest-ink/base16.yml;
   };
 in
@@ -23,7 +23,7 @@ in
   #   hostname:   System hostname
   #   githubuser: GitHub username
   #   githubname: Display name for git
-  #   gpgkeyid:   GPG signing key
+  #   sshpubkey:  SSH public key, used for git signing and deployed to ~/.ssh
   #   type:       "darwin" | "nixos" | "home-manager"
   #   homeProfiles: List of home-manager profile names to enable
   #   darwinModules: Extra darwin module paths (optional)

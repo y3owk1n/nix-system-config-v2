@@ -28,7 +28,7 @@ flake.nix                 ← Entry point (flake-parts)
 
 ### New host
 
-1. Add entry to `hosts/default.nix` — fields: `system`, `username`, `useremail`, `hostname`, `githubuser`, `githubname`, `gpgkeyid`, `type`, `homeProfiles`.
+1. Add entry to `hosts/default.nix` — fields: `system`, `username`, `useremail`, `hostname`, `githubuser`, `githubname`, `sshpubkey`, `type`, `homeProfiles`.
 2. Create `profiles/darwin/<hostname>.nix` or `profiles/nixos/<name>.nix`.
 3. `just rebuild <hostname>`
 
@@ -62,6 +62,10 @@ Profiles: `cli`, `shell`, `git`, `editors`, `security`, `macos`, `ai`.
 1. Add to `inputs` in `flake.nix`.
 2. Access as `inputs.<name>`.
 3. If needed in `specialArgs`, add to `baseSpecialArgs` in `lib/default.nix`.
+
+## Secrets
+
+Encrypted in `secrets/secrets.yaml` (sops + age). Declare each secret in `modules/home/packages/sops.nix`. Edit with `sops secrets/secrets.yaml`. See `DOCS.md` for bootstrap.
 
 ## Adding agent skills
 
