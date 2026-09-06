@@ -6,9 +6,9 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     config = ''
       .shell "/bin/dash"
 
-      .define open : open -a "{{1}}"
+      .define open : mimi action focus_app "{{1}}" || open -a "{{1}}"
       .define mimi_space : mimi action space "{{1}}"
-      .define mimi_move : mimi action move_window_to_space "{{1}}" && mimi action space "{{1}}"
+      .define mimi_move : mimi action move_window_to_space "{{1}}" --follow
       .define mimi_resize : mimi action resize_window "{{1}}"
       .define mimi_focus : mimi action focus_window "{{1}}"
 
