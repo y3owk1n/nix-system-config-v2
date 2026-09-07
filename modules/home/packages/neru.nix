@@ -119,6 +119,7 @@ in
       "u" = "action left_click"
       "e" = "action middle_click"
       "o" = "action right_click"
+      "s" = "action feed ctrl+s"
 
       "Ctrl+F" = "run 'idle' 'recursive_grid --cursor-selection-mode hold --zoom-to-depth 2'"
       "Ctrl+C" = "idle"
@@ -146,13 +147,20 @@ in
       "Shift+I" = "__disabled__"
       "Shift+U" = "__disabled__"
       "Shift+R" = "__disabled__"
+      "d" = "__disabled__"
 
       "Ctrl+C" = "idle"
-      "f" = "action feed ctrl+f"
+      "Ctrl+D" = "action page_down"
+      "Ctrl+U" = "action page_up"
 
-      "Enter" = "action left_click"
-      "Shift+Enter" = "action middle_click"
-      "Ctrl+Enter" = "action right_click"
+      "," = "action move_mouse --center"
+      "p" = "action left_click --toggle"
+      "i" = "action move_mouse"
+      "u" = "action left_click"
+      "e" = "action middle_click"
+      "o" = "action right_click"
+
+      "f" = "action feed ctrl+f"
 
       # ============================================================================
       # Held Repeat
