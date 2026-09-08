@@ -16,8 +16,8 @@ import sys
 
 FLOATING_BUNDLES = {
     "com.apple.systempreferences",
-    # "com.apple.finder",
-    # "com.apple.ActivityMonitor",
+    "com.apple.finder",
+    "com.apple.ActivityMonitor",
 }
 
 FLOATING_TITLES = re.compile(r"^(Preferences|Settings)$")
