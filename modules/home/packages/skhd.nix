@@ -11,6 +11,8 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       .define mimi_move : mimi action move_window_to_space "{{1}}" --follow
       .define mimi_resize : mimi action resize_window "{{1}}"
       .define mimi_focus : mimi action focus_window "{{1}}"
+      .define mimi_bsp_swap : mimi tiling cmd swap "{{1}}"
+      .define mimi_bsp : mimi tiling cmd "{{1}}"
 
       # launchers
       hyper - f : @open("finder")
@@ -56,12 +58,21 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       alt - tab : @mimi_focus("")
       alt + shift - tab : @mimi_focus("--backward")
 
-      alt + shift - c : @mimi_resize("center")
-      alt + shift - f : @mimi_resize("fill")
-      alt + shift - h : @mimi_resize("left-half")
-      alt + shift - l : @mimi_resize("right-half")
-      alt + shift - j : @mimi_resize("bottom-half")
-      alt + shift - k : @mimi_resize("top-half")
+      alt - t : @mimi_bsp("togglesplit")
+      alt - f : @mimi_bsp("togglefloat")
+      alt - m : @mimi_bsp("togglemax")
+
+      alt + shift - h : @mimi_bsp_swap("left")
+      alt + shift - l : @mimi_bsp_swap("right")
+      alt + shift - j : @mimi_bsp_swap("down")
+      alt + shift - k : @mimi_bsp_swap("up")
+
+      # alt + shift - c : @mimi_resize("center")
+      # alt + shift - f : @mimi_resize("fill")
+      # alt + shift - h : @mimi_resize("left-half")
+      # alt + shift - l : @mimi_resize("right-half")
+      # alt + shift - j : @mimi_resize("bottom-half")
+      # alt + shift - k : @mimi_resize("top-half")
     '';
   };
 }

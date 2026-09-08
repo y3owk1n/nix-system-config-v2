@@ -24,6 +24,13 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     fi
   '';
 
+  home.packages = [ pkgs.python3 ];
+
+  xdg.configFile."mimi/tiling" = {
+    source = ../../../config/mimi/tiling;
+    recursive = true;
+  };
+
   services.mimi = {
     enable = true;
     # package = pkgs.mimi;
@@ -57,6 +64,12 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       on_window_resize = [
       	{ run = "command -v neru >/dev/null 2>&1 && neru action move_mouse --window", async = true },
       ]
+
+      # tiling
+      [tiling]
+      enabled = true
+      layout = "${config.xdg.configHome}/mimi/tiling/bsp.py"
+      relayout_on_drag = true
     '';
   };
 }
