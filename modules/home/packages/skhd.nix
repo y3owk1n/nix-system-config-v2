@@ -11,8 +11,8 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       .define mimi_move : mimi action move_window_to_space "{{1}}" --follow
       .define mimi_resize : mimi action resize_window "{{1}}"
       .define mimi_focus : mimi action focus_window "{{1}}"
-      .define mimi_bsp_swap : mimi tiling cmd swap "{{1}}"
-      .define mimi_bsp : mimi tiling cmd "{{1}}"
+      .define mimi_tile : mimi tiling cmd "{{1}}"
+      .define mimi_tile_sub : mimi tiling cmd "{{1}}" "{{2}}"
 
       # launchers
       hyper - f : @open("finder")
@@ -51,21 +51,32 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       alt + shift - 9 : @mimi_move("9")
       alt + shift - 0 : @mimi_move("10")
 
-      alt - h : @mimi_focus("--left")
-      alt - l : @mimi_focus("--right")
-      alt - j : @mimi_focus("--down")
-      alt - k : @mimi_focus("--up")
-      alt - tab : @mimi_focus("")
-      alt + shift - tab : @mimi_focus("--backward")
+      alt - left : @mimi_tile_sub("scroll", "left")
+      alt - right : @mimi_tile_sub("scroll", "right")
 
-      alt - t : @mimi_bsp("togglesplit")
-      alt - f : @mimi_bsp("togglefloat")
-      alt - m : @mimi_bsp("togglemax")
+      alt - h : @mimi_tile_sub("focus", "left")
+      alt - l : @mimi_tile_sub("focus", "right")
 
-      alt + shift - h : @mimi_bsp_swap("left")
-      alt + shift - l : @mimi_bsp_swap("right")
-      alt + shift - j : @mimi_bsp_swap("down")
-      alt + shift - k : @mimi_bsp_swap("up")
+      # alt - h : @mimi_focus("--left")
+      # alt - l : @mimi_focus("--right")
+      # alt - j : @mimi_focus("--down")
+      # alt - k : @mimi_focus("--up")
+      # alt - tab : @mimi_focus("")
+      # alt + shift - tab : @mimi_focus("--backward")
+
+      # alt - t : @mimi_tile("togglesplit")
+      alt - f : @mimi_tile("togglefloat")
+      alt - m : @mimi_tile("togglemax")
+      alt - r : @mimi_tile("width")
+      alt - c : @mimi_tile("center")
+
+      alt + shift - h : @mimi_tile_sub("move", "left")
+      alt + shift - l : @mimi_tile_sub("move", "right")
+
+      # alt + shift - h : @mimi_tile_sub("swap", "left")
+      # alt + shift - l : @mimi_tile_sub("swap", "right")
+      # alt + shift - j : @mimi_tile_sub("swap", "down")
+      # alt + shift - k : @mimi_tile_sub("swap", "up")
 
       # alt + shift - c : @mimi_resize("center")
       # alt + shift - f : @mimi_resize("fill")

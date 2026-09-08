@@ -68,7 +68,7 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       # tiling
       [tiling]
       enabled = true
-      layout = "${config.xdg.configHome}/mimi/tiling/bsp.py"
+      layout = "${config.xdg.configHome}/mimi/tiling/strip.py"
       relayout_on_drag = true
     '';
   };
