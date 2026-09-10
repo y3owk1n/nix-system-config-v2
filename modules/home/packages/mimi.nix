@@ -69,7 +69,18 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       [tiling]
       enabled = true
       layout = "${config.xdg.configHome}/mimi/tiling/strip.py"
+      layout_mode = "resident"
       relayout_on_drag = true
+
+      [tiling.animation]
+      enabled = true
+      duration_ms = 100
+      easing = "ease-out"
+
+      [border]
+      enabled = true
+      active_color = "#${config.lib.stylix.colors.base04}"
+      inactive_color = "#00000000"
     '';
   };
 }

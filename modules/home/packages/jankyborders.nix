@@ -10,7 +10,7 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   # ============================================================================
   # Borders for macOS
   services.jankyborders = {
-    enable = true;
+    enable = false;
     settings = {
       style = "round";
       width = 6.0;

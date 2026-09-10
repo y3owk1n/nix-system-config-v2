@@ -14,7 +14,8 @@ Commands the layout answers (mimi gives them no meaning; this file does):
 
   mimi tiling cmd focus <left|right>    focus the next column that way,
                                         scrolling to it; up/down within one
-  mimi tiling cmd move <left|right>     move the focused column along the strip
+  mimi tiling cmd move <left|right>     move the focused column along the strip;
+                                        up/down swaps the window within one
   mimi tiling cmd consume                pull the focused window into the column
                                          on its left, stacked below
   mimi tiling cmd expel                  push the focused window out into a
@@ -34,8 +35,15 @@ Commands the layout answers (mimi gives them no meaning; this file does):
   mimi tiling cmd togglemax              fill the display with the focused
                                          window, for now
 
+PRIORITY, at the top of the file, lists bundle identifiers whose windows
+open at a fixed place on the strip, each in a column of its own beside the
+app's others. Anything else opens right of the focused column.
+
 With tiling.relayout_on_drag set, dragging a column's edge sets its width,
-and dropping a window on another column moves it into that column. Use the
+and dropping a window on another column moves it into that column. A
+stacked window dropped on empty strip, or in the outer quarter of its own
+column, gets a column of its own on that side. Dropped higher or lower in
+its column, it takes that row. Use the
 focus command rather than mimi action focus_window --left/--right: the
 parked columns all sit at the edge, so spatial focus cannot tell them apart.
 
@@ -43,7 +51,7 @@ A layout program: reads the tiling input on stdin, prints the output on
 stdout. Copy, edit, own. Standard library only.
 """
 
-from rules import area, clamp, command, gap, maximised, read_input, write_output
+from rules import area, clamp, command, gap, maximised, serve, write_output
 
 PRESETS = [1 / 4, 2 / 4, 3 / 4, 4 / 4]
 DEFAULT = 2 / 4
@@ -55,6 +63,13 @@ MIN_WIDTH, MAX_WIDTH = 0.2, 1.0
 # on the space can be. It is reached with the focus command, not by sight.
 # (paneru, the other sliding tiler for macOS, parks at 5 for the same reason.)
 PEEK = 4
+# Bundle identifiers whose windows open at a fixed place on the strip,
+# leftmost first, each in a column of its own beside the app's others.
+# Everything else opens right of the focused column. Only
+# a new window is placed this way: move, consume, expel, and dragging still
+# rearrange what is there, and that order stays. On startup and reload every
+# window is new, so the strip comes up in this order.
+PRIORITY = ["com.apple.Safari", "com.brave.Browser", "org.nixos.firefox", "com.mitchellh.ghostty", "com.apple.Terminal"]  # e.g. ["com.apple.Terminal", "com.apple.Safari"]
 
 
 # --- the strip ----------------------------------------------------------------
@@ -68,21 +83,44 @@ def column_of(columns, number):
     return None
 
 
-def sync(columns, present, focused):
-    """Drop what closed, add what opened as a column right of the focused one."""
+def rank(number, by_number):
+    """Where number's app sits in PRIORITY, or None when it is not listed."""
+    window = by_number.get(number)
+    if window is None or window.get("bundleId") not in PRIORITY:
+        return None
+    return PRIORITY.index(window["bundleId"])
+
+
+def sync(columns, windows, focused):
+    """Drop what closed, add what opened: a listed app at its place in
+    PRIORITY, anything else as a column right of the focused one."""
+    by_number = {w["number"]: w for w in windows}
     for column in columns:
-        column["windows"] = [n for n in column["windows"] if n in present]
+        column["windows"] = [n for n in column["windows"] if n in by_number]
     columns[:] = [c for c in columns if c["windows"]]
 
     known = {n for c in columns for n in c["windows"]}
     at = column_of(columns, focused)
-    for number in present:
+    for number in by_number:
         if number in known:
             continue
-        new = {"windows": [number], "width": DEFAULT}
-        at = len(columns) if at is None else at + 1
-        columns.insert(at, new)
         known.add(number)
+        mine = rank(number, by_number)
+        if mine is None:
+            at = len(columns) if at is None else at + 1
+            columns.insert(at, {"windows": [number], "width": DEFAULT})
+            continue
+        # A column of its own, after the last column ranked at or above
+        # this one, so an app's windows sit side by side; unranked
+        # columns the user placed among them stay where they are.
+        to = 0
+        for index, column in enumerate(columns):
+            ranks = [r for r in (rank(n, by_number) for n in column["windows"]) if r is not None]
+            if ranks and min(ranks) <= mine:
+                to = index + 1
+        columns.insert(to, {"windows": [number], "width": DEFAULT})
+        if at is not None and to <= at:
+            at += 1
 
 
 def col_width(column, box, gap):
@@ -164,8 +202,7 @@ def column_at(columns, box, gap, offset, x):
 # --- one run ------------------------------------------------------------------
 
 
-def main():
-    inp = read_input()
+def main(inp):
     state = inp.get("state") or {}
     columns = state.get("columns") or []
     offset = float(state.get("offset") or 0)
@@ -183,10 +220,11 @@ def main():
         state["floating"] = sorted(floats)
     windows = [w for w in inp["windows"] if w["number"] not in state.get("floating", [])]
     by_number = {w["number"]: w for w in windows}
+    focus_floating = inp["focusFloating"] or (focused is not None and focused not in by_number)
     if focused not in by_number:
         focused = None
 
-    sync(columns, [w["number"] for w in windows], focused)
+    sync(columns, windows, focused)
     if not columns:
         write_output([], {"columns": [], "offset": 0, "floating": state.get("floating", [])})
         return
@@ -223,9 +261,15 @@ def main():
                 row = rows.index(focused)
                 focus = rows[clamp(row + (1 if args[0] == "down" else -1), 0, len(rows) - 1)]
         elif name == "move" and args:
-            to = clamp(at + (1 if args[0] == "right" else -1), 0, len(columns) - 1)
-            columns.insert(to, columns.pop(at))
-            at = to
+            if args[0] in ("left", "right"):
+                to = clamp(at + (1 if args[0] == "right" else -1), 0, len(columns) - 1)
+                columns.insert(to, columns.pop(at))
+                at = to
+            else:
+                rows = column["windows"]
+                row = rows.index(focused)
+                to = clamp(row + (1 if args[0] == "down" else -1), 0, len(rows) - 1)
+                rows[row], rows[to] = rows[to], rows[row]
         elif name == "consume" and at > 0:
             column["windows"].remove(focused)
             columns[at - 1]["windows"].append(focused)
@@ -272,12 +316,37 @@ def main():
             if index is None or number not in by_number:
                 continue
             f = by_number[number]["frame"]
-            target = column_at(columns, box, GAP, offset, f["x"] + f["width"] / 2)
+            centre = f["x"] + f["width"] / 2
+            target = column_at(columns, box, GAP, offset, centre)
             if target is not None and target != index:
                 columns[index]["windows"].remove(number)
                 columns[target]["windows"].append(number)
                 if not columns[index]["windows"]:
                     columns.pop(index)
+                at = column_of(columns, focused)
+            elif len(columns[index]["windows"]) > 1:
+                # Empty strip or the outer quarter of its own column expels
+                # a stacked window to that side. The middle half moves it to
+                # the row its centre landed on.
+                xs, _ = starts(columns, box, GAP)
+                stack = columns[index]["windows"]
+                if target is None:
+                    to = sum(1 for left in xs if box["x"] + left - offset < centre)
+                else:
+                    left = box["x"] + xs[index] - offset
+                    width = col_width(columns[index], box, GAP)
+                    if centre < left + width / 4:
+                        to = index
+                    elif centre >= left + width * 3 / 4:
+                        to = index + 1
+                    else:
+                        middle = f["y"] + f["height"] / 2 - box["y"]
+                        row = int(clamp(middle // ((box["height"] + GAP) / len(stack)), 0, len(stack) - 1))
+                        stack.remove(number)
+                        stack.insert(row, number)
+                        continue
+                stack.remove(number)
+                columns.insert(to, {"windows": [number], "width": columns[index]["width"]})
                 at = column_of(columns, focused)
 
     # Whatever happened, the focused column ends up in view. And when no
@@ -291,9 +360,10 @@ def main():
         offset = scroll_into_view(columns, nearest, box, GAP, offset)
 
     # A window that went away leaves focus wherever macOS put it, which may
-    # be nothing tiled at all. Then the first column in view takes it; on any
-    # other event focus outside the strip is the user's choice and stays.
-    if focus is None and at is None and event["kind"] in ("window_closed", "app_quit", "app_hide"):
+    # be nothing at all. Then the first column in view takes it. Focus on a
+    # floating window stays, as when a Quick Look panel closes and Finder
+    # takes focus back. So does focus outside the strip on any other event.
+    if focus is None and at is None and not focus_floating and event["kind"] in ("window_closed", "app_quit", "app_hide"):
         xs, _ = starts(columns, box, GAP)
         for column, left in zip(columns, xs):
             if left >= offset - 0.5:
@@ -306,4 +376,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    serve(main)
