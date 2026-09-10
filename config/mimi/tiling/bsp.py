@@ -31,7 +31,7 @@ Usage: bsp.py     (the gap is tiling.gap, else the macOS tiled-window margin)
 import sys
 
 from rules import clamp as clamp_to
-from rules import area, command, gap, maximised, serve, write_output
+from rules import area, command, gap, maximised, mouse_after, serve, write_output
 
 # The gap, set from the input once it is read. The tree functions below read
 # it as a global.
@@ -308,7 +308,7 @@ def main(inp):
     state["placed"] = {
         str(number): {k: int(round(v)) for k, v in rect.items()} for number, rect in frames
     }
-    write_output(frames, state)
+    write_output(frames, state, after=mouse_after(inp))
 
 
 if __name__ == "__main__":

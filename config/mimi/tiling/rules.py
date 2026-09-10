@@ -6,12 +6,11 @@ per line on stdout, once or for as long as stdin stays open. See README.md
 for the shapes. mimi runs a layout once per display,
 with that display's windows and a state of that display's own, so a layout
 only ever thinks about one display. This file is the one place to add a
-bundle identifier or a title pattern that should never be tiled.
+bundle identifier that should never be tiled.
 """
 
 import json
 import os
-import re
 import subprocess
 import sys
 
@@ -21,14 +20,11 @@ FLOATING_BUNDLES = {
     "com.apple.ActivityMonitor",
 }
 
-FLOATING_TITLES = re.compile(r"^(Preferences|Settings)$")
-
 
 def floating(win):
     """True for a window a layout should leave where it is."""
     return (
         win["bundleId"] in FLOATING_BUNDLES
-        or FLOATING_TITLES.match(win["title"]) is not None
         or (win["frame"]["width"] < 400 and win["frame"]["height"] < 300)
     )
 
@@ -138,10 +134,24 @@ def _on(frame, bounds):
     return bounds["x"] <= cx < bounds["x"] + bounds["width"] and bounds["y"] <= cy < bounds["y"] + bounds["height"]
 
 
-def write_output(frames, state, focus=None):
+MOUSE_COMMAND = "command -v neru >/dev/null 2>&1 && neru action move_mouse --window"
+
+
+def mouse_after(inp):
+    """The after line that moves the mouse to the focused window, only on a
+    run for a `mimi tiling cmd` command. A drag, a click, or an app switch
+    leaves the mouse alone. mimi runs it once the frames have landed, so it
+    sees the new frame."""
+    if inp["event"]["kind"] != "command":
+        return []
+    return [MOUSE_COMMAND]
+
+
+def write_output(frames, state, focus=None, after=None):
     """Print the layout output: frames in whole points, the state to get
-    back next time, and the window to focus once the frames are applied,
-    when the layout moved focus along its own structure."""
+    back next time, the window to focus once the frames are applied, when
+    the layout moved focus along its own structure, and command lines for
+    mimi to run once the frames have landed."""
     frames = [
         {"number": number, "frame": {k: int(round(v)) for k, v in frame.items()}}
         for number, frame in frames
@@ -149,6 +159,8 @@ def write_output(frames, state, focus=None):
     out = {"frames": frames, "state": state}
     if focus is not None:
         out["focus"] = focus
+    if after:
+        out["after"] = list(after)
     json.dump(out, sys.stdout)
     sys.stdout.write("\n")
 

@@ -51,7 +51,7 @@ A layout program: reads the tiling input on stdin, prints the output on
 stdout. Copy, edit, own. Standard library only.
 """
 
-from rules import area, clamp, command, gap, maximised, serve, write_output
+from rules import area, clamp, command, gap, maximised, mouse_after, serve, write_output
 
 PRESETS = [1 / 4, 2 / 4, 3 / 4, 4 / 4]
 DEFAULT = 2 / 4
@@ -297,7 +297,7 @@ def main(inp):
             width = col_width(column, box, GAP)
             offset = max(0, xs[at] + width / 2 - box["width"] / 2)
             state.update(columns=columns, offset=offset)
-            write_output(maximised(inp, state, frames_for(columns, box, edge, GAP, offset), box), state)
+            write_output(maximised(inp, state, frames_for(columns, box, edge, GAP, offset), box), state, after=mouse_after(inp))
             return
     elif event["kind"] == "window_resize":
         placed = state.get("placed", {})
@@ -372,7 +372,7 @@ def main(inp):
     frames = maximised(inp, state, frames_for(columns, box, edge, GAP, offset), box)
     state.update(columns=columns, offset=offset)
     state["placed"] = {str(n): {k: int(round(v)) for k, v in f.items()} for n, f in frames}
-    write_output(frames, state, focus)
+    write_output(frames, state, focus, after=mouse_after(inp))
 
 
 if __name__ == "__main__":

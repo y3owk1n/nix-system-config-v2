@@ -44,27 +44,6 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       enabled = true
       show_workspace_number = true
 
-      [hooks]
-      # App process started.
-      on_app_launch = [
-      	{ run = "command -v neru >/dev/null 2>&1 && neru action move_mouse --window", async = true },
-      ]
-
-      # App comes to foreground.
-      on_app_activate = [
-      	{ run = "command -v neru >/dev/null 2>&1 && neru action move_mouse --window", async = true },
-      ]
-
-      # Focused window changed.
-      on_window_focus = [
-      	{ run = "command -v neru >/dev/null 2>&1 && neru action move_mouse --window", async = true },
-      ]
-
-      # Window finished resizing (debounced, fires once after resize ends).
-      on_window_resize = [
-      	{ run = "command -v neru >/dev/null 2>&1 && neru action move_mouse --window", async = true },
-      ]
-
       # tiling
       [tiling]
       enabled = true
