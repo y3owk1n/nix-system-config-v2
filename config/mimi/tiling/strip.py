@@ -17,7 +17,7 @@ Commands the layout answers (mimi gives them no meaning; this file does):
   mimi tiling cmd move <left|right>     move the focused column along the strip;
                                         up/down swaps the window within one
   mimi tiling cmd consume                pull the focused window into the column
-                                         on its left, stacked below
+                                         on its left, as another row
   mimi tiling cmd expel                  push the focused window out into a
                                          column of its own, to the right
   mimi tiling cmd width [fraction|prev|+d|-d]
@@ -34,16 +34,29 @@ Commands the layout answers (mimi gives them no meaning; this file does):
                                         quarter of the display unless given
   mimi tiling cmd togglemax              fill the display with the focused
                                          window, for now
+  mimi tiling cmd togglestack            make the focused column hold its
+                                         windows in one place rather than as
+                                         rows, so only the focused one is
+                                         seen, and back again
 
 PRIORITY, at the top of the file, lists bundle identifiers whose windows
 open at a fixed place on the strip, each in a column of its own beside the
 app's others. Anything else opens right of the focused column.
 
+A column holds its windows as rows by default, each with a share of the
+height. togglestack makes it hold them in one place instead, the way niri
+tabs a column: every window fills the column and only the focused one is
+seen. With [tiling.stackbar] enabled mimi draws the others as cards behind
+it, which is the only thing that says how many are in there. focus
+up and down still move between them, and move up and down still reorder
+them.
+
 With tiling.relayout_on_drag set, dragging a column's edge sets its width,
-and dropping a window on another column moves it into that column. A
-stacked window dropped on empty strip, or in the outer quarter of its own
-column, gets a column of its own on that side. Dropped higher or lower in
-its column, it takes that row. Use the
+and dropping a window on another column moves it into that column. A window
+sharing a column, dropped on empty strip or in the outer quarter of its own
+column, gets a column of its own on that side. Dropped higher or lower in a
+column of rows, it takes that row. A tabbed column has no rows, so it stays
+where it is. Use the
 focus command rather than mimi action focus_window --left/--right: the
 parked columns all sit at the edge, so spatial focus cannot tell them apart.
 
@@ -51,7 +64,7 @@ A layout program: reads the tiling input on stdin, prints the output on
 stdout. Copy, edit, own. Standard library only.
 """
 
-from rules import area, clamp, command, gap, maximised, mouse_after, serve, write_output
+from rules import area, clamp, command, gap, maximised, mouse_after, serve, shown, unmanaged_of, write_output
 
 PRESETS = [1 / 4, 2 / 4, 3 / 4, 4 / 4]
 DEFAULT = 2 / 4
@@ -163,7 +176,11 @@ def frames_for(columns, box, edge, gap, offset):
             x = edge["x"] - width + PEEK
         elif left >= offset + box["width"] - 0.5:
             x = edge["x"] + edge["width"] - PEEK
-        n = len(column["windows"])
+        # A tabbed column puts every window in the whole of it, so only the
+        # focused one is seen and mimi marks how many are there. Otherwise
+        # the windows are rows sharing the height between them.
+        tabbed = bool(column.get("tabbed"))
+        n = 1 if tabbed else len(column["windows"])
         height = (box["height"] - gap * (n - 1)) / n
         for row, number in enumerate(column["windows"]):
             frames.append(
@@ -171,13 +188,38 @@ def frames_for(columns, box, edge, gap, offset):
                     number,
                     {
                         "x": x,
-                        "y": box["y"] + row * (height + gap),
+                        "y": box["y"] + (0 if tabbed else row * (height + gap)),
                         "width": width,
                         "height": height,
                     },
                 )
             )
     return frames
+
+
+def seen(column):
+    """The window of a column that was last looked at, which is the one shown
+    when a tabbed column has no focus and the one focus comes back to."""
+    windows = column["windows"]
+    return windows[clamp(column.get("at", 0), 0, len(windows) - 1)]
+
+
+def remember(column, number):
+    """Record which window of a column was last looked at."""
+    if number in column["windows"]:
+        column["at"] = column["windows"].index(number)
+
+
+def stacks_of(inp, columns, focus):
+    """The tabbed columns holding more than one window, in the shape mimi's
+    stacks key takes, each marking the window it is showing."""
+    stacks = []
+    for column in columns:
+        if not column.get("tabbed") or len(column["windows"]) < 2:
+            continue
+        windows = column["windows"]
+        stacks.append({"windows": list(windows), "active": shown(inp, windows, focus)})
+    return stacks
 
 
 def any_in_view(columns, box, gap, offset):
@@ -226,10 +268,14 @@ def main(inp):
 
     sync(columns, windows, focused)
     if not columns:
-        write_output([], {"columns": [], "offset": 0, "floating": state.get("floating", [])})
+        write_output([], {"columns": [], "offset": 0, "floating": state.get("floating", [])},
+                     unmanaged=unmanaged_of(inp, state))
         return
 
     at = column_of(columns, focused)
+    if at is not None and focused is not None:
+        remember(columns[at], focused)
+
     focus = None
 
     if event["kind"] == "command":
@@ -245,7 +291,8 @@ def main(inp):
             offset += step if args[0] == "right" else -step
             offset = clamp(offset, 0, max(0, total - box["width"]))
             state.update(columns=columns, offset=offset)
-            write_output(maximised(inp, state, frames_for(columns, box, edge, GAP, offset), box), state)
+            write_output(maximised(inp, state, frames_for(columns, box, edge, GAP, offset), box), state,
+                         stacks=stacks_of(inp, columns, None), unmanaged=unmanaged_of(inp, state))
             return
 
     if event["kind"] == "command" and at is not None:
@@ -254,7 +301,10 @@ def main(inp):
         if name == "focus" and args:
             if args[0] in ("left", "right"):
                 to = clamp(at + (1 if args[0] == "right" else -1), 0, len(columns) - 1)
-                focus = columns[to]["windows"][0]
+                # Back to the window that column was last on, not its first.
+                # Leaving a tabbed column and coming back should not change
+                # which of its windows is shown.
+                focus = seen(columns[to])
                 at = to
             else:
                 rows = column["windows"]
@@ -276,6 +326,8 @@ def main(inp):
             if not column["windows"]:
                 columns.pop(at)
             at -= 1
+        elif name == "togglestack":
+            column["tabbed"] = not column.get("tabbed")
         elif name == "expel" and len(column["windows"]) > 1:
             column["windows"].remove(focused)
             columns.insert(at + 1, {"windows": [focused], "width": column["width"]})
@@ -297,7 +349,8 @@ def main(inp):
             width = col_width(column, box, GAP)
             offset = max(0, xs[at] + width / 2 - box["width"] / 2)
             state.update(columns=columns, offset=offset)
-            write_output(maximised(inp, state, frames_for(columns, box, edge, GAP, offset), box), state, after=mouse_after(inp))
+            write_output(maximised(inp, state, frames_for(columns, box, edge, GAP, offset), box), state,
+                         stacks=stacks_of(inp, columns, None), unmanaged=unmanaged_of(inp, state), after=mouse_after(inp))
             return
     elif event["kind"] == "window_resize":
         placed = state.get("placed", {})
@@ -339,6 +392,10 @@ def main(inp):
                         to = index
                     elif centre >= left + width * 3 / 4:
                         to = index + 1
+                    elif columns[index].get("tabbed"):
+                        # Every window in a tabbed column fills it, so there
+                        # is no row the drop landed on and it stays put.
+                        continue
                     else:
                         middle = f["y"] + f["height"] / 2 - box["y"]
                         row = int(clamp(middle // ((box["height"] + GAP) / len(stack)), 0, len(stack) - 1))
@@ -372,7 +429,13 @@ def main(inp):
     frames = maximised(inp, state, frames_for(columns, box, edge, GAP, offset), box)
     state.update(columns=columns, offset=offset)
     state["placed"] = {str(n): {k: int(round(v)) for k, v in f.items()} for n, f in frames}
-    write_output(frames, state, focus, after=mouse_after(inp))
+    landed = focus or focused
+    if landed is not None:
+        where = column_of(columns, landed)
+        if where is not None:
+            remember(columns[where], landed)
+
+    write_output(frames, state, focus, unmanaged=unmanaged_of(inp, state), stacks=stacks_of(inp, columns, focus), after=mouse_after(inp))
 
 
 if __name__ == "__main__":

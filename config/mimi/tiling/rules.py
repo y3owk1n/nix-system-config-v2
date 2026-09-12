@@ -56,10 +56,13 @@ def narrow(inp):
     """The input with `windows` narrowed to the tileable ones and `focused`
     re-pointed at the same window, or -1 if it went. `focusFloating` is
     True when it went because the focused window floats, so a layout can
-    tell focus on a floating window from focus on nothing."""
+    tell focus on a floating window from focus on nothing. `unmanaged` is
+    the windows that were filtered out, to hand back to `write_output` so
+    mimi leaves them alone too."""
     focused_number = (
         inp["windows"][inp["focused"]]["number"] if inp["focused"] >= 0 else None
     )
+    inp["unmanaged"] = [w["number"] for w in inp["windows"] if floating(w)]
     inp["windows"] = [w for w in inp["windows"] if not floating(w)]
     numbers = [w["number"] for w in inp["windows"]]
     inp["focused"] = numbers.index(focused_number) if focused_number in numbers else -1
@@ -147,11 +150,61 @@ def mouse_after(inp):
     return [MOUSE_COMMAND]
 
 
-def write_output(frames, state, focus=None, after=None):
+def shown(inp, windows, focus=None):
+    """Which window of a stack is the one being seen.
+
+    The one this pass is about to focus, if it named one. Otherwise the one
+    with focus now. Otherwise whichever of them is in front on screen, which
+    mimi reports as each window's `order`.
+
+    That last part is what keeps a stack marked correctly while focus is
+    somewhere else entirely. Falling back to the first window in the list
+    instead makes an unfocused stack claim to be showing a window it is not,
+    and makes it jump when focus comes back."""
+    if focus in windows:
+        return focus
+
+    at = inp.get("focused", -1)
+    focused = inp["windows"][at]["number"] if at >= 0 else None
+    if focused in windows:
+        return focused
+
+    order = {w["number"]: w.get("order", 0) for w in inp["windows"]}
+    return min(windows, key=lambda number: order.get(number, 1 << 30))
+
+
+def unmanaged_of(inp, state=None):
+    """The windows mimi should leave alone: the ones `narrow()` filtered out
+    by the float rules, plus any the layout floated itself and keeps in
+    `state["floating"]`. Hand it to `write_output` so mimi's drag reading and
+    its drop zone agree with the layout about which windows are the layout's.
+
+    Without it mimi keeps watching a window the layout has stopped placing,
+    because not placing a window is also what a temporary maximise does to
+    the windows under it, and those it should keep watching."""
+    numbers = set(inp.get("unmanaged", []))
+    if state:
+        numbers |= set(state.get("floating", []))
+    return sorted(numbers)
+
+
+def write_output(frames, state, focus=None, unmanaged=None, stacks=None, after=None):
     """Print the layout output: frames in whole points, the state to get
     back next time, the window to focus once the frames are applied, when
-    the layout moved focus along its own structure, and command lines for
-    mimi to run once the frames have landed."""
+    the layout moved focus along its own structure, and the windows this
+    layout is not managing.
+
+    `unmanaged` is what `narrow()` filtered out, so mimi leaves those
+    windows alone too, and dragging one raises no pass and shows no drop
+    zone. Leaving a window out of `frames` says only that it does not move
+    this time, which is what a temporary maximise does to the windows under
+    it.
+
+    `stacks` names the sets of windows this layout put in one place, as
+    [{"windows": [...], "active": n}], so mimi marks each with a bar saying
+    how many windows are there. Every member needs a frame of its own in
+    `frames`, and giving them the same frame is what makes a stack. See
+    stacked.py."""
     frames = [
         {"number": number, "frame": {k: int(round(v)) for k, v in frame.items()}}
         for number, frame in frames
@@ -159,6 +212,12 @@ def write_output(frames, state, focus=None, after=None):
     out = {"frames": frames, "state": state}
     if focus is not None:
         out["focus"] = focus
+    if unmanaged:
+        out["unmanaged"] = list(unmanaged)
+    if stacks:
+        out["stacks"] = [
+            {"windows": list(s["windows"]), "active": s["active"]} for s in stacks
+        ]
     if after:
         out["after"] = list(after)
     json.dump(out, sys.stdout)

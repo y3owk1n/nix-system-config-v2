@@ -55,6 +55,17 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       enabled = true
       duration_ms = 100
       easing = "ease-out"
+      driver = "accessibility"
+
+      [tiling.dropzone]
+      enabled = true
+      color = "#B3${config.lib.stylix.colors.base02}"
+      outline_color = "#${config.lib.stylix.colors.base02}"
+      outline_width = 2
+      radius = 12
+
+      [tiling.stackbar]
+      enabled = true
 
       [border]
       enabled = true

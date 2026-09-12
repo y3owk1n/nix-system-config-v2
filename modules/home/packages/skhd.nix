@@ -76,6 +76,7 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       alt - k : @mimi_tile_sub("focus", "up")
       alt - f : @mimi_tile("togglefloat")
       alt - m : @mimi_tile("togglemax")
+      alt - t : @mimi_tile("togglestack")
       alt - r : @mimi_tile("width")
       alt - c : @mimi_tile("center")
       alt + shift - h : @mimi_tile_sub("move", "left")
@@ -84,10 +85,10 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       alt + shift - k : @mimi_tile_sub("move", "up")
 
       # bsp
-      # alt - h : @mimi_focus("--left")
-      # alt - l : @mimi_focus("--right")
-      # alt - j : @mimi_focus("--down")
-      # alt - k : @mimi_focus("--up")
+      # alt - h : @mimi_tile_sub("focus", "left")
+      # alt - l : @mimi_tile_sub("focus", "right")
+      # alt - j : @mimi_tile_sub("focus", "down")
+      # alt - k : @mimi_tile_sub("focus", "up")
       # alt - t : @mimi_tile("togglesplit")
       # alt - f : @mimi_tile("togglefloat")
       # alt - m : @mimi_tile("togglemax")
