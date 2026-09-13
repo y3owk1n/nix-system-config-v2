@@ -66,6 +66,8 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
 
       [tiling.stackbar]
       enabled = true
+      step = 14
+      taper = 10
 
       [border]
       enabled = true
