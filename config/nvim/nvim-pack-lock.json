@@ -9,7 +9,7 @@
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "fff.nvim": {
-      "rev": "7f8537e70f0ea1210f9acbbfc4640141105cdc78",
+      "rev": "e208805e08550c363060d78a8a470ff86062f3d9",
       "src": "https://github.com/dmtrKovalenko/fff.nvim"
     },
     "grug-far.nvim": {
@@ -25,7 +25,7 @@
       "src": "https://github.com/nvim-mini/mini.icons"
     },
     "nvim-lspconfig": {
-      "rev": "84b6b6c3f13cb34a6c8a0354b0da4c67d8ccf867",
+      "rev": "ac9d2f7c4757db6320cab6697fe73e5e8adb2457",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "nvim-tmux-navigation": {
@@ -33,7 +33,7 @@
       "src": "https://github.com/alexghergh/nvim-tmux-navigation"
     },
     "nvim-treesitter": {
-      "rev": "d4d59cb369da46b95699bd2200efbcffc6dadb3b",
+      "rev": "9a168f6357ed21c3a636e1727bc7d382abc451b8",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"
     },
     "supermaven-nvim": {
