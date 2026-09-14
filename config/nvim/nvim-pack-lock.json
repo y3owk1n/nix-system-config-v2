@@ -1,7 +1,7 @@
 {
   "plugins": {
     "base16-pro-max.nvim": {
-      "rev": "e6f80a49a1c2182f4e67b7a1ad3c9b841570e53c",
+      "rev": "664e918d979e5ed625c1c443589a4d8112706a98",
       "src": "https://github.com/y3owk1n/base16-pro-max.nvim"
     },
     "conform.nvim": {
@@ -9,7 +9,7 @@
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "fff.nvim": {
-      "rev": "e208805e08550c363060d78a8a470ff86062f3d9",
+      "rev": "c5aacb6448bb0fc846d33bbff97515b07faf06e8",
       "src": "https://github.com/dmtrKovalenko/fff.nvim"
     },
     "grug-far.nvim": {
@@ -41,7 +41,7 @@
       "src": "https://github.com/supermaven-inc/supermaven-nvim"
     },
     "undo-glow.nvim": {
-      "rev": "25314a94cdfd84a3ca62bada1f88ed00982659ac",
+      "rev": "144564492e2d50b732524f5c9a9bc9045f89a69a",
       "src": "https://github.com/y3owk1n/undo-glow.nvim"
     }
   }
