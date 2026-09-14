@@ -23,6 +23,11 @@
       end
     '';
     shellInit = ''
+      # Append so Nix binaries keep precedence over Homebrew ones
+      if test -x /opt/homebrew/bin/brew
+        fish_add_path --append --path /opt/homebrew/bin /opt/homebrew/sbin
+      end
+
       __load-em
       __autols_hook
     '';
