@@ -51,11 +51,83 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       layout_mode = "resident"
       relayout_on_drag = true
 
+      # Windows no layout ever sees. These used to be the float list in
+      # rules.py; a rule here applies to every layout.
+      [[tiling.rules]]
+      bundle_id = "com.apple.systempreferences"
+      manage = false
+
+      [[tiling.rules]]
+      bundle_id = "com.apple.finder"
+      manage = false
+
+      [[tiling.rules]]
+      bundle_id = "com.apple.Passwords"
+      manage = false
+
+      [[tiling.rules]]
+      bundle_id = "com.apple.ActivityMonitor"
+      manage = false
+
+      [[tiling.rules]]
+      bundle_id = "skula.wBlock"
+      manage = false
+
+      [[tiling.rules]]
+      narrower_than = 400
+      shorter_than = 300
+      manage = false
+
+      # Safari's settings window is titled after the pane it shows.
+      [[tiling.rules]]
+      bundle_id = "com.apple.Safari"
+      title = "^(General|Tabs|AutoFill|Passwords|Search|Security|Privacy|Websites|Profiles|Extensions|Advanced|Developer|Feature Flags)$"
+      manage = false
+
+      [[tiling.rules]]
+      bundle_id = "com.apple.Safari"
+      space = 1
+
+      [[tiling.rules]]
+      bundle_id = "org.nixos.firefox"
+      space = 1
+
+      [[tiling.rules]]
+      bundle_id = "com.brave.Browser"
+      space = 1
+
+      [[tiling.rules]]
+      bundle_id = "com.mitchellh.ghostty"
+      space = 1
+
+      [[tiling.rules]]
+      bundle_id = "com.apple.Terminal"
+      space = 1
+
+      [[tiling.rules]]
+      bundle_id = "com.apple.Notes"
+      space = 1
+
+      [[tiling.rules]]
+      bundle_id = "com.hnc.Discord"
+      space = 2
+
+      [[tiling.rules]]
+      bundle_id = "net.whatsapp.WhatsApp"
+      space = 2
+
+      [[tiling.rules]]
+      bundle_id = "com.apple.mail"
+      space = 2
+
+      [[tiling.rules]]
+      bundle_id = "com.canva.affinity"
+      space = 3
+
       [tiling.animation]
       enabled = true
       duration_ms = 100
       easing = "ease-out"
-      driver = "accessibility"
 
       [tiling.dropzone]
       enabled = true
@@ -68,6 +140,9 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       enabled = true
       step = 14
       taper = 10
+
+      [mouse]
+      focus_follows_mouse = true
 
       [border]
       enabled = true

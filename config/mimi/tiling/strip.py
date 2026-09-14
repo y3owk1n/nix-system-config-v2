@@ -82,7 +82,8 @@ PEEK = 4
 # a new window is placed this way: move, consume, expel, and dragging still
 # rearrange what is there, and that order stays. On startup and reload every
 # window is new, so the strip comes up in this order.
-PRIORITY = ["com.apple.Safari", "com.brave.Browser", "org.nixos.firefox", "com.mitchellh.ghostty", "com.apple.Terminal"]  # e.g. ["com.apple.Terminal", "com.apple.Safari"]
+PRIORITY = ["com.apple.Safari", "com.brave.Browser", "org.nixos.firefox", "com.mitchellh.ghostty", "com.apple.Terminal",
+            "com.apple.Notes", "com.hnc.Discord", "com.apple.mail", "net.whatsapp.WhatsApp"]
 # {number: (width, height)} for the windows that refuse a smaller size, set
 # from the input once it is read. A column is at least as wide as its
 # widest such window, and its rows each at least as tall as theirs, so the
@@ -285,14 +286,17 @@ def main(inp):
         state["floating"] = sorted(floats)
     windows = [w for w in inp["windows"] if w["number"] not in state.get("floating", [])]
     by_number = {w["number"]: w for w in windows}
-    focus_floating = inp["focusFloating"] or (focused is not None and focused not in by_number)
+    focus_floating = focused is not None and focused not in by_number
     if focused not in by_number:
         focused = None
 
     sync(columns, windows, focused)
     if not columns:
-        write_output([], {"columns": [], "offset": 0, "floating": state.get("floating", [])},
-                     unmanaged=unmanaged_of(inp, state))
+        write_output(
+            [],
+            {"columns": [], "offset": 0, "floating": state.get("floating", [])},
+            unmanaged=unmanaged_of(inp, state),
+        )
         return
 
     at = column_of(columns, focused)
@@ -314,8 +318,12 @@ def main(inp):
             offset += step if args[0] == "right" else -step
             offset = clamp(offset, 0, max(0, total - box["width"]))
             state.update(columns=columns, offset=offset)
-            write_output(maximised(inp, state, frames_for(columns, box, edge, GAP, offset), box), state,
-                         stacks=stacks_of(inp, columns, None), unmanaged=unmanaged_of(inp, state))
+            write_output(
+                maximised(inp, state, frames_for(columns, box, edge, GAP, offset), box),
+                state,
+                unmanaged=unmanaged_of(inp, state),
+                stacks=stacks_of(inp, columns, None),
+            )
             return
 
     if event["kind"] == "command" and at is not None:
@@ -382,8 +390,13 @@ def main(inp):
             width = col_width(column, box, GAP)
             offset = max(0, xs[at] + width / 2 - box["width"] / 2)
             state.update(columns=columns, offset=offset)
-            write_output(maximised(inp, state, frames_for(columns, box, edge, GAP, offset), box), state,
-                         stacks=stacks_of(inp, columns, None), unmanaged=unmanaged_of(inp, state), after=mouse_after(inp))
+            write_output(
+                maximised(inp, state, frames_for(columns, box, edge, GAP, offset), box),
+                state,
+                unmanaged=unmanaged_of(inp, state),
+                stacks=stacks_of(inp, columns, None),
+                after=mouse_after(inp),
+            )
             return
     elif event["kind"] == "window_resize":
         placed = state.get("placed", {})
@@ -468,7 +481,14 @@ def main(inp):
         if where is not None:
             remember(columns[where], landed)
 
-    write_output(frames, state, focus, unmanaged=unmanaged_of(inp, state), stacks=stacks_of(inp, columns, focus), after=mouse_after(inp))
+    write_output(
+        frames,
+        state,
+        focus,
+        unmanaged=unmanaged_of(inp, state),
+        stacks=stacks_of(inp, columns, focus),
+        after=mouse_after(inp),
+    )
 
 
 if __name__ == "__main__":
