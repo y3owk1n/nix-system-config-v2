@@ -1,6 +1,6 @@
 {
   imports = [
-    ../packages/brave.nix
-    ../packages/firefox.nix
+    # ../packages/brave.nix
+    # ../packages/firefox.nix
   ];
 }
