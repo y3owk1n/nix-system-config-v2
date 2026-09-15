@@ -146,8 +146,10 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
 
       [border]
       enabled = true
+      placement = "inside"
+      hide_when_single = true
       active_color = "#${config.lib.stylix.colors.base04}"
-      inactive_color = "#00000000"
+      # inactive_color = "#00000000"
     '';
   };
 }

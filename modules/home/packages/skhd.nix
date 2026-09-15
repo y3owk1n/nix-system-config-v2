@@ -39,6 +39,7 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       hyper - 7 : @mimi_space("7")
       hyper - 8 : @mimi_space("8")
       hyper - 9 : @mimi_space("9")
+      hyper - 0 : @mimi_space("10")
 
       alt + shift - 1 : @mimi_move("1")
       alt + shift - 2 : @mimi_move("2")
