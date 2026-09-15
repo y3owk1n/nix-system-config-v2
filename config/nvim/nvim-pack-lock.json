@@ -9,7 +9,7 @@
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "fff.nvim": {
-      "rev": "c5aacb6448bb0fc846d33bbff97515b07faf06e8",
+      "rev": "4083ea04d30537aaa653a2189616ab6b4ff19810",
       "src": "https://github.com/dmtrKovalenko/fff.nvim"
     },
     "grug-far.nvim": {
