@@ -182,22 +182,33 @@ def mouse_after(inp):
     return [MOUSE_COMMAND]
 
 
+def modifiers(inp):
+    """The modifier keys held during a window_move or window_resize, as a
+    set of "shift", "control", "option" and "command". Empty for any other
+    event, and for a drag with none held. The shipped layouts float the
+    dragged window on an option-drag and stack it onto the target on a
+    shift-drag."""
+    return set(inp.get("event", {}).get("modifiers", []))
+
+
 def unmanaged_of(inp, state=None):
-    """The windows mimi should leave alone: the ones it handed back as
-    `unmanaged`, plus any the layout floated itself and keeps in
-    `state["floating"]`. Hand it to `write_output` so mimi's drag reading and
-    its drop zone agree with the layout about which windows are the layout's.
+    """The windows mimi should leave alone. A layout that keeps its floats in
+    `state["floating"]` gets that list. Any other layout gets the `unmanaged`
+    list mimi handed back, which is what it said last run. Never both. mimi
+    echoes the last answer on every run, so a window taken off the floating
+    list would stay unmanaged for good. Hand the result to `write_output` so
+    mimi's drag reading and its drop zone agree with the layout about which
+    windows are the layout's.
 
     Without it mimi keeps watching a window the layout has stopped placing,
     because not placing a window is also what a temporary maximise does to
     the windows under it, and those it should keep watching."""
-    numbers = set(inp.get("unmanaged", []))
-    if state:
-        numbers |= set(state.get("floating", []))
-    return sorted(numbers)
+    if state is not None and "floating" in state:
+        return sorted(state["floating"])
+    return sorted(inp.get("unmanaged", []))
 
 
-def write_output(frames, state, focus=None, unmanaged=None, stacks=None, after=None):
+def write_output(frames, state, focus=None, unmanaged=None, stacks=None, target=None, after=None):
     """Print the layout output: frames in whole points, the state to get
     back next time, the window to focus once the frames are applied, when
     the layout moved focus along its own structure, and the windows this
@@ -213,7 +224,12 @@ def write_output(frames, state, focus=None, unmanaged=None, stacks=None, after=N
     [{"windows": [...], "active": n}], so mimi marks each with a bar saying
     how many windows are there. Every member needs a frame of its own in
     `frames`, and giving them the same frame is what makes a stack. See
-    stacked.py."""
+    stacked.py.
+
+    `target`, on a window_move or window_resize, is `(number, action)`: the
+    window the drop acts on other than the dragged one, and the layout's
+    word for what happens to it, "swap" or "insert" say. The drop zone
+    marks that window while the button is down. A pass ignores it."""
     frames = [
         {"number": number, "frame": {k: int(round(v)) for k, v in frame.items()}}
         for number, frame in frames
@@ -227,6 +243,8 @@ def write_output(frames, state, focus=None, unmanaged=None, stacks=None, after=N
         out["stacks"] = [
             {"windows": list(s["windows"]), "active": s["active"]} for s in stacks
         ]
+    if target is not None:
+        out["target"] = {"window": target[0], "action": target[1]}
     if after:
         out["after"] = list(after)
     json.dump(out, sys.stdout)

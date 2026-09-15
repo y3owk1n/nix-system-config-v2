@@ -84,6 +84,7 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       alt + shift - l : @mimi_tile_sub("move", "right")
       alt + shift - j : @mimi_tile_sub("move", "down")
       alt + shift - k : @mimi_tile_sub("move", "up")
+      alt + shift - c : @mimi_resize("center")
 
       # bsp
       # alt - h : @mimi_tile_sub("focus", "left")
