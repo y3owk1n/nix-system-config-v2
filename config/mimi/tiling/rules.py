@@ -179,7 +179,8 @@ def mouse_after(inp):
     sees the new frame."""
     if inp["event"]["kind"] != "command":
         return []
-    return [MOUSE_COMMAND]
+    # return [MOUSE_COMMAND]
+    return []
 
 
 def modifiers(inp):

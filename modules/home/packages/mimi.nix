@@ -89,7 +89,7 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       space = 1
 
       [[tiling.rules]]
-      bundle_id = "org.nixos.firefox"
+      bundle_id = "org.mozilla.firefox"
       space = 1
 
       [[tiling.rules]]

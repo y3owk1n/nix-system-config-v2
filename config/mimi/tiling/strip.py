@@ -82,7 +82,7 @@ PEEK = 4
 # a new window is placed this way: move, consume, expel, and dragging still
 # rearrange what is there, and that order stays. On startup and reload every
 # window is new, so the strip comes up in this order.
-PRIORITY = ["com.apple.Safari", "com.brave.Browser", "org.nixos.firefox", "com.mitchellh.ghostty", "com.apple.Terminal",
+PRIORITY = ["com.apple.Safari", "com.brave.Browser", "org.mozilla.firefox", "com.mitchellh.ghostty", "com.apple.Terminal",
             "com.apple.Notes", "com.hnc.Discord", "com.apple.mail", "net.whatsapp.WhatsApp"]
 # {number: (width, height)} for the windows that refuse a smaller size, set
 # from the input once it is read. A column is at least as wide as its
@@ -295,7 +295,7 @@ def main(inp):
     state["floating"] = sorted(floats)
     windows = [w for w in inp["windows"] if w["number"] not in floats]
     by_number = {w["number"]: w for w in windows}
-    focus_floating = focused is not None and focused not in by_number
+    focus_floating = inp.get("focusKeptOut") or (focused is not None and focused not in by_number)
     if focused not in by_number:
         focused = None
 
