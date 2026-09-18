@@ -65,7 +65,8 @@ in
       # Hotkeys
       # ============================================================================
       [hotkeys]
-      "Ctrl+F" = "recursive_grid --cursor-selection-mode hold"
+      "Ctrl+F" = "recursive_grid --cursor-selection-mode hold --capture-scope window"
+      # "Ctrl+F" = "bisect --cursor-selection-mode hold --capture-scope window"
       "Ctrl+S" = "scroll"
 
       # ============================================================================
@@ -112,7 +113,7 @@ in
 
       "Tab" = "toggle-cursor-follow-selection"
 
-      "," = "action move_mouse --center"
+      "," = "action move_mouse --window"
       "." = "action reset"
       "p" = "action left_click --toggle"
       "i" = "action move_mouse"
@@ -120,8 +121,9 @@ in
       "e" = "action middle_click"
       "o" = "action right_click"
       "s" = "action feed ctrl+s"
+      "f" = "recursive_grid --cursor-selection-mode hold"
 
-      "Ctrl+F" = "run 'idle' 'recursive_grid --cursor-selection-mode hold --zoom-to-depth 2'"
+      # "Ctrl+F" = "run 'idle' 'recursive_grid --cursor-selection-mode hold --zoom-to-depth 2'"
       "Ctrl+C" = "idle"
       "Ctrl+J" = "action scroll_down"
       "Ctrl+K" = "action scroll_up"
@@ -133,6 +135,70 @@ in
       "Shift+L" = "action move_cell --direction right"
       "Shift+K" = "action move_cell --direction up"
       "Shift+J" = "action move_cell --direction down"
+
+      # ============================================================================
+      # Bisect Navigation
+      # ============================================================================
+      [bisect]
+      enabled = true
+
+      [bisect.hotkeys]
+      # "Shift+M" = "__disabled__"
+      "Shift+I" = "__disabled__"
+      "Shift+U" = "__disabled__"
+      # "Shift+R" = "__disabled__"
+      "Shift+L" = "__disabled__"
+      "`" = "__disabled__"
+      "Space" = "__disabled__"
+
+      "Tab" = "toggle-cursor-follow-selection"
+
+      "," = "action move_mouse --window"
+      "." = "action reset"
+      "p" = "action left_click --toggle"
+      "i" = "action move_mouse"
+      "u" = "action left_click"
+      "e" = "action middle_click"
+      "o" = "action right_click"
+
+      "j" = "__disabled__"
+      "k" = "__disabled__"
+      "l" = "__disabled__"
+      "y" = "__disabled__"
+      "b" = "__disabled__"
+
+      "h" = "action bisect --direction=left"
+      "w" = "action bisect --direction=down"
+      "c" = "action bisect --direction=up"
+      "n" = "action bisect --direction=right"
+      "g" = "action bisect --direction=up_left"
+      "r" = "action bisect --direction=up_right"
+      "m" = "action bisect --direction=down_left"
+      "v" = "action bisect --direction=down_right"
+
+      "Shift+H" = "action bisect --direction=left --count 2"
+      "Shift+W" = "action bisect --direction=down -count 2"
+      "Shift+C" = "action bisect --direction=up --count 2"
+      "Shift+N" = "action bisect --direction=right --count 2"
+      "Shift+G" = "action bisect --direction=up_left --count 2"
+      "Shift+R" = "action bisect --direction=up_right --count 2"
+      "Shift+M" = "action bisect --direction=down_left --count 2"
+      "Shift+V" = "action bisect --direction=down_right --count 2"
+
+      "Ctrl+F" = "bisect --cursor-selection-mode hold"
+
+      "Ctrl+C" = "idle"
+      "Ctrl+J" = "action scroll_down"
+      "Ctrl+K" = "action scroll_up"
+      "Ctrl+H" = "action scroll_left"
+      "Ctrl+L" = "action scroll_right"
+      "Ctrl+S" = "macro move_and_scroll"
+
+      [bisect.ui]
+      font_family = "JetBrainsMonoNLNFP-Bold"
+      line_width = 1
+      # highlight_color = "#00000000"
+      text_color = "#00000000"
 
       # ============================================================================
       # Scroll
@@ -153,7 +219,7 @@ in
       "Ctrl+D" = "action page_down"
       "Ctrl+U" = "action page_up"
 
-      "," = "action move_mouse --center"
+      "," = "action move_mouse --window"
       "p" = "action left_click --toggle"
       "i" = "action move_mouse"
       "u" = "action left_click"
