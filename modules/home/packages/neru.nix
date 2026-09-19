@@ -65,8 +65,8 @@ in
       # Hotkeys
       # ============================================================================
       [hotkeys]
-      "Ctrl+F" = "recursive_grid --cursor-selection-mode hold --capture-scope window"
-      # "Ctrl+F" = "bisect --cursor-selection-mode hold --capture-scope window"
+      "Ctrl+F" = "recursive_grid --cursor-selection-mode hold --capture-scope window,screen"
+      # "Ctrl+F" = "bisect --cursor-selection-mode hold --capture-scope window,screen"
       "Ctrl+S" = "scroll"
 
       # ============================================================================
@@ -121,7 +121,7 @@ in
       "e" = "action middle_click"
       "o" = "action right_click"
       "s" = "action feed ctrl+s"
-      "f" = "recursive_grid --cursor-selection-mode hold"
+      "f" = "action feed ctrl+f"
 
       # "Ctrl+F" = "run 'idle' 'recursive_grid --cursor-selection-mode hold --zoom-to-depth 2'"
       "Ctrl+C" = "idle"
@@ -160,6 +160,8 @@ in
       "u" = "action left_click"
       "e" = "action middle_click"
       "o" = "action right_click"
+      "s" = "action feed ctrl+s"
+      "f" = "action feed ctrl+f"
 
       "j" = "__disabled__"
       "k" = "__disabled__"
@@ -184,8 +186,6 @@ in
       "Shift+R" = "action bisect --direction=up_right --count 2"
       "Shift+M" = "action bisect --direction=down_left --count 2"
       "Shift+V" = "action bisect --direction=down_right --count 2"
-
-      "Ctrl+F" = "bisect --cursor-selection-mode hold"
 
       "Ctrl+C" = "idle"
       "Ctrl+J" = "action scroll_down"
