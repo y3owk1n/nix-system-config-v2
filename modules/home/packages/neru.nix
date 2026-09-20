@@ -140,7 +140,7 @@ in
       # Bisect Navigation
       # ============================================================================
       [bisect]
-      enabled = true
+      enabled = false
 
       [bisect.hotkeys]
       # "Shift+M" = "__disabled__"
