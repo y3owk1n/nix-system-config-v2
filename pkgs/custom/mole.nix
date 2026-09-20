@@ -6,7 +6,7 @@
 
 let
   # BUMP: Latest version refer here -> https://github.com/tw93/Mole/releases/latest
-  version = "1.54.0";
+  version = "1.55.0";
 in
 buildGoModule {
   pname = "mole";
@@ -16,10 +16,10 @@ buildGoModule {
     owner = "tw93";
     repo = "Mole";
     rev = "V${version}";
-    sha256 = "sha256-L4DIFBp4n8l5Y8/Zs6ddDnmJz0dB2fYolhUo1dUEOXU=";
+    sha256 = "sha256-Myl8ZtLYk2Dn0wHj8sl6SVVjmswcBzZ4WjjU/dJAdWE=";
   };
 
-  vendorHash = "sha256-a4KJiQwfOUcT+dLfgg13iuLOZx8pqUQVVK6QERbTWPQ=";
+  vendorHash = "sha256-iGwtKV6mJfSgZ5rMB5ASXzdKTPBy9RqoysM4JRh0dts=";
 
   buildPhase = ''
     runHook preBuild
@@ -34,7 +34,7 @@ buildGoModule {
     mkdir -p $out/libexec $out/bin
     cp -r bin lib $out/libexec/
     substituteInPlace mole \
-      --replace-fail 'SCRIPT_DIR="$(cd "$(dirname "''${BASH_SOURCE[0]}")" && pwd)"' \
+      --replace-fail 'SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"' \
                      "SCRIPT_DIR='$out/libexec'"
     install -m755 mole $out/bin/
     ln -s mole $out/bin/mo
