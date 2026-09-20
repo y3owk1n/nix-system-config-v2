@@ -7,8 +7,8 @@
 
 let
   # BUMP: Latest version refer here -> https://github.com/Homebrew/homebrew-cask/blob/main/Casks/a/affinity.rb
-  version = "3.2.3";
-  build = "4646";
+  version = "3.3.0";
+  build = "4850";
 in
 stdenvNoCC.mkDerivation {
   pname = "affinity";
@@ -16,7 +16,7 @@ stdenvNoCC.mkDerivation {
 
   src = fetchurl {
     url = "https://affinity-update.s3.amazonaws.com/mac2/retail/Affinity%20Affinity%20Store%20${build}.zip";
-    hash = "sha256-m1s8Le/6yEEhNExd/1OsftTpv/HbHn6hBrAFTYxAU98=";
+    hash = "sha256-MX9c9kpTZDGYmFdrRki2qW3J7Dn1ADmuv5kBt+06XZY=";
   };
 
   nativeBuildInputs = [ unzip ];
