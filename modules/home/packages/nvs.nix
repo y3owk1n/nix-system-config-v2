@@ -1,7 +1,7 @@
 { pkgs, config, ... }:
 {
   programs.nvs = {
-    enable = true;
+    enable = false;
     # package = pkgs.nvs;
     package = pkgs.nvs-source;
     enableAutoSwitch = false;

@@ -32,6 +32,10 @@ _: {
           path = "~/nix-system-config-v2";
         }
         {
+          name = "oku config";
+          path = "~/.config/oku";
+        }
+        {
           name = "neovim config";
           path = "~/nix-system-config-v2/config/nvim";
         }

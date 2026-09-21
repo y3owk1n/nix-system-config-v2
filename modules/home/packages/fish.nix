@@ -21,6 +21,8 @@
       if not contains /opt/homebrew/share/fish/vendor_completions.d $fish_complete_path
         set -gx fish_complete_path $fish_complete_path /opt/homebrew/share/fish/vendor_completions.d
       end
+
+      test -x "$HOME/.local/bin/oku"; and "$HOME/.local/bin/oku" hook fish | source
     '';
     shellInit = ''
       # Append so Nix binaries keep precedence over Homebrew ones
